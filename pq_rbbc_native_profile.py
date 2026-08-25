@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fail-closed native import contract for the PQ-RBBC v2.10 fork.
+"""Fail-closed native import contract for the PQ-RBBC v2.11 fork.
 
 The selected profile is deliberately independent of the unreproduced
 Blind-UOV 240-row instance.  It accepts no claim of bit-exact compatibility.
@@ -21,6 +21,7 @@ import pq_rbbc_anemoi_sponge as sponge
 import pq_rbbc_cap_commit as cap
 import pq_rbbc_cap_composer as composer
 import pq_rbbc_cap_global_tail as global_tail
+import pq_rbbc_cap_split_tail as split_tail
 import pq_rbbc_cap_tree_producer as tree_producer
 import pq_rbbc_cap_native as reduced_native
 import pq_rbbc_cap_shard_assignment as shard_assignment
@@ -28,7 +29,7 @@ import pq_rbbc_cap_shard_stream as shard_stream
 import pq_rbbc_horner_native as horner_native
 
 
-IMPLEMENTATION_VERSION = "2.10"
+IMPLEMENTATION_VERSION = "2.11"
 RELATION_ID = "pq-rbbc-buov-iii-336/cap-hash/v1"
 TARGET_FIELD = "GF(2^193)"
 REQUIRED_TAMPER_CASES = frozenset(
@@ -354,6 +355,18 @@ def build_native_profile_manifest() -> dict[str, object]:
             "production_global_tail_row_stream_sha256": global_tail.FROZEN_PRODUCTION_STREAM_SHA256,
             "production_global_tail_assignment_sha256": global_tail.FROZEN_PRODUCTION_ASSIGNMENT_SHA256,
             "production_global_tail_native_closed": True,
+            "reduced_split_tail_component": {
+                "contract_id": split_tail.CONTRACT_ID,
+                "canonical_relation_id": split_tail.CANONICAL_RELATION_ID,
+                "rows": split_tail.FROZEN_REDUCED_ROWS,
+                "wires": split_tail.FROZEN_REDUCED_WIRES,
+                "row_stream_sha256": split_tail.FROZEN_REDUCED_STREAM_SHA256,
+                "assignment_body_sha256": split_tail.FROZEN_REDUCED_ASSIGNMENT_BODY_SHA256,
+                "assignment_archive_sha256": split_tail.FROZEN_REDUCED_ASSIGNMENT_ARCHIVE_SHA256,
+                "boundary_wire_probes": 4,
+                "external_assertions": 0,
+                "explicitly_non_secure": True,
+            },
             "reduced_tree_producer_component": {
                 "relation_id": tree_producer.RELATION_ID,
                 "tree_count": 2,
@@ -395,6 +408,11 @@ def build_native_profile_manifest() -> dict[str, object]:
             "full_18_tree_reference_composition_closed": True,
             "canonical_18_tree_link_schedule_closed": True,
             "production_global_tail_native_closed": True,
+            "reduced_split_tail_phase_contract_closed": True,
+            "canonical_tail_stream_and_assignment_equivalent": True,
+            "h1_and_consistency_point_ports_native_closed": True,
+            "tail_phase_a_to_phase_b_wire_identity_closed": True,
+            "production_split_tail_materialized": False,
             "reduced_tree_producer_segments_native_closed": True,
             "reduced_producer_to_tail_port_values_match": True,
             "reduced_producer_point_wire_identity_closed": False,

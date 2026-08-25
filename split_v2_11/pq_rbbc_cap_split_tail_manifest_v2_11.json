@@ -1,0 +1,223 @@
+{
+  "assignment_archive": {
+    "archive_bytes": 624928,
+    "archive_sha256": "0915410fac94d6ab8ae9dcab487af7d8aca98aa187c6960e3472e77db990edc0",
+    "body_bytes": 624800,
+    "body_sha256": "ea4165dd32323a0ecf34cd21d7515571fdd6682f857266c0f3608aa1a4fd703c",
+    "field_degree": 193,
+    "format": "PQRBBC-F193-ASSIGNMENT-LE25-1",
+    "header_bytes": 128,
+    "row_stream_sha256": "4d2f53ba3a039a9c88cd7dd0b7e0e19ad4f7e39d5db2bce67af19ee09302c6fa",
+    "value_bytes": 25,
+    "wires": 24992
+  },
+  "boundary_wire_probes": [
+    {
+      "honest_row_satisfied": true,
+      "label": "consistency.validate.point[0].nonzero",
+      "port_id": "global.phase-a.consistency-points",
+      "rejected": true,
+      "stale_row_satisfied": false,
+      "wire": 14305
+    },
+    {
+      "honest_row_satisfied": true,
+      "label": "xof[2].h2.payload[240].source",
+      "port_id": "global.phase-a.h1",
+      "rejected": true,
+      "stale_row_satisfied": false,
+      "wire": 12255
+    },
+    {
+      "honest_row_satisfied": true,
+      "label": "output.commitment[0].link",
+      "port_id": "global.phase-b.commitment",
+      "rejected": true,
+      "stale_row_satisfied": false,
+      "wire": 18926
+    },
+    {
+      "honest_row_satisfied": true,
+      "label": "xof[3].request-binding.digest.lane[0].pack",
+      "port_id": "global.phase-b.request-hash",
+      "rejected": true,
+      "stale_row_satisfied": false,
+      "wire": 24414
+    }
+  ],
+  "canonical_equivalence": {
+    "assignment_body_sha256_equal": true,
+    "canonical_assignment_body_sha256": "ea4165dd32323a0ecf34cd21d7515571fdd6682f857266c0f3608aa1a4fd703c",
+    "canonical_stream_sha256": "4d2f53ba3a039a9c88cd7dd0b7e0e19ad4f7e39d5db2bce67af19ee09302c6fa",
+    "commitment_equal": true,
+    "exact": true,
+    "input_ports_equal": true,
+    "request_hash_equal": true,
+    "rows_equal": true,
+    "split_assignment_body_sha256": "ea4165dd32323a0ecf34cd21d7515571fdd6682f857266c0f3608aa1a4fd703c",
+    "split_stream_sha256": "4d2f53ba3a039a9c88cd7dd0b7e0e19ad4f7e39d5db2bce67af19ee09302c6fa",
+    "stream_sha256_equal": true,
+    "wires_equal": true
+  },
+  "claim_boundary": {
+    "canonical_tail_stream_and_assignment_equivalent": true,
+    "complete_18_tree_assignment_replayed": false,
+    "fork_security_proof_revalidated": false,
+    "h1_and_consistency_point_ports_native_closed": true,
+    "parent_cap_to_h_rbbc_join_closed": false,
+    "producer_point_wire_identity_closed": false,
+    "production_closed": false,
+    "production_split_tail_materialized": false,
+    "production_tree_producer_segments_materialized": false,
+    "reduced_split_tail_phase_contract_closed": true,
+    "tail_phase_a_to_phase_b_wire_identity_closed": true
+  },
+  "implementation_version": "2.11",
+  "phase_contract": {
+    "boundary_ports": [
+      {
+        "bit_length": 386,
+        "consumer_wire_start": 12255,
+        "port_id": "global.phase-a.h1",
+        "producer_segment": "global-tail-phase-a",
+        "value_sha256": "e28dae5272e5aa749d2a8d877a8d0ee6b7498de8d61dd956c075074c180dd242"
+      },
+      {
+        "bit_length": 193,
+        "consumer_wire_start": 14305,
+        "port_id": "global.phase-a.consistency-points",
+        "producer_segment": "global-tail-phase-a",
+        "value_sha256": "0dab228a3083f1edba00e8e19e905d0e2595d10663963d97ca4d3d827a41ec3c"
+      },
+      {
+        "bit_length": 1720,
+        "consumer_wire_start": 18926,
+        "port_id": "global.phase-b.commitment",
+        "producer_segment": "global-tail-phase-b",
+        "value_sha256": "07a09a4f623233586af7ebca90d0eeba7d6a5bb94ff86c7dff29ade7be79b800"
+      },
+      {
+        "bit_length": 32,
+        "consumer_wire_start": 20646,
+        "port_id": "global.phase-b.derived-mask",
+        "producer_segment": "global-tail-phase-b",
+        "value_sha256": "c23c2489452f5a07a3142cfc5f24aee741c820a05b8165538100942b05f50b3a"
+      },
+      {
+        "bit_length": 32,
+        "consumer_wire_start": 20678,
+        "port_id": "global.phase-b.append-base",
+        "producer_segment": "global-tail-phase-b",
+        "value_sha256": "39d3c7ace4e2a431a3c6cbe54303f53b4f2d180c3a0771c7ea16a2d896f9c7f5"
+      },
+      {
+        "bit_length": 576,
+        "consumer_wire_start": 24414,
+        "port_id": "global.phase-b.request-hash",
+        "producer_segment": "global-tail-phase-b",
+        "value_sha256": "609545cdfe3ba160c9e2b017450058503af934983a2a943117a5206a7a8ba3e8"
+      }
+    ],
+    "canonical_relation_id": "pq-rbbc/cap/production-global-tail/v1",
+    "input_prelude_row_end": 5402,
+    "input_prelude_row_start": 0,
+    "input_prelude_wire_end": 5403,
+    "input_prelude_wire_start": 1,
+    "phase_a_to_phase_b_wire_identity": true,
+    "phases": [
+      {
+        "input_port_ids": [
+          "tree[0].leaf-commitments",
+          "tree[0].p-plain",
+          "tree[0].mhat-plain",
+          "tree[1].leaf-commitments",
+          "tree[1].p-plain",
+          "tree[1].mhat-plain"
+        ],
+        "output_port_ids": [
+          "global.phase-a.h1",
+          "global.phase-a.consistency-points"
+        ],
+        "phase_id": "global-tail-phase-a",
+        "row_end": 19813,
+        "row_start": 5402,
+        "wire_end": 14499,
+        "wire_start": 5403
+      },
+      {
+        "input_port_ids": [
+          "shared.salt",
+          "shared.message",
+          "tree[0].p-plain",
+          "tree[0].mhat-plain",
+          "tree[0].xi-masks",
+          "tree[1].p-plain",
+          "tree[1].mhat-plain",
+          "tree[1].xi-masks",
+          "global.phase-a.h1",
+          "global.phase-a.consistency-points"
+        ],
+        "output_port_ids": [
+          "global.phase-b.commitment",
+          "global.phase-b.derived-mask",
+          "global.phase-b.append-base",
+          "global.phase-b.request-hash"
+        ],
+        "phase_id": "global-tail-phase-b",
+        "row_end": 36801,
+        "row_start": 19813,
+        "wire_end": 24993,
+        "wire_start": 14499
+      }
+    ]
+  },
+  "profile": {
+    "assignment_format": "PQRBBC-F193-ASSIGNMENT-LE25-1",
+    "canonical_relation_id": "pq-rbbc/cap/production-global-tail/v1",
+    "cap_profile_fingerprint": "5d067a55e2ea9104b2604dc7efa393f44d1ce1880c3974bdcaae32aeb825f2ea",
+    "contract_id": "pq-rbbc/cap/global-tail-phase-contract/v1",
+    "reduced_test_profile": true,
+    "stream_format": "PQRBBC-F193-R1CS-BINARY-1",
+    "tree_count": 2
+  },
+  "trace": {
+    "canonical_generation_seconds": 2.174659755000903,
+    "external_assertions": 0,
+    "groups": [
+      {
+        "bytes": 1072600,
+        "name": "global-input-ports",
+        "rows": 5402,
+        "sha256": "975eaa0d68e25beb684b57e68aff0ada80a8a89ca1503b4fbec5ed8545864dda"
+      },
+      {
+        "bytes": 3970658,
+        "name": "h1-corrections-and-points",
+        "rows": 14411,
+        "sha256": "7820688e1c575af6f9d1960f20c5292d90cfc46d1fc706afb284f89453bcf503"
+      },
+      {
+        "bytes": 45351,
+        "name": "shared-alpha",
+        "rows": 194,
+        "sha256": "2cd61a553f701651d0944118dbb967013889816a618f0275a669e24f34ec3292"
+      },
+      {
+        "bytes": 4367104,
+        "name": "h2-commitment-and-request",
+        "rows": 16794,
+        "sha256": "fd113308aa567a0456ba1ff32831eab93fa362fc76640faa91d61f2c06e62e41"
+      }
+    ],
+    "linear_rows": 12149,
+    "nonlinear_rows": 24652,
+    "peak_rss_kib": 29252,
+    "rows": 36801,
+    "split_generation_seconds": 2.664172102999146,
+    "stream_bytes": 9456158,
+    "stream_sha256": "4d2f53ba3a039a9c88cd7dd0b7e0e19ad4f7e39d5db2bce67af19ee09302c6fa",
+    "verification_failures": 0,
+    "verification_seconds": 1.9082377040012943,
+    "wires": 24992
+  }
+}

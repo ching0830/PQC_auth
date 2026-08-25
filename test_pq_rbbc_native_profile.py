@@ -173,6 +173,29 @@ class ForkNativeProfileTests(unittest.TestCase):
         )
         self.assertTrue(
             manifest["claim_boundary"][
+                "reduced_split_tail_phase_contract_closed"
+            ]
+        )
+        self.assertTrue(
+            manifest["claim_boundary"][
+                "canonical_tail_stream_and_assignment_equivalent"
+            ]
+        )
+        self.assertTrue(
+            manifest["claim_boundary"][
+                "h1_and_consistency_point_ports_native_closed"
+            ]
+        )
+        self.assertTrue(
+            manifest["claim_boundary"][
+                "tail_phase_a_to_phase_b_wire_identity_closed"
+            ]
+        )
+        self.assertFalse(
+            manifest["claim_boundary"]["production_split_tail_materialized"]
+        )
+        self.assertTrue(
+            manifest["claim_boundary"][
                 "reduced_tree_producer_segments_native_closed"
             ]
         )

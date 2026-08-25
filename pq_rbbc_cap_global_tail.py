@@ -302,6 +302,33 @@ class TailPort:
 
 
 @dataclass(frozen=True)
+class TailPhase:
+    """Half-open row/wire ranges and the formal ports of one logical phase."""
+
+    phase_id: str
+    row_start: int
+    row_end: int
+    wire_start: int
+    wire_end: int
+    input_port_ids: tuple[str, ...]
+    output_port_ids: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class TailSplitContract:
+    """Non-invasive Phase-A/Phase-B view of the canonical tail relation."""
+
+    canonical_relation_id: str
+    input_prelude_row_start: int
+    input_prelude_row_end: int
+    input_prelude_wire_start: int
+    input_prelude_wire_end: int
+    phases: tuple[TailPhase, ...]
+    boundary_ports: tuple[TailPort, ...]
+    phase_a_to_phase_b_wire_identity: bool
+
+
+@dataclass(frozen=True)
 class GlobalTailSummary:
     parameters: cap.CAPParameters
     stream_bytes: int
@@ -550,6 +577,7 @@ def build_global_tail(
     verification_assignment: Mapping[int, int] | None = None,
     capture_rows: Iterable[str] = (),
     captured_rows_output: dict[str, field.RankOneRow] | None = None,
+    split_contract_output: list[TailSplitContract] | None = None,
     progress: Callable[[str], None] | None = None,
 ) -> GlobalTailSummary:
     started = time.perf_counter()
@@ -576,6 +604,7 @@ def build_global_tail(
     lowerer = shard.StreamingSpongeLowerer(sink, witness_pool)
     accounting = shard.SpongeAccounting()
     ports: list[TailPort] = []
+    phase_boundary_ports: list[TailPort] = []
 
     sink.start_group("global-input-ports")
     salt_starts = (
@@ -708,6 +737,8 @@ def build_global_tail(
                 f"{poly.leaves:,} commitments"
             )
     sink.finish_group()
+    input_prelude_row_end = sink.rows
+    input_prelude_wire_end = sink.next_wire
 
     delta_p_sources = tuple(
         _xor_source(p_starts[0], p_starts[index], parameters.witness_bits)
@@ -749,6 +780,8 @@ def build_global_tail(
         for index, poly in enumerate(execution.tree_polynomials)
     )
 
+    phase_a_row_start = sink.rows
+    phase_a_wire_start = sink.next_wire
     sink.start_group("h1-corrections-and-points")
     h1 = lowerer.lower(
         material.global_calls[0],
@@ -757,6 +790,22 @@ def build_global_tail(
     )
     accounting = accounting.add(h1.accounting)
     h1_start = h1.output_wires[0]
+    if h1.output_wires != tuple(
+        range(h1_start, h1_start + material.global_calls[0].output_bits)
+    ):
+        raise AssertionError("H1 output wires are not contiguous")
+    phase_boundary_ports.append(
+        TailPort(
+            "global.phase-a.h1",
+            "global-tail-phase-a",
+            h1_start,
+            material.global_calls[0].output_bits,
+            _bits_digest(
+                material.global_calls[0].output,
+                material.global_calls[0].output_bits,
+            ),
+        )
+    )
     point_call = lowerer.lower(
         material.global_calls[1],
         (shard.source_hash_bytes(h1_start), profile_source),
@@ -767,11 +816,39 @@ def build_global_tail(
         point_call.output_wires[index * field.FIELD_DEGREE]
         for index in range(parameters.consistency_points)
     )
+    if point_call.output_wires != tuple(
+        range(
+            point_starts[0],
+            point_starts[0]
+            + parameters.consistency_points * field.FIELD_DEGREE,
+        )
+    ):
+        raise AssertionError("consistency-point output wires are not contiguous")
+    packed_points = sum(
+        value << (index * field.FIELD_DEGREE)
+        for index, value in enumerate(material.points)
+    )
+    phase_boundary_ports.append(
+        TailPort(
+            "global.phase-a.consistency-points",
+            "global-tail-phase-a",
+            point_starts[0],
+            parameters.consistency_points * field.FIELD_DEGREE,
+            _bits_digest(
+                packed_points,
+                parameters.consistency_points * field.FIELD_DEGREE,
+            ),
+        )
+    )
     shard._point_validation(
         sink, point_starts, material.points, "consistency.validate"
     )
     sink.finish_group()
+    phase_a_row_end = sink.rows
+    phase_a_wire_end = sink.next_wire
 
+    phase_b_row_start = sink.rows
+    phase_b_wire_start = sink.next_wire
     sink.start_group("shared-alpha")
     alpha_forms, alpha_values = shard._horner_leaf(
         sink,
@@ -894,8 +971,105 @@ def build_global_tail(
     accounting = accounting.add(request.accounting)
     request_start = request.output_wires[0]
     sink.finish_group()
+    phase_b_row_end = sink.rows
+    phase_b_wire_end = sink.next_wire
     if witness_pool is not None:
         witness_pool.close()
+
+    phase_boundary_ports.extend(
+        (
+            TailPort(
+                "global.phase-b.commitment",
+                "global-tail-phase-b",
+                commitment_start,
+                len(execution.commitment.encoded) * 8,
+                hashlib.sha256(execution.commitment.encoded).hexdigest(),
+            ),
+            TailPort(
+                "global.phase-b.derived-mask",
+                "global-tail-phase-b",
+                mask_start,
+                parameters.mask_bits,
+                _bits_digest(execution.commitment.derived_mask, parameters.mask_bits),
+            ),
+            TailPort(
+                "global.phase-b.append-base",
+                "global-tail-phase-b",
+                append_start,
+                parameters.appended_signature_bits,
+                _bits_digest(
+                    execution.commitment.append_base,
+                    parameters.appended_signature_bits,
+                ),
+            ),
+            TailPort(
+                "global.phase-b.request-hash",
+                "global-tail-phase-b",
+                request_start,
+                sponge.REQUEST_HASH_BITS,
+                _bits_digest(material.request_call.output, sponge.REQUEST_HASH_BITS),
+            ),
+        )
+    )
+    if split_contract_output is not None:
+        phase_a_inputs = tuple(
+            port.port_id
+            for port in ports
+            if port.port_id.endswith(
+                (".leaf-commitments", ".p-plain", ".mhat-plain")
+            )
+        )
+        phase_b_inputs = (
+            "shared.salt",
+            "shared.message",
+            *tuple(
+                port.port_id
+                for port in ports
+                if port.port_id.endswith((".p-plain", ".mhat-plain", ".xi-masks"))
+            ),
+            "global.phase-a.h1",
+            "global.phase-a.consistency-points",
+        )
+        split_contract_output.clear()
+        split_contract_output.append(
+            TailSplitContract(
+                RELATION_ID,
+                0,
+                input_prelude_row_end,
+                1,
+                input_prelude_wire_end,
+                (
+                    TailPhase(
+                        "global-tail-phase-a",
+                        phase_a_row_start,
+                        phase_a_row_end,
+                        phase_a_wire_start,
+                        phase_a_wire_end,
+                        phase_a_inputs,
+                        (
+                            "global.phase-a.h1",
+                            "global.phase-a.consistency-points",
+                        ),
+                    ),
+                    TailPhase(
+                        "global-tail-phase-b",
+                        phase_b_row_start,
+                        phase_b_row_end,
+                        phase_b_wire_start,
+                        phase_b_wire_end,
+                        phase_b_inputs,
+                        (
+                            "global.phase-b.commitment",
+                            "global.phase-b.derived-mask",
+                            "global.phase-b.append-base",
+                            "global.phase-b.request-hash",
+                        ),
+                    ),
+                ),
+                tuple(phase_boundary_ports),
+                True,
+            )
+        )
 
     trailer = {
         "append_base": [append_start, parameters.appended_signature_bits],

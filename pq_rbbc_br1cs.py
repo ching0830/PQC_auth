@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Binary F2-R1CS lowering for the executable PQ-RBBC v2.10 relation.
+"""Binary F2-R1CS lowering for the executable PQ-RBBC v2.11 relation.
 
 The format is intentionally small and auditable.  It serializes enough data to
 reconstruct ordinary rank-1 constraints over F2:
@@ -651,7 +651,7 @@ def build_backend_manifest(output_path: str | os.PathLike[str]) -> dict[str, obj
         honest.metadata.linear_definitions + honest.metadata.linear_assertions
     )
     return {
-        "implementation_version": "2.10",
+        "implementation_version": "2.11",
         "status": "the production reference and native shared global tail are frozen; reduced tree producers match the tail ABI, while production producers, exact cross-segment identities, and the parent join remain external",
         "format": {
             "name": honest.metadata.format,
@@ -792,6 +792,14 @@ def build_backend_manifest(output_path: str | os.PathLike[str]) -> dict[str, obj
             "production_global_tail_assignment_sha256": native_profile.global_tail.FROZEN_PRODUCTION_ASSIGNMENT_SHA256,
             "production_global_tail_replay_failures": 0,
             "production_global_tail_stale_witness_probes": 6,
+            "reduced_split_tail_contract_id": native_profile.split_tail.CONTRACT_ID,
+            "reduced_split_tail_rows": native_profile.split_tail.FROZEN_REDUCED_ROWS,
+            "reduced_split_tail_wires": native_profile.split_tail.FROZEN_REDUCED_WIRES,
+            "reduced_split_tail_phase_contract_closed": True,
+            "canonical_tail_stream_and_assignment_equivalent": True,
+            "h1_and_consistency_point_ports_native_closed": True,
+            "tail_phase_a_to_phase_b_wire_identity_closed": True,
+            "production_split_tail_materialized": False,
             "reduced_tree_producer_relation_id": native_profile.tree_producer.RELATION_ID,
             "reduced_tree_producer_rows_per_tree": native_profile.tree_producer.FROZEN_REDUCED_ROWS_PER_TREE,
             "reduced_tree_producer_wires_per_tree": native_profile.tree_producer.FROZEN_REDUCED_WIRES_PER_TREE,
