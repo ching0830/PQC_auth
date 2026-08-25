@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
-"""Zero-callback native lowering for the reduced PQ-RBBC CAP profile.
+"""Zero-callback native lowering for PQ-RBBC CAP test profiles.
 
-Version 2.2 lowers every XOF call made by the explicitly non-secure reduced
-CAP fixture into the frozen Anemoi-193/336 rank-one relation.  It also
+Version 2.3 lowers every XOF call made by the explicitly non-secure reduced
+and 2450-bit multi-squeeze fixtures into the frozen Anemoi-193/336 rank-one
+relation.  It also
 materializes all salted GGM links, leaf commitment/tape links, corrections,
 consistency transcript bytes, the canonical CAP commitment, and the final
 ``H_RBBC(message, c_r)`` byte join as ordinary rows.
 
-The reduced witness is only 64 bits, so its polynomial hash has one
+Both test witnesses are only 64 bits, so their polynomial hash has one
 GF(2^193) coefficient.  All non-XOF CAP algebra is consequently linear in this
 checkpoint.  The production 2,048-bit witness needs additional native field
-multiplication rows and output squeezing beyond one 772-bit rate block; this
-module rejects that topology rather than claiming production closure.
+multiplication rows and a full 18-tree streaming execution; this module rejects
+that topology rather than claiming production closure.
 """
 
 from __future__ import annotations
@@ -28,7 +29,7 @@ import pq_rbbc_anemoi_sponge as sponge
 import pq_rbbc_cap_commit as cap
 
 
-IMPLEMENTATION_VERSION = "2.2"
+IMPLEMENTATION_VERSION = "2.3"
 PROFILE_NAME = "PQ-RBBC-CAP-REDUCED-NATIVE/Anemoi-193-336-v1"
 PROFILE_RELATION_ID = "pq-rbbc/cap/reduced-native/anemoi-193-336/v1"
 ROW_FORMAT = "F193-R1CS-JSON-1"
@@ -42,6 +43,33 @@ FROZEN_REDUCED_PERMUTATIONS = 57
 FROZEN_REDUCED_ROW_STREAM_BYTES = 51_845_969
 FROZEN_REDUCED_ROW_STREAM_SHA256 = (
     "f6a6a0b65e6de16f7bb1d6b42302a12b004befa62b629d252861e2c986917263"
+)
+FROZEN_EXTENDED_WIRES = 85_034
+FROZEN_EXTENDED_ROWS = 113_802
+FROZEN_EXTENDED_NONLINEAR_ROWS = 83_510
+FROZEN_EXTENDED_LINEAR_ROWS = 30_292
+FROZEN_EXTENDED_XOF_CALLS = 24
+FROZEN_EXTENDED_PERMUTATIONS = 81
+FROZEN_EXTENDED_ROW_STREAM_BYTES = 69_273_394
+FROZEN_EXTENDED_ROW_STREAM_SHA256 = (
+    "98222b0cafeb944184e3939a878d1e3fb3af05d10c9795ef0701c87f95462855"
+)
+
+# This fixture keeps the one-coefficient 64-bit witness and the tiny two-tree
+# topology, but stretches the unused degree-one rho region so each leaf tape
+# has exactly the production width: 64 + 2193 + 193 = 2450 bits.  It isolates
+# multi-squeeze correctness without pretending to exercise the production
+# polynomial hash or production tree count.
+EXTENDED_MULTISQUEEZE_TEST_PARAMETERS = cap.CAPParameters(
+    name="PQ-RBBC-CAP-EXTENDED-2450-TEST-ONLY",
+    security_bits=0,
+    mask_bits=32,
+    appended_signature_bits=32,
+    degree=2,
+    rho=2_193,
+    consistency_points=1,
+    tree_specs=(cap.TreeSpec(2, 4),),
+    secure_profile=False,
 )
 
 
@@ -408,6 +436,7 @@ def _serialize_commitment_bits(
 
 @dataclass(frozen=True)
 class ReducedNativeCAPTrace:
+    cap_parameters: cap.CAPParameters
     rows: tuple[field.RankOneRow, ...]
     assignment: dict[int, int]
     wire_labels: dict[int, str]
@@ -442,17 +471,25 @@ class ReducedNativeCAPTrace:
         return len(self.rows) - self.nonlinear_rows
 
 
-def build_reduced_native_trace(
+def build_native_cap_trace(
     randomness: cap.CAPRandomness | None = None,
     message: bytes = bytes(32),
     parameters: cap.CAPParameters = cap.REDUCED_TEST_PARAMETERS,
 ) -> ReducedNativeCAPTrace:
-    """Materialize the complete reduced CAP and H_RBBC byte join as rows."""
+    """Materialize one frozen non-secure CAP fixture and H_RBBC wire join."""
 
-    if parameters.secure_profile or parameters != cap.REDUCED_TEST_PARAMETERS:
-        raise ValueError("only the frozen reduced profile is native-lowered in v2.2")
+    supported = (
+        cap.REDUCED_TEST_PARAMETERS,
+        EXTENDED_MULTISQUEEZE_TEST_PARAMETERS,
+    )
+    if parameters.secure_profile or parameters not in supported:
+        raise ValueError("only the frozen reduced and extended test profiles are native-lowered")
+    if parameters.witness_bits > field.FIELD_DEGREE:
+        raise ValueError("multi-coefficient polynomial hash is not lowered yet")
+    if parameters.consistency_points != 1:
+        raise ValueError("test-profile lowering requires one consistency point")
     if len(message) != 32:
-        raise ValueError("reduced H_RBBC fixture message must be 32 bytes")
+        raise ValueError("H_RBBC fixture message must be 32 bytes")
     randomness = randomness or cap.deterministic_randomness(parameters)
     execution = cap.execute_cap_commit(parameters, randomness)
     parameters_f193 = field.derive_parameters()
@@ -749,6 +786,7 @@ def build_reduced_native_trace(
     )
     boundary_link_rows = len(mask_wires) + len(append_wires) + len(commitment_wires)
     trace = ReducedNativeCAPTrace(
+        cap_parameters=parameters,
         rows=tuple(builder.rows),
         assignment=dict(builder.assignment),
         wire_labels=dict(builder.wire_labels),
@@ -766,14 +804,24 @@ def build_reduced_native_trace(
         external_assertions=0,
     )
     if trace.failed_rows():
-        raise AssertionError("honest reduced native CAP trace failed")
+        raise AssertionError("honest native CAP test trace failed")
     return trace
+
+
+def build_reduced_native_trace(
+    randomness: cap.CAPRandomness | None = None,
+    message: bytes = bytes(32),
+    parameters: cap.CAPParameters = cap.REDUCED_TEST_PARAMETERS,
+) -> ReducedNativeCAPTrace:
+    """Backward-compatible entry point for the native CAP test fixtures."""
+
+    return build_native_cap_trace(randomness, message, parameters)
 
 
 def serialize_row_stream(trace: ReducedNativeCAPTrace) -> bytes:
     document = {
         "cap_profile_fingerprint": cap.profile_fingerprint(
-            cap.REDUCED_TEST_PARAMETERS
+            trace.cap_parameters
         ),
         "commitment_bit_wires": list(trace.commitment_bit_wires),
         "derived_mask_bit_wires": list(trace.derived_mask_bit_wires),
@@ -802,12 +850,18 @@ def build_manifest(trace: ReducedNativeCAPTrace) -> dict[str, object]:
             "relation_id": PROFILE_RELATION_ID,
             "field": "GF(2^193)",
             "cap_profile_fingerprint": cap.profile_fingerprint(
-                cap.REDUCED_TEST_PARAMETERS
+                trace.cap_parameters
             ),
             "sponge_profile_fingerprint": sponge.profile_fingerprint(
                 field.derive_parameters()
             ),
-            "explicitly_non_secure_reduced_profile": True,
+            "fixture_parameter_name": trace.cap_parameters.name,
+            "explicitly_non_secure_reduced_profile": (
+                trace.cap_parameters == cap.REDUCED_TEST_PARAMETERS
+            ),
+            "explicitly_non_secure_test_profile": (
+                not trace.cap_parameters.secure_profile
+            ),
         },
         "trace": {
             "wires": len(trace.assignment),
@@ -831,6 +885,9 @@ def build_manifest(trace: ReducedNativeCAPTrace) -> dict[str, object]:
         },
         "implemented": {
             "all_reduced_cap_xof_calls_native": True,
+            "all_selected_fixture_xof_calls_native": True,
+            "multi_block_xof_squeeze_native": True,
+            "production_width_2450_bit_tape_native": True,
             "salted_ggm_links_native": True,
             "leaf_commitment_and_tape_links_native": True,
             "corrections_and_consistency_bytes_native": True,
@@ -842,11 +899,17 @@ def build_manifest(trace: ReducedNativeCAPTrace) -> dict[str, object]:
             "full_production_native_rows_materialized": False,
         },
         "claim_boundary": {
-            "reduced_fixture_native_closed": trace.external_assertions == 0,
+            "reduced_fixture_native_closed": (
+                trace.cap_parameters == cap.REDUCED_TEST_PARAMETERS
+                and trace.external_assertions == 0
+            ),
+            "extended_multisqueeze_fixture_native_closed": (
+                trace.cap_parameters == EXTENDED_MULTISQUEEZE_TEST_PARAMETERS
+                and trace.external_assertions == 0
+            ),
             "production_closed": False,
             "production_blockers": [
                 "multi-coefficient GF(2^193) polynomial hash rows",
-                "multi-block XOF squeeze rows for the 2450-bit tape",
                 "full 18-tree streaming execution and row-stream digest",
                 "fork-specific CAP extraction and security proof",
             ],
@@ -858,8 +921,18 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path)
     parser.add_argument("--manifest", type=Path)
+    parser.add_argument(
+        "--fixture",
+        choices=("reduced", "extended-2450"),
+        default="reduced",
+    )
     args = parser.parse_args()
-    trace = build_reduced_native_trace()
+    parameters = (
+        cap.REDUCED_TEST_PARAMETERS
+        if args.fixture == "reduced"
+        else EXTENDED_MULTISQUEEZE_TEST_PARAMETERS
+    )
+    trace = build_native_cap_trace(parameters=parameters)
     row_stream = serialize_row_stream(trace)
     manifest = build_manifest(trace)
     if args.output:

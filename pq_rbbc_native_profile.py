@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fail-closed native import contract for the PQ-RBBC v2.2 fork.
+"""Fail-closed native import contract for the PQ-RBBC v2.3 fork.
 
 The selected profile is deliberately independent of the unreproduced
 Blind-UOV 240-row instance.  It accepts no claim of bit-exact compatibility.
@@ -10,9 +10,11 @@ proof, and fresh signature-size benchmarking.
 
 from __future__ import annotations
 
+import argparse
 import hashlib
 import json
 from dataclasses import asdict, dataclass, field
+from pathlib import Path
 
 import pq_rbbc_anemoi_f193 as permutation
 import pq_rbbc_anemoi_sponge as sponge
@@ -20,7 +22,7 @@ import pq_rbbc_cap_commit as cap
 import pq_rbbc_cap_native as reduced_native
 
 
-IMPLEMENTATION_VERSION = "2.2"
+IMPLEMENTATION_VERSION = "2.3"
 RELATION_ID = "pq-rbbc-buov-iii-336/cap-hash/v1"
 TARGET_FIELD = "GF(2^193)"
 REQUIRED_TAMPER_CASES = frozenset(
@@ -158,7 +160,7 @@ def build_native_profile_manifest() -> dict[str, object]:
     parameters = permutation.derive_parameters()
     return {
         "implementation_version": IMPLEMENTATION_VERSION,
-        "status": "reduced CAP and exact H_RBBC wire join have a zero-callback native trace; full 18-tree production row stream remains external",
+        "status": "reduced and 2450-bit extended CAP fixtures have zero-callback native traces; production multi-coefficient hashing and the full 18-tree row stream remain external",
         "fork_profile": {
             "name": sponge.PROFILE_NAME,
             "relation_id": RELATION_ID,
@@ -187,6 +189,17 @@ def build_native_profile_manifest() -> dict[str, object]:
                 "external_assertions": 0,
                 "row_stream_sha256": reduced_native.FROZEN_REDUCED_ROW_STREAM_SHA256,
             },
+            "extended_2450_native_component": {
+                "relation_id": reduced_native.PROFILE_RELATION_ID,
+                "explicitly_non_secure": True,
+                "production_width_tape_bits": 2_450,
+                "rows": reduced_native.FROZEN_EXTENDED_ROWS,
+                "wires": reduced_native.FROZEN_EXTENDED_WIRES,
+                "xof_calls": reduced_native.FROZEN_EXTENDED_XOF_CALLS,
+                "anemoi_permutations": reduced_native.FROZEN_EXTENDED_PERMUTATIONS,
+                "external_assertions": 0,
+                "row_stream_sha256": reduced_native.FROZEN_EXTENDED_ROW_STREAM_SHA256,
+            },
         },
         "compatibility": {
             "blind_uov_framework_used_as_design_source": True,
@@ -211,6 +224,10 @@ def build_native_profile_manifest() -> dict[str, object]:
             "reduced_cap_inter_call_wire_identity": True,
             "reduced_cap_to_h_rbbc_native_wire_join": True,
             "reduced_cap_external_assertions": 0,
+            "arbitrary_length_multi_squeeze_native": True,
+            "production_width_2450_bit_tape_native": True,
+            "extended_2450_cap_native_rows_materialized": True,
+            "extended_2450_cap_external_assertions": 0,
             "production_cap_full_vector_executed": False,
             "production_cap_native_rows_materialized": False,
             "production_cap_inter_call_wire_identity": False,
@@ -224,6 +241,10 @@ def build_native_profile_manifest() -> dict[str, object]:
             "canonical_cap_bytes_bound_to_h_rbbc": True,
             "reduced_fixture_native_closed": True,
             "reduced_fixture_security_profile": False,
+            "extended_2450_fixture_native_closed": True,
+            "extended_2450_fixture_security_profile": False,
+            "production_multi_squeeze_blocker_closed": True,
+            "production_polynomial_hash_blocker_closed": False,
             "fork_security_proof_revalidated": False,
             "signature_size_rebenchmarked": False,
             "production_closed": False,
@@ -232,7 +253,16 @@ def build_native_profile_manifest() -> dict[str, object]:
 
 
 def main() -> None:
-    print(json.dumps(build_native_profile_manifest(), indent=2, sort_keys=True))
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--manifest", type=Path)
+    args = parser.parse_args()
+    encoded = json.dumps(
+        build_native_profile_manifest(), indent=2, sort_keys=True
+    ) + "\n"
+    if args.manifest:
+        args.manifest.write_text(encoded, encoding="utf-8")
+    else:
+        print(encoded, end="")
 
 
 if __name__ == "__main__":

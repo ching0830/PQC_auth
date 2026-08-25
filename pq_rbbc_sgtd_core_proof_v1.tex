@@ -5,6 +5,7 @@
 \usepackage{microtype}
 \usepackage{amsmath,amssymb,amsthm,mathtools}
 \usepackage{booktabs}
+\usepackage{longtable}
 \usepackage{enumitem}
 \usepackage{xcolor}
 \usepackage[hidelinks]{hyperref}
@@ -42,8 +43,8 @@
 
 \title{A Post-Quantum Relation-Bound Blind Certification Core\\
 with Signature-Gated Threshold Decryption}
-\author{Research construction draft, version 2.2}
-\date{23 August 2026}
+\author{Research construction draft, version 2.3}
+\date{24 August 2026}
 
 \begin{document}
 \maketitle
@@ -60,8 +61,7 @@ carried by every online ticket.
 
 The main result is conditional and modular: assuming simulation-extractable
 zero knowledge, one-more unforgeability and blindness of the selected
-blind-signature component, and
-blindness, and a compact threshold encryption scheme with post-quantum
+blind-signature component, and a compact threshold encryption scheme with post-quantum
 privacy and unique openings, the construction provides issuer unlinkability,
 certified ciphertext validity, decoder safety, trace correctness,
 non-frameability, and a gated chosen-ciphertext privacy notion against fewer than
@@ -132,6 +132,17 @@ topology, and zero external assertions.  Input, commitment, and request-hash
 mutation tests reject stale witnesses.  This is an explicitly non-secure
 64-bit fixture: it validates the lowering and wire-identity architecture but
 does not close the 18-tree production profile.
+Version 2.3 removes the one-rate-block limitation from the native sponge.  A
+frozen 2,450-bit tape trace uses four squeeze blocks, three constrained
+squeeze-state permutations, 4,858 rows, and 4,845 wires.  The same primitive
+is integrated into an extended CAP fixture in which all eight leaf tapes have
+the production width.  That zero-callback component has 113,802 rows, 85,034
+wires, 24 XOF calls, 81 Anemoi permutations, witness-independent topology,
+and zero external assertions.  The extended fixture deliberately retains the
+64-bit one-coefficient witness and two tiny trees.  It closes only the
+multi-squeeze engineering blocker; production multi-coefficient polynomial
+hashing, the 18-tree execution, and fork-specific security qualification remain
+open.
 \end{abstract}
 
 \section{Status, scope, and non-goals}
@@ -1044,7 +1055,7 @@ Blind-UOV-III target and Theorem~\ref{thm:j-qrom}.  The removed
 ticket commitment $c_M$ remains unnecessary: extraction supplies $M$, while
 ticket-hash collision resistance prevents a second payload under one digest.
 
-\paragraph{Executable refinement through version 2.2.}
+\paragraph{Executable refinement through version 2.3.}
 Introduce the hidden 576-bit value
 \[
  h_{\RBBC}=H_{\RBBC}(m,c_r).
@@ -1065,12 +1076,17 @@ ABI that accepts only the canonical 5,378-byte production-profile CAP encoding
 and its frozen profile fingerprint before computing $H_{\RBBC}$.  This closes
 the byte-level join; the full native row identities across the 18 CAP trees and
 the hash calls remain external.
+Version 2.2 closes those identities for the reduced fixture.  Version 2.3 also
+closes every squeeze-state identity for production-width 2,450-bit leaf tapes
+inside a deliberately small extended fixture.  The production parent relation
+still keeps one external assertion because its 2,048-bit polynomial hash and
+full tree topology are not yet native.
 
 \paragraph{Frozen Blind-UOV comparison profile.}
 Version 1.7 fixes the 31 October 2025 revision and its
 \emph{Blind-UOV-III, Shorter, TCitH} row.  The paper gives security parameter
 $\lambda=192$, $\bar n_r=576$ bits, $\bar n_x=1472$ bits, a 189.2~KB public
-key, and an 11,644-byte final signature~\cite{blind-uov}.  Version 2.2 retains
+key, and an 11,644-byte final signature~\cite{blind-uov}.  Version 2.3 retains
 the 576-bit request width, but the key and signature figures are comparison
 targets only.  They must be regenerated for the independent fork before any
 online-size claim is labelled measured or security-qualified.
@@ -1082,7 +1098,7 @@ the user separately sends a NIZK $\pi_1$ proving that the masked request and
 CAP commitment are well formed.  Our $\pi_{\mathsf{issue}}$ replaces and
 augments this $\pi_1$; it does \emph{not} replace the final CAP proof.
 The augmented proof still replaces only $\pi_1$, not the final CAP proof.
-Nevertheless, version 2.2 may not assert that the final signature remains
+Nevertheless, version 2.3 may not assert that the final signature remains
 11,644 bytes: the extra forked permutation work and any changed transcript must
 be implemented and benchmarked first.
 
@@ -1097,7 +1113,7 @@ $\rho$ contains the CAP salt and GGM-tree randomness; it is not the 32-byte
 nonce used by the test adapter.
 
 The paper specifies the algorithms but does not ship an executable CAP
-constraint generator.  Version 2.2 uses
+constraint generator.  Version 2.3 uses
 \texttt{pq\_rbbc\_native\_profile.py} as the fail-closed contract for the fork.
 Closure requires a source and parameter digest, a deterministic native
 row-stream digest, zero external assertions, witness-independent topology,
@@ -1278,6 +1294,45 @@ non-XOF consistency algebra is linear.  Production requires a 2,048-bit
 multi-coefficient polynomial hash and a 2,450-bit tape, exceeding one 772-bit
 squeeze block.  Version 2.2 therefore rejects production parameters.  The
 production parent archive retains its one external assertion.
+
+\paragraph{Production-width multi-squeeze lowering in version 2.3.}
+The direct sponge evaluator already defined ordinary sponge continuation, but
+the version-2.2 native relation exposed at most one 772-bit rate block.  Version
+2.3 adds a native permutation between every later squeeze block and links all
+eight input state lanes to the preceding constrained output state.  Each
+exposed lane is decomposed into 193 binary wires and packed back to the state
+element; a partial final lane exposes only the requested prefix while still
+constraining the complete field element.  There is no counter or callback: the
+construction follows the frozen sponge's state-continuation semantics exactly.
+
+For the deterministic CAP tape input, 2,450 bits require four squeeze blocks
+and three additional permutations.  Together with two absorb permutations,
+the standalone trace has 4,845 wires and 4,858 rows: 1,680 permutation rows,
+568 payload-bitness rows, 2,509 output-bitness rows, and 101 linear rows.  Its
+3,216,517-byte canonical row stream has SHA-256
+\begin{center}
+\texttt{c42aec869c6de08695bcb11e2fade158}\par\vspace{-0.2em}
+\texttt{cc4683aa3ac999e440b78c6ad0314c34}.
+\end{center}
+Flipping a bit in the second output block violates its packing row; flipping
+an intermediate squeeze state violates the next permutation-input link.
+Changing the seed while preserving lengths leaves the row stream byte-for-byte
+unchanged.
+
+The extended CAP fixture keeps two four-leaf trees and a 64-bit witness but
+sets the tape width to the production value.  All eight tape XOF calls therefore
+exercise the four-block path.  The resulting component has 85,034 wires and
+113,802 rows, of which 83,510 are nonlinear and 30,292 are linear.  Its 24 XOF
+calls use 81 Anemoi permutations.  The 69,273,394-byte row stream has SHA-256
+\begin{center}
+\texttt{98222b0cafeb944184e3939a878d1e3f}\par\vspace{-0.2em}
+\texttt{b3af05d10c9795ef0701c87f95462855}.
+\end{center}
+All XOF payloads, the 215-byte canonical commitment, and the final
+$H_{\RBBC}$ join remain ordinary rows with zero external assertions.  This is
+not a security parameter set: the witness still occupies one
+$\mathbb F_{2^{193}}$ coefficient, so it does not test variable-point field
+multiplication or the production 18-tree topology.
 
 The earlier 240/336/360 discrepancy remains documented, but it no longer
 blocks implementation: version 2.0 intentionally chooses the 336-row profile.
@@ -1478,7 +1533,7 @@ mceliece8192128 & 1357824 B & 208 B & 288 B\\
 The aggressive working anchor is mceliece6688128: approximately 1.045~MB of
 cached public key buys a 288-byte trace ciphertext.  The 368-byte payload is
 exact.  A 12,012-byte complete ticket results only if the fork reproduces the
-paper's 11,644-byte signature target; version 2.2 has not established that
+paper's 11,644-byte signature target; version 2.3 has not established that
 condition.
 
 \begin{remark}[Mandatory 2026 cryptanalytic hold]\label{rem:mceliece-hold}
@@ -1503,7 +1558,7 @@ $24\cdot1600=38{,}400$ constraints~\cite{blind-uov}.  The audit counts only
 constraints added beyond a native well-built-request $\pi_1$ relation.  The
 complete PQ-RBBC-BUOV-336 CAP circuit is not yet materialized, so the
 historical paper-anchored level-III baseline below is an explicit version-1.9
-comparator, not a version-2.2 estimate.
+comparator, not a version-2.3 estimate.
 
 \paragraph{Exact-weight gadget.}
 The witness $e$ has 6,688 bits.  Pad it with 1,504 public zeros to 8,192 inputs
@@ -1554,7 +1609,7 @@ $\mathcal C_{\mathsf{RBBCmask}}$ & 1,152 & bitness of $r,h_{\RBBC}$; 576 mask eq
 $\mathcal C_{\mathsf{holder}}$ & 38,656 & 256 bitness + one SHAKE permutation\\
 $\mathcal C_{\mathsf{trace}}$ & 530,435 & $e$ bitness, weight, KDF, and KMAC\\
 \midrule
-Portable v2.2 relation & 685,571 & includes 1,152 native-overlap hardening rows\\
+Portable v2.3 relation & 685,571 & includes 1,152 native-overlap hardening rows\\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -1619,19 +1674,19 @@ as a provisional fork target gives
  |T|=|M|+|\sigma|=12{,}012\text{ bytes}
 \]
 before transport framing.  This is conditional arithmetic, not a measured
-version-2.2 signature size.  Under the same provisional assumption, cached
+version-2.3 signature size.  Under the same provisional assumption, cached
 public material is approximately
 1,044,992 bytes for the trace key plus the paper's rounded 189.2~KB Blind-UOV
 verification key.  Relative to a 70~KB online credential,
 the target is about 5.83 times smaller.  The roughly 4.27~MB issuance-NIZK
-figure is a superseded historical comparator; version 2.2 already counts more
+figure is a superseded historical comparator; version 2.3 already counts more
 than 131 million CAP permutation rows.  Both the CAP commitment and
 $\pi_{\mathsf{issue}}$ remain offline and are never forwarded to a satellite
 verifier.
 
 \begin{remark}[Audit reproducibility]
 The companion executable relation recomputes every exact incremental integer
-above and records it in the version-2.2 manifest.  Fork signature and native
+above and records it in the version-2.3 manifest.  Fork signature and native
 CAP estimates
 are kept in separately labelled fields so a rounded extrapolation cannot be
 mistaken for a benchmark.
@@ -1640,7 +1695,7 @@ mistaken for a benchmark.
 \subsection{Executable reference relation and rejection tests}
 \label{sec:executable-relation}
 
-Version 2.2 preserves and audits the incremental relation in
+Version 2.3 preserves and audits the incremental relation in
 \texttt{pq\_rbbc\_reference.py}.  The witness builder derives
 $h$, $s$, $c_\mu$, $\gamma$, the canonical 368-byte payload, and its ticket
 digest from $(\rid,\ctx,\sn,k_{\mathrm{hold}},e)$.  The circuit builder then
@@ -1707,7 +1762,7 @@ extractable.
 
 \subsection{Portable binary R1CS lowering}\label{sec:br1cs}
 
-Version 2.2 preserves the proof-backend exchange layer in
+Version 2.3 preserves the proof-backend exchange layer in
 \texttt{pq\_rbbc\_br1cs.py}.  It consumes the same event stream as the counting
 sink and serializes three standard rank-one forms over $\mathbb F_2$:
 \begin{align*}
@@ -1787,11 +1842,17 @@ extractable issuance binding are the missing system properties.
 
 \section{What has and has not been proved}
 
-\begin{center}
-\begin{tabular}{p{0.31\linewidth}p{0.61\linewidth}}
+\begin{longtable}{p{0.31\linewidth}p{0.61\linewidth}}
 \toprule
 \textbf{Status} & \textbf{Result or obligation}\\
 \midrule
+\endfirsthead
+\toprule
+\textbf{Status} & \textbf{Result or obligation}\\
+\midrule
+\endhead
+\bottomrule
+\endfoot
 Conditional reductions & Correctness; proof/request/message binding;
 certified ciphertext validity; signature-gated decoder safety; issuer
 unlinkability against an honest-protocol curious issuer; trace soundness;
@@ -1812,19 +1873,21 @@ $y=r+h_{\RBBC}$ equation; a fail-closed fork-native import contract; a checksumm
 portable R1CS archive with independent row evaluation; 685,571 incremental
 nonlinear rows; 2,971,580 materialized total rows; a source-pinned
 $\mathbb F_{2^{193}}$ 336-row Anemoi permutation; and an independent 772-bit
-rate/772-bit capacity sponge with 576-bit request output.  The frozen two-block
+rate/772-bit capacity sponge with arbitrary-length native squeezing and a
+576-bit request output.  The frozen two-block
 hash trace has 2,238 rows and 2,235 wires; a direct CAP.Commit reference with
 salted GGM trees, leaf commitments/tapes, corrections, and consistency hashing;
 a canonical 5,378-byte production commitment encoding; a strict byte-level
-CAP-to-$H_{\RBBC}$ join; and an 88,282-row zero-callback reduced native trace
-(non-secure, witness-independent, and zero external assertions).\\
+CAP-to-$H_{\RBBC}$ join; an 88,282-row zero-callback reduced native trace; a
+4,858-row standalone 2,450-bit tape trace; and a 113,802-row extended CAP trace
+whose eight tapes have production width (all non-secure, witness-independent,
+and zero external assertions).\\
 \addlinespace
 Not yet instantiated & A post-quantum zero-knowledge and
 simulation-extractable implementation of $\Piiss$; a native
 $\mathbb F_{2^{193}}$ materialization of the full 18-tree CAP row stream and
-exact inter-call wire identities; execution of a full production vector; a
-2,450-bit multi-squeeze trace and the 2,048-bit multi-coefficient consistency
-polynomial rows; a fork-specific
+exact inter-call wire identities; execution of a full production vector; the
+2,048-bit multi-coefficient consistency polynomial rows; a fork-specific
 blindness/one-more-unforgeability proof; fresh key, signature, and proof-size
 benchmarks; validation of the CAP properties used by
 Theorem~\ref{thm:j-qrom};
@@ -1836,9 +1899,7 @@ Explicitly not claimed & Standard IND-CCA security of the bare ciphertext,
 security against a malicious issuer, metadata/timing anonymity without system
 controls, UC composability, side-channel resistance, satellite AKE security,
 or FLEO/handover security.\\
-\bottomrule
-\end{tabular}
-\end{center}
+\end{longtable}
 
 \section{Implementation invariants}
 
@@ -1890,11 +1951,12 @@ machine-tested or enforced by type/API boundaries.
   \item A native import is accepted only if it matches the frozen
   $\mathbb F_{2^{193}}$ profile, has witness-independent topology and zero
   external assertions, and satisfies every check in the native-import contract.
-  \item The selected sponge, version-2.1 CAP reference, and version-2.2 reduced
-  native trace define and test $H_{\RBBC}$ wires unambiguously.  The reduced
-  profile is explicitly non-secure and cannot satisfy the production import
-  contract; the full 18-tree row stream and exact parent-circuit wire identities
-  are still required.
+  \item The selected sponge, version-2.1 CAP reference, version-2.2 reduced
+  native trace, and version-2.3 extended multi-squeeze trace define and test
+  $H_{\RBBC}$ wires unambiguously.  The reduced and extended profiles are
+  explicitly non-secure and cannot satisfy the production import contract;
+  native multi-coefficient hashing, the full 18-tree row stream, and exact
+  parent-circuit wire identities are still required.
   \item The fork must never claim bit-exact Blind-UOV compatibility.  The
   reported 240 rows remain comparison data; the selected fork uses 336 rows.
   \item Production closure requires independent fork vectors and cryptanalysis,
@@ -1910,19 +1972,21 @@ $H_{\RBBC}$ output, native hash rows, hidden-state adapter, direct CAP reference
 canonical 5,378-byte commitment, strict byte ABI, incremental relation, and
 fail-closed fork contract are complete.  The reduced CAP fixture and final
 $H_{\RBBC}$ join also have a zero-callback native row stream with zero external
-assertions.  The 240-row artifact gap is no longer
+assertions.  Generic native multi-squeeze, a frozen 2,450-bit tape, and an
+extended CAP integration are complete as well.  The 240-row artifact gap is no longer
 an engineering blocker because the fork intentionally gives up bit-exact
 compatibility.  The next component is the part of production algebra absent
 from the 64-bit reduced fixture:
 
 \begin{quote}
-\emph{Extend the native sponge trace from one output rate block to a generic
-multi-squeeze relation and freeze a 2,450-bit tape vector, including every
-squeeze-state link and partial final lane.  Implement the production
-multi-coefficient polynomial hash over $\mathbb F_{2^{193}}$ with explicit
-Horner multiplication rows for the 2,048-bit witness and two evaluation
-points.  Exercise both primitives first in a small extended fixture, then
-stream one full production tree shard without retaining the entire JSON trace.
+\emph{Implement the production multi-coefficient polynomial hash over
+$\mathbb F_{2^{193}}$ with explicit native multiplication rows.  Freeze a
+standalone multiplication vector, then evaluate the 11-coefficient encoding of
+the 2,048-bit witness at both transcript-derived points using Horner form.
+Exercise the new polynomial relation first in a small fixture with more than
+193 witness bits, then combine it with the completed 2,450-bit multi-squeeze
+path and stream one full production tree shard without retaining the entire
+JSON trace.
 Only after its commitment and row-stream digests are stable should the 18-tree
 run begin.  The final parent archive must reject changed $m$, $r$, $\rho$,
 $c_r$, or hash output and reach zero external assertions.  Then prove

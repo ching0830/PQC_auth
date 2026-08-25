@@ -1,22 +1,23 @@
 {
   "claim_boundary": {
+    "extended_multisqueeze_fixture_native_closed": true,
     "production_blockers": [
       "multi-coefficient GF(2^193) polynomial hash rows",
-      "multi-block XOF squeeze rows for the 2450-bit tape",
       "full 18-tree streaming execution and row-stream digest",
       "fork-specific CAP extraction and security proof"
     ],
     "production_closed": false,
-    "reduced_fixture_native_closed": true
+    "reduced_fixture_native_closed": false
   },
   "frozen_vector": {
     "commitment_bytes": 215,
-    "commitment_sha256": "07a09a4f623233586af7ebca90d0eeba7d6a5bb94ff86c7dff29ade7be79b800",
-    "request_hash_hex": "3ff3bcd5d5097524beb5765f45ae0d2159de80d81773837c79a66de6337f5ab92ab9b7e30f24397e630a894ae9406e4a561497e112f8b1adbe6ef5f207a3aff66e8ce000ea404486"
+    "commitment_sha256": "e6756238a3119c2b290e5181050cba6b77ecfb9f40dc8fefd33de33aa2722503",
+    "request_hash_hex": "6a96ea9d13c8dccaca5645de17ddfaa94dc4dbaa8b3206f10d179428be2db859dd40495844e884ff6cd5a5481440f67a418ba2626391958ac1015b7271a5ae702e28e035e7ad0cc5"
   },
-  "implementation_version": "2.2",
+  "implementation_version": "2.3",
   "implemented": {
     "all_reduced_cap_xof_calls_native": true,
+    "all_selected_fixture_xof_calls_native": true,
     "callbacks_or_external_assertions": false,
     "canonical_commitment_output_wires_native": true,
     "corrections_and_consistency_bytes_native": true,
@@ -24,13 +25,17 @@
     "full_production_native_rows_materialized": false,
     "full_production_vector_executed": false,
     "leaf_commitment_and_tape_links_native": true,
+    "multi_block_xof_squeeze_native": true,
+    "production_width_2450_bit_tape_native": true,
     "salted_ggm_links_native": true,
     "witness_independent_topology_for_fixed_profile": true
   },
   "profile": {
-    "cap_profile_fingerprint": "5d067a55e2ea9104b2604dc7efa393f44d1ce1880c3974bdcaae32aeb825f2ea",
-    "explicitly_non_secure_reduced_profile": true,
+    "cap_profile_fingerprint": "efb2d1d30ea253c7b2fa44d7b5b8774ed2b0af483671cc62808c5d86af5839e4",
+    "explicitly_non_secure_reduced_profile": false,
+    "explicitly_non_secure_test_profile": true,
     "field": "GF(2^193)",
+    "fixture_parameter_name": "PQ-RBBC-CAP-EXTENDED-2450-TEST-ONLY",
     "name": "PQ-RBBC-CAP-REDUCED-NATIVE/Anemoi-193-336-v1",
     "relation_id": "pq-rbbc/cap/reduced-native/anemoi-193-336/v1",
     "sponge_profile_fingerprint": "4fa0eb276ebba70a9f6c2f38f3f55d197c094121a2b614cc6ef9b7e8522cac87"
@@ -40,19 +45,19 @@
     "external_assertions": 0,
     "honest_failures": [],
     "input_output_bitness_rows": 3198,
-    "linear_rows": 29820,
-    "nonlinear_rows": 58462,
-    "row_stream_bytes": 51845969,
-    "row_stream_sha256": "f6a6a0b65e6de16f7bb1d6b42302a12b004befa62b629d252861e2c986917263",
-    "rows": 88282,
-    "wires": 59602,
+    "linear_rows": 30292,
+    "nonlinear_rows": 83510,
+    "row_stream_bytes": 69273394,
+    "row_stream_sha256": "98222b0cafeb944184e3939a878d1e3fb3af05d10c9795ef0701c87f95462855",
+    "rows": 113802,
+    "wires": 85034,
     "xof_accounting": {
       "calls": 24,
-      "internal_linear_rows": 1188,
-      "output_bitness_rows": 9264,
+      "internal_linear_rows": 1660,
+      "output_bitness_rows": 26248,
       "payload_bitness_rows": 26848,
-      "permutation_rows": 19152,
-      "permutations": 57,
+      "permutation_rows": 27216,
+      "permutations": 81,
       "source_link_rows": 26848
     }
   }

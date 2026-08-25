@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Executable v2.2 reference relation for the PQ-RBBC/SGTD research draft.
+"""Executable v2.3 reference relation for the PQ-RBBC/SGTD research draft.
 
 This module implements the *incremental* five-block issuance relation described
 in the accompanying proof document.  It emits a streaming characteristic-two
@@ -25,6 +25,7 @@ import json
 import shutil
 import subprocess
 from dataclasses import asdict, dataclass, field, replace
+from pathlib import Path
 from typing import Iterable, Protocol, Sequence
 
 import pq_rbbc_native_profile as native_profile
@@ -1154,11 +1155,11 @@ def build_manifest(full_negative_circuits: bool = False) -> dict[str, object]:
             ).items()
         }
     return {
-        "implementation_version": "2.2",
+        "implementation_version": "2.3",
         "status": "executable research relation; not a deployment implementation",
         "claim_boundary": {
             "implemented": "incremental relation plus the in-circuit y = r + hash_image mask equation",
-            "forked_issuance": "the reduced CAP fixture and H_RBBC join have a zero-callback native trace; the full 18-tree production row stream and inter-call wire identities remain one external assertion",
+            "forked_issuance": "the reduced and 2450-bit extended CAP fixtures plus H_RBBC join have zero-callback native traces; production multi-coefficient hashing and the full 18-tree row stream remain one external assertion",
             "r1cs_backend": "streaming IR events only; no flattened matrices or proof backend",
             "trace_key": "deterministic systematic test fixture; not a certified Goppa key",
         },
@@ -1209,6 +1210,13 @@ def build_manifest(full_negative_circuits: bool = False) -> dict[str, object]:
             "reduced_cap_native_row_stream_sha256": native_profile.reduced_native.FROZEN_REDUCED_ROW_STREAM_SHA256,
             "reduced_cap_to_h_rbbc_native_wire_join": True,
             "reduced_cap_profile_is_secure": False,
+            "arbitrary_length_multi_squeeze_native": True,
+            "production_width_2450_bit_tape_native": True,
+            "extended_2450_cap_native_rows": native_profile.reduced_native.FROZEN_EXTENDED_ROWS,
+            "extended_2450_cap_native_wires": native_profile.reduced_native.FROZEN_EXTENDED_WIRES,
+            "extended_2450_cap_native_external_assertions": 0,
+            "extended_2450_cap_native_row_stream_sha256": native_profile.reduced_native.FROZEN_EXTENDED_ROW_STREAM_SHA256,
+            "extended_2450_cap_profile_is_secure": False,
             "canonical_cap_serialization_implemented": True,
             "canonical_cap_bytes_bound_to_h_rbbc": True,
             "cap_production_accounting": native_profile.cap.production_accounting(),
@@ -1242,9 +1250,16 @@ def main() -> None:
         action="store_true",
         help="also run all eight tampered instances through the full circuit",
     )
+    parser.add_argument("--manifest", type=Path)
     args = parser.parse_args()
     manifest = build_manifest(full_negative_circuits=args.full_negative)
-    print(json.dumps(manifest, indent=None if args.compact else 2, sort_keys=True))
+    encoded = json.dumps(
+        manifest, indent=None if args.compact else 2, sort_keys=True
+    ) + "\n"
+    if args.manifest:
+        args.manifest.write_text(encoded, encoding="utf-8")
+    else:
+        print(encoded, end="")
 
 
 if __name__ == "__main__":

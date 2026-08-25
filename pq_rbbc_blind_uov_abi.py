@@ -21,13 +21,19 @@ does not claim that the full 18-tree native trace has been materialized.
 Version 2.2 supplies a zero-callback native row stream for the explicitly
 non-secure reduced CAP fixture and its exact ``H_RBBC`` wire join.  That
 component validates the lowering architecture but is not production evidence.
+Version 2.3 extends the same native relation across four squeeze blocks and
+freezes an extended CAP fixture whose eight leaf tapes are each 2,450 bits.
+The fixture remains non-secure because its witness has only one GF(2^193)
+coefficient and its tree topology is deliberately tiny.
 """
 
 from __future__ import annotations
 
+import argparse
 import hashlib
 import json
 from dataclasses import asdict, dataclass
+from pathlib import Path
 from typing import Protocol
 
 import pq_rbbc_anemoi_sponge as fork_sponge
@@ -291,7 +297,7 @@ def build_abi_manifest() -> dict[str, object]:
     hidden = adapter.hidden_state(message, mask, randomness)
     changed_message = bytes((message[0] ^ 1,)) + message[1:]
     return {
-        "implementation_version": "2.2",
+        "implementation_version": "2.3",
         "paper_anchor": "Blind-UOV ePrint 2025/895 is a framework and size comparator, not a bit-exact implementation claim",
         "profile": "PQ-RBBC-BUOV-III/Anemoi-193-336 experimental fork",
         "fork_profile": {
@@ -311,6 +317,7 @@ def build_abi_manifest() -> dict[str, object]:
             ),
             "reduced_native_relation_id": reduced_native_cap.PROFILE_RELATION_ID,
             "reduced_native_row_stream_sha256": reduced_native_cap.FROZEN_REDUCED_ROW_STREAM_SHA256,
+            "extended_2450_native_row_stream_sha256": reduced_native_cap.FROZEN_EXTENDED_ROW_STREAM_SHA256,
         },
         "paper_parameters": {
             "security_level_bits": 192,
@@ -401,6 +408,12 @@ def build_abi_manifest() -> dict[str, object]:
             "reduced_cap_to_h_rbbc_native_wire_join_complete": True,
             "reduced_cap_native_external_assertions": 0,
             "reduced_cap_profile_is_secure": False,
+            "arbitrary_length_multi_squeeze_native": True,
+            "production_width_2450_bit_tape_native": True,
+            "extended_2450_cap_native_rows": reduced_native_cap.FROZEN_EXTENDED_ROWS,
+            "extended_2450_cap_native_wires": reduced_native_cap.FROZEN_EXTENDED_WIRES,
+            "extended_2450_cap_native_external_assertions": 0,
+            "extended_2450_cap_profile_is_secure": False,
             "full_production_cap_vector_executed": False,
             "full_production_cap_native_rows_materialized": False,
             "production_cap_inter_call_wire_identity_proved": False,
@@ -412,7 +425,14 @@ def build_abi_manifest() -> dict[str, object]:
 
 
 def main() -> None:
-    print(json.dumps(build_abi_manifest(), indent=2, sort_keys=True))
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--manifest", type=Path)
+    args = parser.parse_args()
+    encoded = json.dumps(build_abi_manifest(), indent=2, sort_keys=True) + "\n"
+    if args.manifest:
+        args.manifest.write_text(encoded, encoding="utf-8")
+    else:
+        print(encoded, end="")
 
 
 if __name__ == "__main__":

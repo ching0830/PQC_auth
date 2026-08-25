@@ -36,11 +36,13 @@
     "payload_bytes": 118,
     "permutation_nonlinear_rows": 672,
     "row_stream_sha256": "3aa60bc6d8d507003fb541a6ac991e88da58aea05b7b278ab7e1859772aac9ed",
+    "squeeze_permutations": 0,
+    "squeezed_blocks": 1,
     "total_rows": 2238,
     "wires": 2235,
     "witness_independent_topology_for_fixed_lengths": true
   },
-  "implementation_version": "2.2",
+  "implementation_version": "2.3",
   "profile": {
     "capacity_bits": 772,
     "capacity_elements": 4,

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Independent PQ-RBBC Anemoi-193/336 sponge profile, version 2.2.
+"""Independent PQ-RBBC Anemoi-193/336 sponge profile, version 2.3.
 
 This module deliberately forks away from the unreproduced 240-constraint
 Blind-UOV level-III Anemoi instance.  It freezes a new, explicitly named
@@ -15,10 +15,11 @@ the 772-bit rate.  Bytes and field coefficients are both ordered least-
 significant bit first.  Request-binding output is 576 bits (72 bytes).
 
 The native trace constrains payload bitness, byte-to-field packing, every
-permutation, state chaining, and the 579-bit decomposition of the first three
-output field elements.  Only the first 576 output bits are exposed.  This is a
-hash primitive and row generator, not a complete CAP/GGM implementation and
-not a bit-exact Blind-UOV implementation.
+absorb and squeeze permutation, state chaining, and every exposed output bit.
+The default request-binding output remains 576 bits, while the same relation
+now supports arbitrary positive output lengths including the 2450-bit CAP
+tape.  This is a hash primitive and row generator, not a complete CAP/GGM
+implementation and not a bit-exact Blind-UOV implementation.
 """
 
 from __future__ import annotations
@@ -33,7 +34,7 @@ from typing import Mapping, Sequence
 import pq_rbbc_anemoi_f193 as permutation
 
 
-IMPLEMENTATION_VERSION = "2.2"
+IMPLEMENTATION_VERSION = "2.3"
 PROFILE_NAME = "PQ-RBBC-Anemoi-193/336-Sponge-v1"
 PROFILE_RELATION_ID = "pq-rbbc/anemoi-193-336/sponge/v1"
 FRAME_MAGIC = b"PQRBBC-SPONGE-V1"
@@ -271,6 +272,9 @@ class SpongeTrace:
     output_bytes: bytes
     requested_output_bits: int
     absorbed_blocks: int
+    squeezed_blocks: int
+    squeeze_permutations: int
+    squeeze_state_wires: tuple[tuple[int, ...], ...]
     permutation_nonlinear_rows: int
     input_bitness_rows: int
     output_bitness_rows: int
@@ -304,17 +308,17 @@ def build_sponge_trace(
     *,
     output_bits: int = REQUEST_HASH_BITS,
 ) -> SpongeTrace:
-    """Build and evaluate a native sponge relation up to one rate block.
+    """Build and evaluate a native sponge relation for any output length.
 
-    The default remains the frozen 576-bit request hash.  CAP lowering also
-    uses the same relation for 193-, 259-, and 386-bit XOF outputs.  Longer
-    production tapes require the later streaming squeeze extension and are
-    rejected here rather than silently truncated.
+    The default remains the frozen 576-bit request hash.  If more than one
+    772-bit rate block is requested, each later block is obtained from a fully
+    constrained permutation of the preceding sponge state.  No callback or
+    unconstrained output shortcut is used.
     """
 
     parameters = parameters or permutation.derive_parameters()
-    if output_bits <= 0 or output_bits > RATE_BITS:
-        raise ValueError("native sponge trace supports 1..772 output bits")
+    if output_bits <= 0:
+        raise ValueError("native sponge trace output length must be positive")
     symbols = _frame_symbols(domain, len(payload))
     concrete_bits = _materialize_symbols(symbols, payload)
     builder = permutation.NativeRowBuilder()
@@ -393,41 +397,84 @@ def build_sponge_trace(
     if previous_output_wires is None:
         raise AssertionError("padded sponge must absorb at least one block")
 
-    output_bit_forms: list[permutation.LinearForm] = []
-    decomposed_output_elements = (
-        output_bits + permutation.FIELD_DEGREE - 1
-    ) // permutation.FIELD_DEGREE
-    for lane in range(decomposed_output_elements):
-        lane_value = builder.assignment[previous_output_wires[lane]]
-        lane_bit_forms = [
-            builder.new_wire(
-                (lane_value >> bit) & 1,
-                f"digest.lane[{lane}].bit[{bit}]",
+    output_forms: list[permutation.LinearForm] = []
+    squeeze_state_wires: list[tuple[int, ...]] = []
+    current_state_wires = previous_output_wires
+    remaining_output_bits = output_bits
+    squeeze_block = 0
+    decomposed_output_elements = 0
+    while remaining_output_bits:
+        if squeeze_block:
+            input_state = [
+                builder.assignment[wire_id] for wire_id in current_state_wires
+            ]
+            local_trace = permutation.build_native_trace(input_state, parameters)
+            input_wires, next_state_wires = _append_permutation_trace(
+                builder,
+                local_trace,
+                f"squeeze[{squeeze_block}].perm",
             )
-            for bit in range(permutation.FIELD_DEGREE)
-        ]
-        for bit, form in enumerate(lane_bit_forms):
+            for lane, input_wire in enumerate(input_wires):
+                builder.row(
+                    f"squeeze[{squeeze_block}].input[{lane}].link",
+                    permutation.LinearForm.wire(input_wire).add(
+                        permutation.LinearForm.wire(current_state_wires[lane])
+                    ),
+                    permutation.LinearForm.const(1),
+                    permutation.LinearForm.const(0),
+                )
+            current_state_wires = next_state_wires
+
+        squeeze_state_wires.append(current_state_wires)
+        block_output_bits = min(RATE_BITS, remaining_output_bits)
+        block_output_elements = (
+            block_output_bits + permutation.FIELD_DEGREE - 1
+        ) // permutation.FIELD_DEGREE
+        decomposed_output_elements += block_output_elements
+        for lane in range(block_output_elements):
+            label_prefix = (
+                f"digest.lane[{lane}]"
+                if squeeze_block == 0
+                else f"digest.block[{squeeze_block}].lane[{lane}]"
+            )
+            lane_value = builder.assignment[current_state_wires[lane]]
+            lane_bit_forms = [
+                builder.new_wire(
+                    (lane_value >> bit) & 1,
+                    f"{label_prefix}.bit[{bit}]",
+                )
+                for bit in range(permutation.FIELD_DEGREE)
+            ]
+            for bit, form in enumerate(lane_bit_forms):
+                builder.row(
+                    f"{label_prefix}.bit[{bit}].bit",
+                    form,
+                    form.add(permutation.LinearForm.const(1)),
+                    permutation.LinearForm.const(0),
+                )
+            packed = permutation.add_forms(
+                *(
+                    form.scale(1 << bit)
+                    for bit, form in enumerate(lane_bit_forms)
+                )
+            )
             builder.row(
-                f"digest.lane[{lane}].bit[{bit}].bit",
-                form,
-                form.add(permutation.LinearForm.const(1)),
+                f"{label_prefix}.pack",
+                permutation.LinearForm.wire(current_state_wires[lane]).add(packed),
+                permutation.LinearForm.const(1),
                 permutation.LinearForm.const(0),
             )
-        packed = permutation.add_forms(
-            *(
-                form.scale(1 << bit)
-                for bit, form in enumerate(lane_bit_forms)
+            take = min(
+                permutation.FIELD_DEGREE,
+                block_output_bits - lane * permutation.FIELD_DEGREE,
             )
-        )
-        builder.row(
-            f"digest.lane[{lane}].pack",
-            permutation.LinearForm.wire(previous_output_wires[lane]).add(packed),
-            permutation.LinearForm.const(1),
-            permutation.LinearForm.const(0),
-        )
-        output_bit_forms.extend(lane_bit_forms)
+            output_forms.extend(lane_bit_forms[:take])
 
-    output_forms = output_bit_forms[:output_bits]
+        remaining_output_bits -= block_output_bits
+        squeeze_block += 1
+
+    if len(output_forms) != output_bits:
+        raise AssertionError("native squeeze emitted the wrong number of bits")
     output_wires = tuple(_wire_id(form) for form in output_forms)
     constrained_value = sum(
         builder.assignment[wire_id] << index
@@ -445,7 +492,11 @@ def build_sponge_trace(
 
     input_bitness_rows = len(payload_bits)
     output_bitness_rows = decomposed_output_elements * permutation.FIELD_DEGREE
-    permutation_nonlinear_rows = absorbed_blocks * permutation.NONLINEAR_ROWS
+    squeezed_blocks = len(squeeze_state_wires)
+    squeeze_permutations = squeezed_blocks - 1
+    permutation_nonlinear_rows = (
+        absorbed_blocks + squeeze_permutations
+    ) * permutation.NONLINEAR_ROWS
     total_nonlinear_rows = (
         input_bitness_rows + output_bitness_rows + permutation_nonlinear_rows
     )
@@ -459,6 +510,9 @@ def build_sponge_trace(
         output_bytes=constrained_output,
         requested_output_bits=output_bits,
         absorbed_blocks=absorbed_blocks,
+        squeezed_blocks=squeezed_blocks,
+        squeeze_permutations=squeeze_permutations,
+        squeeze_state_wires=tuple(squeeze_state_wires),
         permutation_nonlinear_rows=permutation_nonlinear_rows,
         input_bitness_rows=input_bitness_rows,
         output_bitness_rows=output_bitness_rows,
@@ -529,6 +583,8 @@ def build_manifest(
             "domain_hex": domain.hex(),
             "payload_bytes": len(payload),
             "absorbed_blocks": trace.absorbed_blocks,
+            "squeezed_blocks": trace.squeezed_blocks,
+            "squeeze_permutations": trace.squeeze_permutations,
             "wires": len(trace.assignment),
             "permutation_nonlinear_rows": trace.permutation_nonlinear_rows,
             "input_bitness_rows": trace.input_bitness_rows,

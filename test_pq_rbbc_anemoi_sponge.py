@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Regression tests for the independent PQ-RBBC v2.2 sponge implementation."""
+"""Regression tests for the independent PQ-RBBC v2.3 sponge implementation."""
 
 from __future__ import annotations
 
@@ -8,6 +8,7 @@ import unittest
 
 import pq_rbbc_anemoi_f193 as permutation
 import pq_rbbc_anemoi_sponge as sponge
+import pq_rbbc_cap_commit as cap
 
 
 class AnemoiSpongeTests(unittest.TestCase):
@@ -170,6 +171,116 @@ class AnemoiSpongeTests(unittest.TestCase):
         self.assertFalse(decision["paper_signature_size_inherited_as_theorem"])
         self.assertFalse(manifest["component_status"]["complete_cap_hash"])
         self.assertFalse(manifest["claim_boundary"]["production_closed"])
+
+
+class ProductionTapeMultiSqueezeTests(unittest.TestCase):
+    """Freeze one exact 2450-bit CAP tape expansion relation."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.parameters = permutation.derive_parameters()
+        cls.seed = int.from_bytes(
+            hashlib.sha256(
+                b"PQ-RBBC/v2.3/production-tape-fixture"
+            ).digest(),
+            "little",
+        ) & permutation.FIELD_MASK
+        cls.meta = (
+            (0).to_bytes(2, "little")
+            + (0).to_bytes(2, "little")
+            + (1).to_bytes(4, "little")
+        )
+        cls.payload = sponge.encode_transcript(
+            (cap.field_bytes(cls.seed), cls.meta)
+        )
+        cls.output_bits = cap.PRODUCTION_PARAMETERS.random_polynomial_bits
+        cls.trace = sponge.build_sponge_trace(
+            cap.DOMAIN_TAPE_EXPAND,
+            cls.payload,
+            cls.parameters,
+            output_bits=cls.output_bits,
+        )
+
+    def test_exact_production_tape_vector(self) -> None:
+        self.assertEqual(self.output_bits, 2450)
+        self.assertEqual(len(self.payload), 71)
+        self.assertEqual(len(self.trace.output_bytes), 307)
+        self.assertEqual(
+            hashlib.sha256(self.trace.output_bytes).hexdigest(),
+            "d0fbc03edf1db5b54ff76a56f4b5105b4698119ad6c2877f05dc0d20c12e9c79",
+        )
+        self.assertLess(self.trace.output_bytes[-1], 1 << (2450 % 8))
+        direct = sponge.evaluate_sponge(
+            cap.DOMAIN_TAPE_EXPAND,
+            self.payload,
+            len(self.trace.output_bytes),
+            self.parameters,
+        )
+        direct_value = int.from_bytes(direct, "little") & (
+            (1 << self.output_bits) - 1
+        )
+        self.assertEqual(
+            self.trace.output_bytes,
+            direct_value.to_bytes(len(self.trace.output_bytes), "little"),
+        )
+
+    def test_exact_multi_squeeze_rows(self) -> None:
+        self.assertEqual(self.trace.absorbed_blocks, 2)
+        self.assertEqual(self.trace.squeezed_blocks, 4)
+        self.assertEqual(self.trace.squeeze_permutations, 3)
+        self.assertEqual(self.trace.permutation_nonlinear_rows, 1_680)
+        self.assertEqual(self.trace.input_bitness_rows, 568)
+        self.assertEqual(self.trace.output_bitness_rows, 2_509)
+        self.assertEqual(self.trace.linear_rows, 101)
+        self.assertEqual(len(self.trace.rows), 4_858)
+        self.assertEqual(len(self.trace.assignment), 4_845)
+        self.assertEqual(len(self.trace.output_bit_wires), 2_450)
+        self.assertEqual(len(self.trace.squeeze_state_wires), 4)
+        self.assertEqual(self.trace.failed_rows(), [])
+
+    def test_later_output_block_tamper_rejects_stale_witness(self) -> None:
+        assignment = dict(self.trace.assignment)
+        assignment[
+            self.trace.output_bit_wires[sponge.RATE_BITS]
+        ] ^= 1
+        failures = self.trace.failed_rows(assignment)
+        self.assertIn("digest.block[1].lane[0].pack", failures)
+
+    def test_squeeze_state_tamper_breaks_next_state_link(self) -> None:
+        assignment = dict(self.trace.assignment)
+        assignment[self.trace.squeeze_state_wires[1][0]] ^= 1
+        failures = self.trace.failed_rows(assignment)
+        self.assertIn("squeeze[2].input[0].link", failures)
+
+    def test_long_output_topology_is_witness_independent(self) -> None:
+        changed_seed = self.seed ^ 1
+        changed_payload = sponge.encode_transcript(
+            (cap.field_bytes(changed_seed), self.meta)
+        )
+        changed = sponge.build_sponge_trace(
+            cap.DOMAIN_TAPE_EXPAND,
+            changed_payload,
+            self.parameters,
+            output_bits=self.output_bits,
+        )
+        original_stream = sponge.serialize_sponge_row_stream(
+            self.trace,
+            cap.DOMAIN_TAPE_EXPAND,
+            len(self.payload),
+            self.parameters,
+        )
+        changed_stream = sponge.serialize_sponge_row_stream(
+            changed,
+            cap.DOMAIN_TAPE_EXPAND,
+            len(changed_payload),
+            self.parameters,
+        )
+        self.assertEqual(original_stream, changed_stream)
+        self.assertEqual(len(original_stream), 3_216_517)
+        self.assertEqual(
+            hashlib.sha256(original_stream).hexdigest(),
+            "c42aec869c6de08695bcb11e2fade158cc4683aa3ac999e440b78c6ad0314c34",
+        )
 
 
 if __name__ == "__main__":

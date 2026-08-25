@@ -10,7 +10,12 @@
     "unique_witness_step": "CAP unique-witness soundness makes r a well-defined value for every admissible c_r"
   },
   "claim_boundary": {
+    "arbitrary_length_multi_squeeze_native": true,
     "blind_uov_bit_exact_compatibility": false,
+    "extended_2450_cap_native_external_assertions": 0,
+    "extended_2450_cap_native_rows": 113802,
+    "extended_2450_cap_native_wires": 85034,
+    "extended_2450_cap_profile_is_secure": false,
     "full_production_cap_native_rows_materialized": false,
     "full_production_cap_vector_executed": false,
     "linear_y_equals_r_plus_h_internalized": true,
@@ -20,6 +25,7 @@
     "production_cap_canonical_serialization_bound_to_h_rbbc": true,
     "production_cap_inter_call_wire_identity_proved": false,
     "production_cap_reference_algorithm_implemented": true,
+    "production_width_2450_bit_tape_native": true,
     "reduced_cap_native_external_assertions": 0,
     "reduced_cap_profile_is_secure": false,
     "reduced_cap_to_h_rbbc_native_wire_join_complete": true,
@@ -38,6 +44,7 @@
     "canonical_cap_commitment_bytes": 5378,
     "cap_profile_fingerprint": "2ac471f8d7c6cb4e6352bbc5a2eb7f9394b807ff132aec8cadebd696f7b1fa38",
     "cap_relation_id": "pq-rbbc/cap/tcith-iii/anemoi-193-336/v1",
+    "extended_2450_native_row_stream_sha256": "98222b0cafeb944184e3939a878d1e3fb3af05d10c9795ef0701c87f95462855",
     "paper_security_reduction_revalidated": false,
     "paper_signature_size_rebenchmarked": false,
     "profile_fingerprint": "4fa0eb276ebba70a9f6c2f38f3f55d197c094121a2b614cc6ef9b7e8522cac87",
@@ -55,7 +62,7 @@
     "holder key",
     "trace error vector"
   ],
-  "implementation_version": "2.2",
+  "implementation_version": "2.3",
   "paper_anchor": "Blind-UOV ePrint 2025/895 is a framework and size comparator, not a bit-exact implementation claim",
   "paper_parameters": {
     "anemoi_binary_field_degree": 193,

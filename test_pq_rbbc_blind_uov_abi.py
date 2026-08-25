@@ -175,6 +175,26 @@ class BlindUOVVisibilityTests(unittest.TestCase):
                 "full_production_cap_native_rows_materialized"
             ]
         )
+        self.assertTrue(
+            manifest["claim_boundary"][
+                "arbitrary_length_multi_squeeze_native"
+            ]
+        )
+        self.assertTrue(
+            manifest["claim_boundary"][
+                "production_width_2450_bit_tape_native"
+            ]
+        )
+        self.assertEqual(
+            manifest["claim_boundary"]["extended_2450_cap_native_rows"],
+            113_802,
+        )
+        self.assertEqual(
+            manifest["claim_boundary"][
+                "extended_2450_cap_native_external_assertions"
+            ],
+            0,
+        )
 
 
 if __name__ == "__main__":

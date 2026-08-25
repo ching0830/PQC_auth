@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Tests for the fail-closed PQ-RBBC v2.2 fork import contract."""
+"""Tests for the fail-closed PQ-RBBC v2.3 fork import contract."""
 
 from __future__ import annotations
 
@@ -46,6 +46,27 @@ class ForkNativeProfileTests(unittest.TestCase):
         )
         self.assertTrue(manifest["claim_boundary"]["reduced_fixture_native_closed"])
         self.assertFalse(manifest["claim_boundary"]["reduced_fixture_security_profile"])
+        extended = manifest["fork_profile"]["extended_2450_native_component"]
+        self.assertEqual(extended["production_width_tape_bits"], 2_450)
+        self.assertEqual(extended["rows"], 113_802)
+        self.assertEqual(extended["wires"], 85_034)
+        self.assertEqual(extended["anemoi_permutations"], 81)
+        self.assertEqual(extended["external_assertions"], 0)
+        self.assertTrue(
+            manifest["implemented_primitives"][
+                "arbitrary_length_multi_squeeze_native"
+            ]
+        )
+        self.assertTrue(
+            manifest["claim_boundary"][
+                "extended_2450_fixture_native_closed"
+            ]
+        )
+        self.assertFalse(
+            manifest["claim_boundary"][
+                "production_polynomial_hash_blocker_closed"
+            ]
+        )
 
     def test_missing_import_is_fail_closed(self) -> None:
         audit = native.audit_fork_import(None)

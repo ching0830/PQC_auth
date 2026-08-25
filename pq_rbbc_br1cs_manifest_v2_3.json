@@ -50,10 +50,11 @@
     },
     "version": 1
   },
-  "implementation_version": "2.2",
+  "implementation_version": "2.3",
   "native_import_contract": {
     "anemoi_component_nonlinear_rows": 336,
     "anemoi_component_relation_id": "anemoi/upstream-main/gf2-193/state-8/v1",
+    "arbitrary_length_multi_squeeze_native": true,
     "blind_uov_bit_exact_compatible": false,
     "canonical_cap_bytes_bound_to_h_rbbc": true,
     "canonical_cap_serialization_implemented": true,
@@ -77,6 +78,11 @@
     },
     "complete_cap_hash_implemented": false,
     "current_archive_field_matches_target": false,
+    "extended_2450_cap_native_external_assertions": 0,
+    "extended_2450_cap_native_row_stream_sha256": "98222b0cafeb944184e3939a878d1e3fb3af05d10c9795ef0701c87f95462855",
+    "extended_2450_cap_native_rows": 113802,
+    "extended_2450_cap_native_wires": 85034,
+    "extended_2450_cap_profile_is_secure": false,
     "fork_profile_sha256": "4fa0eb276ebba70a9f6c2f38f3f55d197c094121a2b614cc6ef9b7e8522cac87",
     "fork_security_proof_revalidated": false,
     "linear_mask_equation_internalized": true,
@@ -86,6 +92,7 @@
     "production_cap_native_rows_materialized": false,
     "production_cap_reference_algorithm_implemented": true,
     "production_closed": false,
+    "production_width_2450_bit_tape_native": true,
     "reduced_cap_native_external_assertions": 0,
     "reduced_cap_native_relation_id": "pq-rbbc/cap/reduced-native/anemoi-193-336/v1",
     "reduced_cap_native_row_stream_sha256": "f6a6a0b65e6de16f7bb1d6b42302a12b004befa62b629d252861e2c986917263",
@@ -108,7 +115,7 @@
     "honest_assignment_accepts": true,
     "rows_checked": 2971580
   },
-  "status": "reduced CAP plus H_RBBC has a zero-callback native trace; full 18-tree production row stream remains external",
+  "status": "reduced and 2450-bit extended CAP fixtures plus H_RBBC have zero-callback native traces; production multi-coefficient hashing and the full 18-tree row stream remain external",
   "witness_independence": {
     "honest_and_wrong_weight_body_digest_equal": true,
     "wrong_weight_assignment_rejected": true,
