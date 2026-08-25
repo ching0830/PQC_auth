@@ -1,0 +1,150 @@
+{
+  "circuit": {
+    "blocks": {
+      "blind_uov_mask_increment": {
+        "and_gates": 0,
+        "bitness_constraints": 0,
+        "failed_assertions": 0,
+        "keccak_permutations": 0,
+        "linear_assertions": 0,
+        "linear_definitions": 0,
+        "nonlinear_constraints": 0
+      },
+      "holder": {
+        "and_gates": 38400,
+        "bitness_constraints": 256,
+        "failed_assertions": 0,
+        "keccak_permutations": 1,
+        "linear_assertions": 256,
+        "linear_definitions": 131990,
+        "nonlinear_constraints": 38656
+      },
+      "shape": {
+        "and_gates": 0,
+        "bitness_constraints": 128,
+        "failed_assertions": 0,
+        "keccak_permutations": 0,
+        "linear_assertions": 384,
+        "linear_definitions": 128,
+        "nonlinear_constraints": 128
+      },
+      "ticket_hash": {
+        "and_gates": 115200,
+        "bitness_constraints": 0,
+        "failed_assertions": 0,
+        "keccak_permutations": 3,
+        "linear_assertions": 256,
+        "linear_definitions": 395202,
+        "nonlinear_constraints": 115200
+      },
+      "trace": {
+        "and_gates": 523747,
+        "bitness_constraints": 6688,
+        "failed_assertions": 0,
+        "keccak_permutations": 13,
+        "linear_assertions": 2318,
+        "linear_definitions": 1754003,
+        "nonlinear_constraints": 530435
+      }
+    },
+    "external_assertions": 1,
+    "public_input_bits": 3712,
+    "satisfied": true,
+    "secret_input_bits": 7072,
+    "totals": {
+      "and_gates": 677347,
+      "bitness_constraints": 7072,
+      "failed_assertions": 0,
+      "keccak_permutations": 17,
+      "linear_assertions": 3214,
+      "linear_definitions": 2281323,
+      "nonlinear_constraints": 684419
+    },
+    "wire_count": 2976528
+  },
+  "claim_boundary": {
+    "blind_uov": "test-only adapter; native pi_1 remains external",
+    "implemented": "incremental five-block characteristic-two relation",
+    "r1cs_backend": "streaming IR events only; no flattened matrices or proof backend",
+    "trace_key": "deterministic systematic test fixture; not a certified Goppa key"
+  },
+  "fixed_sizes": {
+    "blind_uov_signature_bytes": 3772,
+    "online_ticket_bytes": 4140,
+    "payload_bytes": 368
+  },
+  "honest_relation": {
+    "circuit_accepts": true,
+    "concrete_accepts": true,
+    "concrete_failures": []
+  },
+  "implementation_version": "1.4",
+  "negative_tests": {
+    "concrete_all_rejected": true,
+    "concrete_cases": {
+      "blind_request_tamper": [
+        "blind_request"
+      ],
+      "context_tamper": [
+        "context_binding",
+        "masked_identity",
+        "trace_tag"
+      ],
+      "holder_hash_tamper": [
+        "holder_hash",
+        "ticket_digest",
+        "blind_request"
+      ],
+      "masked_identity_tamper": [
+        "masked_identity",
+        "ticket_digest",
+        "blind_request"
+      ],
+      "syndrome_tamper": [
+        "syndrome",
+        "ticket_digest",
+        "blind_request"
+      ],
+      "tag_tamper": [
+        "trace_tag",
+        "ticket_digest",
+        "blind_request"
+      ],
+      "ticket_digest_tamper": [
+        "ticket_digest"
+      ],
+      "wrong_weight": [
+        "exact_weight",
+        "syndrome",
+        "masked_identity",
+        "trace_tag"
+      ]
+    },
+    "full_circuit_all_rejected": true,
+    "full_circuit_cases": {
+      "blind_request_tamper": true,
+      "context_tamper": true,
+      "holder_hash_tamper": true,
+      "masked_identity_tamper": true,
+      "syndrome_tamper": true,
+      "tag_tamper": true,
+      "ticket_digest_tamper": true,
+      "wrong_weight": true
+    },
+    "full_circuit_executed": true
+  },
+  "reference_vector": {
+    "blind_adapter": "TEST-ONLY-SHAKE-ADAPTER",
+    "error_weight": 128,
+    "matrix_seed_sha256": "51c582d012a12fa082d4c0019c23eec42b12fea73641573f22d7c920a1b118f5",
+    "payload_sha256": "8d88e08b4c5283723803906e00e47064b75cfe5e134faed9ef2be72fb46aa3e0",
+    "ticket_digest": "ef49a7a0ba4788c062ccfa21dab6d0bfd35ba2c20bb19b0fbadc0e205ee44870"
+  },
+  "self_checks": {
+    "kmac256_vs_openssl": true,
+    "openssl_kmac_available": true,
+    "shake256_cases": 3,
+    "shake256_vs_python_hashlib": true
+  },
+  "status": "executable research relation; not a deployment implementation"
+}

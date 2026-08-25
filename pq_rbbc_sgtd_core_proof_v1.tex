@@ -41,7 +41,7 @@
 
 \title{A Post-Quantum Relation-Bound Blind Certification Core\\
 with Signature-Gated Threshold Decryption}
-\author{Research construction draft, version 1.3}
+\author{Research construction draft, version 1.4}
 \date{23 August 2026}
 
 \begin{document}
@@ -71,8 +71,11 @@ the decoded error, and removes a redundant ticket commitment.  Version 1.3
 freezes a paper-compatible Blind-UOV-Is/Shorter costing profile, fixes a
 368-byte payload, gives a reproducible five-block circuit count, and separates
 the large issuance NIZK from the CAP proof carried by the final Blind-UOV
-signature.  Backend simulation extractability and the threshold implementation
-remain explicit obligations.
+signature.  Version 1.4 adds an executable witness builder, a streaming
+characteristic-two circuit generator, independent SHAKE256/KMAC256 checks, and
+full-circuit rejection tests.  Native Blind-UOV circuit integration, backend
+simulation extractability, and the threshold implementation remain explicit
+obligations.
 \end{abstract}
 
 \section{Status, scope, and non-goals}
@@ -107,9 +110,11 @@ The theorems below are complete reductions for the abstract interfaces and games
 defined here.  They are not a claim that the present Blind-UOV or threshold
 Niederreiter papers already implement every required interface.  The Blind-UOV
 request equations are fixed in Section~\ref{sec:buov-normal}; the exact added
-circuit is counted in Section~\ref{sec:circuit-audit}.  The resulting proof-size
-and runtime figures remain paper-anchored estimates rather than implementation
-benchmarks.  The numerical Niederreiter set is a size anchor, not a deployment
+circuit is counted in Section~\ref{sec:circuit-audit} and executed in
+Section~\ref{sec:executable-relation}.  The resulting proof-size and prover
+runtime figures remain paper-anchored estimates rather than implementation
+benchmarks.  The executable generator is a relation validator, not a proof
+backend.  The numerical Niederreiter set is a size anchor, not a deployment
 approval.
 
 \section{Notation and post-quantum conventions}
@@ -1241,6 +1246,67 @@ paper-derived estimates are kept in separate JSON fields so a rounded source
 number cannot be mistaken for a benchmark.
 \end{remark}
 
+\subsection{Executable reference relation and rejection tests}
+\label{sec:executable-relation}
+
+Version 1.4 implements the incremental relation in
+\texttt{pq\_rbbc\_reference.py}.  The witness builder derives
+$h$, $s$, $c_\mu$, $\gamma$, the canonical 368-byte payload, and its ticket
+digest from $(\rid,\ctx,\sn,k_{\mathrm{hold}},e)$.  The circuit builder then
+emits a stream of characteristic-two events of four kinds: linear wire
+definitions, linear equality assertions, Boolean multiplication gates, and
+bitness constraints $x(x+1)=0$.  A backend can consume the same stream without
+retaining the whole circuit in memory.  This version executes the stream and
+counts it, but does not yet flatten it into a proof system's matrix format.
+
+The symbolic Keccak-f implementation performs all 24 rounds.  Its SHAKE256
+output is checked against Python's independent FIPS~202 implementation, and
+the SP~800-185 KMAC256 output is checked against the OpenSSL 3 KMAC provider
+\cite{fips202,sp800185}.
+For the frozen honest vector the generated circuit reports:
+\begin{center}
+\begin{tabular}{lr}
+\toprule
+Measured generator quantity & Value\\
+\midrule
+Allocated wire identifiers & 2,976,528\\
+Linear definitions & 2,281,323\\
+Linear equality assertions & 3,214\\
+Nonlinear constraints & 684,419\\
+Keccak-f permutations & 17\\
+Failed assertions & 0\\
+\bottomrule
+\end{tabular}
+\end{center}
+Thus the executable result exactly reproduces every nonlinear block total in
+the preceding audit.  The linear-definition figure is diagnostic IR size, not
+an additional nonlinear count: the costing model requires a backend to inline
+affine expressions.  A backend that instead materializes each affine wire as
+an R1CS row must report that larger total explicitly.  On the present reference environment, one honest
+streaming generation took approximately 5.85 seconds.  This is Python relation
+generation time, not NIZK proving time, and no prover-memory claim follows from
+it.
+
+The regression suite accepts the honest witness and sends eight independent
+mutations through the complete circuit: wrong error weight, changed syndrome,
+changed masked identity, changed holder hash, changed KMAC tag, changed ticket
+digest, changed blind request, and changed common context.  All eight are
+rejected.  The suite contains eight test methods and completed in approximately
+53.5 seconds in the same environment.  The checked output is recorded in
+\texttt{pq\_rbbc\_r1cs\_manifest\_v1\_4.json}.
+
+\paragraph{Exact implementation boundary.}
+The $H=(I\mid T)$ matrix in the reference vector is generated deterministically
+from a public seed and is only a rank-controlled test fixture; it is not a
+certified binary Goppa key.  Similarly,
+\texttt{TestBlindUOVAdapter} checks message/request binding with a deterministic
+SHAKE construction, but is not a blind signature.  It marks the native
+Blind-UOV $\pi_1$/CAP boundary whose nonlinear cost remains in the paper's
+baseline.  Consequently this implementation establishes that the incremental
+relation is internally consistent and executable; it does not establish that
+the combined native Blind-UOV proof is zero knowledge or simulation
+extractable.
+
 \subsection{Local mixing as a future trace-encryption candidate}
 
 The core does not depend on elliptic curves, lattices, or codes.  A future
@@ -1267,15 +1333,17 @@ blindness and one-more unforgeability, threshold syndrome-decoding privacy with
 robust shares, QROM one-way-to-hiding, KMAC integrity, and
 authorization unforgeability.\\
 \addlinespace
-Concretely instantiated & Blind-UOV-Is/Shorter costing profile; five-block
-augmented relation; exact Niederreiter--SHAKE--KMAC trace relation;
-information-theoretic unique opening; 684,419 added nonlinear constraints; and
-a 4,140-byte online-ticket target.\\
+Concretely instantiated & Blind-UOV-Is/Shorter costing profile; executable
+five-block augmented relation; exact Niederreiter--SHAKE--KMAC trace relation;
+information-theoretic unique opening; independently checked SHAKE/KMAC;
+full-circuit positive and negative tests; 684,419 added nonlinear constraints;
+and a 4,140-byte online-ticket target.\\
 \addlinespace
 Not yet instantiated & A post-quantum zero-knowledge and
-simulation-extractable implementation of $\Piiss$, peak prover memory, robust
-threshold-share transcript, implementation benchmarks, and a reviewed response
-to the August 2026 McEliece cryptanalysis.\\
+simulation-extractable implementation of $\Piiss$; native Blind-UOV circuit
+integration; backend matrix lowering; import of a real Goppa key; peak prover
+memory; robust threshold-share transcript; implementation benchmarks; and a
+reviewed response to the August 2026 McEliece cryptanalysis.\\
 \addlinespace
 Explicitly not claimed & Standard IND-CCA security of the bare ciphertext,
 security against a malicious issuer, metadata/timing anonymity without system
@@ -1315,20 +1383,26 @@ machine-tested or enforced by type/API boundaries.
   \item The Shockwave/Anemoi figures may be used for costing only until a
   backend meeting the stated zero-knowledge and simulation-extractability model
   is proved or substituted.
+  \item Production configuration rejects the deterministic parity-check matrix
+  and test-only blind-signature adapter; neither fixture may cross the backend
+  boundary.
+  \item Backend lowering must preserve every multiplication and equality event,
+  eliminate affine wires soundly, and accept/reject the published reference and
+  mutation vectors identically to the executable IR.
 \end{enumerate}
 
 \section{Next proof step}
 
-The relation, unique opening, fixed layout, and circuit audit are now complete.
-The next step is an executable witness/constraint implementation plus a proof
-backend qualification:
+The relation, unique opening, fixed layout, circuit audit, executable witness
+builder, and rejection tests are now complete.  The next step is native
+composition and proof-backend qualification:
 
 \begin{quote}
-\emph{Implement the five-block witness builder and R1CS generator, test every
-accept/reject invariant, and benchmark peak memory.  In parallel, either prove
-that the chosen hash-based NIZK is post-quantum zero knowledge and
-simulation-extractable in the required model, or revise the GCCA reduction to
-the exact extractability property it actually provides.}
+\emph{Lower the streaming relation to the selected backend, replace the test
+Blind-UOV adapter with the native $\pi_1$/CAP constraints, and prove that the
+composed $\Piiss$ is post-quantum zero knowledge and simulation-extractable in
+the model required by the GCCA reduction.  Then import a canonical Goppa public
+key and measure prover time and peak memory.}
 \end{quote}
 
 The current count favors one monolithic proof; splitting is no longer the
