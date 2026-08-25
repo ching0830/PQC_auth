@@ -33,6 +33,7 @@
 \newcommand{\Hash}{\mathsf{H}}
 \newcommand{\rid}{\mathsf{rid}}
 \newcommand{\sn}{\mathsf{sn}}
+\newcommand{\ctx}{\mathsf{ctx}}
 \newcommand{\pp}{\mathsf{pp}}
 \newcommand{\pk}{\mathsf{pk}}
 \newcommand{\sk}{\mathsf{sk}}
@@ -40,7 +41,7 @@
 
 \title{A Post-Quantum Relation-Bound Blind Certification Core\\
 with Signature-Gated Threshold Decryption}
-\author{Research construction draft, version 1.2}
+\author{Research construction draft, version 1.3}
 \date{23 August 2026}
 
 \begin{document}
@@ -66,9 +67,12 @@ the threshold number of opening authorities.  The result deliberately does not
 claim ordinary IND-CCA security for the bare trace encryption.  Version 1.2
 also instantiates the trace relation as a Niederreiter syndrome plus a
 SHAKE256/KMAC256 one-time hash DEM, proves information-theoretic uniqueness of
-the decoded error, removes a redundant ticket commitment, and gives exact
-online byte counts.  The exact CAP circuit, frozen parameters, and
-implementation proof remain separate obligations.
+the decoded error, and removes a redundant ticket commitment.  Version 1.3
+freezes a paper-compatible Blind-UOV-Is/Shorter costing profile, fixes a
+368-byte payload, gives a reproducible five-block circuit count, and separates
+the large issuance NIZK from the CAP proof carried by the final Blind-UOV
+signature.  Backend simulation extractability and the threshold implementation
+remain explicit obligations.
 \end{abstract}
 
 \section{Status, scope, and non-goals}
@@ -102,10 +106,11 @@ The construction is designed for the following division of trust.
 The theorems below are complete reductions for the abstract interfaces and games
 defined here.  They are not a claim that the present Blind-UOV or threshold
 Niederreiter papers already implement every required interface.  The Blind-UOV
-request equations are fixed in Section~\ref{sec:buov-normal}; converting the
-entire ticket relation into the selected post-quantum CAP circuit and performing
-concrete gate accounting remain implementation tasks.  The numerical
-Niederreiter sets in this draft are size anchors, not a deployment approval.
+request equations are fixed in Section~\ref{sec:buov-normal}; the exact added
+circuit is counted in Section~\ref{sec:circuit-audit}.  The resulting proof-size
+and runtime figures remain paper-anchored estimates rather than implementation
+benchmarks.  The numerical Niederreiter set is a size anchor, not a deployment
+approval.
 
 \section{Notation and post-quantum conventions}
 
@@ -124,6 +129,14 @@ issuance information is
   \mathsf{policy},\mathsf{expiryBucket},\mathsf{kid}_{\mathrm{OA}},
   \mathsf{kid}_{\mathrm{I}}).
 \]
+Its fixed 32-byte ticket representation is
+\[
+ \ctx=\mathsf{SHAKE256}(\mathtt{PQ\mbox{-}RBBC/CTX}\|
+       \mathsf{Encode}(\mathsf{ci}),256).
+\]
+The federation configuration signature authenticates $(\mathsf{ci},\ctx)$.
+The digest is computed once outside $\Piiss$ and is a public input; the issuer
+cannot select a per-user value.
 
 For any game $G$, $\Adv^G_{\mathcal A}(\lambda)$ denotes the usual absolute
 distance from the ideal winning probability.  Oracle calls are polynomially
@@ -141,6 +154,19 @@ We use domain-separated hashes
 They are modeled as quantum-resistant collision-resistant hashes.  A random
 oracle or QROM instantiation may be used by a concrete component, but the core
 proof calls only the explicitly named property.
+
+For the version-1.3 circuit audit, fix
+\begin{align*}
+ H_{\mathrm{ticket}}(X)&=\mathsf{SHAKE256}
+   (\mathtt{PQ\mbox{-}RBBC/TICKET}\|X,256),\\
+ H_{\mathrm{hold}}(k)&=\mathsf{SHAKE256}
+   (\mathtt{PQ\mbox{-}RBBC/HOLD}\|k,256).
+\end{align*}
+The Blind-UOV hash $H_{\BUOV}$ and CAP commitment internals use the paper's
+Anemoi-based costing profile; they are already included in its baseline NIZK
+count.  This mixed choice retains standardized SHAKE/KMAC for new protocol
+logic while avoiding the multi-billion-constraint SHA3+AES baseline inside the
+Blind-UOV commitment proof.
 
 There is no separate public commitment to the ticket payload.  The accepting
 proof extracts $M$, Equation~\eqref{eq:i2} fixes its digest, and the Blind-UOV
@@ -217,8 +243,8 @@ relation in Section~\ref{sec:issue-relation}.  Its setup produces a CRS; the
 security proof may use simulation and extraction trapdoors.  In the real
 protocol no trapdoor is available to any party.
 
-The proof may be tens or hundreds of kilobytes because it is transmitted only
-during infrequent issuance.  This design choice is intentional.  Knowledge
+The proof may be several megabytes because it is transmitted only during
+infrequent issuance.  This design choice is intentional.  Knowledge
 soundness alone is enough for decoder safety in a simple stand-alone execution;
 simulation extractability is used to support concurrent sessions and the
 gated-CCA hybrid proof.
@@ -280,11 +306,19 @@ ticket.
 
 The hidden ticket payload is
 \[
- M=(\mathsf{ci},\sn,h,C),
+ M=(\ctx,\sn,h,C),
  \qquad h=H_{\mathrm{hold}}(k_{\mathrm{hold}}),
- \qquad C=\mathsf{Ntr.Enc}(\mathsf{tpk},\mathsf{ci},h;\rid,\sn,e).
+ \qquad C=\mathsf{Ntr.Enc}(\mathsf{tpk},\ctx,h;\rid,\sn,e).
 \]
-The serial number $\sn\leftarrow\{0,1\}^{\ell_{\sn}}$ is fresh.  It appears both
+For the v1.3 profile all fields are fixed width and
+\[
+ \mathsf{Encode}(M)=\ctx\|\sn\|h\|s\|c_\mu\|\gamma
+ \in\{0,1\}^{2944},
+\]
+namely $32+16+32+208+48+32=368$ bytes.  No variable-length field or
+user-selected policy string occurs in the payload.
+The serial number $\sn\leftarrow\{0,1\}^{128}$ and holder key
+$k_{\mathrm{hold}}\leftarrow\{0,1\}^{256}$ are fresh.  The serial appears both
 outside and inside the trace ciphertext so that an opener can detect payload
 splicing.  The holder secret itself never appears in the ticket.  Define
 \[
@@ -293,18 +327,18 @@ splicing.  The holder secret itself never appears in the ticket.  Define
 
 The public issuance statement and private witness are
 \begin{align*}
- x&=(\pp,\mathsf{ci},\mathsf{sid},\rid,\beta),\\
+ x&=(\pp,\ctx,\mathsf{sid},\rid,\beta),\\
  w&=(M,r,\rho_0,k_{\mathrm{hold}},e).
 \end{align*}
 The relation $R_{\mathsf{issue}}(x;w)=1$ iff all of the following hold:
 \begin{align}
- \mathsf{TicketShape}(M,\mathsf{ci})&=1, \tag{I1}\label{eq:i1}\\
+ \mathsf{TicketShape}(M,\ctx)&=1, \tag{I1}\label{eq:i1}\\
  m&=H_{\mathrm{ticket}}(\mathsf{Encode}(M)), \tag{I2}\label{eq:i2}\\
  R^{\BUOV}_{\mathsf{req}}(\beta;m,(r,\rho_0))&=1,
    \tag{I3}\label{eq:i3}\\
  M.h&=H_{\mathrm{hold}}(k_{\mathrm{hold}}), \tag{I4}\label{eq:i4}\\
  R_{\mathsf{enc}}(\mathsf{tpk},M.C,
-   \mathsf{Encode}(\mathsf{ci},M.\sn,M.h);\rid\|M.\sn,e)&=1.
+   \mathsf{Encode}(\ctx,M.\sn,M.h);\rid\|M.\sn,e)&=1.
    \tag{I5}\label{eq:i5}
 \end{align}
 The real identity and session identifier are public to the issuer during
@@ -323,8 +357,8 @@ $\Core.\mathsf{Setup}(1^\lambda,n,\tau)$ performs:
   \item generate independent opening keys
   $(\mathsf{tpk},\mathsf{tsk}_1,\ldots,\mathsf{tsk}_n)
   \leftarrow\TEnc.\mathsf{KeyGen}(1^\lambda,n,\tau)$;
-  \item publish the common epoch information $\mathsf{ci}$ authenticated by a
-  federation configuration signature.
+  \item publish $(\mathsf{ci},\ctx)$ authenticated by a federation
+  configuration signature.
 \end{enumerate}
 
 No party is allowed to derive $\mathsf{bsk}$ and any $\mathsf{tsk}_i$ from the
@@ -335,9 +369,11 @@ same seed or key hierarchy.
 For authenticated identity $\rid$ and fresh issuer-side $\mathsf{sid}$:
 
 \begin{enumerate}[leftmargin=*]
-  \item The holder samples $\sn,k_{\mathrm{hold}},e$, computes
-  $h=H_{\mathrm{hold}}(k_{\mathrm{hold}})$ and
-  $C=\mathsf{Ntr.Enc}(\mathsf{tpk},\mathsf{ci},h;\rid,\sn,e)$
+  \item The holder samples $\sn,k_{\mathrm{hold}},e$ and computes
+  \[
+   h=H_{\mathrm{hold}}(k_{\mathrm{hold}}),\qquad
+   C=\mathsf{Ntr.Enc}(\mathsf{tpk},\ctx,h;\rid,\sn,e)
+  \]
   according to Equations~\eqref{eq:n1}--\eqref{eq:n7},
   constructs $M$, and
   computes $m=H_{\mathrm{ticket}}(\mathsf{Encode}(M))$.
@@ -766,7 +802,7 @@ Lemma~\ref{lem:buov-unique} fails.
 
 \section{Candidate concrete instantiations}
 
-\subsection{Augmented-CAP Blind-UOV compiler}\label{sec:augcap}
+\subsection{Augmented well-built-request compiler for Blind-UOV}\label{sec:augcap}
 
 The Blind-UOV framework already requires the user to prove that its masked
 request is well built.  We strengthen that proved language instead of adding a
@@ -777,7 +813,7 @@ second independent proof.  Let
 denote Equations~\eqref{eq:b1}--\eqref{eq:b2}.  The original well-built-request
 language is replaced by
 \begin{align*}
- R_{\mathsf{aug}}(&\pp,\mathsf{ci},\mathsf{sid},\rid,c_0,y;\\
+ R_{\mathsf{aug}}(&\pp,\ctx,\mathsf{sid},\rid,c_0,y;\\
                   &M,r,\rho_0,k_{\mathrm{hold}},e)=1
  \quad\Longleftrightarrow\quad
  R_{\mathsf{issue}}(x;w)=1,
@@ -802,7 +838,7 @@ The implementation SHOULD expose the following fixed interface to the proof
 compiler:
 \begin{align*}
  \mathsf{pub}_{\mathsf{aug}}
-   &= (\mathsf{ci},\mathsf{sid},\rid,\mathsf{tpk},\mathsf{bvk},c_0,y),\\
+   &= (\ctx,\mathsf{sid},\rid,\mathsf{tpk},\mathsf{bvk},c_0,y),\\
  \mathsf{wit}_{\mathsf{aug}}
    &= (\sn,k_{\mathrm{hold}},e,r,\rho_0).
 \end{align*}
@@ -818,20 +854,20 @@ duplicate witness copies.  Its constraint system is the conjunction
 \]
 where
 \begin{align*}
- \mathcal C_{\mathsf{shape}} &: \mathsf{TicketShape}(M,\mathsf{ci})=1,\\
+ \mathcal C_{\mathsf{shape}} &: \mathsf{TicketShape}(M,\ctx)=1,\\
  \mathcal C_{\mathsf{ticketHash}} &: m=H_{\mathrm{ticket}}(\mathsf{Encode}(M)),\\
  \mathcal C_{\mathsf{BUOVmask}} &: c_0=\mathsf{CAP.Commit}(r;\rho_0)
    \ \wedge\ y=r+H_{\BUOV}(m,c_0),\\
  \mathcal C_{\mathsf{holder}} &: h=H_{\mathrm{hold}}(k_{\mathrm{hold}}),\\
  \mathcal C_{\mathsf{trace}} &: R_{\mathsf{Ntr}}
-   (\mathsf{tpk},C,\mathsf{ci},h;\rid,\sn,e)=1.
+   (\mathsf{tpk},C,\ctx,h;\rid,\sn,e)=1.
 \end{align*}
 The proof statement includes $\mathsf{sid}$ even though it is absent from the
 ticket.  Consequently, replaying the same proof in a new issuance session
 changes the statement and fails verification, while the final credential gains
 no session link tag.
 
-\begin{theorem}[Security inheritance of augmented CAP]\label{thm:augcap}
+\begin{theorem}[Security inheritance of the augmented issuance proof]\label{thm:augcap}
 Assume $\Piiss$ is post-quantum zero knowledge and simulation-extractable for
 $R_{\mathsf{aug}}$.  Replacing the original well-built-request proof by
 $\pi_{\mathsf{issue}}$ preserves Blind-UOV one-more unforgeability and
@@ -860,7 +896,7 @@ Lemma~\ref{lem:buov-unique}, and any two payloads with one ticket digest trigger
 a collision in $H_{\mathrm{ticket}}$.
 \end{proof}
 
-\paragraph{Concretization achieved in versions 1.1--1.2.}
+\paragraph{Concretization achieved in versions 1.1--1.3.}
 The request and witness are now fixed:
 \begin{align*}
  \beta&=(c_0,y),& b&=(r,\rho_0),\\
@@ -870,23 +906,38 @@ The request and witness are now fixed:
 Consequently, the earlier abstract ``request-binding'' assumption has been
 eliminated.  It is replaced by the standard, auditable assumptions that the CAP
 commitment is binding and the two domain-separated hashes are collision
-resistant.  Version 1.2 also removes $c_M$: extraction already supplies $M$,
+resistant.  Version 1.2 removes $c_M$: extraction already supplies $M$,
 the request fixes its digest, and ticket-hash collision resistance prevents a
 second payload from verifying under that digest.
 
-The authors' S\&P 2026 slides report a short-signature trade-off of roughly
-5--8~KB with a few megabytes of blind-issuance communication.  The ePrint
-revision reports a wider 3.8--11~KB signature range.  This is aligned with the
-present objective because issuance is unconstrained while the online ticket is
-not.  Exact numbers must be recomputed after adding $R_{\mathsf{aug}}$; the
-augmented proof can be substantially larger than the paper's base
-well-built-request proof~\cite{blind-uov,blind-uov-slides}.
+\paragraph{Frozen Blind-UOV costing profile.}
+Version 1.3 fixes the 31 October 2025 revision and its
+\emph{Blind-UOV-Is, NIST-I, Shorter, TCitH} row.  The paper gives
+$\bar n_r=256$ bits, $\bar n_x=640$ bits, a 66.6~KB public key, and a
+3,772-byte final signature.  Its NIST-I/Shorter TCitH parameters are
+$\tau=12$, ten $2^{11}$-leaf trees plus two $2^{10}$-leaf trees,
+$T_{\mathrm{open}}=111$, an explicit proof-of-work of 9 bits, and total
+proof-of-work 14.0 bits~\cite{blind-uov}.  These values minimize the stored and
+online object; issuance is intentionally the expensive side of the trade-off.
 
-\paragraph{Reference backend decision.}
-The conservative first implementation will use the same MPC-in-the-Head/CAP
-family as Blind-UOV and compile $\mathcal C_{\mathsf{aug}}$ as a generic
-post-quantum circuit, accepting multi-megabyte issuance.  This keeps the final
-Blind-UOV verifier unchanged and avoids introducing a second proof paradigm.
+\paragraph{Correct backend separation.}
+Blind-UOV has two different proof objects.  Its CAP commitment and final CAP
+proof are carried by the final blind signature.  Before the signer responds,
+the user separately sends a NIZK $\pi_1$ proving that the masked request and
+CAP commitment are well formed.  Our $\pi_{\mathsf{issue}}$ replaces and
+augments this $\pi_1$; it does \emph{not} replace the final CAP proof.
+Consequently the 3,772-byte final signature remains unchanged, while the five
+ticket/trace blocks increase only the issuance NIZK circuit.
+
+For costing, use the paper's illustrative Shockwave/Anemoi row.  Before our
+extension, Blind-UOV-Is/Shorter is reported as approximately 16 million R1CS
+constraints, a 2.8~MB proof, 32~s proving, and 2.5~s verification.  The paper
+explicitly treats these as estimates and notes that the benchmarked
+implementations do not provide the required zero-knowledge mode.  It also does
+not establish the simulation-extractability required by our concurrent GCCA
+proof.  Therefore Shockwave/Anemoi is a \emph{costing backend}, not yet the
+security-frozen $\Piiss$ implementation~\cite{blind-uov}.
+
 The multivariate commitment
 $c=(\mu+F(r),G(r))$ and relation proofs of Bouillaguet et al.
 are a promising later optimization because they are algebraically aligned with
@@ -914,15 +965,16 @@ Sample $e$ uniformly from the weight-$t$ vectors and compute
 \begin{align}
  s&=H_{\mathrm{pub}}e^\top\in\mathbb F_2^{n-k},
    &\mathrm{wt}(e)&=t, \tag{N1}\label{eq:n1}\\
- \mathsf{ad}&=\mathsf{Encode}(\mathsf{ci},\sn,h), &&\tag{N2}\label{eq:n2}\\
+ \mathsf{ad}&=\mathsf{Encode}(\ctx,\sn,h), &&\tag{N2}\label{eq:n2}\\
  Z&=\mathsf{SHAKE256}(
-   \mathtt{PQ\mbox{-}RBBC/KDF}\|\mathsf{Encode}(e,s,\mathsf{ci}),640),
+   \mathtt{PQ\mbox{-}RBBC/KDF}\|e\|s\|\ctx,640),
    &&\tag{N3}\label{eq:n3}\\
  (K_{\mathrm{mac}},P)&=Z,
    &|K_{\mathrm{mac}}|&=32,\quad |P|=48, \tag{N4}\label{eq:n4}\\
  c_\mu&=\mu\oplus P, &&\tag{N5}\label{eq:n5}\\
  \gamma&=\mathsf{KMAC256}_{K_{\mathrm{mac}}}
- (\mathtt{PQ\mbox{-}RBBC/TAG}\|s\|c_\mu\|\mathsf{ad},256),
+ (s\|c_\mu\|\mathsf{ad},256;
+   \mathsf{custom}=\mathtt{PQ\mbox{-}RBBC/TAG}),
  &&\tag{N6}\label{eq:n6}\\
  C&=(s,c_\mu,\gamma). &&\tag{N7}\label{eq:n7}
 \end{align}
@@ -936,7 +988,7 @@ $R_{\mathsf{enc}}$ interface.
 \begin{definition}[Concrete trace relation]\label{def:ntr}
 For $C=(s,c_\mu,\gamma)$, define
 \[
- R_{\mathsf{Ntr}}(\mathsf{tpk},C,\mathsf{ci},h;
+ R_{\mathsf{Ntr}}(\mathsf{tpk},C,\ctx,h;
                     \rid,\sn,e)=1
 \]
 iff $\mathsf{tpk}$ selects $H_{\mathrm{pub}}$ and the fixed profile above, and
@@ -945,9 +997,9 @@ $\mu=\mathsf{Encode}_{48}(\rid\|\sn)$.  In this version,
 \[
  \begin{aligned}
  &R_{\mathsf{enc}}(\mathsf{tpk},C,
-     \mathsf{Encode}(\mathsf{ci},\sn,h);\rid\|\sn,\rho_{\mathrm{tr}})=1\\
+     \mathsf{Encode}(\ctx,\sn,h);\rid\|\sn,\rho_{\mathrm{tr}})=1\\
  &\qquad\Longleftrightarrow\quad
- R_{\mathsf{Ntr}}(\mathsf{tpk},C,\mathsf{ci},h;\rid,\sn,e)=1,
+ R_{\mathsf{Ntr}}(\mathsf{tpk},C,\ctx,h;\rid,\sn,e)=1,
  \qquad \rho_{\mathrm{tr}}=e.
  \end{aligned}
 \]
@@ -1012,7 +1064,7 @@ reductions $\mathcal B_1,\mathcal B_2$ such that
 
 \begin{proof}
 Starting from the real game, replace the 640-bit SHAKE256 value at the hidden
-input $(e,s,\mathsf{ci})$ by a uniform string.  A distinguisher for this step
+input $(e,s,\ctx)$ by a uniform string.  A distinguisher for this step
 either yields a threshold syndrome-decoding solver or is bounded by the stated
 one-way-to-hiding loss.  Now $P$ is an independent uniform 48-byte pad and
 $K_{\mathrm{mac}}$ is an independent uniform key.  Replace KMAC256 under that
@@ -1058,12 +1110,10 @@ mceliece8192128 & 1357824 B & 208 B & 288 B\\
 \end{tabular}
 \end{center}
 The aggressive working anchor is mceliece6688128: approximately 1.045~MB of
-cached public key buys a 288-byte trace ciphertext.  With a 5--8~KB Blind-UOV
-signature, 16-byte serial, 32-byte holder hash, and roughly 32--64 bytes of
-compact common identifiers/digests, the online ticket is approximately
-5.4--8.5~KB.  This is an
-engineering estimate, not a benchmark, but it is roughly 8--13 times smaller
-than a 70~KB design.
+cached public key buys a 288-byte trace ciphertext.  The frozen Blind-UOV-Is
+profile and exact 4,140-byte complete ticket are derived in
+Section~\ref{sec:circuit-audit}; these are still research targets rather than
+implementation benchmarks.
 
 \begin{remark}[Mandatory 2026 cryptanalytic hold]\label{rem:mceliece-hold}
 The anchor above is not frozen.  A 10 August 2026 preprint gives a classical
@@ -1073,6 +1123,122 @@ attack; its concrete improvements are described as not yet practical
 \cite{mceliece-2026-attack}.  That is not a demonstrated practical break, but it
 materially changes confidence.  Deployment parameter selection is blocked
 until independent review quantifies this attack for the threshold construction.
+\end{remark}
+
+\subsection{Reproducible five-block circuit audit}\label{sec:circuit-audit}
+
+\paragraph{Counting model.}
+The paper's Anemoi profile uses an R1CS over $\mathbb F_{2^{129}}$ for NIST
+level I.  Addition, xor, multiplication by public constants, fixed-width
+concatenation, and the public binary syndrome map are linear.  Each Boolean AND
+or field multiplication contributes one nonlinear R1CS constraint.  Following
+the Blind-UOV paper, one Keccak-f permutation costs
+$24\cdot1600=38{,}400$ constraints~\cite{blind-uov}.  The audit counts only
+constraints added beyond the paper's approximately 16-million-constraint
+Blind-UOV-Is/Shorter $\pi_1$ baseline.
+
+\paragraph{Exact-weight gadget.}
+The witness $e$ has 6,688 bits.  Pad it with 1,504 public zeros to 8,192 inputs
+and sum them using a fixed balanced binary adder tree.  Combining two $j$-bit
+counters uses one half-adder and $j-1$ full adders.  Since xor is linear, the
+nonlinear cost is $1+2(j-1)=2j-1$.  The exact cost is therefore
+\[
+ \sum_{j=1}^{13}\frac{8192}{2^j}(2j-1)=24{,}547
+\]
+AND constraints.  Equating the final 14-bit count to 128 is linear.  This
+gadget avoids the invalid shortcut $\sum e_i=128$ in characteristic two, which
+would check only parity.  Separately, $e$, $\sn$, and $k_{\mathrm{hold}}$
+require $6688+128+256=7{,}072$ bitness constraints.
+
+\paragraph{Exact Keccak accounting.}
+SHAKE256 has a 136-byte rate.  With pad10*1, an $L$-byte message uses
+$\lfloor L/136\rfloor+1$ absorb permutations.  The fixed encodings give:
+\begin{center}
+\begin{tabular}{lrrr}
+\toprule
+Invocation & Absorbed bytes & Keccak-f calls & Nonlinear constraints\\
+\midrule
+$H_{\mathrm{ticket}}(M)$ & $14+368=382$ & 3 & 115,200\\
+$H_{\mathrm{hold}}(k)$ & $12+32=44$ & 1 & 38,400\\
+Trace SHAKE KDF & $11+836+208+32=1087$ & 8 & 307,200\\
+KMAC256 & $136+136+336+3=611$ & 5 & 192,000\\
+\midrule
+Total & & 17 & 652,800\\
+\bottomrule
+\end{tabular}
+\end{center}
+For KMAC, the first 136-byte block is the cSHAKE function/customization prefix,
+the second is $\mathsf{bytepad}(\mathsf{encode\_string}(K),136)$, the
+authenticated data is $208+48+80=336$ bytes, and
+$\mathsf{right\_encode}(256)$ is three bytes.  All squeezing fits in the first
+rate block and adds no permutation.
+
+\paragraph{Five-block result.}
+The incremental nonlinear counts are:
+\begin{center}
+\begin{tabular}{lrl}
+\toprule
+Block & Constraints & Contents\\
+\midrule
+$\mathcal C_{\mathsf{shape}}$ & 128 & serial bitness; widths/wiring linear\\
+$\mathcal C_{\mathsf{ticketHash}}$ & 115,200 & three SHAKE permutations\\
+$\mathcal C_{\mathsf{BUOVmask}}$ & 0 & already in the paper baseline\\
+$\mathcal C_{\mathsf{holder}}$ & 38,656 & 256 bitness + one SHAKE permutation\\
+$\mathcal C_{\mathsf{trace}}$ & 530,435 & $e$ bitness, weight, KDF, and KMAC\\
+\midrule
+Added relation & 684,419 & exact for the specified gadgets\\
+\bottomrule
+\end{tabular}
+\end{center}
+The syndrome equation adds 1,664 linear output equalities but no nonlinear
+gate.  The xor pad, associated-data construction, external/internal serial
+equality, and final constant comparisons are also linear.
+
+\paragraph{Paper-anchored issuance estimate.}
+Because the paper rounds its baseline to 16 million constraints, the combined
+number is itself approximate:
+\[
+ N_{\pi_{\mathsf{issue}}}\approx16{,}000{,}000+684{,}419
+ =16{,}684{,}419,
+\]
+an increase of 4.2776\%.  Applying the paper's square-root proof-size scaling
+and linear prover scaling gives approximately 2.86~MB and 33.4~s.  A
+conservative linear scaling of its reported verifier figure gives 2.61~s.
+These are extrapolations from Table~5 of the Blind-UOV paper, not local
+benchmarks.  The paper does not provide enough information to derive peak
+prover memory, so memory remains a measurement obligation.
+
+\begin{proposition}[Monolithic-circuit feasibility decision]
+Under the costing model above, adding the entire ticket and trace relation to
+the existing well-built-request NIZK changes its constraint count by less than
+5\%.  There is therefore no communication-based reason to split
+$R_{\mathsf{aug}}$ into linked proofs at this stage.  A split is justified only
+if the selected simulation-extractable backend, implementation memory, or
+prover parallelism makes the monolithic circuit impractical.
+\end{proposition}
+
+\paragraph{Exact online object under the frozen profile.}
+For mceliece6688128, $|C|=288$ bytes and
+\[
+ |M|=32+16+32+288=368\text{ bytes}.
+\]
+Combining this with the published 3,772-byte Blind-UOV-Is/Shorter signature
+gives
+\[
+ |T|=|M|+|\sigma|=4{,}140\text{ bytes}
+\]
+before transport framing.  The cached public material is approximately
+1,044,992 bytes for the trace key plus the paper's rounded 66.6~KB Blind-UOV
+verification key.  Relative to a 70~KB online credential, the frozen target is
+about 17 times smaller.  The approximately 2.86~MB issuance NIZK is offline and
+is never forwarded to a satellite verifier.
+
+\begin{remark}[Audit reproducibility]
+The companion script \texttt{pq\_rbbc\_circuit\_audit.py} recomputes every
+integer above and emits the checked
+\texttt{pq\_rbbc\_circuit\_audit\_v1\_3.json}.  Exact gadget counts and
+paper-derived estimates are kept in separate JSON fields so a rounded source
+number cannot be mistaken for a benchmark.
 \end{remark}
 
 \subsection{Local mixing as a future trace-encryption candidate}
@@ -1101,13 +1267,15 @@ blindness and one-more unforgeability, threshold syndrome-decoding privacy with
 robust shares, QROM one-way-to-hiding, KMAC integrity, and
 authorization unforgeability.\\
 \addlinespace
-Concretely instantiated & Blind-UOV request/message binding; five-block augmented
-relation; exact Niederreiter--SHAKE--KMAC trace relation; information-theoretic
-unique opening; trace correctness; and online trace byte counts.\\
+Concretely instantiated & Blind-UOV-Is/Shorter costing profile; five-block
+augmented relation; exact Niederreiter--SHAKE--KMAC trace relation;
+information-theoretic unique opening; 684,419 added nonlinear constraints; and
+a 4,140-byte online-ticket target.\\
 \addlinespace
-Not yet instantiated & Exact MPC-in-the-Head/CAP gate counts and parameters,
-robust threshold share transcript, implementation benchmarks, and a reviewed
-response to the August 2026 McEliece cryptanalysis.\\
+Not yet instantiated & A post-quantum zero-knowledge and
+simulation-extractable implementation of $\Piiss$, peak prover memory, robust
+threshold-share transcript, implementation benchmarks, and a reviewed response
+to the August 2026 McEliece cryptanalysis.\\
 \addlinespace
 Explicitly not claimed & Standard IND-CCA security of the bare ciphertext,
 security against a malicious issuer, metadata/timing anonymity without system
@@ -1139,28 +1307,35 @@ machine-tested or enforced by type/API boundaries.
   \item Epoch metadata is federation-fixed; the issuer cannot personalize it.
   \item Every component and parameter set has an explicit post-quantum security
   claim at the chosen target category.
+  \item The parser accepts exactly the frozen 368-byte payload layout and
+  rejects variable-length or alternate encodings before signature verification.
+  \item The issuance circuit enforces bitness of all 6,688 error coordinates
+  and proves exact weight 128 with the specified counter gadget; a parity-only
+  check is forbidden.
+  \item The Shockwave/Anemoi figures may be used for costing only until a
+  backend meeting the stated zero-knowledge and simulation-extractability model
+  is proved or substituted.
 \end{enumerate}
 
 \section{Next proof step}
 
-The next step is not satellite integration.  The trace relation and its unique
-opening are now fixed.  The remaining concrete step is a circuit audit:
+The relation, unique opening, fixed layout, and circuit audit are now complete.
+The next step is an executable witness/constraint implementation plus a proof
+backend qualification:
 
 \begin{quote}
-\emph{Freeze one Blind-UOV revision, arithmetize all five blocks---shape,
-ticket hash, Blind-UOV mask, holder hash, and the exact (N1)--(N7) trace
-relation---in its MPC-in-the-Head/CAP backend, then count nonlinear gates, hash
-permutations, proof bytes, prover memory, and issuer verification cost.}
+\emph{Implement the five-block witness builder and R1CS generator, test every
+accept/reject invariant, and benchmark peak memory.  In parallel, either prove
+that the chosen hash-based NIZK is post-quantum zero knowledge and
+simulation-extractable in the required model, or revise the GCCA reduction to
+the exact extractability property it actually provides.}
 \end{quote}
 
-This step will decide whether one monolithic proof is viable or whether
-$R_{\mathsf{aug}}$ must be split into compositionally linked proofs.  The
-Blind-UOV parameters may be frozen for that experiment; the Niederreiter
-deployment parameter MUST remain provisional under
-Remark~\ref{rem:mceliece-hold}.  The satellite AKE remains out of scope until
-this core closes.
-
-\section*{References}
+The current count favors one monolithic proof; splitting is no longer the
+default.  The Niederreiter deployment parameter MUST remain provisional under
+Remark~\ref{rem:mceliece-hold}.  After backend qualification, the remaining
+cryptographic component is the robust threshold-share transcript.  Satellite
+AKE integration remains out of scope until those two obligations close.
 
 \begin{thebibliography}{99}
 
