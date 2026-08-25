@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Regression tests for the executable PQ-RBBC/SGTD v1.8 relation."""
+"""Regression tests for the executable PQ-RBBC/SGTD v2.0 relation."""
 
 from __future__ import annotations
 
@@ -65,9 +65,12 @@ class RelationTests(unittest.TestCase):
         self.assertTrue(contract["linear_mask_equation_internalized"])
         self.assertEqual(contract["native_cap_hash_external_assertions"], 1)
         self.assertEqual(contract["anemoi_component_nonlinear_rows"], 336)
-        self.assertEqual(contract["blind_uov_reported_anemoi_constraints"], 240)
-        self.assertFalse(contract["reported_constraint_count_reproduced"])
-        self.assertFalse(contract["parameter_gap_resolved"])
+        self.assertTrue(contract["request_binding_hash_primitive_implemented"])
+        self.assertFalse(contract["complete_cap_hash_implemented"])
+        self.assertFalse(contract["blind_uov_bit_exact_compatible"])
+        self.assertFalse(contract["paper_240_gap_blocks_fork_engineering"])
+        self.assertFalse(contract["fork_security_proof_revalidated"])
+        self.assertFalse(contract["signature_size_rebenchmarked"])
         self.assertFalse(contract["production_closed"])
 
     def test_every_negative_case_rejects(self) -> None:

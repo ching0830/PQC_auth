@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
-"""Executable v1.9 reference relation for the PQ-RBBC/SGTD research draft.
+"""Executable v2.0 reference relation for the PQ-RBBC/SGTD research draft.
 
 This module implements the *incremental* five-block issuance relation described
 in the accompanying proof document.  It emits a streaming characteristic-two
 circuit IR and checks an honest witness.  It deliberately does not implement:
 
-* Blind-UOV's native CAP.Commit-plus-hash circuit (a test adapter is used);
+* the fork's native CAP.Commit-plus-hash circuit (a test CAP adapter is used);
 * a proof-system backend or flattened R1CS matrix serialization;
 * a certified Goppa parity-check key or threshold decoder.
 
-The deterministic parity-check matrix and Blind-UOV adapter below are test
+The deterministic parity-check matrix and forked issuance adapter below are test
 fixtures.  They are useful for checking bindings and gate counts, not for
 deployment or cryptographic benchmarking.
 """
@@ -24,11 +24,11 @@ import subprocess
 from dataclasses import asdict, dataclass, field, replace
 from typing import Iterable, Protocol, Sequence
 
-import pq_rbbc_blind_uov_native as native_blind_uov
+import pq_rbbc_native_profile as native_profile
 from pq_rbbc_blind_uov_abi import (
     BlindUOVAdapter,
     BlindUOVRequest as BlindRequest,
-    TestBlindUOVAdapter,
+    TestPQRBBC336Adapter,
 )
 
 
@@ -904,7 +904,7 @@ def generate_issue_circuit(
 
     builder.set_block("blind_uov_mask_binding")
     if wire_bytes(public_blind_target) != statement.blind_request.masked_target:
-        raise AssertionError("public Blind-UOV target wire encoding changed")
+        raise AssertionError("public PQ-RBBC-BUOV-336 target wire encoding changed")
     blind_mask = input_wires(
         builder,
         witness.blind_mask,
@@ -928,7 +928,7 @@ def generate_issue_circuit(
     ):
         builder.assert_xor_zero(y_bit, r_bit, h_bit)
     builder.external_assert(
-        "native_blind_uov_iii_cap_hash",
+        "native_pq_rbbc_buov_336_cap_hash",
         adapter.verify_cap_hash(
             wire_bytes(computed_digest),
             witness.blind_mask,
@@ -989,16 +989,16 @@ def generate_issue_circuit(
     )
 
 
-def reference_fixture() -> tuple[SystematicParityCheck, IssueStatement, IssueWitness, TestBlindUOVAdapter]:
+def reference_fixture() -> tuple[SystematicParityCheck, IssueStatement, IssueWitness, TestPQRBBC336Adapter]:
     matrix = SystematicParityCheck()
-    adapter = TestBlindUOVAdapter()
+    adapter = TestPQRBBC336Adapter()
     common_ctx = hashlib.shake_256(b"PQ-RBBC/v1.4/context").digest(32)
     rid = hashlib.shake_256(b"PQ-RBBC/v1.4/identity").digest(32)
     sn = hashlib.shake_256(b"PQ-RBBC/v1.4/serial").digest(16)
     holder_key = hashlib.shake_256(b"PQ-RBBC/v1.4/holder-key").digest(32)
     error = sample_weight_error(b"reference-vector")
-    blind_mask = hashlib.shake_256(b"PQ-RBBC/v1.8/blind-mask").digest(72)
-    blind_randomness = hashlib.shake_256(b"PQ-RBBC/v1.8/blind-randomness").digest(32)
+    blind_mask = hashlib.shake_256(b"PQ-RBBC/v2.0/blind-mask").digest(72)
+    blind_randomness = hashlib.shake_256(b"PQ-RBBC/v2.0/blind-randomness").digest(32)
     statement, witness = build_honest_instance(
         matrix,
         common_ctx,
@@ -1151,21 +1151,21 @@ def build_manifest(full_negative_circuits: bool = False) -> dict[str, object]:
             ).items()
         }
     return {
-        "implementation_version": "1.9",
+        "implementation_version": "2.0",
         "status": "executable research relation; not a deployment implementation",
         "claim_boundary": {
             "implemented": "incremental relation plus the in-circuit y = r + hash_image mask equation",
-            "blind_uov": "a GF(2^193) upstream-main Anemoi component probe exists, but the bit-exact CAP.Commit-plus-H subrelation remains one external assertion",
+            "forked_issuance": "the Anemoi-193/336 sponge and request-binding hash primitive exist, but production CAP.Commit-plus-H_RBBC remains one external assertion",
             "r1cs_backend": "streaming IR events only; no flattened matrices or proof backend",
             "trace_key": "deterministic systematic test fixture; not a certified Goppa key",
         },
         "fixed_sizes": {
             "payload_bytes": len(statement.payload.encode()),
-            "blind_uov_profile": "Blind-UOV-III / NIST III / Shorter",
-            "blind_uov_public_key_kilobytes": BLIND_UOV_PUBLIC_KEY_KILOBYTES,
-            "blind_uov_signature_bytes": SIGNATURE_BYTES,
+            "issuance_profile": "PQ-RBBC-BUOV-III / Anemoi-193/336 experimental fork",
+            "paper_public_key_kilobytes_provisional_target": BLIND_UOV_PUBLIC_KEY_KILOBYTES,
+            "paper_signature_bytes_provisional_target": SIGNATURE_BYTES,
             "issuance_request_bytes_excluding_proof": len(statement.blind_request.encode()),
-            "online_ticket_bytes": len(statement.payload.encode()) + SIGNATURE_BYTES,
+            "online_ticket_bytes_provisional_target": len(statement.payload.encode()) + SIGNATURE_BYTES,
         },
         "self_checks": self_checks(),
         "honest_relation": {
@@ -1186,16 +1186,20 @@ def build_manifest(full_negative_circuits: bool = False) -> dict[str, object]:
             "full_circuit_cases": negative_circuit_results,
         },
         "native_import_contract": {
-            "relation_id": native_blind_uov.RELATION_ID,
-            "target_field": native_blind_uov.TARGET_FIELD,
-            "paper_profile_sha256": native_blind_uov.PAPER_PROFILE.fingerprint(),
+            "relation_id": native_profile.RELATION_ID,
+            "target_field": native_profile.TARGET_FIELD,
+            "fork_profile_sha256": native_profile.fork_profile_fingerprint(),
             "linear_mask_equation_internalized": True,
             "native_cap_hash_external_assertions": circuit.external_assertions,
-            "anemoi_component_relation_id": native_blind_uov.anemoi_f193.COMPONENT_RELATION_ID,
-            "anemoi_component_nonlinear_rows": native_blind_uov.anemoi_f193.NONLINEAR_ROWS,
-            "blind_uov_reported_anemoi_constraints": native_blind_uov.anemoi_f193.BLIND_UOV_REPORTED_CONSTRAINTS,
-            "reported_constraint_count_reproduced": False,
-            "parameter_gap_resolved": False,
+            "anemoi_component_relation_id": native_profile.permutation.COMPONENT_RELATION_ID,
+            "anemoi_component_nonlinear_rows": native_profile.permutation.NONLINEAR_ROWS,
+            "sponge_profile_relation_id": native_profile.sponge.PROFILE_RELATION_ID,
+            "request_binding_hash_primitive_implemented": True,
+            "complete_cap_hash_implemented": False,
+            "blind_uov_bit_exact_compatible": False,
+            "paper_240_gap_blocks_fork_engineering": False,
+            "fork_security_proof_revalidated": False,
+            "signature_size_rebenchmarked": False,
             "production_closed": False,
         },
         "reference_vector": {

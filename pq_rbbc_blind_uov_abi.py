@@ -1,17 +1,20 @@
 #!/usr/bin/env python3
-"""Hidden-state ABI for the single-lane Blind-UOV-III issuance boundary.
+"""Hidden-state ABI for the single-lane PQ-RBBC-BUOV-336 fork.
 
 Protocols 3 and 4 of the 31 October 2025 revision of ePrint 2025/895 send
 only ``(y, pi_1)`` to the signer.  The CAP commitment ``c_r``, message ``mu``,
 mask ``r`` and CAP randomness ``rho`` remain hidden until finalization.
 
-Version 1.8 splits the request relation into an in-circuit linear mask equation
+Version 1.8 split the request relation into an in-circuit linear mask equation
 ``y = r + h`` and one narrower native boundary
 ``h = H(mu, CAP.Commit(r; rho))``.  Its 576-bit masked target avoids
 the invalid parallel-repetition argument in v1.6: under CAP unique-witness
 soundness, J_mu(r,rho)=r+H(mu,CAP.Commit(r;rho)) is a pointwise shift of a
-576-bit random function on admissible (mu,c_r) inputs.  Its SHAKE adapter is
-test-only and does not implement the paper's TCitH/Anemoi CAP construction.
+576-bit random function on admissible (mu,c_r) inputs.  Version 2.0 retains the
+72-byte hidden-state ABI but explicitly forks the hash instantiation to
+PQ-RBBC-Anemoi-193/336-Sponge-v1.  The CAP commitment remains a test fixture;
+the fork is not bit-exact Blind-UOV and the paper's signature size is only a
+provisional target until the fork is re-benchmarked.
 """
 
 from __future__ import annotations
@@ -21,12 +24,15 @@ import json
 from dataclasses import asdict, dataclass
 from typing import Protocol
 
+import pq_rbbc_anemoi_sponge as fork_sponge
+
 
 MESSAGE_BYTES = 32
 MASK_BYTES = 72
 TARGET_BYTES = 72
 HASH_IMAGE_BYTES = 72
 TEST_CAP_RANDOMNESS_BYTES = 32
+TEST_FORK_CAP_COMMITMENT_BYTES = 48
 
 
 def xor_bytes(left: bytes, right: bytes) -> bytes:
@@ -43,7 +49,7 @@ class BlindUOVRequest:
 
     def encode(self) -> bytes:
         if len(self.masked_target) != TARGET_BYTES:
-            raise ValueError("Blind-UOV-III masked target must be 72 bytes")
+            raise ValueError("PQ-RBBC-BUOV-336 masked target must be 72 bytes")
         return self.masked_target
 
 
@@ -156,24 +162,94 @@ class TestBlindUOVAdapter:
         return request == self.create(message, mask, cap_randomness)
 
 
+class TestPQRBBC336Adapter:
+    """Fork adapter: test CAP commitment plus the real v2.0 sponge hash."""
+
+    name = "TEST-ONLY-PQ-RBBC-BUOV-336-CAP-WITH-ANEMOI-SPONGE"
+    _commit_label = b"PQ-RBBC/v2.0/TEST-CAP-COMMIT"
+
+    @staticmethod
+    def _check_lengths(message: bytes, mask: bytes, cap_randomness: bytes) -> None:
+        if len(message) != MESSAGE_BYTES:
+            raise ValueError("message digest must be 32 bytes")
+        if len(mask) != MASK_BYTES:
+            raise ValueError("PQ-RBBC-BUOV-336 mask must be 72 bytes")
+        if len(cap_randomness) != TEST_CAP_RANDOMNESS_BYTES:
+            raise ValueError("test CAP randomness must be 32 bytes")
+
+    def hidden_state(
+        self, message: bytes, mask: bytes, cap_randomness: bytes
+    ) -> TestHiddenState:
+        self._check_lengths(message, mask, cap_randomness)
+        commitment = hashlib.shake_256(
+            self._commit_label + mask + cap_randomness
+        ).digest(TEST_FORK_CAP_COMMITMENT_BYTES)
+        hash_image = fork_sponge.hash_request_binding(message, commitment)
+        return TestHiddenState(
+            message, mask, cap_randomness, commitment, hash_image
+        )
+
+    def hash_image(
+        self, message: bytes, mask: bytes, cap_randomness: bytes
+    ) -> bytes:
+        return self.hidden_state(message, mask, cap_randomness).hash_image
+
+    def verify_cap_hash(
+        self,
+        message: bytes,
+        mask: bytes,
+        cap_randomness: bytes,
+        hash_image: bytes,
+    ) -> bool:
+        if len(hash_image) != HASH_IMAGE_BYTES:
+            return False
+        return hash_image == self.hash_image(message, mask, cap_randomness)
+
+    def create(
+        self, message: bytes, mask: bytes, cap_randomness: bytes
+    ) -> BlindUOVRequest:
+        return BlindUOVRequest(
+            xor_bytes(mask, self.hash_image(message, mask, cap_randomness))
+        )
+
+    def verify(
+        self,
+        request: BlindUOVRequest,
+        message: bytes,
+        mask: bytes,
+        cap_randomness: bytes,
+    ) -> bool:
+        request.encode()
+        return request == self.create(message, mask, cap_randomness)
+
+
 def build_abi_manifest() -> dict[str, object]:
-    adapter = TestBlindUOVAdapter()
-    message = hashlib.shake_256(b"PQ-RBBC/v1.8/abi/message").digest(32)
-    mask = hashlib.shake_256(b"PQ-RBBC/v1.8/abi/mask").digest(MASK_BYTES)
-    randomness = hashlib.shake_256(b"PQ-RBBC/v1.8/abi/randomness").digest(32)
+    adapter = TestPQRBBC336Adapter()
+    message = hashlib.shake_256(b"PQ-RBBC/v2.0/abi/message").digest(32)
+    mask = hashlib.shake_256(b"PQ-RBBC/v2.0/abi/mask").digest(MASK_BYTES)
+    randomness = hashlib.shake_256(b"PQ-RBBC/v2.0/abi/randomness").digest(32)
     request = adapter.create(message, mask, randomness)
     hidden = adapter.hidden_state(message, mask, randomness)
     changed_message = bytes((message[0] ^ 1,)) + message[1:]
     return {
-        "implementation_version": "1.8",
-        "paper_anchor": "IACR ePrint 2025/895, revision 2025-10-31, Protocols 3, 4, 8-10, Tables 2 and 4",
-        "profile": "Blind-UOV-III / NIST III / identity F / Shorter / TCitH",
+        "implementation_version": "2.0",
+        "paper_anchor": "Blind-UOV ePrint 2025/895 is a framework and size comparator, not a bit-exact implementation claim",
+        "profile": "PQ-RBBC-BUOV-III/Anemoi-193-336 experimental fork",
+        "fork_profile": {
+            "relation_id": fork_sponge.PROFILE_RELATION_ID,
+            "profile_fingerprint": fork_sponge.profile_fingerprint(
+                fork_sponge.permutation.derive_parameters()
+            ),
+            "blind_uov_bit_exact_compatible": False,
+            "paper_security_reduction_revalidated": False,
+            "paper_signature_size_rebenchmarked": False,
+        },
         "paper_parameters": {
             "security_level_bits": 192,
             "mask_bits": 576,
             "hash_and_sign_signature_bits": 1472,
             "public_key_kilobytes": 189.2,
-            "final_signature_bytes": 11644,
+            "final_signature_bytes_provisional_target": 11644,
             "cap_parallel_repetitions": 18,
             "cap_tree_groups": [
                 {"trees": 2, "leaves_per_tree": 4096},
@@ -184,7 +260,8 @@ def build_abi_manifest() -> dict[str, object]:
             "total_pow_bits": 13.9,
             "anemoi_binary_field_degree": 193,
             "anemoi_state_elements": 8,
-            "anemoi_constraints_per_permutation": 240,
+            "blind_uov_reported_anemoi_constraints_per_permutation": 240,
+            "fork_anemoi_constraints_per_permutation": 336,
         },
         "public_signer_view": {
             "request_fields_excluding_proof": ["y"],
@@ -203,7 +280,7 @@ def build_abi_manifest() -> dict[str, object]:
             "576-bit mask r",
             "CAP randomness rho",
             "derived hidden CAP commitment c_r",
-            "576-bit hash image H_BUOV(m,c_r)",
+            "576-bit hash image H_RBBC(m,c_r)",
             "holder key",
             "trace error vector",
         ],
@@ -230,13 +307,13 @@ def build_abi_manifest() -> dict[str, object]:
         },
         "binding_reduction": {
             "name": "single-lane QROM cross-message request collision resistance",
-            "map": "J_m(r,rho)=r+H_BUOV(m,CAP.Commit(r;rho))",
+            "map": "J_m(r,rho)=r+H_RBBC(m,CAP.Commit(r;rho))",
             "unique_witness_step": "CAP unique-witness soundness makes r a well-defined value for every admissible c_r",
-            "random_function_step": "Z(m,c_r)=H_BUOV(m,c_r)+r(c_r) is a pointwise shift of a 576-bit random function",
+            "random_function_step": "Z(m,c_r)=H_RBBC(m,c_r)+r(c_r) is a pointwise shift of a 576-bit random function",
             "qrom_bound": "O(q_H^3/2^576) plus CAP unique-witness/extraction failure",
             "at_2_pow_128_queries": "the random-function term is O(2^-192)",
             "generic_quantum_collision_cost": "about 2^(576/3)=2^192 queries",
-            "status": "paper-level QROM reduction in the stated ideal model; native CAP/backend qualification remains external",
+            "status": "generic QROM argument in the ideal model; the concrete forked hash and complete CAP/backend still require independent qualification",
         },
         "v1_6_correction": {
             "independent_parallel_lanes_amplify_security_bits": False,
@@ -244,6 +321,9 @@ def build_abi_manifest() -> dict[str, object]:
         },
         "claim_boundary": {
             "test_adapter_is_native_blind_uov": False,
+            "test_adapter_uses_forked_anemoi_request_hash": True,
+            "test_cap_commitment_is_production_cap": False,
+            "blind_uov_bit_exact_compatibility": False,
             "paper_supplies_executable_constraint_generator": False,
             "native_tcih_anemoi_constraint_import_complete": False,
             "linear_y_equals_r_plus_h_internalized": True,

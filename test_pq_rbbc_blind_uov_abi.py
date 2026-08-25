@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Regression tests for the Blind-UOV-III hidden-state ABI."""
+"""Regression tests for the PQ-RBBC-BUOV-336 hidden-state ABI."""
 
 from __future__ import annotations
 
@@ -13,10 +13,10 @@ import pq_rbbc_reference as core
 
 class BlindUOVVisibilityTests(unittest.TestCase):
     def setUp(self) -> None:
-        self.adapter = abi.TestBlindUOVAdapter()
-        self.message = hashlib.shake_256(b"abi-test-message-v1.8").digest(32)
-        self.mask = hashlib.shake_256(b"abi-test-mask-v1.8").digest(72)
-        self.randomness = hashlib.shake_256(b"abi-test-randomness-v1.8").digest(32)
+        self.adapter = abi.TestPQRBBC336Adapter()
+        self.message = hashlib.shake_256(b"abi-test-message-v2.0").digest(32)
+        self.mask = hashlib.shake_256(b"abi-test-mask-v2.0").digest(72)
+        self.randomness = hashlib.shake_256(b"abi-test-randomness-v2.0").digest(32)
         self.request = self.adapter.create(
             self.message, self.mask, self.randomness
         )
@@ -88,7 +88,7 @@ class BlindUOVVisibilityTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.adapter.create(self.message, self.mask[:-1], self.randomness)
 
-    def test_manifest_records_qrom_reduction_and_v1_6_correction(self) -> None:
+    def test_manifest_records_fork_boundary_and_qrom_assumption(self) -> None:
         manifest = abi.build_abi_manifest()
         checks = manifest["regression_checks"]
         self.assertTrue(checks["honest_request_accepts"])
@@ -107,6 +107,12 @@ class BlindUOVVisibilityTests(unittest.TestCase):
         self.assertTrue(
             manifest["claim_boundary"]["linear_y_equals_r_plus_h_internalized"]
         )
+        self.assertTrue(
+            manifest["claim_boundary"]["test_adapter_uses_forked_anemoi_request_hash"]
+        )
+        self.assertFalse(manifest["fork_profile"]["blind_uov_bit_exact_compatible"])
+        self.assertFalse(manifest["fork_profile"]["paper_security_reduction_revalidated"])
+        self.assertFalse(manifest["fork_profile"]["paper_signature_size_rebenchmarked"])
         self.assertFalse(
             manifest["claim_boundary"]["native_tcih_anemoi_constraint_import_complete"]
         )

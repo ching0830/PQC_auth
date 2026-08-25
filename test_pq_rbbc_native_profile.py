@@ -1,0 +1,117 @@
+#!/usr/bin/env python3
+"""Tests for the fail-closed PQ-RBBC v2.0 fork import contract."""
+
+from __future__ import annotations
+
+import unittest
+
+import pq_rbbc_native_profile as native
+
+
+class ForkNativeProfileTests(unittest.TestCase):
+    def test_selected_profile_is_not_blind_uov_bit_exact(self) -> None:
+        manifest = native.build_native_profile_manifest()
+        compatibility = manifest["compatibility"]
+        self.assertFalse(compatibility["blind_uov_bit_exact_compatible"])
+        self.assertFalse(
+            compatibility["paper_security_reduction_automatically_inherited"]
+        )
+        self.assertFalse(
+            compatibility["paper_signature_size_automatically_inherited"]
+        )
+        self.assertFalse(
+            compatibility["reported_240_constraint_gap_blocks_fork_engineering"]
+        )
+        self.assertFalse(manifest["claim_boundary"]["production_closed"])
+
+    def test_missing_import_is_fail_closed(self) -> None:
+        audit = native.audit_fork_import(None)
+        self.assertFalse(audit.closed)
+        self.assertEqual(
+            audit.failures, ("fork_native_import_evidence_missing",)
+        )
+
+    def test_missing_component_rejects(self) -> None:
+        component_rows = {name: 1 for name in native.REQUIRED_NATIVE_COMPONENTS}
+        component_rows.pop("ggm_seed_expansion")
+        evidence = self._complete_synthetic_evidence(component_rows=component_rows)
+        audit = native.audit_fork_import(evidence)
+        self.assertFalse(audit.closed)
+        self.assertTrue(
+            any(item.startswith("missing_native_components:") for item in audit.failures)
+        )
+
+    def test_unreviewed_fork_security_rejects(self) -> None:
+        evidence = self._complete_synthetic_evidence(
+            fork_security_proof_revalidated=False
+        )
+        audit = native.audit_fork_import(evidence)
+        self.assertFalse(audit.closed)
+        self.assertIn("fork_security_proof_revalidated", audit.failures)
+
+    def test_unbenchmarked_signature_size_rejects(self) -> None:
+        evidence = self._complete_synthetic_evidence(
+            signature_size_rebenchmarked=False
+        )
+        audit = native.audit_fork_import(evidence)
+        self.assertFalse(audit.closed)
+        self.assertIn("signature_size_rebenchmarked", audit.failures)
+
+    def test_false_bit_exact_claim_rejects(self) -> None:
+        evidence = self._complete_synthetic_evidence(
+            claims_blind_uov_bit_exact_compatibility=True
+        )
+        audit = native.audit_fork_import(evidence)
+        self.assertFalse(audit.closed)
+        self.assertIn("forbidden_blind_uov_bit_exact_claim", audit.failures)
+
+    def test_structurally_complete_synthetic_evidence_passes(self) -> None:
+        evidence = self._complete_synthetic_evidence()
+        audit = native.audit_fork_import(evidence)
+        self.assertTrue(audit.closed, audit.failures)
+
+    @staticmethod
+    def _complete_synthetic_evidence(
+        **changes: object,
+    ) -> native.ForkNativeImportEvidence:
+        components = {name: 1 for name in native.REQUIRED_NATIVE_COMPONENTS}
+        values: dict[str, object] = {
+            "relation_id": native.RELATION_ID,
+            "fork_profile_sha256": native.fork_profile_fingerprint(),
+            "target_field": native.TARGET_FIELD,
+            "generator_source_sha256": "11" * 32,
+            "parameter_file_sha256": "22" * 32,
+            "row_stream_sha256": "33" * 32,
+            "native_rows": len(components),
+            "external_assertions": 0,
+            "witness_independent_topology": True,
+            "honest_accepts": True,
+            "tamper_rejections": {
+                "message": True,
+                "mask": True,
+                "cap_randomness": True,
+                "hash_image": True,
+            },
+            "component_rows": components,
+            "circuit_ticket_digest_is_native_message": True,
+            "circuit_mask_is_native_mask": True,
+            "circuit_hash_image_is_native_output": True,
+            "domain_separation_locked": True,
+            "serialization_locked": True,
+            "fork_vectors_verified_independently": True,
+            "cap_unique_witness_reviewed": True,
+            "cap_straightline_extraction_reviewed": True,
+            "fork_security_proof_revalidated": True,
+            "signature_size_rebenchmarked": True,
+            "claims_blind_uov_bit_exact_compatibility": False,
+        }
+        values.update(changes)
+        if "component_rows" in changes and "native_rows" not in changes:
+            values["native_rows"] = sum(
+                int(value) for value in values["component_rows"].values()
+            )
+        return native.ForkNativeImportEvidence(**values)
+
+
+if __name__ == "__main__":
+    unittest.main(verbosity=2)

@@ -1,0 +1,53 @@
+{
+  "claim_boundary": {
+    "external_assertions_in_parent_archive": 1,
+    "fork_security_proof_revalidated": false,
+    "full_cap_hash_implemented": false,
+    "production_closed": false,
+    "signature_size_rebenchmarked": false
+  },
+  "closure_audit": {
+    "closed": false,
+    "failures": [
+      "fork_native_import_evidence_missing"
+    ]
+  },
+  "compatibility": {
+    "blind_uov_bit_exact_compatible": false,
+    "blind_uov_framework_used_as_design_source": true,
+    "blind_uov_reported_constraints": 240,
+    "paper_security_reduction_automatically_inherited": false,
+    "paper_signature_size_automatically_inherited": false,
+    "reported_240_constraint_gap_blocks_fork_engineering": false
+  },
+  "fork_profile": {
+    "capacity_bits": 772,
+    "name": "PQ-RBBC-Anemoi-193/336-Sponge-v1",
+    "permutation_nonlinear_rows": 336,
+    "profile_sha256": "4fa0eb276ebba70a9f6c2f38f3f55d197c094121a2b614cc6ef9b7e8522cac87",
+    "rate_bits": 772,
+    "relation_id": "pq-rbbc-buov-iii-336/cap-hash/v1",
+    "request_hash_bits": 576,
+    "sponge_relation_id": "pq-rbbc/anemoi-193-336/sponge/v1",
+    "target_field": "GF(2^193)"
+  },
+  "implementation_version": "2.0",
+  "implemented_primitives": {
+    "anemoi_permutation": true,
+    "canonical_sponge": true,
+    "complete_message_commitment_hash_wiring": false,
+    "field_arithmetic": true,
+    "production_cap_commit": false,
+    "request_binding_hash": true
+  },
+  "required_native_components": [
+    "cap_commit",
+    "consistency_check",
+    "fiat_shamir_hash",
+    "ggm_seed_commitments",
+    "ggm_seed_derivation",
+    "ggm_seed_expansion",
+    "message_commitment_hash"
+  ],
+  "status": "independent Anemoi-193/336 fork selected; request hash primitive implemented; full CAP remains external"
+}

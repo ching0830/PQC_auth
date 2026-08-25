@@ -1,10 +1,10 @@
 {
   "archive": {
     "archive_bytes": 49227687,
-    "archive_sha256": "e6b376d0cc3fe8a6896ea6148ac41bcc70a60a2bc75e4850c82bcf9f94e2816f",
-    "assignment_sha256": "aeb3352509ba0de29bf7e209be00bbcbcc057a7787919eb30c3690911b74e7f4",
+    "archive_sha256": "7a92ed3bc4037cbd98fa0952325cabf9e0f43aafeaf246ba7c45108f14b7973e",
+    "assignment_sha256": "7e0a8cb33042c555198f5e8480a0df8c5834152d6280ab24134ac8edc748aee2",
     "body_bytes": 49227563,
-    "body_sha256": "7b710cdb1eb40385d6e53680b7258d946b8a46ab2f0424e7e17fa797f88769e3",
+    "body_sha256": "cf1ac0f96af28c4cc501c547b58edf845abad410ddbc8957e07246174456e494",
     "external_assertions": 1,
     "external_failures": 0,
     "field": "F2",
@@ -21,10 +21,10 @@
   },
   "claim_boundary": {
     "external_assertions": 1,
-    "external_component": "native Blind-UOV-III CAP.Commit-plus-H subrelation",
+    "external_component": "native PQ-RBBC-BUOV-336 CAP.Commit-plus-H_RBBC subrelation",
     "external_failures_in_honest_vector": 0,
     "not_yet_done": [
-      "native TCitH/Anemoi CAP.Commit-plus-H constraint import",
+      "native CAP.Commit and complete H_RBBC wire import",
       "lift the complete incremental relation into GF(2^193)",
       "proof-system-specific affine elimination",
       "post-quantum zero-knowledge and simulation-extractability qualification",
@@ -50,18 +50,22 @@
     },
     "version": 1
   },
-  "implementation_version": "1.9",
+  "implementation_version": "2.0",
   "native_import_contract": {
     "anemoi_component_nonlinear_rows": 336,
     "anemoi_component_relation_id": "anemoi/upstream-main/gf2-193/state-8/v1",
-    "blind_uov_reported_anemoi_constraints": 240,
+    "blind_uov_bit_exact_compatible": false,
+    "complete_cap_hash_implemented": false,
     "current_archive_field_matches_target": false,
+    "fork_profile_sha256": "4fa0eb276ebba70a9f6c2f38f3f55d197c094121a2b614cc6ef9b7e8522cac87",
+    "fork_security_proof_revalidated": false,
     "linear_mask_equation_internalized": true,
-    "paper_profile_sha256": "1599775abfaa1b0f2a059d3ec3f10f8321394dae11cd6d01c9c9e8f5d1ba8e29",
-    "parameter_gap_resolved": false,
+    "paper_240_gap_blocks_fork_engineering": false,
     "production_closed": false,
-    "relation_id": "blind-uov-iii/cap-hash/v1",
-    "reported_constraint_count_reproduced": false,
+    "relation_id": "pq-rbbc-buov-iii-336/cap-hash/v1",
+    "request_binding_hash_primitive_implemented": true,
+    "signature_size_rebenchmarked": false,
+    "sponge_profile_relation_id": "pq-rbbc/anemoi-193-336/sponge/v1",
     "target_field": "GF(2^193)"
   },
   "round_trip": {
@@ -73,7 +77,7 @@
     "honest_assignment_accepts": true,
     "rows_checked": 2971580
   },
-  "status": "Blind-UOV-III mask binding internalized; native CAP.Commit-plus-hash remains external",
+  "status": "PQ-RBBC-BUOV-336 mask binding internalized; forked request-hash primitive exists; production CAP.Commit-plus-H_RBBC remains external",
   "witness_independence": {
     "honest_and_wrong_weight_body_digest_equal": true,
     "wrong_weight_assignment_rejected": true,

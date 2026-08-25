@@ -1,0 +1,73 @@
+{
+  "claim_boundary": {
+    "capacity_bits": 772,
+    "capacity_margin_is_security_proof": false,
+    "independent_cryptanalysis_complete": false,
+    "production_closed": false
+  },
+  "component_status": {
+    "canonical_sponge": true,
+    "cap_commit": false,
+    "circuit_message_and_commitment_wires_linked": false,
+    "complete_cap_hash": false,
+    "domain_separation": true,
+    "fiat_shamir_transcript": false,
+    "ggm_tree": false,
+    "injective_length_framing": true,
+    "request_binding_hash_primitive": true,
+    "source_pinned_permutation": true
+  },
+  "fork_decision": {
+    "blind_uov_bit_exact_compatible": false,
+    "blind_uov_reported_rows": 240,
+    "fork_rows_per_permutation": 336,
+    "paper_security_reduction_revalidated_for_fork": false,
+    "paper_signature_size_inherited_as_theorem": false,
+    "selected_mode": "independent-pq-rbbc-profile"
+  },
+  "frozen_trace": {
+    "absorbed_blocks": 2,
+    "domain_hex": "50512d524242432f76322e302f485f52424243",
+    "honest_failures": [],
+    "input_bitness_rows": 944,
+    "linear_rows": 43,
+    "output_bitness_rows": 579,
+    "output_hex": "d7e05c906d029478056894a134577e10461af7da21bf1e91da1ff9a14c3674dedcd6ce709d63b37e2339d8f1cf9dd8e20d2203e029b7fdc35c0b91b38203b9860c194841e51f2661",
+    "payload_bytes": 118,
+    "permutation_nonlinear_rows": 672,
+    "row_stream_sha256": "3aa60bc6d8d507003fb541a6ac991e88da58aea05b7b278ab7e1859772aac9ed",
+    "total_rows": 2238,
+    "wires": 2235,
+    "witness_independent_topology_for_fixed_lengths": true
+  },
+  "implementation_version": "2.0",
+  "profile": {
+    "capacity_bits": 772,
+    "capacity_elements": 4,
+    "field": "GF(2^193)",
+    "frame_magic_hex": "5051524242432d53504f4e47452d5631",
+    "frame_rule": "magic || u16le(domain_bytes) || domain || u64le(payload_bytes) || payload || pad10*1",
+    "output_bit_order": "field lanes in order; polynomial coefficients LSB-first",
+    "parameter_fingerprint": "5718d003de2fed43e675d36949320e7a140d0f278d7a44e825175f1ea0789b12",
+    "permutation_relation_id": "anemoi/upstream-main/gf2-193/state-8/v1",
+    "profile_name": "PQ-RBBC-Anemoi-193/336-Sponge-v1",
+    "profile_relation_id": "pq-rbbc/anemoi-193-336/sponge/v1",
+    "rate_bits": 772,
+    "rate_elements": 4,
+    "request_binding_domain_hex": "50512d524242432f76322e302f485f52424243",
+    "request_hash_bits": 576,
+    "rounds": 14,
+    "rows_per_permutation": 336,
+    "state_elements": 8,
+    "transcript_encoding": "magic || u16le(field_count) || repeated(u64le(field_bytes) || field)",
+    "transcript_magic_hex": "5051524242432d5452414e5343524950542d5631"
+  },
+  "profile_fingerprint": "4fa0eb276ebba70a9f6c2f38f3f55d197c094121a2b614cc6ef9b7e8522cac87",
+  "upstream_pin": {
+    "anemoi_sage_sha256": "d170bef2a32382e6d644ac3500ca150506cbd543d95d4efe5bbaf550f753941c",
+    "commit": "3e86ff0cafa54839709b2fa2de0e75d7dd2db464",
+    "observed_source_sha256": "d170bef2a32382e6d644ac3500ca150506cbd543d95d4efe5bbaf550f753941c",
+    "repository": "https://github.com/anemoi-hash/anemoi-hash",
+    "source_pin_verified_locally": true
+  }
+}

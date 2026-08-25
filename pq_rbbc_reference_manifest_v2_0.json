@@ -63,17 +63,17 @@
     "wire_count": 2980304
   },
   "claim_boundary": {
-    "blind_uov": "a GF(2^193) upstream-main Anemoi component probe exists, but the bit-exact CAP.Commit-plus-H subrelation remains one external assertion",
+    "forked_issuance": "the Anemoi-193/336 sponge and request-binding hash primitive exist, but production CAP.Commit-plus-H_RBBC remains one external assertion",
     "implemented": "incremental relation plus the in-circuit y = r + hash_image mask equation",
     "r1cs_backend": "streaming IR events only; no flattened matrices or proof backend",
     "trace_key": "deterministic systematic test fixture; not a certified Goppa key"
   },
   "fixed_sizes": {
-    "blind_uov_profile": "Blind-UOV-III / NIST III / Shorter",
-    "blind_uov_public_key_kilobytes": 189.2,
-    "blind_uov_signature_bytes": 11644,
+    "issuance_profile": "PQ-RBBC-BUOV-III / Anemoi-193/336 experimental fork",
     "issuance_request_bytes_excluding_proof": 72,
-    "online_ticket_bytes": 12012,
+    "online_ticket_bytes_provisional_target": 12012,
+    "paper_public_key_kilobytes_provisional_target": 189.2,
+    "paper_signature_bytes_provisional_target": 11644,
     "payload_bytes": 368
   },
   "honest_relation": {
@@ -81,18 +81,22 @@
     "concrete_accepts": true,
     "concrete_failures": []
   },
-  "implementation_version": "1.9",
+  "implementation_version": "2.0",
   "native_import_contract": {
     "anemoi_component_nonlinear_rows": 336,
     "anemoi_component_relation_id": "anemoi/upstream-main/gf2-193/state-8/v1",
-    "blind_uov_reported_anemoi_constraints": 240,
+    "blind_uov_bit_exact_compatible": false,
+    "complete_cap_hash_implemented": false,
+    "fork_profile_sha256": "4fa0eb276ebba70a9f6c2f38f3f55d197c094121a2b614cc6ef9b7e8522cac87",
+    "fork_security_proof_revalidated": false,
     "linear_mask_equation_internalized": true,
     "native_cap_hash_external_assertions": 1,
-    "paper_profile_sha256": "1599775abfaa1b0f2a059d3ec3f10f8321394dae11cd6d01c9c9e8f5d1ba8e29",
-    "parameter_gap_resolved": false,
+    "paper_240_gap_blocks_fork_engineering": false,
     "production_closed": false,
-    "relation_id": "blind-uov-iii/cap-hash/v1",
-    "reported_constraint_count_reproduced": false,
+    "relation_id": "pq-rbbc-buov-iii-336/cap-hash/v1",
+    "request_binding_hash_primitive_implemented": true,
+    "signature_size_rebenchmarked": false,
+    "sponge_profile_relation_id": "pq-rbbc/anemoi-193-336/sponge/v1",
     "target_field": "GF(2^193)"
   },
   "negative_tests": {
@@ -161,7 +165,7 @@
     "full_circuit_executed": true
   },
   "reference_vector": {
-    "blind_adapter": "TEST-ONLY-BLIND-UOV-III-HIDDEN-CAP-SHAKE-ADAPTER",
+    "blind_adapter": "TEST-ONLY-PQ-RBBC-BUOV-336-CAP-WITH-ANEMOI-SPONGE",
     "error_weight": 128,
     "matrix_seed_sha256": "51c582d012a12fa082d4c0019c23eec42b12fea73641573f22d7c920a1b118f5",
     "payload_sha256": "8d88e08b4c5283723803906e00e47064b75cfe5e134faed9ef2be72fb46aa3e0",
