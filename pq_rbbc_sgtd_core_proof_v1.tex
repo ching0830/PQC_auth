@@ -41,7 +41,7 @@
 
 \title{A Post-Quantum Relation-Bound Blind Certification Core\\
 with Signature-Gated Threshold Decryption}
-\author{Research construction draft, version 1.4}
+\author{Research construction draft, version 1.5}
 \date{23 August 2026}
 
 \begin{document}
@@ -75,7 +75,10 @@ signature.  Version 1.4 adds an executable witness builder, a streaming
 characteristic-two circuit generator, independent SHAKE256/KMAC256 checks, and
 full-circuit rejection tests.  Native Blind-UOV circuit integration, backend
 simulation extractability, and the threshold implementation remain explicit
-obligations.
+obligations.  Version 1.5 lowers the complete incremental relation into a
+checksummed binary $\mathbb F_2$-R1CS archive, independently parses every row,
+and separates the nonlinear-only cost model from the portable materialized-row
+count.
 \end{abstract}
 
 \section{Status, scope, and non-goals}
@@ -1307,6 +1310,72 @@ relation is internally consistent and executable; it does not establish that
 the combined native Blind-UOV proof is zero knowledge or simulation
 extractable.
 
+\subsection{Portable binary R1CS lowering}\label{sec:br1cs}
+
+Version 1.5 introduces a proof-backend exchange layer in
+\texttt{pq\_rbbc\_br1cs.py}.  It consumes the same event stream as the counting
+sink and serializes three standard rank-one forms over $\mathbb F_2$:
+\begin{align*}
+  \mathsf{MUL}(a,b,c)&:\quad a\cdot b=c,\\
+  \mathsf{LINDEF}(c;x_1,\ldots,x_j;k)&:\quad
+       (c+x_1+\cdots+x_j+k)\cdot 1=0,\\
+  \mathsf{ASSERT}(x_1,\ldots,x_j;k)&:\quad
+       (x_1+\cdots+x_j+k)\cdot 1=0.
+\end{align*}
+Wire identifiers and arities use unsigned LEB128 encodings.  A fixed 124-byte
+header commits to all row counts, the body length, and the SHA-256 digest of the
+body.  Public and secret input declarations contain identifiers and visibility
+only; assignment values are not embedded in the circuit archive.
+
+The resulting honest archive has the following exact dimensions:
+\begin{center}
+\begin{tabular}{lr}
+\toprule
+Portable backend quantity & Value\\
+\midrule
+Wires & 2,976,528\\
+Public input bits & 3,712\\
+Secret input bits & 7,072\\
+Nonlinear R1CS rows & 684,419\\
+Materialized affine-definition rows & 2,281,323\\
+Linear assertion rows & 3,214\\
+Total R1CS rows & 2,968,956\\
+Archive size & 49,183,761 bytes\\
+\bottomrule
+\end{tabular}
+\end{center}
+The 684,419 figure is therefore a \emph{nonlinear-only} cost under the affine
+elimination model used in Section~\ref{sec:circuit-audit}.  The 2,968,956 figure
+is the portable total when every affine definition is materialized as its own
+rank-one row.  They are not competing measurements.  A concrete proof backend
+may recover the smaller representation by substituting affine expressions into
+multiplication rows, but that optimization requires its own soundness argument
+and resource benchmark.
+
+Although the exchange format names $\mathbb F_2$ as its base relation, the same
+Boolean assignment and equations embed into $\mathbb F_{2^d}$: addition remains
+xor, and the input bitness equations prevent non-Boolean witnesses.  This makes
+the archive compatible in principle with the $\mathbb F_{2^{129}}$ cost anchor,
+without claiming that a specific prover has been integrated.
+
+An independent reader reconstructs and evaluates all 2,968,956 rows.  It
+accepts the honest assignment, rejects a one-bit assignment mutation, and
+rejects a one-bit archive corruption through the body digest.  Lowering a
+wrong-weight witness produces exactly the same 49,183,637-byte body and the
+same digest as the honest witness, showing that circuit structure is
+witness-independent; its assignment nevertheless fails 320 rows.  Five
+end-to-end backend tests completed in approximately 77.9 seconds in the
+reference environment.  The checked metadata is recorded in
+\texttt{pq\_rbbc\_br1cs\_manifest\_v1\_5.json}.
+
+\paragraph{Remaining external row.}
+The archive records one named external assertion for the native Blind-UOV
+$\pi_1$/CAP request relation, but cannot evaluate it.  This is deliberate and
+machine-visible: an archive with an unchecked external assertion is not a
+closed issuance proof.  The next integration must replace that marker with the
+actual Blind-UOV constraints; deleting or treating it as automatically true is
+forbidden.
+
 \subsection{Local mixing as a future trace-encryption candidate}
 
 The core does not depend on elliptic curves, lattices, or codes.  A future
@@ -1336,14 +1405,15 @@ authorization unforgeability.\\
 Concretely instantiated & Blind-UOV-Is/Shorter costing profile; executable
 five-block augmented relation; exact Niederreiter--SHAKE--KMAC trace relation;
 information-theoretic unique opening; independently checked SHAKE/KMAC;
-full-circuit positive and negative tests; 684,419 added nonlinear constraints;
-and a 4,140-byte online-ticket target.\\
+full-circuit positive and negative tests; a checksummed portable R1CS archive
+with independent row evaluation; 684,419 nonlinear rows; 2,968,956 materialized
+total rows; and a 4,140-byte online-ticket target.\\
 \addlinespace
 Not yet instantiated & A post-quantum zero-knowledge and
 simulation-extractable implementation of $\Piiss$; native Blind-UOV circuit
-integration; backend matrix lowering; import of a real Goppa key; peak prover
-memory; robust threshold-share transcript; implementation benchmarks; and a
-reviewed response to the August 2026 McEliece cryptanalysis.\\
+integration; proof-system-specific affine elimination; import of a real Goppa
+key; peak prover memory; robust threshold-share transcript; proof benchmarks;
+and a reviewed response to the August 2026 McEliece cryptanalysis.\\
 \addlinespace
 Explicitly not claimed & Standard IND-CCA security of the bare ciphertext,
 security against a malicious issuer, metadata/timing anonymity without system
@@ -1389,20 +1459,26 @@ machine-tested or enforced by type/API boundaries.
   \item Backend lowering must preserve every multiplication and equality event,
   eliminate affine wires soundly, and accept/reject the published reference and
   mutation vectors identically to the executable IR.
+  \item A serialized circuit is accepted only if its declared length, row
+  counts, sequential wire discipline, and body digest all verify before proof
+  generation or verification.
+  \item Any nonzero external-assertion count makes the archive incomplete for
+  production issuance; the Blind-UOV marker must be replaced, never ignored.
 \end{enumerate}
 
 \section{Next proof step}
 
 The relation, unique opening, fixed layout, circuit audit, executable witness
-builder, and rejection tests are now complete.  The next step is native
-composition and proof-backend qualification:
+builder, rejection tests, and portable R1CS lowering are now complete.  The
+next step is native Blind-UOV composition and proof-backend qualification:
 
 \begin{quote}
-\emph{Lower the streaming relation to the selected backend, replace the test
-Blind-UOV adapter with the native $\pi_1$/CAP constraints, and prove that the
-composed $\Piiss$ is post-quantum zero knowledge and simulation-extractable in
-the model required by the GCCA reduction.  Then import a canonical Goppa public
-key and measure prover time and peak memory.}
+\emph{Replace the external marker with the native Blind-UOV $\pi_1$/CAP
+constraints and prove that its message input is exactly the 256-bit digest
+produced by $\mathcal C_{\mathsf{ticketHash}}$.  Then select a concrete backend,
+prove any affine-elimination pass sound, and establish post-quantum zero
+knowledge and simulation extractability in the model required by the GCCA
+reduction.}
 \end{quote}
 
 The current count favors one monolithic proof; splitting is no longer the
