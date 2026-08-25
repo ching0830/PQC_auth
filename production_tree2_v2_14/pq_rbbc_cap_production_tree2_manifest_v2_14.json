@@ -1,0 +1,310 @@
+{
+  "assignment_archive": {
+    "archive_bytes": 486961028,
+    "archive_sha256": "63ee82b2421cbb9b4c5346c72dbdb15e26f0ef8e0d2938357fb75228ef8c9a8b",
+    "body_bytes": 486960900,
+    "body_sha256": "632db9813ef41bb3af1d769189132d072208ca0a58e2810c76b844a39da3b501",
+    "field_degree": 193,
+    "format": "PQRBBC-F193-ASSIGNMENT-LE25-1",
+    "header_bytes": 128,
+    "row_stream_sha256": "ad31a74cdf00ee96c646a9142da459069655e528aca3cb58cad07dc2b3b26fb8",
+    "value_bytes": 25,
+    "wires": 19478436
+  },
+  "claim_boundary": {
+    "all_four_output_relocations_closed": false,
+    "complete_18_tree_assignment_replayed": false,
+    "fork_security_proof_revalidated": false,
+    "parent_cap_to_h_rbbc_join_closed": false,
+    "producer_point_wire_identity_closed": false,
+    "production_closed": false,
+    "production_index0_4096_degree13_producer_native_closed": true,
+    "production_index0_output_values_match_tail": true,
+    "production_index0_point_wire_identity_closed": true,
+    "production_index2_2048_degree12_producer_native_closed": true,
+    "production_index2_output_values_match_tail": true,
+    "production_index2_point_wire_identity_closed": true,
+    "production_tree_producer_segments_materialized": false
+  },
+  "implementation_version": "2.14",
+  "output_matches": [
+    {
+      "bit_length": 790528,
+      "consumer_wire_start": 3177659,
+      "exact_value_match": true,
+      "exact_wire_identity": false,
+      "port_id": "tree[2].leaf-commitments",
+      "producer_wire_start": 58805397,
+      "value_sha256": "c27608c4139f15972d445d34015300618abbc953671a3b7ba9c6eefc22e053ac"
+    },
+    {
+      "bit_length": 2048,
+      "consumer_wire_start": 3968187,
+      "exact_value_match": true,
+      "exact_wire_identity": false,
+      "port_id": "tree[2].p-plain",
+      "producer_wire_start": 59595925,
+      "value_sha256": "7388cdc799a2526ad7df179635d1d4dfda400669f58a50f686b3d9be9998d356"
+    },
+    {
+      "bit_length": 386,
+      "consumer_wire_start": 3970235,
+      "exact_value_match": true,
+      "exact_wire_identity": false,
+      "port_id": "tree[2].mhat-plain",
+      "producer_wire_start": 59597973,
+      "value_sha256": "a32ffca5ef15845d5254b11dc446b7b44e1ac30c3d5c080f1d2dff25ffe42c29"
+    },
+    {
+      "bit_length": 4632,
+      "consumer_wire_start": 3970621,
+      "exact_value_match": true,
+      "exact_wire_identity": false,
+      "port_id": "tree[2].xi-masks",
+      "producer_wire_start": 59668401,
+      "value_sha256": "a3519ba430a2f7d8ff2599990972a4f28db7e9d1fc260d92527e814bde81a3e5"
+    }
+  ],
+  "point_import": {
+    "bit_length_each": 193,
+    "local_copy_allocated": false,
+    "mutations": [
+      {
+        "honest_row_satisfied": true,
+        "label": "horner.leaf[1].point[0].mul[9]",
+        "mutation": "flip-imported-point",
+        "rejected": true,
+        "stale_row_satisfied": false,
+        "wire": 39945673
+      },
+      {
+        "honest_row_satisfied": true,
+        "label": "horner.leaf[1].point[1].mul[9]",
+        "mutation": "flip-imported-point",
+        "rejected": true,
+        "stale_row_satisfied": false,
+        "wire": 39945866
+      },
+      {
+        "honest_row_satisfied": true,
+        "label": "horner.leaf[1].point[0].mul[9]",
+        "mutation": "swap-imported-points",
+        "rejected": true,
+        "stale_row_satisfied": false,
+        "wire": 39945673
+      }
+    ],
+    "source_assignment_sha256": "946c1feef78741f0b7e04cfffb237c08b4736d63d8214f8202f822da6e8ec8c1",
+    "source_relation_id": "pq-rbbc/cap/production-global-tail/v1",
+    "value_sha256": "eda567ca99c39229b5da8d526d23a36885230dddb33f6dbeb9e034c15d28e251",
+    "wire_starts": [
+      39945673,
+      39945866
+    ]
+  },
+  "producer_ports": [
+    {
+      "bit_length": 386,
+      "direction": "input",
+      "phase": "tree-pre",
+      "port_id": "shared.salt",
+      "value_sha256": "6ef79b48d3fcf5e6ca57b481db41e3f3c32eeb675e9aec26e5b4264f499bd52a",
+      "wire_start": 40194597
+    },
+    {
+      "bit_length": 386,
+      "direction": "input",
+      "phase": "tree-pre",
+      "port_id": "tree[2].roots",
+      "value_sha256": "001ed7df6df2b1d876a31e2b6cdfded2460b45aac4b57e083729514e8b64eab0",
+      "wire_start": 40194983
+    },
+    {
+      "bit_length": 386,
+      "direction": "input",
+      "phase": "tree-post",
+      "port_id": "global.consistency-points",
+      "value_sha256": "eda567ca99c39229b5da8d526d23a36885230dddb33f6dbeb9e034c15d28e251",
+      "wire_start": 39945673
+    },
+    {
+      "bit_length": 790528,
+      "direction": "output",
+      "phase": "tree-pre",
+      "port_id": "tree[2].leaf-commitments",
+      "value_sha256": "c27608c4139f15972d445d34015300618abbc953671a3b7ba9c6eefc22e053ac",
+      "wire_start": 58805397
+    },
+    {
+      "bit_length": 2048,
+      "direction": "output",
+      "phase": "tree-pre",
+      "port_id": "tree[2].p-plain",
+      "value_sha256": "7388cdc799a2526ad7df179635d1d4dfda400669f58a50f686b3d9be9998d356",
+      "wire_start": 59595925
+    },
+    {
+      "bit_length": 386,
+      "direction": "output",
+      "phase": "tree-pre",
+      "port_id": "tree[2].mhat-plain",
+      "value_sha256": "a32ffca5ef15845d5254b11dc446b7b44e1ac30c3d5c080f1d2dff25ffe42c29",
+      "wire_start": 59597973
+    },
+    {
+      "bit_length": 4632,
+      "direction": "output",
+      "phase": "tree-post",
+      "port_id": "tree[2].xi-masks",
+      "value_sha256": "a3519ba430a2f7d8ff2599990972a4f28db7e9d1fc260d92527e814bde81a3e5",
+      "wire_start": 59668401
+    }
+  ],
+  "profile": {
+    "assignment_format": "PQRBBC-F193-ASSIGNMENT-LE25-1",
+    "cap_profile_fingerprint": "2ac471f8d7c6cb4e6352bbc5a2eb7f9394b807ff132aec8cadebd696f7b1fa38",
+    "extension_degree": 12,
+    "leaves": 2048,
+    "relation_id": "pq-rbbc/cap/production-tree-producer-index-2/v1",
+    "resume_format": "PQRBBC-PRODUCTION-PRODUCER-RESUME-1",
+    "tree_index": 2
+  },
+  "resume_evidence": {
+    "assignment_prefix_preserved_on_interruption": true,
+    "execution_cache_checkpointed_every_leaf_batch": 128,
+    "execution_cache_checkpointed_per_ggm_level": true,
+    "generation_and_replay_separate_stages": true,
+    "resumed_assignment_prefix_wires_this_run": 0,
+    "resumed_execution_cache_this_run": true
+  },
+  "stale_witness_probes": [
+    {
+      "honest_row_satisfied": true,
+      "label": "xof[0].tree[2].derive[2,1].payload[240].source",
+      "original_value_hex": "00000000000000000000000000000000000000000000000000",
+      "rejected": true,
+      "stale_row_satisfied": false,
+      "stale_value_hex": "01000000000000000000000000000000000000000000000000",
+      "wire": 40194597
+    },
+    {
+      "honest_row_satisfied": true,
+      "label": "xof[2047].tree[2].leaf[1].tape.digest.lane[0].pack",
+      "original_value_hex": "da6b9da1e5ff3001d072f9b031d53feb7b8eb4a6fe0c766f00",
+      "rejected": true,
+      "stale_row_satisfied": false,
+      "stale_value_hex": "db6b9da1e5ff3001d072f9b031d53feb7b8eb4a6fe0c766f00",
+      "wire": 44540375
+    },
+    {
+      "honest_row_satisfied": true,
+      "label": "output.tree[2].leaf-commitments[0].link",
+      "original_value_hex": "00000000000000000000000000000000000000000000000000",
+      "rejected": true,
+      "stale_row_satisfied": false,
+      "stale_value_hex": "01000000000000000000000000000000000000000000000000",
+      "wire": 44538717
+    },
+    {
+      "honest_row_satisfied": true,
+      "label": "output.tree[2].p-plain[0].link",
+      "original_value_hex": "00000000000000000000000000000000000000000000000000",
+      "rejected": true,
+      "stale_row_satisfied": false,
+      "stale_value_hex": "01000000000000000000000000000000000000000000000000",
+      "wire": 44540383
+    },
+    {
+      "honest_row_satisfied": true,
+      "label": "output.tree[2].mhat-plain[0].link",
+      "original_value_hex": "00000000000000000000000000000000000000000000000000",
+      "rejected": true,
+      "stale_row_satisfied": false,
+      "stale_value_hex": "01000000000000000000000000000000000000000000000000",
+      "wire": 44543151
+    },
+    {
+      "honest_row_satisfied": true,
+      "label": "output.tree[2].xi-masks[0].link",
+      "original_value_hex": "00000000000000000000000000000000000000000000000000",
+      "rejected": true,
+      "stale_row_satisfied": false,
+      "stale_value_hex": "01000000000000000000000000000000000000000000000000",
+      "wire": 44543151
+    }
+  ],
+  "trace": {
+    "external_assertions": 0,
+    "generation_seconds": 0.0,
+    "groups": [
+      {
+        "bytes": 145468,
+        "name": "producer-inputs",
+        "rows": 772,
+        "sha256": "397e8807bde7205870df057bf161022bb32392bf856232e7c30165d3e9e39914"
+      },
+      {
+        "bytes": 1899750458,
+        "name": "tree-pre-ggm-derive",
+        "rows": 6440808,
+        "sha256": "656c93f5c0d19b476db1c2acede077679722880eb8dfa7d250b9086d9b96eb68"
+      },
+      {
+        "bytes": 5729831974,
+        "name": "tree-pre-leaf-commit-and-tape",
+        "rows": 17559552,
+        "sha256": "30e7618e52de8af1a061e363cac541141daf85ee9645f41949338cc1b3d828a2"
+      },
+      {
+        "bytes": 491635776,
+        "name": "tree-pre-output-ports",
+        "rows": 1585924,
+        "sha256": "42ff5f3f08ebb21850ec9e50a1f9f168e0daef684ff9e8579605514a54c9f353"
+      },
+      {
+        "bytes": 682256062,
+        "name": "tree-post-horner",
+        "rows": 70066,
+        "sha256": "398e5e1ea700bbb90e31d414478a78711312802fc338cf915bc9a44fb42bcb02"
+      },
+      {
+        "bytes": 157540206,
+        "name": "tree-post-output-port",
+        "rows": 9264,
+        "sha256": "04230bff809f5f9b8df55e04c10110f62c141854bab7557b00b288b89498a406"
+      }
+    ],
+    "horner_accounting": {
+      "aggregate_rows": 24450,
+      "leaf_calls": 2048,
+      "multiplication_rows": 40960,
+      "output_bitness_rows": 4632,
+      "output_pack_rows": 24,
+      "point_validation_rows": 0
+    },
+    "linear_rows": 6556384,
+    "local_wire_start": 40194597,
+    "local_wires": 19478436,
+    "max_wire_id": 59673032,
+    "nonlinear_rows": 19110002,
+    "peak_rss_kib": 1536236,
+    "rows": 25666386,
+    "sponge_accounting": {
+      "calls": 6142,
+      "linear_rows": 5734316,
+      "output_bitness_rows": 6718716,
+      "payload_bitness_rows": 5355520,
+      "permutation_rows": 6191808,
+      "permutations": 18428,
+      "source_link_rows": 5355520
+    },
+    "stream_bytes": 8961160817,
+    "stream_sha256": "ad31a74cdf00ee96c646a9142da459069655e528aca3cb58cad07dc2b3b26fb8",
+    "verification_failures": 0,
+    "verification_seconds": 676.1762604690011
+  },
+  "tree_component": {
+    "matches_frozen_v2_8_full_profile_execution": true,
+    "sha256": "0f1436bae35d6ad66e09375cffc4609efd62eea7f0c6253454f2657a922b3115"
+  }
+}
