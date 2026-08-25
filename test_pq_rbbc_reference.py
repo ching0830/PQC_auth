@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Regression tests for the executable PQ-RBBC/SGTD v1.6 relation."""
+"""Regression tests for the executable PQ-RBBC/SGTD v1.7 relation."""
 
 from __future__ import annotations
 
@@ -48,8 +48,8 @@ class RelationTests(unittest.TestCase):
 
     def test_frozen_wire_sizes(self) -> None:
         self.assertEqual(len(self.statement.payload.encode()), 368)
-        self.assertEqual(len(self.statement.payload.encode()) + core.SIGNATURE_BYTES, 7912)
-        self.assertEqual(len(self.statement.blind_request.encode()), 64)
+        self.assertEqual(len(self.statement.payload.encode()) + core.SIGNATURE_BYTES, 12012)
+        self.assertEqual(len(self.statement.blind_request.encode()), 72)
         self.assertEqual(len(self.statement.payload.syndrome), 208)
 
     def test_honest_witness_accepts(self) -> None:
@@ -86,10 +86,10 @@ class RelationTests(unittest.TestCase):
         self.assertEqual(report.totals["keccak_permutations"], 17)
         self.assertEqual(report.totals["bitness_constraints"], 7072)
         self.assertEqual(report.totals["nonlinear_constraints"], 684_419)
-        self.assertEqual(report.public_input_bits, 3968)
+        self.assertEqual(report.public_input_bits, 4032)
         self.assertEqual(report.totals["linear_assertions"], 2958)
-        self.assertEqual(report.wire_count, 2_976_784)
-        self.assertEqual(report.external_assertions, 2)
+        self.assertEqual(report.wire_count, 2_976_848)
+        self.assertEqual(report.external_assertions, 1)
         self.assertEqual(report.blocks["shape"]["nonlinear_constraints"], 128)
         self.assertEqual(
             report.blocks["ticket_hash"]["nonlinear_constraints"], 115_200

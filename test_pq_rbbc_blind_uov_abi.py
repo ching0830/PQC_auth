@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Regression tests for the corrected hidden-state Blind-UOV ABI."""
+"""Regression tests for the Blind-UOV-III hidden-state ABI."""
 
 from __future__ import annotations
 
@@ -14,25 +14,19 @@ import pq_rbbc_reference as core
 class BlindUOVVisibilityTests(unittest.TestCase):
     def setUp(self) -> None:
         self.adapter = abi.TestBlindUOVAdapter()
-        self.message = hashlib.shake_256(b"abi-test-message").digest(32)
-        self.masks = tuple(
-            hashlib.shake_256(b"abi-test-mask" + bytes((lane,))).digest(32)
-            for lane in range(2)
-        )
-        self.randomness = tuple(
-            hashlib.shake_256(b"abi-test-randomness" + bytes((lane,))).digest(32)
-            for lane in range(2)
-        )
+        self.message = hashlib.shake_256(b"abi-test-message-v1.7").digest(32)
+        self.mask = hashlib.shake_256(b"abi-test-mask-v1.7").digest(72)
+        self.randomness = hashlib.shake_256(b"abi-test-randomness-v1.7").digest(32)
         self.request = self.adapter.create(
-            self.message, self.masks, self.randomness
+            self.message, self.mask, self.randomness
         )
 
-    def test_public_request_is_exactly_two_y_values(self) -> None:
-        self.assertEqual(len(self.request.encode()), 64)
-        self.assertEqual(self.request.encode(), b"".join(self.request.masked_targets))
+    def test_public_request_is_exactly_y(self) -> None:
+        self.assertEqual(len(self.request.encode()), 72)
+        self.assertEqual(self.request.encode(), self.request.masked_target)
         self.assertEqual(
             [field.name for field in dataclasses.fields(self.request)],
-            ["masked_targets"],
+            ["masked_target"],
         )
 
     def test_commitment_and_message_are_not_public_request_fields(self) -> None:
@@ -47,51 +41,44 @@ class BlindUOVVisibilityTests(unittest.TestCase):
     def test_hidden_relation_accepts_and_tampering_rejects(self) -> None:
         self.assertTrue(
             self.adapter.verify(
-                self.request, self.message, self.masks, self.randomness
+                self.request, self.message, self.mask, self.randomness
             )
         )
         changed_message = bytes((self.message[0] ^ 1,)) + self.message[1:]
         self.assertFalse(
             self.adapter.verify(
-                self.request, changed_message, self.masks, self.randomness
+                self.request, changed_message, self.mask, self.randomness
             )
         )
-        changed_y0 = bytes((self.request.masked_targets[0][0] ^ 1,)) + self.request.masked_targets[0][1:]
+        changed_y = bytes((self.request.masked_target[0] ^ 1,)) + self.request.masked_target[1:]
         self.assertFalse(
             self.adapter.verify(
-                abi.BlindUOVRequest((changed_y0, self.request.masked_targets[1])),
+                abi.BlindUOVRequest(changed_y),
                 self.message,
-                self.masks,
+                self.mask,
                 self.randomness,
             )
         )
 
-    def test_lane_domain_separation_and_independence(self) -> None:
-        self.assertNotEqual(self.request.masked_targets[0], self.request.masked_targets[1])
-        self.assertNotEqual(self.masks[0], self.masks[1])
-        self.assertNotEqual(self.randomness[0], self.randomness[1])
-
-    def test_invalid_lane_is_rejected(self) -> None:
+    def test_wrong_mask_length_is_rejected(self) -> None:
         with self.assertRaises(ValueError):
-            self.adapter.verify_lane(
-                self.request, 2, self.message, self.masks[0], self.randomness[0]
-            )
+            self.adapter.create(self.message, self.mask[:-1], self.randomness)
 
-    def test_manifest_marks_new_binding_obligation(self) -> None:
+    def test_manifest_records_qrom_reduction_and_v1_6_correction(self) -> None:
         manifest = abi.build_abi_manifest()
         checks = manifest["regression_checks"]
         self.assertTrue(checks["honest_request_accepts"])
         self.assertFalse(checks["request_has_cap_commitment_field"])
         self.assertFalse(checks["request_has_message_digest_field"])
         self.assertEqual(
-            manifest["binding_proof_obligation"]["name"],
-            "dual-lane cross-message request claw resistance",
+            manifest["binding_reduction"]["name"],
+            "single-lane QROM cross-message request collision resistance",
         )
-        self.assertIn("2^170", manifest["binding_proof_obligation"]["dual_lane_qrom_target"])
-        self.assertEqual(len(manifest["final_signed_messages"]), 2)
-        self.assertEqual(
-            manifest["binding_proof_obligation"]["status"],
-            "required assumption/reduction; not implied by CAP binding plus hash collision resistance",
+        self.assertIn("2^192", manifest["binding_reduction"]["generic_quantum_collision_cost"])
+        self.assertFalse(
+            manifest["v1_6_correction"][
+                "independent_parallel_lanes_amplify_security_bits"
+            ]
         )
 
 

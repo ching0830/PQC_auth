@@ -30,8 +30,8 @@ class BinaryR1CSBackendTests(unittest.TestCase):
     def test_archive_is_complete_and_round_trips(self) -> None:
         archive = self.manifest["archive"]
         round_trip = self.manifest["round_trip"]
-        self.assertEqual(archive["wire_count"], 2_976_784)
-        self.assertEqual(archive["public_inputs"], 3968)
+        self.assertEqual(archive["wire_count"], 2_976_848)
+        self.assertEqual(archive["public_inputs"], 4032)
         self.assertEqual(archive["secret_inputs"], 7072)
         self.assertEqual(archive["keccak_permutations"], 17)
         self.assertTrue(round_trip["honest_assignment_accepts"])
@@ -51,13 +51,13 @@ class BinaryR1CSBackendTests(unittest.TestCase):
 
     def test_blind_uov_boundary_remains_explicit(self) -> None:
         boundary = self.manifest["claim_boundary"]
-        self.assertEqual(boundary["external_assertions"], 2)
+        self.assertEqual(boundary["external_assertions"], 1)
         self.assertEqual(
             boundary["external_component"],
-            "two native Blind-UOV pi_1/CAP request relations",
+            "native Blind-UOV-III pi_1/CAP request relation",
         )
         self.assertEqual(
-            self.manifest["round_trip"]["external_assertions_unchecked"], 2
+            self.manifest["round_trip"]["external_assertions_unchecked"], 1
         )
 
 

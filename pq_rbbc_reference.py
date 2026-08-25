@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Executable v1.6 reference relation for the PQ-RBBC/SGTD research draft.
+"""Executable v1.7 reference relation for the PQ-RBBC/SGTD research draft.
 
 This module implements the *incremental* five-block issuance relation described
 in the accompanying proof document.  It emits a streaming characteristic-two
@@ -36,9 +36,8 @@ K = 5024
 R = N - K
 T = 128
 RATE = 136
-BLIND_UOV_LANES = 2
-SINGLE_SIGNATURE_BYTES = 3772
-SIGNATURE_BYTES = BLIND_UOV_LANES * SINGLE_SIGNATURE_BYTES
+SIGNATURE_BYTES = 11644
+BLIND_UOV_PUBLIC_KEY_KILOBYTES = 189.2
 CUSTOMIZATION = b"PQ-RBBC/TAG"
 
 LABEL_HOLD = b"PQ-RBBC/HOLD"
@@ -293,8 +292,8 @@ class IssueWitness:
     sn: bytes
     holder_key: bytes
     error: int
-    blind_masks: tuple[bytes, bytes]
-    blind_randomness: tuple[bytes, bytes]
+    blind_mask: bytes
+    blind_randomness: bytes
 
 
 @dataclass(frozen=True)
@@ -329,8 +328,8 @@ def build_honest_instance(
     sn: bytes,
     holder_key: bytes,
     error: int,
-    blind_masks: tuple[bytes, bytes],
-    blind_randomness: tuple[bytes, bytes],
+    blind_mask: bytes,
+    blind_randomness: bytes,
     adapter: BlindUOVAdapter,
 ) -> tuple[IssueStatement, IssueWitness]:
     if len(common_ctx) != 32 or len(rid) != 32:
@@ -339,10 +338,10 @@ def build_honest_instance(
         raise ValueError("serial and holder key must be 16 and 32 bytes")
     payload = _derive_trace(matrix, common_ctx, rid, sn, holder_key, error)
     digest = hashlib.shake_256(LABEL_TICKET + payload.encode()).digest(32)
-    request = adapter.create(digest, blind_masks, blind_randomness)
+    request = adapter.create(digest, blind_mask, blind_randomness)
     return (
         IssueStatement(common_ctx, rid, payload, request),
-        IssueWitness(sn, holder_key, error, blind_masks, blind_randomness),
+        IssueWitness(sn, holder_key, error, blind_mask, blind_randomness),
     )
 
 
@@ -387,7 +386,7 @@ def verify_relation(
     if not adapter.verify(
         statement.blind_request,
         expected_digest,
-        witness.blind_masks,
+        witness.blind_mask,
         witness.blind_randomness,
     ):
         failures.append("blind_request")
@@ -852,14 +851,11 @@ def generate_issue_circuit(
         builder, statement.payload.masked_identity, "public", "payload.masked_identity"
     )
     public_tag = input_wires(builder, statement.payload.tag, "public", "payload.tag")
-    public_blind_targets = tuple(
-        input_wires(
-            builder,
-            statement.blind_request.masked_targets[lane],
-            "public",
-            f"blind_request.y[{lane}]",
-        )
-        for lane in range(BLIND_UOV_LANES)
+    public_blind_target = input_wires(
+        builder,
+        statement.blind_request.masked_target,
+        "public",
+        "blind_request.y",
     )
     secret_sn = input_wires(builder, witness.sn, "secret", "witness.sn", True)
     _assert_wire_vectors_equal(builder, common_ctx, payload_ctx)
@@ -879,19 +875,17 @@ def generate_issue_circuit(
     )
 
     builder.set_block("blind_uov_mask_increment")
-    for lane in range(BLIND_UOV_LANES):
-        if wire_bytes(public_blind_targets[lane]) != statement.blind_request.masked_targets[lane]:
-            raise AssertionError("public Blind-UOV target wire encoding changed")
-        builder.external_assert(
-            f"native_blind_uov_request_lane_{lane}",
-            adapter.verify_lane(
-                statement.blind_request,
-                lane,
-                wire_bytes(computed_digest),
-                witness.blind_masks[lane],
-                witness.blind_randomness[lane],
-            ),
-        )
+    if wire_bytes(public_blind_target) != statement.blind_request.masked_target:
+        raise AssertionError("public Blind-UOV target wire encoding changed")
+    builder.external_assert(
+        "native_blind_uov_iii_request",
+        adapter.verify(
+            statement.blind_request,
+            wire_bytes(computed_digest),
+            witness.blind_mask,
+            witness.blind_randomness,
+        ),
+    )
 
     builder.set_block("holder")
     holder_key = input_wires(
@@ -953,14 +947,8 @@ def reference_fixture() -> tuple[SystematicParityCheck, IssueStatement, IssueWit
     sn = hashlib.shake_256(b"PQ-RBBC/v1.4/serial").digest(16)
     holder_key = hashlib.shake_256(b"PQ-RBBC/v1.4/holder-key").digest(32)
     error = sample_weight_error(b"reference-vector")
-    blind_masks = tuple(
-        hashlib.shake_256(b"PQ-RBBC/v1.6/blind-mask" + bytes((lane,))).digest(32)
-        for lane in range(BLIND_UOV_LANES)
-    )
-    blind_randomness = tuple(
-        hashlib.shake_256(b"PQ-RBBC/v1.6/blind-randomness" + bytes((lane,))).digest(32)
-        for lane in range(BLIND_UOV_LANES)
-    )
+    blind_mask = hashlib.shake_256(b"PQ-RBBC/v1.7/blind-mask").digest(72)
+    blind_randomness = hashlib.shake_256(b"PQ-RBBC/v1.7/blind-randomness").digest(32)
     statement, witness = build_honest_instance(
         matrix,
         common_ctx,
@@ -968,7 +956,7 @@ def reference_fixture() -> tuple[SystematicParityCheck, IssueStatement, IssueWit
         sn,
         holder_key,
         error,
-        blind_masks,
+        blind_mask,
         blind_randomness,
         adapter,
     )
@@ -1056,10 +1044,7 @@ def negative_cases(
                 statement,
                 blind_request=replace(
                     statement.blind_request,
-                    masked_targets=(
-                        flip(statement.blind_request.masked_targets[0]),
-                        statement.blind_request.masked_targets[1],
-                    ),
+                    masked_target=flip(statement.blind_request.masked_target),
                 ),
             ),
             witness,
@@ -1098,7 +1083,7 @@ def build_manifest(full_negative_circuits: bool = False) -> dict[str, object]:
             ).items()
         }
     return {
-        "implementation_version": "1.6",
+        "implementation_version": "1.7",
         "status": "executable research relation; not a deployment implementation",
         "claim_boundary": {
             "implemented": "incremental five-block characteristic-two relation",
@@ -1108,9 +1093,9 @@ def build_manifest(full_negative_circuits: bool = False) -> dict[str, object]:
         },
         "fixed_sizes": {
             "payload_bytes": len(statement.payload.encode()),
-            "blind_uov_lanes": BLIND_UOV_LANES,
-            "single_blind_uov_signature_bytes": SINGLE_SIGNATURE_BYTES,
-            "dual_blind_uov_signatures_bytes": SIGNATURE_BYTES,
+            "blind_uov_profile": "Blind-UOV-III / NIST III / Shorter",
+            "blind_uov_public_key_kilobytes": BLIND_UOV_PUBLIC_KEY_KILOBYTES,
+            "blind_uov_signature_bytes": SIGNATURE_BYTES,
             "issuance_request_bytes_excluding_proof": len(statement.blind_request.encode()),
             "online_ticket_bytes": len(statement.payload.encode()) + SIGNATURE_BYTES,
         },

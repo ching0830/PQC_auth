@@ -1,11 +1,11 @@
 {
   "archive": {
-    "archive_bytes": 49183966,
-    "archive_sha256": "127d6081e8c52c0adfd0441639fb7c53c803be43944f2230a8cbf91d18150892",
-    "assignment_sha256": "d6c76be359bf6d5999894e304938b2348a5bc2eca194b6e0356efe187b24b4f4",
-    "body_bytes": 49183842,
-    "body_sha256": "6d887009a46d819db3e21bc304539271caa1905e1153525e91665e4e572e1924",
-    "external_assertions": 2,
+    "archive_bytes": 49184487,
+    "archive_sha256": "6f771f085e510b27308a7d736cfc1d22ce9cc6bfe1aea9ac445068abbe5f207b",
+    "assignment_sha256": "36a64b57e37d321042def45fc66b34ae35b53869f1e9b569daaf561acec605a9",
+    "body_bytes": 49184363,
+    "body_sha256": "310227aa2d0a0d480b1832a0f823b0c57dfd8852e5a0f53b3fd8b2f6ebcdf6a3",
+    "external_assertions": 1,
     "external_failures": 0,
     "field": "F2",
     "format": "PQ-RBBC-BR1CS",
@@ -14,14 +14,14 @@
     "linear_assertions": 2958,
     "linear_definitions": 2281323,
     "nonlinear_constraints": 684419,
-    "public_inputs": 3968,
+    "public_inputs": 4032,
     "secret_inputs": 7072,
     "total_r1cs_rows": 2968700,
-    "wire_count": 2976784
+    "wire_count": 2976848
   },
   "claim_boundary": {
-    "external_assertions": 2,
-    "external_component": "two native Blind-UOV pi_1/CAP request relations",
+    "external_assertions": 1,
+    "external_component": "native Blind-UOV-III pi_1/CAP request relation",
     "external_failures_in_honest_vector": 0,
     "not_yet_done": [
       "native Blind-UOV constraint import",
@@ -49,17 +49,17 @@
     },
     "version": 1
   },
-  "implementation_version": "1.6",
+  "implementation_version": "1.7",
   "round_trip": {
     "archive_corruption_rejected": true,
-    "assignment_bit_tamper_first_failure": "linear definition at record 2979501",
+    "assignment_bit_tamper_first_failure": "linear definition at record 2979564",
     "assignment_bit_tamper_rejected": true,
     "body_sha256_verified": true,
-    "external_assertions_unchecked": 2,
+    "external_assertions_unchecked": 1,
     "honest_assignment_accepts": true,
     "rows_checked": 2968700
   },
-  "status": "corrected hidden-input F2-R1CS backend; native Blind-UOV remains external",
+  "status": "Blind-UOV-III hidden-input F2-R1CS backend; native relation remains external",
   "witness_independence": {
     "honest_and_wrong_weight_body_digest_equal": true,
     "wrong_weight_assignment_rejected": true,
