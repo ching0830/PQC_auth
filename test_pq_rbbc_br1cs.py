@@ -24,19 +24,19 @@ class BinaryR1CSBackendTests(unittest.TestCase):
     def test_exact_portable_row_counts(self) -> None:
         accounting = self.manifest["constraint_accounting"]
         self.assertEqual(accounting["nonlinear_rows"], 684_419)
-        self.assertEqual(accounting["materialized_linear_rows"], 2_284_537)
-        self.assertEqual(accounting["portable_total_r1cs_rows"], 2_968_956)
+        self.assertEqual(accounting["materialized_linear_rows"], 2_284_281)
+        self.assertEqual(accounting["portable_total_r1cs_rows"], 2_968_700)
 
     def test_archive_is_complete_and_round_trips(self) -> None:
         archive = self.manifest["archive"]
         round_trip = self.manifest["round_trip"]
-        self.assertEqual(archive["wire_count"], 2_976_528)
-        self.assertEqual(archive["public_inputs"], 3712)
+        self.assertEqual(archive["wire_count"], 2_976_784)
+        self.assertEqual(archive["public_inputs"], 3968)
         self.assertEqual(archive["secret_inputs"], 7072)
         self.assertEqual(archive["keccak_permutations"], 17)
         self.assertTrue(round_trip["honest_assignment_accepts"])
         self.assertTrue(round_trip["body_sha256_verified"])
-        self.assertEqual(round_trip["rows_checked"], 2_968_956)
+        self.assertEqual(round_trip["rows_checked"], 2_968_700)
 
     def test_assignment_and_archive_tampering_are_rejected(self) -> None:
         round_trip = self.manifest["round_trip"]
@@ -51,13 +51,13 @@ class BinaryR1CSBackendTests(unittest.TestCase):
 
     def test_blind_uov_boundary_remains_explicit(self) -> None:
         boundary = self.manifest["claim_boundary"]
-        self.assertEqual(boundary["external_assertions"], 1)
+        self.assertEqual(boundary["external_assertions"], 2)
         self.assertEqual(
             boundary["external_component"],
-            "native Blind-UOV pi_1/CAP request relation",
+            "two native Blind-UOV pi_1/CAP request relations",
         )
         self.assertEqual(
-            self.manifest["round_trip"]["external_assertions_unchecked"], 1
+            self.manifest["round_trip"]["external_assertions_unchecked"], 2
         )
 
 

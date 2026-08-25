@@ -41,7 +41,7 @@
 
 \title{A Post-Quantum Relation-Bound Blind Certification Core\\
 with Signature-Gated Threshold Decryption}
-\author{Research construction draft, version 1.5}
+\author{Research construction draft, version 1.6}
 \date{23 August 2026}
 
 \begin{document}
@@ -50,7 +50,7 @@ with Signature-Gated Threshold Decryption}
 \begin{abstract}
 This document specifies and proves an abstract post-quantum cryptographic core for
 privacy-preserving, accountable credentials.  During an offline issuance phase, a
-holder obtains a blind signature only after proving that the hidden ticket, the
+holder obtains a pair of blind signatures only after proving that the hidden ticket, the
 blind-signing request, the holder secret, and a trace ciphertext are mutually
 consistent.  During opening, threshold decryption shares are released only for a
 validly signed ticket and an independently authorized case.  This
@@ -78,7 +78,13 @@ simulation extractability, and the threshold implementation remain explicit
 obligations.  Version 1.5 lowers the complete incremental relation into a
 checksummed binary $\mathbb F_2$-R1CS archive, independently parses every row,
 and separates the nonlinear-only cost model from the portable materialized-row
-count.
+count.  Version 1.6 corrects the signer-view ABI to the exact Blind-UOV
+protocol: the signer sees only $y$, while the CAP commitment, message, mask,
+and commitment randomness remain hidden until finalization.  It also identifies
+a cross-message claw obligation absent from ordinary blind-signature security.
+The aggressive profile therefore uses two independent, domain-separated
+Blind-UOV-Is lanes.  Its online ticket is 7,912 bytes; its security theorem is
+conditional on a QROM claw-resistance reduction and native circuit integration.
 \end{abstract}
 
 \section{Status, scope, and non-goals}
@@ -87,7 +93,7 @@ This is the standalone cryptographic core.  It intentionally excludes satellite
 AKE, radio transport, FLEO relay behavior, handover, revocation distribution, and
 concrete parameter optimization.  Issuance and opening may use large proofs,
 large public keys, and large private keys.  The constrained online path carries
-only a ticket payload and a blind signature.
+only a ticket payload and two compact blind signatures.
 
 The construction is designed for the following division of trust.
 
@@ -112,7 +118,8 @@ The construction is designed for the following division of trust.
 The theorems below are complete reductions for the abstract interfaces and games
 defined here.  They are not a claim that the present Blind-UOV or threshold
 Niederreiter papers already implement every required interface.  The Blind-UOV
-request equations are fixed in Section~\ref{sec:buov-normal}; the exact added
+request equations and their visibility are fixed in
+Section~\ref{sec:buov-normal}; the exact added
 circuit is counted in Section~\ref{sec:circuit-audit} and executed in
 Section~\ref{sec:executable-relation}.  The resulting proof-size and prover
 runtime figures remain paper-anchored estimates rather than implementation
@@ -181,7 +188,7 @@ proof extracts $M$, Equation~\eqref{eq:i2} fixes its digest, and the Blind-UOV
 request binds that digest.  Publishing an additional $c_M$ would add a primitive
 and a circuit block without strengthening this chain.
 
-\subsection{Blind-UOV request normal form}\label{sec:buov-normal}
+\subsection{Blind-UOV request normal form and visibility}\label{sec:buov-normal}
 
 The blind-signature interface is
 \[
@@ -194,52 +201,78 @@ algorithm
 \]
 
 The core needs more than ordinary blindness: the issuance proof must identify
-the exact hidden message represented by the request.  The Blind-UOV authors'
-published construction admits the following paper-compatible normal form.  Let
-$r\leftarrow\mathbb F_q^o$ be a fresh mask and let $\rho_0$ be commitment
-randomness.  The user computes~\cite{blind-uov,blind-uov-slides}
+the exact hidden message represented by the request.  Protocols 3 and 4 of the
+31 October 2025 revision have the user compute~\cite{blind-uov}
 \begin{align}
- c_0&\leftarrow \mathsf{CAP.Commit}(r;\rho_0),
+ c_r&\leftarrow \mathsf{CAP.Commit}(r;\rho),
    \tag{B1}\label{eq:b1}\\
- y&=r+H_{\BUOV}(m,c_0)\in\mathbb F_q^o.
+ y&=r+H_{\BUOV}(m,c_r)\in\mathbb F_q^o.
    \tag{B2}\label{eq:b2}
 \end{align}
-The request object used by this core is $\beta=(c_0,y)$ and its blinding
-witness is $b=(r,\rho_0)$.  The issuer applies the underlying UOV/hash-and-sign
-trapdoor to the masked target $y$ only after accepting a proof that the request
-is well built.  The user then runs the Blind-UOV finalization/CAP procedure to
-obtain the publicly verifiable final signature $\sigma$ on $m$.
+Only $(y,\pi_1)$ is sent to the signer.  The values $m,r,\rho,c_r$ are
+witness/state, not signer-visible request fields.  The final signature later
+contains $(c_r,c_x,\pi_2)$.  Publishing $c_r$ during issuance would both depart
+from the paper and give the issuer a direct link to the final signature.
 
-The exact byte-level CAP transcript is revision-dependent and is intentionally
-left behind the algorithms
-$\BUOV.\mathsf{Respond}$, $\BUOV.\mathsf{Finalize}$, and
-$\BUOV.\mathsf{Vfy}$.  Equations~\eqref{eq:b1}--\eqref{eq:b2} are the only
-Blind-UOV internals needed by the ticket-binding reduction.  The authors'
-slides write $\mathsf{CP.Commit}$; this document writes
-$\mathsf{CAP.Commit}$ for that commitment subroutine inside the CAP system.
+A single Blind-UOV-Is target is 256 bits.  Our authorization-binding property
+is a freely chosen cross-message collision/claw problem, not a fixed-target
+preimage problem.  Generic quantum collision algorithms therefore give only
+about $2^{256/3}=2^{85}$ work~\cite{bht,compressed-oracle}.  The aggressive
+post-quantum profile runs two independently randomized and domain-separated
+lanes $i\in\{0,1\}$.  Define
+$\mu_i=\mathsf{Encode}(\texttt{PQ-RBBC/BUOV-LANE},i,m)$ and compute:
+\begin{align}
+ c_{r,i}&\leftarrow \mathsf{CAP.Commit}_i(r_i;\rho_i),
+   \tag{B3}\label{eq:b3}\\
+ y_i&=J^i_m(r_i,\rho_i)
+ =r_i+H_{\BUOV}(\mu_i,c_{r,i}).
+   \tag{B4}\label{eq:b4}
+\end{align}
+The public request is exactly $\beta=(y_0,y_1)$; its hidden witness is
+$b=((r_0,\rho_0),(r_1,\rho_1))$.  Masks and commitment randomness MUST be
+independent across lanes.  The issuer returns two ordinary Blind-UOV responses,
+and finalization produces ordinary signatures on $\mu_0$ and $\mu_1$.  They
+bind one logical ticket digest $m$ but are not byte-identical messages.
 
-\begin{definition}[Concrete Blind-UOV request relation]\label{def:rrbs}
-For $\beta=(c_0,y)$ and $b=(r,\rho_0)$, define
+\begin{definition}[Dual Blind-UOV request relation]\label{def:rrbs}
+For $\beta=(y_0,y_1)$ and
+$b=((r_0,\rho_0),(r_1,\rho_1))$, define
 \[
- R^{\BUOV}_{\mathsf{req}}(\beta;m,b)=1
- \quad\Longleftrightarrow\quad
- c_0=\mathsf{CAP.Commit}(r;\rho_0)\ \wedge\
- y=r+H_{\BUOV}(m,c_0).
+ R^{\BUOV,2}_{\mathsf{req}}(\beta;m,b)=1
+ \Longleftrightarrow
+ \bigwedge_{i=0}^{1}
+ \left[c_{r,i}=\mathsf{CAP.Commit}_i(r_i;\rho_i)\ \wedge\
+ y_i=r_i+H_{\BUOV}(\mu_i,c_{r,i})\right].
 \]
-A completed accepted protocol must return a Blind-UOV final signature that
-verifies on the same $m$.
+The $c_{r,i}$ are derived hidden witnesses.  A completed session returns
+$\sigma_0,\sigma_1$, where $\sigma_i$ verifies on the canonical $\mu_i$
+derived from the same $m$.
 \end{definition}
 
-We require correctness, blindness against an honest-protocol curious signer,
-and one-more unforgeability against malicious users in the QROM/security model
-of the selected Blind-UOV revision.  Request binding is no longer an independent
-assumption: Lemma~\ref{lem:buov-unique} derives it from CAP binding and collision
-resistance of $H_{\BUOV}$.
+\begin{assumption}[Dual-lane cross-message request claw resistance]
+\label{ass:dual-claw}
+No $\QPT$ adversary can output $m\neq m'$ and valid independent openings for
+both sides such that
+\[
+ (J^0_m(r_0,\rho_0),J^1_m(r_1,\rho_1))
+ =
+ (J^0_{m'}(r'_0,\rho'_0),J^1_{m'}(r'_1,\rho'_1))
+\]
+except with negligible probability.  For ideal independent 256-bit lane
+outputs, the generic quantum collision scale is about
+$2^{512/3}=2^{170}$.  This estimate motivates the construction but is not a
+completed QROM reduction for the structured $J^i$ maps.
+\end{assumption}
+
+We additionally require correctness, parallel two-instance blindness, and
+one-more unforgeability of Blind-UOV.  Assumption~\ref{ass:dual-claw} is a new
+composition obligation; it is not implied merely by CAP binding and ordinary
+collision resistance of $H_{\BUOV}$.
 
 \begin{remark}[Why ordinary blind signing is insufficient]
 If $\Piiss$ proves a valid ciphertext but the proof is not tied to the exact
 blind request $\beta$, a malicious holder can prove statement $M_0$ and ask for
-a signature on $M_1$.  The $R^{\BUOV}_{\mathsf{req}}$ conjunct is the formal
+a signature on $M_1$.  The $R^{\BUOV,2}_{\mathsf{req}}$ conjunct is the formal
 connection that prevents this substitution.
 \end{remark}
 
@@ -335,14 +368,15 @@ splicing.  The holder secret itself never appears in the ticket.  Define
 
 The public issuance statement and private witness are
 \begin{align*}
- x&=(\pp,\ctx,\mathsf{sid},\rid,\beta),\\
- w&=(M,r,\rho_0,k_{\mathrm{hold}},e).
+x&=(\pp,\ctx,\mathsf{sid},\rid,\beta),\\
+w&=(M,(r_0,\rho_0),(r_1,\rho_1),k_{\mathrm{hold}},e).
 \end{align*}
 The relation $R_{\mathsf{issue}}(x;w)=1$ iff all of the following hold:
 \begin{align}
  \mathsf{TicketShape}(M,\ctx)&=1, \tag{I1}\label{eq:i1}\\
  m&=H_{\mathrm{ticket}}(\mathsf{Encode}(M)), \tag{I2}\label{eq:i2}\\
- R^{\BUOV}_{\mathsf{req}}(\beta;m,(r,\rho_0))&=1,
+ R^{\BUOV,2}_{\mathsf{req}}
+   (\beta;m,((r_0,\rho_0),(r_1,\rho_1)))&=1,
    \tag{I3}\label{eq:i3}\\
  M.h&=H_{\mathrm{hold}}(k_{\mathrm{hold}}), \tag{I4}\label{eq:i4}\\
  R_{\mathsf{enc}}(\mathsf{tpk},M.C,
@@ -385,12 +419,13 @@ For authenticated identity $\rid$ and fresh issuer-side $\mathsf{sid}$:
   according to Equations~\eqref{eq:n1}--\eqref{eq:n7},
   constructs $M$, and
   computes $m=H_{\mathrm{ticket}}(\mathsf{Encode}(M))$.
-  \item It samples $r,\rho_0$, computes
-  \[
-    c_0=\mathsf{CAP.Commit}(r;\rho_0),\qquad
-    y=r+H_{\BUOV}(m,c_0),
-  \]
-  sets $\beta=(c_0,y)$, and produces
+  \item For $i\in\{0,1\}$ it independently samples $r_i,\rho_i$, computes
+  \begin{align*}
+    \mu_i&=\mathsf{Encode}(\texttt{PQ-RBBC/BUOV-LANE},i,m),\\
+    c_{r,i}&=\mathsf{CAP.Commit}_i(r_i;\rho_i),&
+    y_i&=r_i+H_{\BUOV}(\mu_i,c_{r,i}).
+  \end{align*}
+  sets the public request $\beta=(y_0,y_1)$, and produces
   \[
      \pi_{\mathsf{issue}}
      \leftarrow \Piiss.\mathsf{Prove}(\mathsf{crs},x,w).
@@ -400,15 +435,15 @@ For authenticated identity $\rid$ and fresh issuer-side $\mathsf{sid}$:
   \[
     \Piiss.\mathsf{Vfy}(\mathsf{crs},x,\pi_{\mathsf{issue}})=1.
   \]
-  Only then does it execute
-  $z_{\BUOV}\leftarrow\BUOV.\mathsf{Respond}(\mathsf{bsk},y)$.
-  \item The holder computes
+  Only then does it execute, for both lanes,
+  $z_i\leftarrow\BUOV.\mathsf{Respond}(\mathsf{bsk},y_i)$.
+  \item For both lanes the holder computes
   \[
-    \sigma\leftarrow
-    \BUOV.\mathsf{Finalize}(m,c_0,y,z_{\BUOV};r,\rho_0)
+    \sigma_i\leftarrow
+    \BUOV.\mathsf{Finalize}(\mu_i,c_{r,i},y_i,z_i;r_i,\rho_i)
   \]
-  and accepts only if
-  $\BUOV.\mathsf{Vfy}(\mathsf{bvk},m,\sigma)=1$.
+  and accepts only if both
+  $\BUOV.\mathsf{Vfy}(\mathsf{bvk},\mu_i,\sigma_i)=1$.
 \end{enumerate}
 
 The proof $\pi_{\mathsf{issue}}$ is not an extra proof placed beside the
@@ -418,15 +453,19 @@ identity, holder, and trace-ciphertext conjuncts are appended to the proved
 relation.  Thus issuance sends one large relation proof, not two independent
 proofs.
 
-The spendable ticket is $T=(M,\sigma)$.  Neither $\beta$,
+The spendable ticket is $T=(M,\sigma_0,\sigma_1)$.  Neither $\beta$,
 $\pi_{\mathsf{issue}}$, $\rid$, nor $\mathsf{sid}$ is transmitted with $T$.
 
 \subsection{Ticket verification}
 
 $\Core.\mathsf{VerifyTicket}(T)$ recomputes
-$m=H_{\mathrm{ticket}}(\mathsf{Encode}(M))$, checks canonical encoding and the
-public common-information policy, then returns
-$\BUOV.\mathsf{Vfy}(\mathsf{bvk},m,\sigma)$.
+$m=H_{\mathrm{ticket}}(\mathsf{Encode}(M))$ and both canonical $\mu_i$
+encodings, checks canonical payload encoding and the public
+common-information policy, then returns one iff
+\[
+ \BUOV.\mathsf{Vfy}(\mathsf{bvk},\mu_0,\sigma_0)=
+ \BUOV.\mathsf{Vfy}(\mathsf{bvk},\mu_1,\sigma_1)=1.
+\]
 
 This check proves neither public ciphertext validity nor identity correctness by
 itself.  Those facts follow from the certified-issuance theorem and the trust
@@ -467,7 +506,7 @@ performs the gate.  This is a security boundary, not an application convention.
 The challenger maintains a log $\mathcal L$ of accepted issuance sessions.  In
 the analysis it uses the extractor to associate each completed session with
 $(\rid,M,w)$.  An adversary wins $\mathsf{CertSound}$ if it outputs a ticket
-$T=(M,\sigma)$ for which $\Core.\mathsf{VerifyTicket}(T)=1$ and either:
+$T=(M,\sigma_0,\sigma_1)$ for which $\Core.\mathsf{VerifyTicket}(T)=1$ and either:
 \begin{enumerate}[label=(\alph*),leftmargin=*]
   \item $M$ is not associated with any completed accepted issuance in
   $\mathcal L$; or
@@ -532,15 +571,16 @@ holder may be malicious.
 
 \begin{theorem}[End-to-end correctness]\label{thm:correct}
 For an honest issuance authenticated as $\rid$, an honestly produced ticket
-$T=(M,\sigma)$ verifies.  Any authorized set of at least $\tau$ honest opening
+$T=(M,\sigma_0,\sigma_1)$ verifies.  Any authorized set of at least $\tau$ honest opening
 authorities reconstructs $\rid\|M.\sn$, except with the sum of the component
 correctness errors.
 \end{theorem}
 
 \begin{proof}
 Honest computation satisfies every conjunct of $R_{\mathsf{issue}}$, so
-$\Piiss$ accepts.  Blind-signature correctness gives a verifying $\sigma$ on
-$H_{\mathrm{ticket}}(\mathsf{Encode}(M))$.  Equation~\eqref{eq:i5} gives a
+$\Piiss$ accepts.  Blind-signature correctness gives two verifying signatures
+on the two lane encodings of $H_{\mathrm{ticket}}(\mathsf{Encode}(M))$.
+Equation~\eqref{eq:i5} gives a
 valid encryption of $\rid\|M.\sn$.  Threshold-encryption correctness on valid
 inputs reconstructs that plaintext from any $\tau$ correct shares.  The serial
 cross-check therefore succeeds.
@@ -548,34 +588,29 @@ cross-check therefore succeeds.
 
 \subsection{Blind-signing message binding}
 
-\begin{lemma}[Blind-UOV request uniqueness]\label{lem:buov-unique}
-Let $\beta=(c_0,y)$.  Suppose
-$R^{\BUOV}_{\mathsf{req}}(\beta;m,(r,\rho_0))=1$ and
-$R^{\BUOV}_{\mathsf{req}}(\beta;m',(r',\rho'_0))=1$ for $m\neq m'$.
-Then one can derive either two different openings of the same CAP commitment or
-a collision in $H_{\BUOV}$.
+\begin{lemma}[Conditional dual-request uniqueness]\label{lem:buov-unique}
+Let $\beta=(y_0,y_1)$.  If the dual request relation accepts valid openings for
+both $m$ and $m'\neq m$, then those values constitute a winning output in the
+game of Assumption~\ref{ass:dual-claw}.
 \end{lemma}
 
 \begin{proof}
-Both witnesses open $c_0$.  If $r\neq r'$, they violate CAP binding.  Otherwise
-$r=r'$, and the two equations for the same $y$ imply
-\[
- H_{\BUOV}(m,c_0)=y-r=H_{\BUOV}(m',c_0),
-\]
-which is a collision because $m\neq m'$.  Thus the request identifies at most
-one hidden message, except with the stated bad-event probability.
+Expanding the two accepted relations gives two independently opened pairs of
+$J$ values equal to the same public $(y_0,y_1)$ for distinct messages.  This is
+exactly the dual cross-message claw game.  Notice that CAP binding alone cannot
+rule it out because the two sides may use different commitments.
 \end{proof}
 
 \begin{lemma}[Request/proof binding]\label{lem:reqbind}
 Suppose an issuance proof for $\beta$ is accepting and extractable.  Except
-with CAP-binding or hash-collision probability, the message signed through
+with dual-request claw probability, the message signed through
 $\beta$ is exactly $H_{\mathrm{ticket}}(\mathsf{Encode}(M))$ for the payload
 $M$ in the extracted witness.  A different payload cannot verify under the same
 signed digest except by finding a collision in $H_{\mathrm{ticket}}$.
 \end{lemma}
 
 \begin{proof}
-Extraction yields $(M,r,\rho_0,\ldots)$ satisfying
+Extraction yields $(M,(r_0,\rho_0),(r_1,\rho_1),\ldots)$ satisfying
 Equations~\eqref{eq:i2}--\eqref{eq:i3}.  Equation~\eqref{eq:i2} fixes $m$ to the
 canonical ticket digest.  Lemma~\ref{lem:buov-unique} makes the message
 represented by $\beta$ equal to this $m$.  If a different canonical payload
@@ -586,33 +621,32 @@ H_{\mathrm{ticket}}(\mathsf{Encode}(M))$, a collision.
 
 \begin{theorem}[Certified-language soundness]\label{thm:certsound}
 For any $\QPT$ adversary $\mathcal A$, there exist $\QPT$ reductions
-$\mathcal B_1,\ldots,\mathcal B_5$ such that
+$\mathcal B_1,\ldots,\mathcal B_4$ such that
 \begin{align*}
  \Adv^{\mathsf{CertSound}}_{\Core,\mathcal A}
  \leq{}&
  \Adv^{\mathsf{SE\text{-}AoK}}_{\Piiss,\mathcal B_1}
- +\Adv^{\mathsf{1mUF}}_{\BUOV,\mathcal B_2}
- +\Adv^{\mathsf{bind}}_{\mathsf{CAP},\mathcal B_3}\\
- &+\Adv^{\mathsf{coll}}_{H_{\BUOV},\mathcal B_4}
- +\Adv^{\mathsf{coll}}_{H_{\mathrm{ticket}},\mathcal B_5}.
+ +2\Adv^{\mathsf{1mUF}}_{\BUOV,\mathcal B_2}
+ +\Adv^{\mathsf{dualClaw}}_{J,\mathcal B_3}
+ +\Adv^{\mathsf{coll}}_{H_{\mathrm{ticket}},\mathcal B_4}.
 \end{align*}
 Consequently, every verifying ticket is associated with an accepted issuance
 witness satisfying $R_{\mathsf{issue}}$, except with negligible probability.
 \end{theorem}
 
 \begin{proof}
-Consider a verifying output $(M,\sigma)$.  If its canonical digest was not the
+Consider a verifying output $(M,\sigma_0,\sigma_1)$.  If its canonical digest was not the
 message of a completed blind-signing session, then the output is a one-more
 forgery.  Otherwise consider the corresponding accepting issuance proof.
 Simulation extraction returns a witness or violates the SE-AoK property.
 Lemma~\ref{lem:reqbind} associates the signed digest with the extracted payload,
-except under the remaining binding and collision bad events.  The extracted witness
+except under the remaining claw and collision bad events.  The extracted witness
 then satisfies every issuance conjunct, including ciphertext validity and
 identity binding.
 \end{proof}
 
 \begin{corollary}[Certified ciphertext validity]\label{cor:validct}
-If $\Core.\mathsf{VerifyTicket}(M,\sigma)=1$, then $M.C\in
+If $\Core.\mathsf{VerifyTicket}(M,\sigma_0,\sigma_1)=1$, then $M.C\in
 L_{\mathsf{enc}}$ and it has an opening to the authenticated issuance identity
 and the external serial number, except with the bound in
 Theorem~\ref{thm:certsound}.
@@ -656,7 +690,7 @@ For an honest-protocol curious issuer, common visible metadata, and two honest
 holders, there exist $\QPT$ reductions such that
 \begin{align*}
  \Adv^{\mathsf{unlink}}_{\Core}
- \leq{}& \Adv^{\mathsf{blind}}_{\BUOV}
+ \leq{}& 2\Adv^{\mathsf{blind}}_{\BUOV}
  +2\Adv^{\mathsf{zk}}_{\Piiss}
  +\Adv^{\mathsf{t\text{-}IND\text{-}CPA}}_{\TEnc}
  +\Adv^{\mathsf{coll}}_{H_{\mathrm{ticket}}}.
@@ -665,8 +699,9 @@ holders, there exist $\QPT$ reductions such that
 
 \begin{proof}
 First replace each real issuance proof with a simulated proof; zero knowledge
-bounds the change.  The remaining request/response views are blind-signature views on two hidden
-messages.  Blindness permits swapping those messages without the issuer
+bounds the change.  The remaining request/response views are two parallel
+blind-signature views per hidden message.  A two-hybrid argument applies
+Blind-UOV blindness once per lane and permits swapping those messages without the issuer
 detecting the swap.  Threshold-encryption privacy prevents the issuer, which
 holds no opening threshold, from matching a final trace ciphertext to either
 known issuance identity.  Canonical digest collisions are excluded.  After
@@ -719,11 +754,11 @@ reductions $\mathcal B_i$ such that
  \leq{}&
  \Adv^{\mathsf{t\text{-}IND\text{-}CPA}}_{\TEnc,\mathcal B_0}
  +\Adv^{\mathsf{SE\text{-}AoK}}_{\Piiss,\mathcal B_1}
- +\Adv^{\mathsf{1mUF}}_{\BUOV,\mathcal B_2}\\
+ +2\Adv^{\mathsf{1mUF}}_{\BUOV,\mathcal B_2}\\
  &+\Adv^{\mathsf{unique}}_{\TEnc,\mathcal B_3}
- +\Adv^{\mathsf{bind}}_{\mathsf{CAP},\mathcal B_4}\\
- &+\Adv^{\mathsf{coll}}_{H_{\BUOV},\mathcal B_5}
- +\Adv^{\mathsf{coll}}_{H_{\mathrm{ticket}},\mathcal B_6}.
+ +\Adv^{\mathsf{dualClaw}}_{J,\mathcal B_4}\\
+ &
+ +\Adv^{\mathsf{coll}}_{H_{\mathrm{ticket}},\mathcal B_5}.
 \end{align*}
 \end{theorem}
 
@@ -737,7 +772,7 @@ This is the real $\mathsf{t\text{-}GCCA}$ game.
 For every accepted adversarial issuance proof, use the SE-AoK extractor to
 record
 \[
-  (d_M,M,\rid,e,k_{\mathrm{hold}},r,\rho_0,\ldots)
+  (d_M,M,\rid,e,k_{\mathrm{hold}},(r_0,\rho_0),(r_1,\rho_1),\ldots)
 \]
 in a private table $\mathcal L$.  Abort if an accepting proof has no valid
 witness.  The difference from Game 0 is bounded by SE-AoK security.  Request
@@ -768,8 +803,8 @@ Embed the $\tau$-IND-CPA challenge of $\TEnc$ as $M^*.C$.  The reduction is
 given fewer than $\tau$ shares exactly as in the base game.  It samples the
 remaining visible ticket fields identically.  Because it generated the issuer
 key and knows the complete challenge message $m^*$, it locally executes both
-sides of the genuine Blind-UOV protocol and obtains an exactly distributed
-final signature; it does not need the unknown trace-encryption randomness.
+sides of both genuine Blind-UOV lanes and obtains two exactly distributed final
+signatures; it does not need the unknown trace-encryption randomness.
 The challenge issuance transcript is not given to the adversary in this game,
 and $\pi_{\mathsf{issue}}$ influences only the accept/reject gate, not the
 distribution of the response after acceptance.  Therefore the reduction may
@@ -795,17 +830,19 @@ gated protocol even though it would not suffice under an unrestricted CCA API.
 \subsection{One-more ticket unforgeability}
 
 \begin{theorem}[Ticket one-more unforgeability]
-After $q$ completed accepted blind-issuance sessions, producing more than $q$
-distinct verifying ticket digests has probability at most the one-more
-unforgeability advantage of $\BUOV$ plus the CAP-binding and hash-collision
-terms.
+After $q$ completed accepted dual-lane blind-issuance sessions, producing more
+than $q$ distinct verifying ticket digests has probability at most the
+one-more-unforgeability advantage of either projected Blind-UOV lane, plus the
+dual-claw and ticket-hash collision terms.
 \end{theorem}
 
 \begin{proof}
 Map every completed issuance to the unique signed digest using
-Lemma~\ref{lem:reqbind}.  More distinct verifying digests than completed
-sessions directly form a one-more forgery unless two payloads share a digest or
-Lemma~\ref{lem:buov-unique} fails.
+Lemma~\ref{lem:reqbind}.  Project every complete ticket onto lane 0.  More
+distinct verifying digests than completed sessions then give more valid lane-0
+message/signature pairs than lane-0 responses, unless two payloads share a
+digest or Lemma~\ref{lem:buov-unique} fails.  Lane 1 remains mandatory for the
+cross-message binding target; it is not needed for this counting projection.
 \end{proof}
 
 \section{Candidate concrete instantiations}
@@ -814,41 +851,42 @@ Lemma~\ref{lem:buov-unique} fails.
 
 The Blind-UOV framework already requires the user to prove that its masked
 request is well built.  We strengthen that proved language instead of adding a
-second independent proof.  Let
+separate policy proof.  Let
 \[
-  R_{\mathsf{wb}}(c_0,y;m,r,\rho_0)=1
+  R_{\mathsf{wb}}^i(y_i;m,r_i,\rho_i)=1
 \]
-denote Equations~\eqref{eq:b1}--\eqref{eq:b2}.  The original well-built-request
-language is replaced by
+denote Equations~\eqref{eq:b3}--\eqref{eq:b4} for lane $i$.  The two native
+well-built-request languages are replaced by one augmented language:
 \begin{align*}
- R_{\mathsf{aug}}(&\pp,\ctx,\mathsf{sid},\rid,c_0,y;\\
-                  &M,r,\rho_0,k_{\mathrm{hold}},e)=1
+ R_{\mathsf{aug}}(&\pp,\ctx,\mathsf{sid},\rid,y_0,y_1;\\
+                  &M,(r_0,\rho_0),(r_1,\rho_1),k_{\mathrm{hold}},e)=1
  \quad\Longleftrightarrow\quad
  R_{\mathsf{issue}}(x;w)=1,
 \end{align*}
-where $\beta=(c_0,y)$ and Equation~\eqref{eq:i3} expands to
-$R_{\mathsf{wb}}=1$.  The issuer executes the ordinary Blind-UOV response only
+where $\beta=(y_0,y_1)$ and Equation~\eqref{eq:i3} expands to
+$R_{\mathsf{wb}}^0\wedge R_{\mathsf{wb}}^1$.  The issuer executes the two
+ordinary Blind-UOV responses only
 after verifying a post-quantum SE-NIZK argument for $R_{\mathsf{aug}}$.
 
 \paragraph{Compiler interface.}
-The integration requires only one hook in a Blind-UOV implementation:
+The integration requires a two-lane wrapper around the native verification hook:
 \[
- \mathsf{VerifyWellBuilt}(c_0,y,\pi_{\mathsf{wb}})
+ \mathsf{VerifyWellBuilt}(y_i,\pi_{1,i})_{i=0,1}
  \quad\longrightarrow\quad
- \Piiss.\mathsf{Vfy}(x,\pi_{\mathsf{issue}}).
+ \Piiss.\mathsf{Vfy}(\pp,\ctx,\mathsf{sid},\rid,y_0,y_1,
+                    \pi_{\mathsf{issue}}).
 \]
-The response and finalization algorithms remain unmodified.  In particular,
-the spendable signature is the genuine Blind-UOV final object.  It need not be,
-and is not assumed to be, distributed as an ordinary direct UOV signature.
+Each per-lane response and finalization algorithm remains unmodified.  The
+spendable objects are two genuine Blind-UOV final signatures.
 
 \paragraph{Concrete circuit boundary.}
 The implementation SHOULD expose the following fixed interface to the proof
 compiler:
 \begin{align*}
  \mathsf{pub}_{\mathsf{aug}}
-   &= (\ctx,\mathsf{sid},\rid,\mathsf{tpk},\mathsf{bvk},c_0,y),\\
+   &= (\ctx,\mathsf{sid},\rid,\mathsf{tpk},\mathsf{bvk},y_0,y_1),\\
  \mathsf{wit}_{\mathsf{aug}}
-   &= (\sn,k_{\mathrm{hold}},e,r,\rho_0).
+   &= (\sn,k_{\mathrm{hold}},e,(r_0,\rho_0),(r_1,\rho_1)).
 \end{align*}
 The circuit derives $C$, $h$, $M$, and $m$ internally rather than accepting
 duplicate witness copies.  Its constraint system is the conjunction
@@ -864,8 +902,9 @@ where
 \begin{align*}
  \mathcal C_{\mathsf{shape}} &: \mathsf{TicketShape}(M,\ctx)=1,\\
  \mathcal C_{\mathsf{ticketHash}} &: m=H_{\mathrm{ticket}}(\mathsf{Encode}(M)),\\
- \mathcal C_{\mathsf{BUOVmask}} &: c_0=\mathsf{CAP.Commit}(r;\rho_0)
-   \ \wedge\ y=r+H_{\BUOV}(m,c_0),\\
+ \mathcal C_{\mathsf{BUOVmask}} &: \bigwedge_{i=0}^{1}
+   \left[c_{r,i}=\mathsf{CAP.Commit}_i(r_i;\rho_i)\ \wedge\
+   y_i=r_i+H_{\BUOV}(\mu_i,c_{r,i})\right],\\
  \mathcal C_{\mathsf{holder}} &: h=H_{\mathrm{hold}}(k_{\mathrm{hold}}),\\
  \mathcal C_{\mathsf{trace}} &: R_{\mathsf{Ntr}}
    (\mathsf{tpk},C,\ctx,h;\rid,\sn,e)=1.
@@ -878,8 +917,8 @@ no session link tag.
 \begin{theorem}[Security inheritance of the augmented issuance proof]\label{thm:augcap}
 Assume $\Piiss$ is post-quantum zero knowledge and simulation-extractable for
 $R_{\mathsf{aug}}$.  Replacing the original well-built-request proof by
-$\pi_{\mathsf{issue}}$ preserves Blind-UOV one-more unforgeability and
-honest-protocol signer blindness, up to the SE-NIZK, CAP-binding, and
+$\pi_{\mathsf{issue}}$ preserves the projected Blind-UOV one-more property and
+parallel honest-protocol signer blindness, up to the SE-NIZK, dual-claw, and
 hash-collision terms already shown in
 Theorems~\ref{thm:certsound} and~\ref{thm:unlink}.
 \end{theorem}
@@ -887,16 +926,15 @@ Theorems~\ref{thm:certsound} and~\ref{thm:unlink}.
 \begin{proof}
 For one-more unforgeability, a forger against the augmented scheme is also a
 forger against the original Blind-UOV scheme: the reduction verifies the
-augmented proof itself and forwards only accepted $(c_0,y)$ requests to the
-original signer.  If that interface requires the native well-built proof, the
-reduction extracts $(m,r,\rho_0)$ from the augmented proof and generates the
-native proof; extraction failure is charged to the SE-AoK term.  The augmented
-relation is a restriction of the original well-built language, so every
-forwarded request is valid there.  The final signature format and verifier are
-unchanged.
+augmented proof itself and forwards each accepted $y_i$ to its corresponding
+original signer instance.  If that interface requires the native well-built
+proof, the reduction extracts $(m,r_i,\rho_i)$ and generates it.  Extraction
+failure is charged to SE-AoK.  The augmented relation restricts both original
+well-built languages; each final signature format and verifier is unchanged.
 
 For blindness, replace the augmented proof by a simulated proof.  The remaining
-transcript is an ordinary Blind-UOV transcript, to which its blindness game applies.  The
+transcripts are ordinary Blind-UOV transcripts; a two-hybrid argument applies
+its blindness game once per lane.  The
 public authenticated identity is session information but is absent from the
 final ticket; threshold-encryption privacy hides it inside $M.C$.  Any attempt
 to make the same masked request represent a different ticket digest triggers
@@ -904,25 +942,28 @@ Lemma~\ref{lem:buov-unique}, and any two payloads with one ticket digest trigger
 a collision in $H_{\mathrm{ticket}}$.
 \end{proof}
 
-\paragraph{Concretization achieved in versions 1.1--1.3.}
+\paragraph{Corrected concretization in version 1.6.}
 The request and witness are now fixed:
 \begin{align*}
- \beta&=(c_0,y),& b&=(r,\rho_0),\\
- c_0&=\mathsf{CAP.Commit}(r;\rho_0),&
- y&=r+H_{\BUOV}(H_{\mathrm{ticket}}(\mathsf{Encode}(M)),c_0).
+ \beta&=(y_0,y_1),& b&=((r_0,\rho_0),(r_1,\rho_1)),\\
+ \mu_i&=\mathsf{Encode}(\texttt{PQ-RBBC/BUOV-LANE},i,
+ H_{\mathrm{ticket}}(\mathsf{Encode}(M))),\\
+ c_{r,i}&=\mathsf{CAP.Commit}_i(r_i;\rho_i),&
+ y_i&=r_i+H_{\BUOV}(\mu_i,c_{r,i}).
 \end{align*}
-Consequently, the earlier abstract ``request-binding'' assumption has been
-eliminated.  It is replaced by the standard, auditable assumptions that the CAP
-commitment is binding and the two domain-separated hashes are collision
-resistant.  Version 1.2 removes $c_M$: extraction already supplies $M$,
-the request fixes its digest, and ticket-hash collision resistance prevents a
-second payload from verifying under that digest.
+The signer sees only the 64-byte pair $(y_0,y_1)$, not $c_{r,i}$ or $m$.
+Earlier drafts incorrectly exposed $c_r$ and claimed that CAP binding plus hash
+collision resistance implied request uniqueness.  That argument fails when an
+attacker chooses different commitments on both sides.  Version 1.6 restores the
+paper ABI and states Assumption~\ref{ass:dual-claw} explicitly.  The removed
+ticket commitment $c_M$ remains unnecessary: extraction supplies $M$, while
+ticket-hash collision resistance prevents a second payload under one digest.
 
 \paragraph{Frozen Blind-UOV costing profile.}
 Version 1.3 fixes the 31 October 2025 revision and its
 \emph{Blind-UOV-Is, NIST-I, Shorter, TCitH} row.  The paper gives
 $\bar n_r=256$ bits, $\bar n_x=640$ bits, a 66.6~KB public key, and a
-3,772-byte final signature.  Its NIST-I/Shorter TCitH parameters are
+3,772-byte final signature per lane.  Its NIST-I/Shorter TCitH parameters are
 $\tau=12$, ten $2^{11}$-leaf trees plus two $2^{10}$-leaf trees,
 $T_{\mathrm{open}}=111$, an explicit proof-of-work of 9 bits, and total
 proof-of-work 14.0 bits~\cite{blind-uov}.  These values minimize the stored and
@@ -934,12 +975,15 @@ proof are carried by the final blind signature.  Before the signer responds,
 the user separately sends a NIZK $\pi_1$ proving that the masked request and
 CAP commitment are well formed.  Our $\pi_{\mathsf{issue}}$ replaces and
 augments this $\pi_1$; it does \emph{not} replace the final CAP proof.
-Consequently the 3,772-byte final signature remains unchanged, while the five
-ticket/trace blocks increase only the issuance NIZK circuit.
+Consequently each 3,772-byte final signature remains unchanged.  The dual
+profile carries two such signatures, while the ticket/trace blocks are shared
+inside one augmented issuance relation.
 
-For costing, use the paper's illustrative Shockwave/Anemoi row.  Before our
-extension, Blind-UOV-Is/Shorter is reported as approximately 16 million R1CS
-constraints, a 2.8~MB proof, 32~s proving, and 2.5~s verification.  The paper
+For costing, use the paper's illustrative Shockwave/Anemoi row.  For one native
+lane Blind-UOV-Is/Shorter is reported as approximately 16 million R1CS
+constraints, a 2.8~MB proof, 32~s proving, and 2.5~s verification.  The dual
+baseline is therefore approximately 32 million constraints before adding the
+shared ticket/trace relation.  The paper
 explicitly treats these as estimates and notes that the benchmarked
 implementations do not provide the required zero-knowledge mode.  It also does
 not establish the simulation-extractability required by our concurrent GCCA
@@ -1118,8 +1162,8 @@ mceliece8192128 & 1357824 B & 208 B & 288 B\\
 \end{tabular}
 \end{center}
 The aggressive working anchor is mceliece6688128: approximately 1.045~MB of
-cached public key buys a 288-byte trace ciphertext.  The frozen Blind-UOV-Is
-profile and exact 4,140-byte complete ticket are derived in
+cached public key buys a 288-byte trace ciphertext.  The dual Blind-UOV-Is
+profile and exact 7,912-byte complete ticket are derived in
 Section~\ref{sec:circuit-audit}; these are still research targets rather than
 implementation benchmarks.
 
@@ -1142,8 +1186,8 @@ concatenation, and the public binary syndrome map are linear.  Each Boolean AND
 or field multiplication contributes one nonlinear R1CS constraint.  Following
 the Blind-UOV paper, one Keccak-f permutation costs
 $24\cdot1600=38{,}400$ constraints~\cite{blind-uov}.  The audit counts only
-constraints added beyond the paper's approximately 16-million-constraint
-Blind-UOV-Is/Shorter $\pi_1$ baseline.
+constraints added beyond two copies of the paper's approximately
+16-million-constraint Blind-UOV-Is/Shorter $\pi_1$ baseline.
 
 \paragraph{Exact-weight gadget.}
 The witness $e$ has 6,688 bits.  Pad it with 1,504 public zeros to 8,192 inputs
@@ -1203,23 +1247,23 @@ gate.  The xor pad, associated-data construction, external/internal serial
 equality, and final constant comparisons are also linear.
 
 \paragraph{Paper-anchored issuance estimate.}
-Because the paper rounds its baseline to 16 million constraints, the combined
+Because the paper rounds each lane baseline to 16 million constraints, the combined
 number is itself approximate:
 \[
- N_{\pi_{\mathsf{issue}}}\approx16{,}000{,}000+684{,}419
- =16{,}684{,}419,
+ N_{\pi_{\mathsf{issue}}}\approx2(16{,}000{,}000)+684{,}419
+ =32{,}684{,}419,
 \]
-an increase of 4.2776\%.  Applying the paper's square-root proof-size scaling
-and linear prover scaling gives approximately 2.86~MB and 33.4~s.  A
-conservative linear scaling of its reported verifier figure gives 2.61~s.
+or 2.0428 times the one-lane paper anchor.  Applying the paper's square-root
+proof-size scaling and linear prover scaling gives approximately 4.00~MB and
+65.4~s.  A conservative linear scaling of its verifier figure gives 5.11~s.
 These are extrapolations from Table~5 of the Blind-UOV paper, not local
 benchmarks.  The paper does not provide enough information to derive peak
 prover memory, so memory remains a measurement obligation.
 
 \begin{proposition}[Monolithic-circuit feasibility decision]
 Under the costing model above, adding the entire ticket and trace relation to
-the existing well-built-request NIZK changes its constraint count by less than
-5\%.  There is therefore no communication-based reason to split
+the dual-lane well-built-request NIZK changes its baseline by about 2.14\%.
+There is therefore no communication-based reason to split
 $R_{\mathsf{aug}}$ into linked proofs at this stage.  A split is justified only
 if the selected simulation-extractable backend, implementation memory, or
 prover parallelism makes the monolithic circuit impractical.
@@ -1230,15 +1274,16 @@ For mceliece6688128, $|C|=288$ bytes and
 \[
  |M|=32+16+32+288=368\text{ bytes}.
 \]
-Combining this with the published 3,772-byte Blind-UOV-Is/Shorter signature
+Combining this with two published 3,772-byte Blind-UOV-Is/Shorter signatures
 gives
 \[
- |T|=|M|+|\sigma|=4{,}140\text{ bytes}
+ |T|=|M|+|\sigma_0|+|\sigma_1|=7{,}912\text{ bytes}
 \]
 before transport framing.  The cached public material is approximately
 1,044,992 bytes for the trace key plus the paper's rounded 66.6~KB Blind-UOV
-verification key.  Relative to a 70~KB online credential, the frozen target is
-about 17 times smaller.  The approximately 2.86~MB issuance NIZK is offline and
+verification key, reused by both lanes.  Relative to a 70~KB online credential,
+the frozen target is about 8.9 times smaller.  The approximately 4.00~MB
+issuance NIZK is offline and
 is never forwarded to a satellite verifier.
 
 \begin{remark}[Audit reproducibility]
@@ -1252,7 +1297,7 @@ number cannot be mistaken for a benchmark.
 \subsection{Executable reference relation and rejection tests}
 \label{sec:executable-relation}
 
-Version 1.4 implements the incremental relation in
+Version 1.6 extends the incremental relation in
 \texttt{pq\_rbbc\_reference.py}.  The witness builder derives
 $h$, $s$, $c_\mu$, $\gamma$, the canonical 368-byte payload, and its ticket
 digest from $(\rid,\ctx,\sn,k_{\mathrm{hold}},e)$.  The circuit builder then
@@ -1272,10 +1317,12 @@ For the frozen honest vector the generated circuit reports:
 \toprule
 Measured generator quantity & Value\\
 \midrule
-Allocated wire identifiers & 2,976,528\\
+Allocated wire identifiers & 2,976,784\\
 Linear definitions & 2,281,323\\
-Linear equality assertions & 3,214\\
+Linear equality assertions & 2,958\\
 Nonlinear constraints & 684,419\\
+Public input bits & 3,968\\
+External Blind-UOV assertions & 2\\
 Keccak-f permutations & 17\\
 Failed assertions & 0\\
 \bottomrule
@@ -1285,34 +1332,34 @@ Thus the executable result exactly reproduces every nonlinear block total in
 the preceding audit.  The linear-definition figure is diagnostic IR size, not
 an additional nonlinear count: the costing model requires a backend to inline
 affine expressions.  A backend that instead materializes each affine wire as
-an R1CS row must report that larger total explicitly.  On the present reference environment, one honest
-streaming generation took approximately 5.85 seconds.  This is Python relation
+an R1CS row must report that larger total explicitly.  On the present reference
+environment, one honest streaming generation takes about six seconds.  This is Python relation
 generation time, not NIZK proving time, and no prover-memory claim follows from
 it.
 
 The regression suite accepts the honest witness and sends eight independent
 mutations through the complete circuit: wrong error weight, changed syndrome,
-changed masked identity, changed holder hash, changed KMAC tag, changed ticket
-digest, changed blind request, and changed common context.  All eight are
-rejected.  The suite contains eight test methods and completed in approximately
-53.5 seconds in the same environment.  The checked output is recorded in
-\texttt{pq\_rbbc\_r1cs\_manifest\_v1\_4.json}.
+changed masked identity, changed holder hash, changed KMAC tag, changed serial,
+changed blind request, and changed common context.  All eight are rejected.
+The checked output is recorded in
+\path{pq_rbbc_reference_manifest_v1_6.json}.
 
 \paragraph{Exact implementation boundary.}
 The $H=(I\mid T)$ matrix in the reference vector is generated deterministically
 from a public seed and is only a rank-controlled test fixture; it is not a
 certified binary Goppa key.  Similarly,
 \texttt{TestBlindUOVAdapter} checks message/request binding with a deterministic
-SHAKE construction, but is not a blind signature.  It marks the native
-Blind-UOV $\pi_1$/CAP boundary whose nonlinear cost remains in the paper's
-baseline.  Consequently this implementation establishes that the incremental
+SHAKE construction, but is not a blind signature.  It marks two native
+Blind-UOV $\pi_1$/CAP boundaries whose nonlinear cost remains in the dual
+paper-anchored baseline.  The 512 public $y_0,y_1$ bits are serialized as
+circuit inputs, while $m,r_i,\rho_i,c_{r,i}$ remain hidden.  Consequently this implementation establishes that the incremental
 relation is internally consistent and executable; it does not establish that
 the combined native Blind-UOV proof is zero knowledge or simulation
 extractable.
 
 \subsection{Portable binary R1CS lowering}\label{sec:br1cs}
 
-Version 1.5 introduces a proof-backend exchange layer in
+Version 1.6 uses the proof-backend exchange layer in
 \texttt{pq\_rbbc\_br1cs.py}.  It consumes the same event stream as the counting
 sink and serializes three standard rank-one forms over $\mathbb F_2$:
 \begin{align*}
@@ -1333,19 +1380,19 @@ The resulting honest archive has the following exact dimensions:
 \toprule
 Portable backend quantity & Value\\
 \midrule
-Wires & 2,976,528\\
-Public input bits & 3,712\\
+Wires & 2,976,784\\
+Public input bits & 3,968\\
 Secret input bits & 7,072\\
 Nonlinear R1CS rows & 684,419\\
 Materialized affine-definition rows & 2,281,323\\
-Linear assertion rows & 3,214\\
-Total R1CS rows & 2,968,956\\
-Archive size & 49,183,761 bytes\\
+Linear assertion rows & 2,958\\
+Total R1CS rows & 2,968,700\\
+Archive size & 49,183,966 bytes\\
 \bottomrule
 \end{tabular}
 \end{center}
 The 684,419 figure is therefore a \emph{nonlinear-only} cost under the affine
-elimination model used in Section~\ref{sec:circuit-audit}.  The 2,968,956 figure
+elimination model used in Section~\ref{sec:circuit-audit}.  The 2,968,700 figure
 is the portable total when every affine definition is materialized as its own
 rank-one row.  They are not competing measurements.  A concrete proof backend
 may recover the smaller representation by substituting affine expressions into
@@ -1358,22 +1405,22 @@ xor, and the input bitness equations prevent non-Boolean witnesses.  This makes
 the archive compatible in principle with the $\mathbb F_{2^{129}}$ cost anchor,
 without claiming that a specific prover has been integrated.
 
-An independent reader reconstructs and evaluates all 2,968,956 rows.  It
+An independent reader reconstructs and evaluates all 2,968,700 rows.  It
 accepts the honest assignment, rejects a one-bit assignment mutation, and
 rejects a one-bit archive corruption through the body digest.  Lowering a
-wrong-weight witness produces exactly the same 49,183,637-byte body and the
+wrong-weight witness produces exactly the same 49,183,842-byte body and the
 same digest as the honest witness, showing that circuit structure is
 witness-independent; its assignment nevertheless fails 320 rows.  Five
 end-to-end backend tests completed in approximately 77.9 seconds in the
 reference environment.  The checked metadata is recorded in
-\texttt{pq\_rbbc\_br1cs\_manifest\_v1\_5.json}.
+\texttt{pq\_rbbc\_br1cs\_manifest\_v1\_6.json}.
 
-\paragraph{Remaining external row.}
-The archive records one named external assertion for the native Blind-UOV
-$\pi_1$/CAP request relation, but cannot evaluate it.  This is deliberate and
+\paragraph{Remaining external rows.}
+The archive records two named external assertions for the native Blind-UOV
+$\pi_1$/CAP request relations, but cannot evaluate them.  This is deliberate and
 machine-visible: an archive with an unchecked external assertion is not a
 closed issuance proof.  The next integration must replace that marker with the
-actual Blind-UOV constraints; deleting or treating it as automatically true is
+actual Blind-UOV constraints; deleting or treating either as automatically true is
 forbidden.
 
 \subsection{Local mixing as a future trace-encryption candidate}
@@ -1392,26 +1439,29 @@ extractable issuance binding are the missing system properties.
 \toprule
 \textbf{Status} & \textbf{Result or obligation}\\
 \midrule
-Proved at the abstract level & Correctness; proof/request/message binding;
+Conditional abstract reductions & Correctness; dual proof/request/message binding;
 certified ciphertext validity; signature-gated decoder safety; issuer
 unlinkability against an honest-protocol curious issuer; trace soundness;
 one-more ticket unforgeability; and $\tau$-GCCA trace privacy.\\
 \addlinespace
-Assumed component property & Post-quantum SE-NIZK AoK, CAP binding, Blind-UOV
-blindness and one-more unforgeability, threshold syndrome-decoding privacy with
-robust shares, QROM one-way-to-hiding, KMAC integrity, and
+Assumed component property & Post-quantum SE-NIZK AoK; dual-lane cross-message
+request claw resistance; parallel Blind-UOV blindness and projected one-more
+unforgeability; threshold syndrome-decoding privacy with robust shares; QROM
+one-way-to-hiding; KMAC integrity; and
 authorization unforgeability.\\
 \addlinespace
 Concretely instantiated & Blind-UOV-Is/Shorter costing profile; executable
 five-block augmented relation; exact Niederreiter--SHAKE--KMAC trace relation;
 information-theoretic unique opening; independently checked SHAKE/KMAC;
 full-circuit positive and negative tests; a checksummed portable R1CS archive
-with independent row evaluation; 684,419 nonlinear rows; 2,968,956 materialized
-total rows; and a 4,140-byte online-ticket target.\\
+with independent row evaluation; 684,419 incremental nonlinear rows; 2,968,700
+materialized total rows; a 64-byte issuance request excluding proof; and a
+7,912-byte online-ticket target.\\
 \addlinespace
 Not yet instantiated & A post-quantum zero-knowledge and
-simulation-extractable implementation of $\Piiss$; native Blind-UOV circuit
-integration; proof-system-specific affine elimination; import of a real Goppa
+simulation-extractable implementation of $\Piiss$; a structured-QROM reduction
+for Assumption~\ref{ass:dual-claw}; two native Blind-UOV circuit imports;
+proof-system-specific affine elimination; import of a real Goppa
 key; peak prover memory; robust threshold-share transcript; proof benchmarks;
 and a reviewed response to the August 2026 McEliece cryptanalysis.\\
 \addlinespace
@@ -1437,6 +1487,9 @@ machine-tested or enforced by type/API boundaries.
   completed session only after returning its blind response.
   \item The blind request proven in $\Piiss$ is byte-for-byte the request passed
   to the blind-signing implementation.
+  \item The public issuance request contains exactly $(y_0,y_1)$; it contains
+  neither $m$ nor either $c_{r,i}$.  The two lanes use independent masks and
+  commitment randomness plus explicit lane-domain separation.
   \item The opening authorization includes the ticket digest and evidence
   digest, and replay is statefully rejected.
   \item The reconstructed serial number must equal the clear serial number.
@@ -1463,19 +1516,22 @@ machine-tested or enforced by type/API boundaries.
   counts, sequential wire discipline, and body digest all verify before proof
   generation or verification.
   \item Any nonzero external-assertion count makes the archive incomplete for
-  production issuance; the Blind-UOV marker must be replaced, never ignored.
+  production issuance; both Blind-UOV markers must be replaced, never ignored.
 \end{enumerate}
 
 \section{Next proof step}
 
-The relation, unique opening, fixed layout, circuit audit, executable witness
-builder, rejection tests, and portable R1CS lowering are now complete.  The
-next step is native Blind-UOV composition and proof-backend qualification:
+The incremental relation, unique opening, fixed layout, circuit audit,
+executable witness builder, rejection tests, and portable R1CS lowering are now
+complete.  The next step has two coupled proof obligations:
 
 \begin{quote}
-\emph{Replace the external marker with the native Blind-UOV $\pi_1$/CAP
-constraints and prove that its message input is exactly the 256-bit digest
-produced by $\mathcal C_{\mathsf{ticketHash}}$.  Then select a concrete backend,
+\emph{First prove Assumption~\ref{ass:dual-claw} for the structured,
+domain-separated $J^0,J^1$ maps in the QROM, or replace the combiner with one
+that has such a theorem.  In parallel, replace both external markers with the
+native Blind-UOV $\pi_1$/CAP constraints and prove that both message inputs are
+exactly the 256-bit digest produced by
+$\mathcal C_{\mathsf{ticketHash}}$.  Then select a concrete backend,
 prove any affine-elimination pass sound, and establish post-quantum zero
 knowledge and simulation extractability in the model required by the GCCA
 reduction.}
@@ -1495,6 +1551,19 @@ Julia Sauvage, and Damien Vergnaud,
 \emph{Blinding Post-Quantum Hash-and-Sign Signatures},
 IACR Cryptology ePrint Archive, Report 2025/895, 2025.
 \url{https://eprint.iacr.org/2025/895}
+
+\bibitem{bht}
+Gilles Brassard, Peter H\o yer, and Alain Tapp,
+\emph{Quantum Algorithm for the Collision Problem},
+arXiv:quant-ph/9705002, 1997.
+\url{https://arxiv.org/abs/quant-ph/9705002}
+
+\bibitem{compressed-oracle}
+Kai-Min Chung, Serge Fehr, Yu-Hsuan Huang, and Tai-Ning Liao,
+\emph{On the Compressed-Oracle Technique, and Post-Quantum Security of Proofs
+of Sequential Work},
+Advances in Cryptology---EUROCRYPT 2021; arXiv:2010.11658.
+\url{https://arxiv.org/abs/2010.11658}
 
 \bibitem{blind-uov-slides}
 Thibauld Feneuil,

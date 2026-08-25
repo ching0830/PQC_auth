@@ -33,7 +33,7 @@
         "bitness_constraints": 0,
         "failed_assertions": 0,
         "keccak_permutations": 3,
-        "linear_assertions": 256,
+        "linear_assertions": 0,
         "linear_definitions": 395202,
         "nonlinear_constraints": 115200
       },
@@ -47,8 +47,8 @@
         "nonlinear_constraints": 530435
       }
     },
-    "external_assertions": 1,
-    "public_input_bits": 3712,
+    "external_assertions": 2,
+    "public_input_bits": 3968,
     "satisfied": true,
     "secret_input_bits": 7072,
     "totals": {
@@ -56,29 +56,32 @@
       "bitness_constraints": 7072,
       "failed_assertions": 0,
       "keccak_permutations": 17,
-      "linear_assertions": 3214,
+      "linear_assertions": 2958,
       "linear_definitions": 2281323,
       "nonlinear_constraints": 684419
     },
-    "wire_count": 2976528
+    "wire_count": 2976784
   },
   "claim_boundary": {
-    "blind_uov": "test-only adapter; native pi_1 remains external",
+    "blind_uov": "correct hidden-state ABI with a test-only adapter; native pi_1 remains external",
     "implemented": "incremental five-block characteristic-two relation",
     "r1cs_backend": "streaming IR events only; no flattened matrices or proof backend",
     "trace_key": "deterministic systematic test fixture; not a certified Goppa key"
   },
   "fixed_sizes": {
-    "blind_uov_signature_bytes": 3772,
-    "online_ticket_bytes": 4140,
-    "payload_bytes": 368
+    "blind_uov_lanes": 2,
+    "dual_blind_uov_signatures_bytes": 7544,
+    "issuance_request_bytes_excluding_proof": 64,
+    "online_ticket_bytes": 7912,
+    "payload_bytes": 368,
+    "single_blind_uov_signature_bytes": 3772
   },
   "honest_relation": {
     "circuit_accepts": true,
     "concrete_accepts": true,
     "concrete_failures": []
   },
-  "implementation_version": "1.4",
+  "implementation_version": "1.6",
   "negative_tests": {
     "concrete_all_rejected": true,
     "concrete_cases": {
@@ -92,26 +95,23 @@
       ],
       "holder_hash_tamper": [
         "holder_hash",
-        "ticket_digest",
         "blind_request"
       ],
       "masked_identity_tamper": [
         "masked_identity",
-        "ticket_digest",
+        "blind_request"
+      ],
+      "serial_tamper": [
+        "serial_binding",
         "blind_request"
       ],
       "syndrome_tamper": [
         "syndrome",
-        "ticket_digest",
         "blind_request"
       ],
       "tag_tamper": [
         "trace_tag",
-        "ticket_digest",
         "blind_request"
-      ],
-      "ticket_digest_tamper": [
-        "ticket_digest"
       ],
       "wrong_weight": [
         "exact_weight",
@@ -126,15 +126,15 @@
       "context_tamper": true,
       "holder_hash_tamper": true,
       "masked_identity_tamper": true,
+      "serial_tamper": true,
       "syndrome_tamper": true,
       "tag_tamper": true,
-      "ticket_digest_tamper": true,
       "wrong_weight": true
     },
     "full_circuit_executed": true
   },
   "reference_vector": {
-    "blind_adapter": "TEST-ONLY-SHAKE-ADAPTER",
+    "blind_adapter": "TEST-ONLY-HIDDEN-CAP-SHAKE-ADAPTER",
     "error_weight": 128,
     "matrix_seed_sha256": "51c582d012a12fa082d4c0019c23eec42b12fea73641573f22d7c920a1b118f5",
     "payload_sha256": "8d88e08b4c5283723803906e00e47064b75cfe5e134faed9ef2be72fb46aa3e0",

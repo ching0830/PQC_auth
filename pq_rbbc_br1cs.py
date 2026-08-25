@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Binary F2-R1CS lowering for the executable PQ-RBBC v1.4 relation.
+"""Binary F2-R1CS lowering for the executable PQ-RBBC v1.6 relation.
 
 The format is intentionally small and auditable.  It serializes enough data to
 reconstruct ordinary rank-1 constraints over F2:
@@ -14,7 +14,7 @@ Unlike the nonlinear-only research cost model, this portable representation
 materializes affine definitions as R1CS rows.  A proof-system-specific compiler
 may later eliminate those rows, but it must prove that optimization separately.
 
-The native Blind-UOV request relation remains an external assertion and is not
+The two native Blind-UOV request relations remain external assertions and are not
 silently converted into an R1CS row by this module.
 """
 
@@ -648,8 +648,8 @@ def build_backend_manifest(output_path: str | os.PathLike[str]) -> dict[str, obj
         honest.metadata.linear_definitions + honest.metadata.linear_assertions
     )
     return {
-        "implementation_version": "1.5",
-        "status": "portable F2-R1CS research backend; native Blind-UOV remains external",
+        "implementation_version": "1.6",
+        "status": "corrected hidden-input F2-R1CS backend; native Blind-UOV remains external",
         "format": {
             "name": honest.metadata.format,
             "version": honest.metadata.format_version,
@@ -687,7 +687,7 @@ def build_backend_manifest(output_path: str | os.PathLike[str]) -> dict[str, obj
         "claim_boundary": {
             "external_assertions": honest.metadata.external_assertions,
             "external_failures_in_honest_vector": honest.metadata.external_failures,
-            "external_component": "native Blind-UOV pi_1/CAP request relation",
+            "external_component": "two native Blind-UOV pi_1/CAP request relations",
             "not_yet_done": [
                 "native Blind-UOV constraint import",
                 "proof-system-specific affine elimination",

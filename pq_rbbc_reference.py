@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Executable v1.4 reference relation for the PQ-RBBC/SGTD research draft.
+"""Executable v1.6 reference relation for the PQ-RBBC/SGTD research draft.
 
 This module implements the *incremental* five-block issuance relation described
 in the accompanying proof document.  It emits a streaming characteristic-two
@@ -24,13 +24,21 @@ import subprocess
 from dataclasses import asdict, dataclass, field, replace
 from typing import Iterable, Protocol, Sequence
 
+from pq_rbbc_blind_uov_abi import (
+    BlindUOVAdapter,
+    BlindUOVRequest as BlindRequest,
+    TestBlindUOVAdapter,
+)
+
 
 N = 6688
 K = 5024
 R = N - K
 T = 128
 RATE = 136
-SIGNATURE_BYTES = 3772
+BLIND_UOV_LANES = 2
+SINGLE_SIGNATURE_BYTES = 3772
+SIGNATURE_BYTES = BLIND_UOV_LANES * SINGLE_SIGNATURE_BYTES
 CUSTOMIZATION = b"PQ-RBBC/TAG"
 
 LABEL_HOLD = b"PQ-RBBC/HOLD"
@@ -273,49 +281,10 @@ class TicketPayload:
 
 
 @dataclass(frozen=True)
-class BlindRequest:
-    commitment: bytes
-    masked_preimage: bytes
-
-
-class BlindUOVAdapter(Protocol):
-    name: str
-
-    def create(self, message: bytes, preimage: bytes, randomness: bytes) -> BlindRequest:
-        ...
-
-    def verify(
-        self, request: BlindRequest, message: bytes, preimage: bytes, randomness: bytes
-    ) -> bool:
-        ...
-
-
-class TestBlindUOVAdapter:
-    """Non-cryptographic deterministic adapter for testing the native boundary."""
-
-    name = "TEST-ONLY-SHAKE-ADAPTER"
-    _c0_label = b"PQ-RBBC/v1.4/TEST-BUOV/C0"
-    _y_label = b"PQ-RBBC/v1.4/TEST-BUOV/Y"
-
-    def create(self, message: bytes, preimage: bytes, randomness: bytes) -> BlindRequest:
-        if not (len(message) == len(preimage) == len(randomness) == 32):
-            raise ValueError("test adapter inputs must each be 32 bytes")
-        commitment = hashlib.shake_256(self._c0_label + preimage + randomness).digest(32)
-        mask = hashlib.shake_256(self._y_label + message + commitment).digest(32)
-        return BlindRequest(commitment, xor_bytes(preimage, mask))
-
-    def verify(
-        self, request: BlindRequest, message: bytes, preimage: bytes, randomness: bytes
-    ) -> bool:
-        return request == self.create(message, preimage, randomness)
-
-
-@dataclass(frozen=True)
 class IssueStatement:
     common_ctx: bytes
     rid: bytes
     payload: TicketPayload
-    ticket_digest: bytes
     blind_request: BlindRequest
 
 
@@ -324,8 +293,8 @@ class IssueWitness:
     sn: bytes
     holder_key: bytes
     error: int
-    blind_preimage: bytes
-    blind_randomness: bytes
+    blind_masks: tuple[bytes, bytes]
+    blind_randomness: tuple[bytes, bytes]
 
 
 @dataclass(frozen=True)
@@ -360,8 +329,8 @@ def build_honest_instance(
     sn: bytes,
     holder_key: bytes,
     error: int,
-    blind_preimage: bytes,
-    blind_randomness: bytes,
+    blind_masks: tuple[bytes, bytes],
+    blind_randomness: tuple[bytes, bytes],
     adapter: BlindUOVAdapter,
 ) -> tuple[IssueStatement, IssueWitness]:
     if len(common_ctx) != 32 or len(rid) != 32:
@@ -370,10 +339,10 @@ def build_honest_instance(
         raise ValueError("serial and holder key must be 16 and 32 bytes")
     payload = _derive_trace(matrix, common_ctx, rid, sn, holder_key, error)
     digest = hashlib.shake_256(LABEL_TICKET + payload.encode()).digest(32)
-    request = adapter.create(digest, blind_preimage, blind_randomness)
+    request = adapter.create(digest, blind_masks, blind_randomness)
     return (
-        IssueStatement(common_ctx, rid, payload, digest, request),
-        IssueWitness(sn, holder_key, error, blind_preimage, blind_randomness),
+        IssueStatement(common_ctx, rid, payload, request),
+        IssueWitness(sn, holder_key, error, blind_masks, blind_randomness),
     )
 
 
@@ -388,7 +357,7 @@ def verify_relation(
         encoded = statement.payload.encode()
     except ValueError:
         return VerificationResult(False, ("payload_layout",))
-    if not (len(statement.common_ctx) == len(statement.rid) == len(statement.ticket_digest) == 32):
+    if not (len(statement.common_ctx) == len(statement.rid) == 32):
         failures.append("statement_layout")
     if statement.payload.ctx != statement.common_ctx:
         failures.append("context_binding")
@@ -415,12 +384,10 @@ def verify_relation(
         failures.append("trace_tag")
 
     expected_digest = hashlib.shake_256(LABEL_TICKET + encoded).digest(32)
-    if statement.ticket_digest != expected_digest:
-        failures.append("ticket_digest")
     if not adapter.verify(
         statement.blind_request,
         expected_digest,
-        witness.blind_preimage,
+        witness.blind_masks,
         witness.blind_randomness,
     ):
         failures.append("blind_request")
@@ -885,8 +852,14 @@ def generate_issue_circuit(
         builder, statement.payload.masked_identity, "public", "payload.masked_identity"
     )
     public_tag = input_wires(builder, statement.payload.tag, "public", "payload.tag")
-    public_digest = input_wires(
-        builder, statement.ticket_digest, "public", "ticket_digest"
+    public_blind_targets = tuple(
+        input_wires(
+            builder,
+            statement.blind_request.masked_targets[lane],
+            "public",
+            f"blind_request.y[{lane}]",
+        )
+        for lane in range(BLIND_UOV_LANES)
     )
     secret_sn = input_wires(builder, witness.sn, "secret", "witness.sn", True)
     _assert_wire_vectors_equal(builder, common_ctx, payload_ctx)
@@ -904,18 +877,21 @@ def generate_issue_circuit(
     computed_digest = shake256_wires(
         builder, constant_wires(builder, LABEL_TICKET) + payload_wires, 32
     )
-    _assert_wire_vectors_equal(builder, computed_digest, public_digest)
 
     builder.set_block("blind_uov_mask_increment")
-    builder.external_assert(
-        "native_blind_uov_request",
-        adapter.verify(
-            statement.blind_request,
-            wire_bytes(computed_digest),
-            witness.blind_preimage,
-            witness.blind_randomness,
-        ),
-    )
+    for lane in range(BLIND_UOV_LANES):
+        if wire_bytes(public_blind_targets[lane]) != statement.blind_request.masked_targets[lane]:
+            raise AssertionError("public Blind-UOV target wire encoding changed")
+        builder.external_assert(
+            f"native_blind_uov_request_lane_{lane}",
+            adapter.verify_lane(
+                statement.blind_request,
+                lane,
+                wire_bytes(computed_digest),
+                witness.blind_masks[lane],
+                witness.blind_randomness[lane],
+            ),
+        )
 
     builder.set_block("holder")
     holder_key = input_wires(
@@ -977,8 +953,14 @@ def reference_fixture() -> tuple[SystematicParityCheck, IssueStatement, IssueWit
     sn = hashlib.shake_256(b"PQ-RBBC/v1.4/serial").digest(16)
     holder_key = hashlib.shake_256(b"PQ-RBBC/v1.4/holder-key").digest(32)
     error = sample_weight_error(b"reference-vector")
-    blind_preimage = hashlib.shake_256(b"PQ-RBBC/v1.4/blind-preimage").digest(32)
-    blind_randomness = hashlib.shake_256(b"PQ-RBBC/v1.4/blind-randomness").digest(32)
+    blind_masks = tuple(
+        hashlib.shake_256(b"PQ-RBBC/v1.6/blind-mask" + bytes((lane,))).digest(32)
+        for lane in range(BLIND_UOV_LANES)
+    )
+    blind_randomness = tuple(
+        hashlib.shake_256(b"PQ-RBBC/v1.6/blind-randomness" + bytes((lane,))).digest(32)
+        for lane in range(BLIND_UOV_LANES)
+    )
     statement, witness = build_honest_instance(
         matrix,
         common_ctx,
@@ -986,7 +968,7 @@ def reference_fixture() -> tuple[SystematicParityCheck, IssueStatement, IssueWit
         sn,
         holder_key,
         error,
-        blind_preimage,
+        blind_masks,
         blind_randomness,
         adapter,
     )
@@ -1065,13 +1047,19 @@ def negative_cases(
             replace(statement, payload=replace(statement.payload, tag=flip(statement.payload.tag))),
             witness,
         ),
-        "ticket_digest_tamper": (replace(statement, ticket_digest=flip(statement.ticket_digest)), witness),
+        "serial_tamper": (
+            replace(statement, payload=replace(statement.payload, sn=flip(statement.payload.sn))),
+            witness,
+        ),
         "blind_request_tamper": (
             replace(
                 statement,
                 blind_request=replace(
                     statement.blind_request,
-                    masked_preimage=flip(statement.blind_request.masked_preimage),
+                    masked_targets=(
+                        flip(statement.blind_request.masked_targets[0]),
+                        statement.blind_request.masked_targets[1],
+                    ),
                 ),
             ),
             witness,
@@ -1110,17 +1098,20 @@ def build_manifest(full_negative_circuits: bool = False) -> dict[str, object]:
             ).items()
         }
     return {
-        "implementation_version": "1.4",
+        "implementation_version": "1.6",
         "status": "executable research relation; not a deployment implementation",
         "claim_boundary": {
             "implemented": "incremental five-block characteristic-two relation",
-            "blind_uov": "test-only adapter; native pi_1 remains external",
+            "blind_uov": "correct hidden-state ABI with a test-only adapter; native pi_1 remains external",
             "r1cs_backend": "streaming IR events only; no flattened matrices or proof backend",
             "trace_key": "deterministic systematic test fixture; not a certified Goppa key",
         },
         "fixed_sizes": {
             "payload_bytes": len(statement.payload.encode()),
-            "blind_uov_signature_bytes": SIGNATURE_BYTES,
+            "blind_uov_lanes": BLIND_UOV_LANES,
+            "single_blind_uov_signature_bytes": SINGLE_SIGNATURE_BYTES,
+            "dual_blind_uov_signatures_bytes": SIGNATURE_BYTES,
+            "issuance_request_bytes_excluding_proof": len(statement.blind_request.encode()),
             "online_ticket_bytes": len(statement.payload.encode()) + SIGNATURE_BYTES,
         },
         "self_checks": self_checks(),
@@ -1144,7 +1135,9 @@ def build_manifest(full_negative_circuits: bool = False) -> dict[str, object]:
         "reference_vector": {
             "matrix_seed_sha256": hashlib.sha256(matrix.seed).hexdigest(),
             "payload_sha256": hashlib.sha256(statement.payload.encode()).hexdigest(),
-            "ticket_digest": statement.ticket_digest.hex(),
+            "ticket_digest": hashlib.shake_256(
+                LABEL_TICKET + statement.payload.encode()
+            ).digest(32).hex(),
             "error_weight": witness.error.bit_count(),
             "blind_adapter": adapter.name,
         },

@@ -1,27 +1,27 @@
 {
   "archive": {
-    "archive_bytes": 49183761,
-    "archive_sha256": "a9e5b5468e2ecd68ce4ff6c3e821270f9e1f604a0a4ff0141ba4581ee71738bc",
-    "assignment_sha256": "0ab91cf064cca9b20d6a8bb47585e92a2fd319817d29191002bad2f5deaa3c96",
-    "body_bytes": 49183637,
-    "body_sha256": "617940becc355838daae5ac5e94e8142ff5d3ebd8c9de5db3181cd64acc1b160",
-    "external_assertions": 1,
+    "archive_bytes": 49183966,
+    "archive_sha256": "127d6081e8c52c0adfd0441639fb7c53c803be43944f2230a8cbf91d18150892",
+    "assignment_sha256": "d6c76be359bf6d5999894e304938b2348a5bc2eca194b6e0356efe187b24b4f4",
+    "body_bytes": 49183842,
+    "body_sha256": "6d887009a46d819db3e21bc304539271caa1905e1153525e91665e4e572e1924",
+    "external_assertions": 2,
     "external_failures": 0,
     "field": "F2",
     "format": "PQ-RBBC-BR1CS",
     "format_version": 1,
     "keccak_permutations": 17,
-    "linear_assertions": 3214,
+    "linear_assertions": 2958,
     "linear_definitions": 2281323,
     "nonlinear_constraints": 684419,
-    "public_inputs": 3712,
+    "public_inputs": 3968,
     "secret_inputs": 7072,
-    "total_r1cs_rows": 2968956,
-    "wire_count": 2976528
+    "total_r1cs_rows": 2968700,
+    "wire_count": 2976784
   },
   "claim_boundary": {
-    "external_assertions": 1,
-    "external_component": "native Blind-UOV pi_1/CAP request relation",
+    "external_assertions": 2,
+    "external_component": "two native Blind-UOV pi_1/CAP request relations",
     "external_failures_in_honest_vector": 0,
     "not_yet_done": [
       "native Blind-UOV constraint import",
@@ -31,10 +31,10 @@
     ]
   },
   "constraint_accounting": {
-    "materialized_linear_rows": 2284537,
+    "materialized_linear_rows": 2284281,
     "nonlinear_only_cost_model_total": 684419,
     "nonlinear_rows": 684419,
-    "portable_total_r1cs_rows": 2968956,
+    "portable_total_r1cs_rows": 2968700,
     "warning": "portable row count is not directly comparable to a backend that soundly eliminates affine wires"
   },
   "format": {
@@ -49,17 +49,17 @@
     },
     "version": 1
   },
-  "implementation_version": "1.5",
+  "implementation_version": "1.6",
   "round_trip": {
     "archive_corruption_rejected": true,
-    "assignment_bit_tamper_first_failure": "linear definition at record 2979500",
+    "assignment_bit_tamper_first_failure": "linear definition at record 2979501",
     "assignment_bit_tamper_rejected": true,
     "body_sha256_verified": true,
-    "external_assertions_unchecked": 1,
+    "external_assertions_unchecked": 2,
     "honest_assignment_accepts": true,
-    "rows_checked": 2968956
+    "rows_checked": 2968700
   },
-  "status": "portable F2-R1CS research backend; native Blind-UOV remains external",
+  "status": "corrected hidden-input F2-R1CS backend; native Blind-UOV remains external",
   "witness_independence": {
     "honest_and_wrong_weight_body_digest_equal": true,
     "wrong_weight_assignment_rejected": true,
