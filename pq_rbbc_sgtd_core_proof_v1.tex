@@ -19,9 +19,9 @@
 
 \newcommand{\Core}{\mathsf{Core}}
 \newcommand{\BUOV}{\mathsf{BUOV}}
-\newcommand{\Com}{\mathsf{Com}}
 \newcommand{\Piiss}{\Pi_{\mathsf{issue}}}
 \newcommand{\TEnc}{\mathsf{TEnc}}
+\newcommand{\HDEM}{\mathsf{HDEM}}
 \newcommand{\TPDec}{\mathsf{TPDec}}
 \newcommand{\TComb}{\mathsf{TComb}}
 \newcommand{\Verify}{\mathsf{Verify}}
@@ -40,7 +40,7 @@
 
 \title{A Post-Quantum Relation-Bound Blind Certification Core\\
 with Signature-Gated Threshold Decryption}
-\author{Research construction draft, version 1.1}
+\author{Research construction draft, version 1.2}
 \date{23 August 2026}
 
 \begin{document}
@@ -56,17 +56,19 @@ validly signed ticket and an independently authorized case.  This
 \emph{signature-gated threshold decryption} rule replaces a public validity proof
 carried by every online ticket.
 
-The main result is conditional and modular: assuming quantum-secure commitment,
-simulation-extractable zero knowledge, Blind-UOV one-more unforgeability and
+The main result is conditional and modular: assuming simulation-extractable
+zero knowledge, Blind-UOV one-more unforgeability and
 blindness, and a compact threshold encryption scheme with post-quantum
 privacy and unique openings, the construction provides issuer unlinkability,
 certified ciphertext validity, decoder safety, trace correctness,
 non-frameability, and a gated chosen-ciphertext privacy notion against fewer than
 the threshold number of opening authorities.  The result deliberately does not
-claim ordinary IND-CCA security for the bare trace encryption.  Version 1.1
-instantiates the abstract blind-request relation with the published Blind-UOV
-masking normal form and proves its ticket-message binding.  The exact CAP/SNARK
-circuit, parameters, and implementation proof remain separate obligations.
+claim ordinary IND-CCA security for the bare trace encryption.  Version 1.2
+also instantiates the trace relation as a Niederreiter syndrome plus a
+SHAKE256/KMAC256 one-time hash DEM, proves information-theoretic uniqueness of
+the decoded error, removes a redundant ticket commitment, and gives exact
+online byte counts.  The exact CAP circuit, frozen parameters, and
+implementation proof remain separate obligations.
 \end{abstract}
 
 \section{Status, scope, and non-goals}
@@ -101,8 +103,9 @@ The theorems below are complete reductions for the abstract interfaces and games
 defined here.  They are not a claim that the present Blind-UOV or threshold
 Niederreiter papers already implement every required interface.  The Blind-UOV
 request equations are fixed in Section~\ref{sec:buov-normal}; converting the
-entire ticket relation into the selected post-quantum CAP/SNARK circuit and
-performing concrete parameter accounting remain implementation tasks.
+entire ticket relation into the selected post-quantum CAP circuit and performing
+concrete gate accounting remain implementation tasks.  The numerical
+Niederreiter sets in this draft are size anchors, not a deployment approval.
 
 \section{Notation and post-quantum conventions}
 
@@ -128,7 +131,7 @@ bounded.
 
 \section{Required primitive interfaces}
 
-\subsection{Hashing and commitment}
+\subsection{Hashing and CAP commitment}
 
 We use domain-separated hashes
 \[
@@ -139,13 +142,10 @@ They are modeled as quantum-resistant collision-resistant hashes.  A random
 oracle or QROM instantiation may be used by a concrete component, but the core
 proof calls only the explicitly named property.
 
-The commitment scheme
-\[
-  c_M\leftarrow \Com.\mathsf{Commit}(\pp_{\Com},M;\omega)
-\]
-is computationally binding and hiding against $\QPT$ adversaries.  Statistical
-hiding is preferable because issuance privacy is then less dependent on an
-algebraic assumption.
+There is no separate public commitment to the ticket payload.  The accepting
+proof extracts $M$, Equation~\eqref{eq:i2} fixes its digest, and the Blind-UOV
+request binds that digest.  Publishing an additional $c_M$ would add a primitive
+and a circuit block without strengthening this chain.
 
 \subsection{Blind-UOV request normal form}\label{sec:buov-normal}
 
@@ -229,16 +229,16 @@ The threshold encryption interface is
 \begin{align*}
   (\mathsf{tpk},\mathsf{tsk}_1,\ldots,\mathsf{tsk}_n)
     &\leftarrow \TEnc.\mathsf{KeyGen}(1^\lambda,n,\tau),\\
-  C&\leftarrow \TEnc.\mathsf{Enc}(\mathsf{tpk},\mu;\rho),\\
+  C&\leftarrow \TEnc.\mathsf{Enc}(\mathsf{tpk},\mu;\mathsf{ad},\rho),\\
   d_i&\leftarrow \TPDec(\mathsf{tsk}_i,C),\\
   \mu\text{ or }\bot&\leftarrow \TComb(C,\{d_i\}_{i\in I}),\qquad |I|\geq\tau.
 \end{align*}
 
 There is an NP relation
 \[
- R_{\mathsf{enc}}(\mathsf{tpk},C;\mu,\rho)=1
+ R_{\mathsf{enc}}(\mathsf{tpk},C,\mathsf{ad};\mu,\rho)=1
  \quad\Longleftrightarrow\quad
- C=\TEnc.\mathsf{Enc}(\mathsf{tpk},\mu;\rho).
+ C=\TEnc.\mathsf{Enc}(\mathsf{tpk},\mu;\mathsf{ad},\rho).
 \]
 Only ciphertexts in the language $L_{\mathsf{enc}}$ are promised to be safe
 inputs to the distributed decoder.
@@ -253,8 +253,8 @@ We require the following post-quantum properties.
   equal-length plaintexts.
   \item \textbf{Unique opening.}  It is infeasible to find
   $C,\mu,\rho,\mu',\rho'$ with $\mu\neq\mu'$ such that both
-  $R_{\mathsf{enc}}(\mathsf{tpk},C;\mu,\rho)=1$ and
-  $R_{\mathsf{enc}}(\mathsf{tpk},C;\mu',\rho')=1$.
+  $R_{\mathsf{enc}}(\mathsf{tpk},C,\mathsf{ad};\mu,\rho)=1$ and
+  $R_{\mathsf{enc}}(\mathsf{tpk},C,\mathsf{ad};\mu',\rho')=1$.
   \item \textbf{Robust shares.}  Invalid or inconsistent partial decryptions are
   detected by $\TComb$ or by a component proof/MAC before a plaintext is
   accepted.
@@ -282,7 +282,7 @@ The hidden ticket payload is
 \[
  M=(\mathsf{ci},\sn,h,C),
  \qquad h=H_{\mathrm{hold}}(k_{\mathrm{hold}}),
- \qquad C=\TEnc.\mathsf{Enc}(\mathsf{tpk},\rid\|\sn;\rho_{\mathrm{tr}}).
+ \qquad C=\mathsf{Ntr.Enc}(\mathsf{tpk},\mathsf{ci},h;\rid,\sn,e).
 \]
 The serial number $\sn\leftarrow\{0,1\}^{\ell_{\sn}}$ is fresh.  It appears both
 outside and inside the trace ciphertext so that an opener can detect payload
@@ -293,22 +293,22 @@ splicing.  The holder secret itself never appears in the ticket.  Define
 
 The public issuance statement and private witness are
 \begin{align*}
- x&=(\pp,\mathsf{ci},\mathsf{sid},\rid,c_M,\beta),\\
- w&=(M,\omega,r,\rho_0,k_{\mathrm{hold}},\rho_{\mathrm{tr}}).
+ x&=(\pp,\mathsf{ci},\mathsf{sid},\rid,\beta),\\
+ w&=(M,r,\rho_0,k_{\mathrm{hold}},e).
 \end{align*}
 The relation $R_{\mathsf{issue}}(x;w)=1$ iff all of the following hold:
 \begin{align}
  \mathsf{TicketShape}(M,\mathsf{ci})&=1, \tag{I1}\label{eq:i1}\\
- c_M&=\Com.\mathsf{Commit}(\pp_{\Com},M;\omega), \tag{I2}\label{eq:i2}\\
- m&=H_{\mathrm{ticket}}(\mathsf{Encode}(M)), \tag{I3}\label{eq:i3}\\
+ m&=H_{\mathrm{ticket}}(\mathsf{Encode}(M)), \tag{I2}\label{eq:i2}\\
  R^{\BUOV}_{\mathsf{req}}(\beta;m,(r,\rho_0))&=1,
-   \tag{I4}\label{eq:i4}\\
- M.h&=H_{\mathrm{hold}}(k_{\mathrm{hold}}), \tag{I5}\label{eq:i5}\\
- R_{\mathsf{enc}}(\mathsf{tpk},M.C;\rid\|M.\sn,\rho_{\mathrm{tr}})&=1.
-   \tag{I6}\label{eq:i6}
+   \tag{I3}\label{eq:i3}\\
+ M.h&=H_{\mathrm{hold}}(k_{\mathrm{hold}}), \tag{I4}\label{eq:i4}\\
+ R_{\mathsf{enc}}(\mathsf{tpk},M.C,
+   \mathsf{Encode}(\mathsf{ci},M.\sn,M.h);\rid\|M.\sn,e)&=1.
+   \tag{I5}\label{eq:i5}
 \end{align}
 The real identity and session identifier are public to the issuer during
-issuance but are not part of $M$.  Equation~\eqref{eq:i6} binds the hidden
+issuance but are not part of $M$.  Equation~\eqref{eq:i5} binds the hidden
 trace plaintext to the identity authenticated in that exact session.
 
 \section{Construction}
@@ -317,7 +317,7 @@ trace plaintext to the identity authenticated in that exact session.
 
 $\Core.\mathsf{Setup}(1^\lambda,n,\tau)$ performs:
 \begin{enumerate}[leftmargin=*]
-  \item generate $\Piiss$ parameters and the commitment/hash parameters;
+  \item generate $\Piiss$ parameters and the domain-separated hash parameters;
   \item generate issuer keys
   $(\mathsf{bsk},\mathsf{bvk})\leftarrow\BUOV.\mathsf{KeyGen}(1^\lambda)$;
   \item generate independent opening keys
@@ -335,13 +335,14 @@ same seed or key hierarchy.
 For authenticated identity $\rid$ and fresh issuer-side $\mathsf{sid}$:
 
 \begin{enumerate}[leftmargin=*]
-  \item The holder samples $\sn,k_{\mathrm{hold}},\rho_{\mathrm{tr}}$, computes
-  $C=\TEnc.\mathsf{Enc}(\mathsf{tpk},\rid\|\sn;\rho_{\mathrm{tr}})$,
+  \item The holder samples $\sn,k_{\mathrm{hold}},e$, computes
+  $h=H_{\mathrm{hold}}(k_{\mathrm{hold}})$ and
+  $C=\mathsf{Ntr.Enc}(\mathsf{tpk},\mathsf{ci},h;\rid,\sn,e)$
+  according to Equations~\eqref{eq:n1}--\eqref{eq:n7},
   constructs $M$, and
   computes $m=H_{\mathrm{ticket}}(\mathsf{Encode}(M))$.
-  \item It samples $\omega,r,\rho_0$, computes
+  \item It samples $r,\rho_0$, computes
   \[
-    c_M=\Com.\mathsf{Commit}(M;\omega),\qquad
     c_0=\mathsf{CAP.Commit}(r;\rho_0),\qquad
     y=r+H_{\BUOV}(m,c_0),
   \]
@@ -356,11 +357,11 @@ For authenticated identity $\rid$ and fresh issuer-side $\mathsf{sid}$:
     \Piiss.\mathsf{Vfy}(\mathsf{crs},x,\pi_{\mathsf{issue}})=1.
   \]
   Only then does it execute
-  $s\leftarrow\BUOV.\mathsf{Respond}(\mathsf{bsk},y)$.
+  $z_{\BUOV}\leftarrow\BUOV.\mathsf{Respond}(\mathsf{bsk},y)$.
   \item The holder computes
   \[
     \sigma\leftarrow
-    \BUOV.\mathsf{Finalize}(m,c_0,y,s;r,\rho_0)
+    \BUOV.\mathsf{Finalize}(m,c_0,y,z_{\BUOV};r,\rho_0)
   \]
   and accepts only if
   $\BUOV.\mathsf{Vfy}(\mathsf{bvk},m,\sigma)=1$.
@@ -373,7 +374,7 @@ identity, holder, and trace-ciphertext conjuncts are appended to the proved
 relation.  Thus issuance sends one large relation proof, not two independent
 proofs.
 
-The spendable ticket is $T=(M,\sigma)$.  Neither $c_M$, $\beta$,
+The spendable ticket is $T=(M,\sigma)$.  Neither $\beta$,
 $\pi_{\mathsf{issue}}$, $\rid$, nor $\mathsf{sid}$ is transmitted with $T$.
 
 \subsection{Ticket verification}
@@ -427,7 +428,7 @@ $T=(M,\sigma)$ for which $\Core.\mathsf{VerifyTicket}(T)=1$ and either:
   \item $M$ is not associated with any completed accepted issuance in
   $\mathcal L$; or
   \item every associated extraction fails one of
-  Equations~\eqref{eq:i1}--\eqref{eq:i6}.
+  Equations~\eqref{eq:i1}--\eqref{eq:i5}.
 \end{enumerate}
 
 Distinct messages are counted by their canonical ticket digest.  This game
@@ -495,7 +496,7 @@ correctness errors.
 \begin{proof}
 Honest computation satisfies every conjunct of $R_{\mathsf{issue}}$, so
 $\Piiss$ accepts.  Blind-signature correctness gives a verifying $\sigma$ on
-$H_{\mathrm{ticket}}(\mathsf{Encode}(M))$.  Equation~\eqref{eq:i6} gives a
+$H_{\mathrm{ticket}}(\mathsf{Encode}(M))$.  Equation~\eqref{eq:i5} gives a
 valid encryption of $\rid\|M.\sn$.  Threshold-encryption correctness on valid
 inputs reconstructs that plaintext from any $\tau$ correct shares.  The serial
 cross-check therefore succeeds.
@@ -522,34 +523,34 @@ one hidden message, except with the stated bad-event probability.
 \end{proof}
 
 \begin{lemma}[Request/proof binding]\label{lem:reqbind}
-Suppose an issuance proof for $(c_M,\beta)$ is accepting and extractable.  Except
-with ticket-commitment binding, CAP binding, or hash-collision probability, the
-message signed through $\beta$ is exactly
-$H_{\mathrm{ticket}}(\mathsf{Encode}(M))$ for the unique $M$ extracted from
-$c_M$.
+Suppose an issuance proof for $\beta$ is accepting and extractable.  Except
+with CAP-binding or hash-collision probability, the message signed through
+$\beta$ is exactly $H_{\mathrm{ticket}}(\mathsf{Encode}(M))$ for the payload
+$M$ in the extracted witness.  A different payload cannot verify under the same
+signed digest except by finding a collision in $H_{\mathrm{ticket}}$.
 \end{lemma}
 
 \begin{proof}
-Extraction yields $(M,\omega,r,\rho_0,\ldots)$ satisfying
-Equations~\eqref{eq:i2}--\eqref{eq:i4}.  Binding makes $M$ the unique feasible
-opening of $c_M$.  Equation~\eqref{eq:i3} fixes $m$ to the canonical ticket
-digest.  Lemma~\ref{lem:buov-unique} makes the message represented by $\beta$
-equal to this $m$.  A different payload with the same $m$ yields a collision in
-$H_{\mathrm{ticket}}$.
+Extraction yields $(M,r,\rho_0,\ldots)$ satisfying
+Equations~\eqref{eq:i2}--\eqref{eq:i3}.  Equation~\eqref{eq:i2} fixes $m$ to the
+canonical ticket digest.  Lemma~\ref{lem:buov-unique} makes the message
+represented by $\beta$ equal to this $m$.  If a different canonical payload
+$M'\neq M$ verifies under that signed value, then
+$H_{\mathrm{ticket}}(\mathsf{Encode}(M'))=
+H_{\mathrm{ticket}}(\mathsf{Encode}(M))$, a collision.
 \end{proof}
 
 \begin{theorem}[Certified-language soundness]\label{thm:certsound}
 For any $\QPT$ adversary $\mathcal A$, there exist $\QPT$ reductions
-$\mathcal B_1,\ldots,\mathcal B_6$ such that
+$\mathcal B_1,\ldots,\mathcal B_5$ such that
 \begin{align*}
  \Adv^{\mathsf{CertSound}}_{\Core,\mathcal A}
  \leq{}&
  \Adv^{\mathsf{SE\text{-}AoK}}_{\Piiss,\mathcal B_1}
  +\Adv^{\mathsf{1mUF}}_{\BUOV,\mathcal B_2}
- +\Adv^{\mathsf{bind}}_{\Com,\mathcal B_3}\\
- &+\Adv^{\mathsf{bind}}_{\mathsf{CAP},\mathcal B_4}
- +\Adv^{\mathsf{coll}}_{H_{\BUOV},\mathcal B_5}
- +\Adv^{\mathsf{coll}}_{H_{\mathrm{ticket}},\mathcal B_6}.
+ +\Adv^{\mathsf{bind}}_{\mathsf{CAP},\mathcal B_3}\\
+ &+\Adv^{\mathsf{coll}}_{H_{\BUOV},\mathcal B_4}
+ +\Adv^{\mathsf{coll}}_{H_{\mathrm{ticket}},\mathcal B_5}.
 \end{align*}
 Consequently, every verifying ticket is associated with an accepted issuance
 witness satisfying $R_{\mathsf{issue}}$, except with negligible probability.
@@ -560,8 +561,8 @@ Consider a verifying output $(M,\sigma)$.  If its canonical digest was not the
 message of a completed blind-signing session, then the output is a one-more
 forgery.  Otherwise consider the corresponding accepting issuance proof.
 Simulation extraction returns a witness or violates the SE-AoK property.
-Lemma~\ref{lem:reqbind} associates the signed digest with the unique committed
-payload, except under the remaining binding and collision bad events.  The extracted witness
+Lemma~\ref{lem:reqbind} associates the signed digest with the extracted payload,
+except under the remaining binding and collision bad events.  The extracted witness
 then satisfies every issuance conjunct, including ciphertext validity and
 identity binding.
 \end{proof}
@@ -613,7 +614,6 @@ holders, there exist $\QPT$ reductions such that
  \Adv^{\mathsf{unlink}}_{\Core}
  \leq{}& \Adv^{\mathsf{blind}}_{\BUOV}
  +2\Adv^{\mathsf{zk}}_{\Piiss}
- +2\Adv^{\mathsf{hide}}_{\Com}
  +\Adv^{\mathsf{t\text{-}IND\text{-}CPA}}_{\TEnc}
  +\Adv^{\mathsf{coll}}_{H_{\mathrm{ticket}}}.
 \end{align*}
@@ -621,9 +621,7 @@ holders, there exist $\QPT$ reductions such that
 
 \begin{proof}
 First replace each real issuance proof with a simulated proof; zero knowledge
-bounds the change.  Replace each commitment to the real payload with a
-commitment to a fixed equal-length dummy string; hiding bounds the change.
-The remaining request/response views are blind-signature views on two hidden
+bounds the change.  The remaining request/response views are blind-signature views on two hidden
 messages.  Blindness permits swapping those messages without the issuer
 detecting the swap.  Threshold-encryption privacy prevents the issuer, which
 holds no opening threshold, from matching a final trace ciphertext to either
@@ -649,7 +647,7 @@ except with negligible probability.
 
 \begin{proof}
 By Theorem~\ref{thm:certsound}, a verifying ticket is associated with an
-extracted accepted issuance witness.  Equation~\eqref{eq:i6} states that its
+extracted accepted issuance witness.  Equation~\eqref{eq:i5} states that its
 ciphertext opens to $\rid\|M.\sn$.  If threshold opening returns a different
 plaintext while all robust-share checks pass, either threshold correctness
 fails or the ciphertext has two different valid openings.  The latter violates
@@ -679,10 +677,9 @@ reductions $\mathcal B_i$ such that
  +\Adv^{\mathsf{SE\text{-}AoK}}_{\Piiss,\mathcal B_1}
  +\Adv^{\mathsf{1mUF}}_{\BUOV,\mathcal B_2}\\
  &+\Adv^{\mathsf{unique}}_{\TEnc,\mathcal B_3}
- +\Adv^{\mathsf{bind}}_{\Com,\mathcal B_4}
- +\Adv^{\mathsf{bind}}_{\mathsf{CAP},\mathcal B_5}\\
- &+\Adv^{\mathsf{coll}}_{H_{\BUOV},\mathcal B_6}
- +\Adv^{\mathsf{coll}}_{H_{\mathrm{ticket}},\mathcal B_7}.
+ +\Adv^{\mathsf{bind}}_{\mathsf{CAP},\mathcal B_4}\\
+ &+\Adv^{\mathsf{coll}}_{H_{\BUOV},\mathcal B_5}
+ +\Adv^{\mathsf{coll}}_{H_{\mathrm{ticket}},\mathcal B_6}.
 \end{align*}
 \end{theorem}
 
@@ -696,7 +693,7 @@ This is the real $\mathsf{t\text{-}GCCA}$ game.
 For every accepted adversarial issuance proof, use the SE-AoK extractor to
 record
 \[
-  (d_M,M,\rid,\rho_{\mathrm{tr}},k_{\mathrm{hold}},r,\rho_0,\ldots)
+  (d_M,M,\rid,e,k_{\mathrm{hold}},r,\rho_0,\ldots)
 \]
 in a private table $\mathcal L$.  Abort if an accepting proof has no valid
 witness.  The difference from Game 0 is bounded by SE-AoK security.  Request
@@ -780,12 +777,12 @@ second independent proof.  Let
 denote Equations~\eqref{eq:b1}--\eqref{eq:b2}.  The original well-built-request
 language is replaced by
 \begin{align*}
- R_{\mathsf{aug}}(&\pp,\mathsf{ci},\mathsf{sid},\rid,c_M,c_0,y;\\
-                  &M,\omega,r,\rho_0,k_{\mathrm{hold}},\rho_{\mathrm{tr}})=1
+ R_{\mathsf{aug}}(&\pp,\mathsf{ci},\mathsf{sid},\rid,c_0,y;\\
+                  &M,r,\rho_0,k_{\mathrm{hold}},e)=1
  \quad\Longleftrightarrow\quad
  R_{\mathsf{issue}}(x;w)=1,
 \end{align*}
-where $\beta=(c_0,y)$ and Equation~\eqref{eq:i4} expands to
+where $\beta=(c_0,y)$ and Equation~\eqref{eq:i3} expands to
 $R_{\mathsf{wb}}=1$.  The issuer executes the ordinary Blind-UOV response only
 after verifying a post-quantum SE-NIZK argument for $R_{\mathsf{aug}}$.
 
@@ -805,9 +802,9 @@ The implementation SHOULD expose the following fixed interface to the proof
 compiler:
 \begin{align*}
  \mathsf{pub}_{\mathsf{aug}}
-   &= (\mathsf{ci},\mathsf{sid},\rid,\mathsf{tpk},\mathsf{bvk},c_M,c_0,y),\\
+   &= (\mathsf{ci},\mathsf{sid},\rid,\mathsf{tpk},\mathsf{bvk},c_0,y),\\
  \mathsf{wit}_{\mathsf{aug}}
-   &= (\sn,k_{\mathrm{hold}},\rho_{\mathrm{tr}},r,\rho_0,\omega).
+   &= (\sn,k_{\mathrm{hold}},e,r,\rho_0).
 \end{align*}
 The circuit derives $C$, $h$, $M$, and $m$ internally rather than accepting
 duplicate witness copies.  Its constraint system is the conjunction
@@ -817,8 +814,7 @@ duplicate witness copies.  Its constraint system is the conjunction
  \mathcal C_{\mathsf{ticketHash}}\wedge
  \mathcal C_{\mathsf{BUOVmask}}\wedge
  \mathcal C_{\mathsf{holder}}\wedge
- \mathcal C_{\mathsf{trace}}\wedge
- \mathcal C_{\mathsf{ticketCom}},
+ \mathcal C_{\mathsf{trace}},
 \]
 where
 \begin{align*}
@@ -827,9 +823,8 @@ where
  \mathcal C_{\mathsf{BUOVmask}} &: c_0=\mathsf{CAP.Commit}(r;\rho_0)
    \ \wedge\ y=r+H_{\BUOV}(m,c_0),\\
  \mathcal C_{\mathsf{holder}} &: h=H_{\mathrm{hold}}(k_{\mathrm{hold}}),\\
- \mathcal C_{\mathsf{trace}} &: C=\TEnc.\mathsf{Enc}
-   (\mathsf{tpk},\rid\|\sn;\rho_{\mathrm{tr}}),\\
- \mathcal C_{\mathsf{ticketCom}} &: c_M=\Com.\mathsf{Commit}(M;\omega).
+ \mathcal C_{\mathsf{trace}} &: R_{\mathsf{Ntr}}
+   (\mathsf{tpk},C,\mathsf{ci},h;\rid,\sn,e)=1.
 \end{align*}
 The proof statement includes $\mathsf{sid}$ even though it is absent from the
 ticket.  Consequently, replaying the same proof in a new issuance session
@@ -840,8 +835,8 @@ no session link tag.
 Assume $\Piiss$ is post-quantum zero knowledge and simulation-extractable for
 $R_{\mathsf{aug}}$.  Replacing the original well-built-request proof by
 $\pi_{\mathsf{issue}}$ preserves Blind-UOV one-more unforgeability and
-honest-protocol signer blindness, up to the SE-NIZK, ticket-commitment hiding,
-CAP-binding, and hash-collision terms already shown in
+honest-protocol signer blindness, up to the SE-NIZK, CAP-binding, and
+hash-collision terms already shown in
 Theorems~\ref{thm:certsound} and~\ref{thm:unlink}.
 \end{theorem}
 
@@ -856,9 +851,8 @@ relation is a restriction of the original well-built language, so every
 forwarded request is valid there.  The final signature format and verifier are
 unchanged.
 
-For blindness, replace the augmented proof by a simulated proof and $c_M$ by a
-commitment to a fixed equal-length dummy payload.  The remaining transcript is
-an ordinary Blind-UOV transcript, to which its blindness game applies.  The
+For blindness, replace the augmented proof by a simulated proof.  The remaining
+transcript is an ordinary Blind-UOV transcript, to which its blindness game applies.  The
 public authenticated identity is session information but is absent from the
 final ticket; threshold-encryption privacy hides it inside $M.C$.  Any attempt
 to make the same masked request represent a different ticket digest triggers
@@ -866,7 +860,7 @@ Lemma~\ref{lem:buov-unique}, and any two payloads with one ticket digest trigger
 a collision in $H_{\mathrm{ticket}}$.
 \end{proof}
 
-\paragraph{Concretization achieved in version 1.1.}
+\paragraph{Concretization achieved in versions 1.1--1.2.}
 The request and witness are now fixed:
 \begin{align*}
  \beta&=(c_0,y),& b&=(r,\rho_0),\\
@@ -876,7 +870,9 @@ The request and witness are now fixed:
 Consequently, the earlier abstract ``request-binding'' assumption has been
 eliminated.  It is replaced by the standard, auditable assumptions that the CAP
 commitment is binding and the two domain-separated hashes are collision
-resistant.
+resistant.  Version 1.2 also removes $c_M$: extraction already supplies $M$,
+the request fixes its digest, and ticket-hash collision resistance prevents a
+second payload from verifying under that digest.
 
 The authors' S\&P 2026 slides report a short-signature trade-off of roughly
 5--8~KB with a few megabytes of blind-issuance communication.  The ePrint
@@ -899,31 +895,185 @@ for the first auditable construction~\cite{mq-commitments}.
 
 \subsection{Threshold Niederreiter for trace encryption}
 
-A candidate compact trace ciphertext is a threshold Niederreiter KEM combined
-with authenticated symmetric encryption:
-\begin{align*}
- c_{\mathrm{syn}} &= H_{\mathrm{pub}}e^\top,
-   \qquad \mathrm{wt}(e)=t,\\
- K &= \mathsf{KDF}(e,c_{\mathrm{syn}},\mathsf{ci}),\\
- c_{\mathrm{dem}} &=
-   \mathsf{AEAD.Enc}_{K}(\rid\|\sn;\mathsf{ad}=\mathsf{ci}),\\
- C&=(c_{\mathrm{syn}},c_{\mathrm{dem}}).
-\end{align*}
-The issuance relation proves knowledge of $(e,\rid,\sn)$ satisfying the
-syndrome, weight, KDF, AEAD, and external-serial equations.  The distributed
-decoder is invoked only after signature gating.
+\paragraph{Code and plaintext profile.}
+Let $\mathcal G$ be a binary Goppa code of length $n$, dimension $k$, and
+designed error weight $t$, with public systematic parity-check matrix
+$H_{\mathrm{pub}}=(I_{n-k}\mid T)$.  The selected decoder MUST guarantee
+$d_{\min}(\mathcal G)\geq 2t+1$.  Fix
+$\rid\in\{0,1\}^{256}$ and $\sn\in\{0,1\}^{128}$, and define the fixed
+48-byte plaintext
+\[
+  \mu=\mathsf{Encode}_{48}(\rid\|\sn).
+\]
+The online ciphertext uses a weight-$t$ error $e\in\mathbb F_2^n$ as its only
+encryption witness.  Thus the abstract randomness $\rho_{\mathrm{tr}}$ is
+instantiated by $e$.
 
-This candidate deliberately omits the public NIZK validity proof attached to
-each ciphertext in recent threshold-Niederreiter CCA constructions.  Therefore
-its security target is Theorem~\ref{thm:gcca}, not the base construction's
-ordinary threshold IND-CCA definition.  A concrete proof must still establish:
-\begin{itemize}[leftmargin=*]
-  \item threshold IND-CPA privacy for the exact distributed key generation and
-  corruption model;
-  \item unique opening of the KEM--AEAD composition;
-  \item robust partial-decryption shares;
-  \item constant-time failure behavior and the absence of a raw decoder API.
-\end{itemize}
+\paragraph{Hash DEM.}
+Sample $e$ uniformly from the weight-$t$ vectors and compute
+\begin{align}
+ s&=H_{\mathrm{pub}}e^\top\in\mathbb F_2^{n-k},
+   &\mathrm{wt}(e)&=t, \tag{N1}\label{eq:n1}\\
+ \mathsf{ad}&=\mathsf{Encode}(\mathsf{ci},\sn,h), &&\tag{N2}\label{eq:n2}\\
+ Z&=\mathsf{SHAKE256}(
+   \mathtt{PQ\mbox{-}RBBC/KDF}\|\mathsf{Encode}(e,s,\mathsf{ci}),640),
+   &&\tag{N3}\label{eq:n3}\\
+ (K_{\mathrm{mac}},P)&=Z,
+   &|K_{\mathrm{mac}}|&=32,\quad |P|=48, \tag{N4}\label{eq:n4}\\
+ c_\mu&=\mu\oplus P, &&\tag{N5}\label{eq:n5}\\
+ \gamma&=\mathsf{KMAC256}_{K_{\mathrm{mac}}}
+ (\mathtt{PQ\mbox{-}RBBC/TAG}\|s\|c_\mu\|\mathsf{ad},256),
+ &&\tag{N6}\label{eq:n6}\\
+ C&=(s,c_\mu,\gamma). &&\tag{N7}\label{eq:n7}
+\end{align}
+The output length in (N3) is in bits.  SHAKE256 and KMAC256 are the standardized
+extendable-output and MAC functions of FIPS~202 and SP~800-185,
+respectively~\cite{fips202,sp800185}.  The composition $\HDEM$ is nevertheless a
+new protocol profile, not a standardized AEAD and not yet a production claim.
+A standardized one-time AEAD may replace it later without changing the abstract
+$R_{\mathsf{enc}}$ interface.
+
+\begin{definition}[Concrete trace relation]\label{def:ntr}
+For $C=(s,c_\mu,\gamma)$, define
+\[
+ R_{\mathsf{Ntr}}(\mathsf{tpk},C,\mathsf{ci},h;
+                    \rid,\sn,e)=1
+\]
+iff $\mathsf{tpk}$ selects $H_{\mathrm{pub}}$ and the fixed profile above, and
+Equations~\eqref{eq:n1}--\eqref{eq:n7} all hold with
+$\mu=\mathsf{Encode}_{48}(\rid\|\sn)$.  In this version,
+\[
+ \begin{aligned}
+ &R_{\mathsf{enc}}(\mathsf{tpk},C,
+     \mathsf{Encode}(\mathsf{ci},\sn,h);\rid\|\sn,\rho_{\mathrm{tr}})=1\\
+ &\qquad\Longleftrightarrow\quad
+ R_{\mathsf{Ntr}}(\mathsf{tpk},C,\mathsf{ci},h;\rid,\sn,e)=1,
+ \qquad \rho_{\mathrm{tr}}=e.
+ \end{aligned}
+\]
+Hence $\mathcal C_{\mathsf{trace}}$ is now the exact conjunction (N1)--(N7),
+not an unspecified ``encrypt correctly'' box.
+\end{definition}
+
+\begin{lemma}[Unique syndrome witness]\label{lem:unique-error}
+For a code with $d_{\min}\geq2t+1$, a syndrome $s$ has at most one witness
+$e$ of weight at most $t$ satisfying $s=H_{\mathrm{pub}}e^\top$.
+\end{lemma}
+
+\begin{proof}
+If $e$ and $e'$ were two such witnesses, then
+$d=e+e'$ would satisfy $H_{\mathrm{pub}}d^\top=0$ and
+$\mathrm{wt}(d)\leq2t$.  If $e\neq e'$, $d$ is a nonzero codeword below the
+minimum distance, a contradiction.  Therefore $e=e'$.  This is the standard
+unique-decoding argument used by Classic McEliece~\cite{classic-mceliece-spec}.
+\end{proof}
+
+\begin{corollary}[Unique trace opening]\label{cor:unique-trace}
+The concrete relation $R_{\mathsf{Ntr}}$ has information-theoretically unique
+plaintext openings.
+\end{corollary}
+
+\begin{proof}
+For a fixed $C$, Lemma~\ref{lem:unique-error} fixes $e$ from $s$.  Equations
+(N3)--(N4) then deterministically fix $P$ and $K_{\mathrm{mac}}$, and (N5)
+fixes the sole $\mu=c_\mu\oplus P$.  The fixed-width encoding is injective, so
+it fixes $(\rid,\sn)$.  Equation~(N6) additionally rejects any inconsistent
+associated data.  No computational assumption is needed for uniqueness.
+\end{proof}
+
+\begin{proposition}[Concrete trace correctness]\label{prop:ntr-correct}
+If threshold decoding reconstructs the unique error $e$ for $s$, the combiner
+recomputes (N3)--(N6), returns $\mu=c_\mu\oplus P$, and accepts only if
+$\gamma$ verifies and the decoded serial equals the visible $\sn$.
+Consequently every honestly formed concrete trace ciphertext opens to exactly
+$\rid\|\sn$.
+\end{proposition}
+
+\paragraph{Privacy assumption and proof boundary.}
+Let $\mathsf{t\text{-}OW\text{-}SD}$ be the game in which an adversary receives
+$H_{\mathrm{pub}}$, fewer than $\tau$ threshold shares, and
+$s=H_{\mathrm{pub}}e^\top$ for uniform weight-$t$ $e$, and must output $e$.
+We assume this advantage is negligible for the frozen distributed decoder.
+
+\begin{theorem}[Conditional concrete trace privacy]\label{thm:ntr-privacy}
+Model SHAKE256 as a quantum random oracle, assume KMAC256 is a quantum-secure
+PRF, never reuse $e$, and let $\epsilon_{\mathsf{O2H}}(q_H)$ denote the loss of
+the applicable one-way-to-hiding lemma for $q_H$ quantum hash queries.  Then for
+every fewer-than-threshold $\QPT$ distinguisher $\mathcal A$ there are $\QPT$
+reductions $\mathcal B_1,\mathcal B_2$ such that
+\begin{align*}
+ \Adv^{\mathsf{t\text{-}IND\text{-}CPA}}_{\mathsf{Ntr},\mathcal A}
+ \leq{}&
+ \Adv^{\mathsf{t\text{-}OW\text{-}SD}}_{\mathcal G,\mathcal B_1}
+ +\epsilon_{\mathsf{O2H}}(q_H)
+ +\Adv^{\mathsf{qPRF}}_{\mathsf{KMAC256},\mathcal B_2}.
+\end{align*}
+\end{theorem}
+
+\begin{proof}
+Starting from the real game, replace the 640-bit SHAKE256 value at the hidden
+input $(e,s,\mathsf{ci})$ by a uniform string.  A distinguisher for this step
+either yields a threshold syndrome-decoding solver or is bounded by the stated
+one-way-to-hiding loss.  Now $P$ is an independent uniform 48-byte pad and
+$K_{\mathrm{mac}}$ is an independent uniform key.  Replace KMAC256 under that
+key by a random function, paying the qPRF term.  The value
+$c_\mu=\mu_b\oplus P$ and the tag are then independent of $b$, so the final
+advantage is zero.  Summing the hybrid differences gives the bound.
+\end{proof}
+
+A new accepted tuple $(s,c'_\mu,\gamma')$ with the same hidden derived key and
+different authenticated input gives a KMAC forgery, up to the same
+syndrome-decoding/QROM bad event.  Thus the xor pad gives one-time privacy and
+KMAC256 gives one-time ciphertext integrity.  Substituting
+Theorem~\ref{thm:ntr-privacy} for the abstract $\tau$-IND-CPA term in
+Theorem~\ref{thm:gcca} yields protocol-level $\tau$-GCCA, plus the SE-AoK,
+Blind-UOV, CAP, unique-opening, authorization, and hash terms already displayed
+there.  This does \emph{not} prove standard IND-CCA security for a bare
+ciphertext endpoint.
+
+The threshold-Niederreiter work solves malformed-ciphertext attacks by attaching
+a straight-line-extractable validity proof to every public ciphertext; its
+authors report about 30.5~KB for a three-party ciphertext, with the proof
+dominating the syndrome~\cite{threshold-niederreiter,threshold-niederreiter-slides}.
+Here the same validity language
+$\{s:\exists e,\mathrm{wt}(e)=t,\;s=He^\top\}$
+is certified once inside $\pi_{\mathsf{issue}}$.  The online ticket retains only
+$C=(s,c_\mu,\gamma)$, and the raw distributed decoder remains unreachable.
+
+\paragraph{Exact online byte counts.}
+Because $|c_\mu|=48$ and $|\gamma|=32$, the trace ciphertext is exactly the
+syndrome length plus 80 bytes.  Using the published Classic McEliece
+implementation sizes gives the following anchors~\cite{classic-mceliece-impl}:
+\begin{center}
+\begin{tabular}{lrrr}
+\toprule
+Parameter anchor & Public key & Syndrome & This $C_{\mathrm{trace}}$\\
+\midrule
+mceliece348864  & 261120 B  &  96 B & 176 B\\
+mceliece460896  & 524160 B  & 156 B & 236 B\\
+mceliece6688128 & 1044992 B & 208 B & 288 B\\
+mceliece6960119 & 1047319 B & 194 B & 274 B\\
+mceliece8192128 & 1357824 B & 208 B & 288 B\\
+\bottomrule
+\end{tabular}
+\end{center}
+The aggressive working anchor is mceliece6688128: approximately 1.045~MB of
+cached public key buys a 288-byte trace ciphertext.  With a 5--8~KB Blind-UOV
+signature, 16-byte serial, 32-byte holder hash, and roughly 32--64 bytes of
+compact common identifiers/digests, the online ticket is approximately
+5.4--8.5~KB.  This is an
+engineering estimate, not a benchmark, but it is roughly 8--13 times smaller
+than a 70~KB design.
+
+\begin{remark}[Mandatory 2026 cryptanalytic hold]\label{rem:mceliece-hold}
+The anchor above is not frozen.  A 10 August 2026 preprint gives a classical
+quasipolynomial-time distinguisher applying to all Classic McEliece NIST
+parameter sets and extends it to a heuristic quasipolynomial-time decryption
+attack; its concrete improvements are described as not yet practical
+\cite{mceliece-2026-attack}.  That is not a demonstrated practical break, but it
+materially changes confidence.  Deployment parameter selection is blocked
+until independent review quantifies this attack for the threshold construction.
+\end{remark}
 
 \subsection{Local mixing as a future trace-encryption candidate}
 
@@ -946,18 +1096,18 @@ certified ciphertext validity; signature-gated decoder safety; issuer
 unlinkability against an honest-protocol curious issuer; trace soundness;
 one-more ticket unforgeability; and $\tau$-GCCA trace privacy.\\
 \addlinespace
-Assumed component property & Post-quantum SE-NIZK AoK, hiding/binding ticket
-commitment, CAP binding, Blind-UOV blindness and one-more unforgeability,
-threshold IND-CPA encryption with unique opening and robust shares, and
+Assumed component property & Post-quantum SE-NIZK AoK, CAP binding, Blind-UOV
+blindness and one-more unforgeability, threshold syndrome-decoding privacy with
+robust shares, QROM one-way-to-hiding, KMAC integrity, and
 authorization unforgeability.\\
 \addlinespace
-Partially instantiated & The Blind-UOV request object, mask witness, augmented
-relation, request-uniqueness lemma, and security-inheritance theorem are fixed.
-The byte-level CAP/SNARK circuit is not yet selected.\\
+Concretely instantiated & Blind-UOV request/message binding; five-block augmented
+relation; exact Niederreiter--SHAKE--KMAC trace relation; information-theoretic
+unique opening; trace correctness; and online trace byte counts.\\
 \addlinespace
-Not yet instantiated & Concrete SE-NIZK and CRS model, exact threshold
-Niederreiter KEM--AEAD circuit, parameter sets, byte counts, and implementation
-benchmarks.\\
+Not yet instantiated & Exact MPC-in-the-Head/CAP gate counts and parameters,
+robust threshold share transcript, implementation benchmarks, and a reviewed
+response to the August 2026 McEliece cryptanalysis.\\
 \addlinespace
 Explicitly not claimed & Standard IND-CCA security of the bare ciphertext,
 security against a malicious issuer, metadata/timing anonymity without system
@@ -993,25 +1143,26 @@ machine-tested or enforced by type/API boundaries.
 
 \section{Next proof step}
 
-The next step is not satellite integration.  It is a concrete instantiation
-lemma:
+The next step is not satellite integration.  The trace relation and its unique
+opening are now fixed.  The remaining concrete step is a circuit audit:
 
 \begin{quote}
-\emph{Freeze one Blind-UOV revision and parameter set, then instantiate
-$\mathcal C_{\mathsf{trace}}$ with an exact threshold-Niederreiter KEM--AEAD
-relation.  Arithmetize all six blocks in the selected MPC-in-the-Head/CAP
-backend and count multiplication gates, hash invocations, proof bytes, prover
-memory, and issuer verification cost.}
+\emph{Freeze one Blind-UOV revision, arithmetize all five blocks---shape,
+ticket hash, Blind-UOV mask, holder hash, and the exact (N1)--(N7) trace
+relation---in its MPC-in-the-Head/CAP backend, then count nonlinear gates, hash
+permutations, proof bytes, prover memory, and issuer verification cost.}
 \end{quote}
 
 This step will decide whether one monolithic proof is viable or whether
-$R_{\mathsf{aug}}$ must be split into compositionally linked proofs.  It is the
-last missing concrete component before deriving end-to-end byte counts; the
-satellite AKE remains out of scope until this core closes.
+$R_{\mathsf{aug}}$ must be split into compositionally linked proofs.  The
+Blind-UOV parameters may be frozen for that experiment; the Niederreiter
+deployment parameter MUST remain provisional under
+Remark~\ref{rem:mceliece-hold}.  The satellite AKE remains out of scope until
+this core closes.
 
 \section*{References}
 
-\begin{thebibliography}{9}
+\begin{thebibliography}{99}
 
 \bibitem{blind-uov}
 Charles Bouillaguet, Thibauld Feneuil, Jules Maire, Matthieu Rivain,
@@ -1039,6 +1190,39 @@ Pascal Giorgi, Fabien Laguillaumie, Lucas Ottow, and Damien Vergnaud,
 Distributed Decoding},
 IACR Cryptology ePrint Archive, Report 2025/757, 2025.
 \url{https://eprint.iacr.org/2025/757}
+
+\bibitem{threshold-niederreiter-slides}
+Lucas Ottow,
+\emph{Threshold Niederreiter: Chosen-Ciphertext Security and Improved
+Distributed Decoding}, presentation slides, 2025.
+\url{https://indico.math.cnrs.fr/event/11948/attachments/5546/9681/Lucas_Ottow.pdf}
+
+\bibitem{classic-mceliece-spec}
+Daniel J. Bernstein et al.,
+\emph{Classic McEliece: conservative code-based cryptography}, specification.
+\url{https://classic.mceliece.org/mceliece-spec-20221023.pdf}
+
+\bibitem{classic-mceliece-impl}
+Classic McEliece team,
+\emph{Implementations and parameter sizes}.
+\url{https://classic.mceliece.org/impl.html}
+
+\bibitem{fips202}
+National Institute of Standards and Technology,
+\emph{FIPS 202: SHA-3 Standard}, 2015.
+\url{https://csrc.nist.gov/pubs/fips/202/final}
+
+\bibitem{sp800185}
+National Institute of Standards and Technology,
+\emph{SP 800-185: SHA-3 Derived Functions}, 2016.
+\url{https://csrc.nist.gov/pubs/sp/800/185/final}
+
+\bibitem{mceliece-2026-attack}
+Ashrujit Ghoshal, Yuval Ishai, Aayush Jain, and Nuozhou Sun,
+\emph{Quasipolynomial Cryptanalysis of the McEliece Cryptosystem
+(or: PIR Meets McEliece)}, IACR Cryptology ePrint Archive,
+Report 2026/1630, 2026.
+\url{https://eprint.iacr.org/2026/1630}
 
 \bibitem{blind-ciphertext-signatures}
 Olivier Blazy, Georg Fuchsbauer, David Pointcheval, and Damien Vergnaud,
