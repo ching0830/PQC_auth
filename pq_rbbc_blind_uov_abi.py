@@ -5,7 +5,9 @@ Protocols 3 and 4 of the 31 October 2025 revision of ePrint 2025/895 send
 only ``(y, pi_1)`` to the signer.  The CAP commitment ``c_r``, message ``mu``,
 mask ``r`` and CAP randomness ``rho`` remain hidden until finalization.
 
-Version 1.7 selects Blind-UOV-III/Shorter.  Its 576-bit masked target avoids
+Version 1.8 splits the request relation into an in-circuit linear mask equation
+``y = r + h`` and one narrower native boundary
+``h = H(mu, CAP.Commit(r; rho))``.  Its 576-bit masked target avoids
 the invalid parallel-repetition argument in v1.6: under CAP unique-witness
 soundness, J_mu(r,rho)=r+H(mu,CAP.Commit(r;rho)) is a pointwise shift of a
 576-bit random function on admissible (mu,c_r) inputs.  Its SHAKE adapter is
@@ -23,7 +25,8 @@ from typing import Protocol
 MESSAGE_BYTES = 32
 MASK_BYTES = 72
 TARGET_BYTES = 72
-CAP_RANDOMNESS_BYTES = 32
+HASH_IMAGE_BYTES = 72
+TEST_CAP_RANDOMNESS_BYTES = 32
 
 
 def xor_bytes(left: bytes, right: bytes) -> bytes:
@@ -52,6 +55,7 @@ class TestHiddenState:
     mask: bytes
     cap_randomness: bytes
     cap_commitment: bytes
+    hash_image: bytes
 
 
 class BlindUOVAdapter(Protocol):
@@ -71,13 +75,29 @@ class BlindUOVAdapter(Protocol):
     ) -> bool:
         ...
 
+    def hash_image(
+        self, message: bytes, mask: bytes, cap_randomness: bytes
+    ) -> bytes:
+        """Return H(message, CAP.Commit(mask; randomness))."""
+        ...
+
+    def verify_cap_hash(
+        self,
+        message: bytes,
+        mask: bytes,
+        cap_randomness: bytes,
+        hash_image: bytes,
+    ) -> bool:
+        """Verify only the native CAP.Commit-plus-hash subrelation."""
+        ...
+
 
 class TestBlindUOVAdapter:
     """Non-cryptographic adapter respecting the paper's hidden-state ABI."""
 
     name = "TEST-ONLY-BLIND-UOV-III-HIDDEN-CAP-SHAKE-ADAPTER"
-    _commit_label = b"PQ-RBBC/v1.7/TEST-BUOV-III/CAP-COMMIT"
-    _hash_label = b"PQ-RBBC/v1.7/TEST-BUOV-III/H"
+    _commit_label = b"PQ-RBBC/v1.8/TEST-BUOV-III/CAP-COMMIT"
+    _hash_label = b"PQ-RBBC/v1.8/TEST-BUOV-III/H"
 
     @staticmethod
     def _check_lengths(message: bytes, mask: bytes, cap_randomness: bytes) -> None:
@@ -85,7 +105,7 @@ class TestBlindUOVAdapter:
             raise ValueError("message digest must be 32 bytes")
         if len(mask) != MASK_BYTES:
             raise ValueError("Blind-UOV-III mask must be 72 bytes")
-        if len(cap_randomness) != CAP_RANDOMNESS_BYTES:
+        if len(cap_randomness) != TEST_CAP_RANDOMNESS_BYTES:
             raise ValueError("test CAP randomness must be 32 bytes")
 
     def hidden_state(
@@ -95,16 +115,35 @@ class TestBlindUOVAdapter:
         commitment = hashlib.shake_256(
             self._commit_label + mask + cap_randomness
         ).digest(32)
-        return TestHiddenState(message, mask, cap_randomness, commitment)
+        hash_image = hashlib.shake_256(
+            self._hash_label + message + commitment
+        ).digest(HASH_IMAGE_BYTES)
+        return TestHiddenState(
+            message, mask, cap_randomness, commitment, hash_image
+        )
+
+    def hash_image(
+        self, message: bytes, mask: bytes, cap_randomness: bytes
+    ) -> bytes:
+        return self.hidden_state(message, mask, cap_randomness).hash_image
+
+    def verify_cap_hash(
+        self,
+        message: bytes,
+        mask: bytes,
+        cap_randomness: bytes,
+        hash_image: bytes,
+    ) -> bool:
+        if len(hash_image) != HASH_IMAGE_BYTES:
+            return False
+        return hash_image == self.hash_image(message, mask, cap_randomness)
 
     def create(
         self, message: bytes, mask: bytes, cap_randomness: bytes
     ) -> BlindUOVRequest:
-        hidden = self.hidden_state(message, mask, cap_randomness)
-        digest = hashlib.shake_256(
-            self._hash_label + message + hidden.cap_commitment
-        ).digest(TARGET_BYTES)
-        return BlindUOVRequest(xor_bytes(mask, digest))
+        return BlindUOVRequest(
+            xor_bytes(mask, self.hash_image(message, mask, cap_randomness))
+        )
 
     def verify(
         self,
@@ -119,15 +158,15 @@ class TestBlindUOVAdapter:
 
 def build_abi_manifest() -> dict[str, object]:
     adapter = TestBlindUOVAdapter()
-    message = hashlib.shake_256(b"PQ-RBBC/v1.7/abi/message").digest(32)
-    mask = hashlib.shake_256(b"PQ-RBBC/v1.7/abi/mask").digest(MASK_BYTES)
-    randomness = hashlib.shake_256(b"PQ-RBBC/v1.7/abi/randomness").digest(32)
+    message = hashlib.shake_256(b"PQ-RBBC/v1.8/abi/message").digest(32)
+    mask = hashlib.shake_256(b"PQ-RBBC/v1.8/abi/mask").digest(MASK_BYTES)
+    randomness = hashlib.shake_256(b"PQ-RBBC/v1.8/abi/randomness").digest(32)
     request = adapter.create(message, mask, randomness)
     hidden = adapter.hidden_state(message, mask, randomness)
     changed_message = bytes((message[0] ^ 1,)) + message[1:]
     return {
-        "implementation_version": "1.7",
-        "paper_anchor": "IACR ePrint 2025/895, revision 2025-10-31, Protocols 3 and 4, Table 4",
+        "implementation_version": "1.8",
+        "paper_anchor": "IACR ePrint 2025/895, revision 2025-10-31, Protocols 3, 4, 8-10, Tables 2 and 4",
         "profile": "Blind-UOV-III / NIST III / identity F / Shorter / TCitH",
         "paper_parameters": {
             "security_level_bits": 192,
@@ -135,6 +174,17 @@ def build_abi_manifest() -> dict[str, object]:
             "hash_and_sign_signature_bits": 1472,
             "public_key_kilobytes": 189.2,
             "final_signature_bytes": 11644,
+            "cap_parallel_repetitions": 18,
+            "cap_tree_groups": [
+                {"trees": 2, "leaves_per_tree": 4096},
+                {"trees": 16, "leaves_per_tree": 2048}
+            ],
+            "cap_opened_seeds_upper_bound": 174,
+            "explicit_pow_bits": 9,
+            "total_pow_bits": 13.9,
+            "anemoi_binary_field_degree": 193,
+            "anemoi_state_elements": 8,
+            "anemoi_constraints_per_permutation": 240,
         },
         "public_signer_view": {
             "request_fields_excluding_proof": ["y"],
@@ -153,6 +203,7 @@ def build_abi_manifest() -> dict[str, object]:
             "576-bit mask r",
             "CAP randomness rho",
             "derived hidden CAP commitment c_r",
+            "576-bit hash image H_BUOV(m,c_r)",
             "holder key",
             "trace error vector",
         ],
@@ -171,6 +222,11 @@ def build_abi_manifest() -> dict[str, object]:
             "hidden_state_not_in_request_dataclass": set(asdict(hidden)).isdisjoint(
                 asdict(request)
             ),
+            "native_cap_hash_accepts": adapter.verify_cap_hash(
+                message, mask, randomness, hidden.hash_image
+            ),
+            "linear_mask_equation_holds": request.masked_target
+            == xor_bytes(mask, hidden.hash_image),
         },
         "binding_reduction": {
             "name": "single-lane QROM cross-message request collision resistance",
@@ -190,6 +246,9 @@ def build_abi_manifest() -> dict[str, object]:
             "test_adapter_is_native_blind_uov": False,
             "paper_supplies_executable_constraint_generator": False,
             "native_tcih_anemoi_constraint_import_complete": False,
+            "linear_y_equals_r_plus_h_internalized": True,
+            "test_cap_randomness_bytes": TEST_CAP_RANDOMNESS_BYTES,
+            "native_cap_randomness_is_not_fixed_to_test_nonce": True,
         },
     }
 

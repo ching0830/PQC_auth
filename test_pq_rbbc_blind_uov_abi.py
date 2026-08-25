@@ -14,9 +14,9 @@ import pq_rbbc_reference as core
 class BlindUOVVisibilityTests(unittest.TestCase):
     def setUp(self) -> None:
         self.adapter = abi.TestBlindUOVAdapter()
-        self.message = hashlib.shake_256(b"abi-test-message-v1.7").digest(32)
-        self.mask = hashlib.shake_256(b"abi-test-mask-v1.7").digest(72)
-        self.randomness = hashlib.shake_256(b"abi-test-randomness-v1.7").digest(32)
+        self.message = hashlib.shake_256(b"abi-test-message-v1.8").digest(32)
+        self.mask = hashlib.shake_256(b"abi-test-mask-v1.8").digest(72)
+        self.randomness = hashlib.shake_256(b"abi-test-randomness-v1.8").digest(32)
         self.request = self.adapter.create(
             self.message, self.mask, self.randomness
         )
@@ -39,6 +39,21 @@ class BlindUOVVisibilityTests(unittest.TestCase):
         self.assertNotIn("ticket_digest", statement_fields)
 
     def test_hidden_relation_accepts_and_tampering_rejects(self) -> None:
+        hidden = self.adapter.hidden_state(
+            self.message, self.mask, self.randomness
+        )
+        self.assertTrue(
+            self.adapter.verify_cap_hash(
+                self.message,
+                self.mask,
+                self.randomness,
+                hidden.hash_image,
+            )
+        )
+        self.assertEqual(
+            self.request.masked_target,
+            abi.xor_bytes(self.mask, hidden.hash_image),
+        )
         self.assertTrue(
             self.adapter.verify(
                 self.request, self.message, self.mask, self.randomness
@@ -48,6 +63,15 @@ class BlindUOVVisibilityTests(unittest.TestCase):
         self.assertFalse(
             self.adapter.verify(
                 self.request, changed_message, self.mask, self.randomness
+            )
+        )
+        changed_hash_image = bytes((hidden.hash_image[0] ^ 1,)) + hidden.hash_image[1:]
+        self.assertFalse(
+            self.adapter.verify_cap_hash(
+                self.message,
+                self.mask,
+                self.randomness,
+                changed_hash_image,
             )
         )
         changed_y = bytes((self.request.masked_target[0] ^ 1,)) + self.request.masked_target[1:]
@@ -79,6 +103,12 @@ class BlindUOVVisibilityTests(unittest.TestCase):
             manifest["v1_6_correction"][
                 "independent_parallel_lanes_amplify_security_bits"
             ]
+        )
+        self.assertTrue(
+            manifest["claim_boundary"]["linear_y_equals_r_plus_h_internalized"]
+        )
+        self.assertFalse(
+            manifest["claim_boundary"]["native_tcih_anemoi_constraint_import_complete"]
         )
 
 

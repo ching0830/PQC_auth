@@ -1,0 +1,77 @@
+{
+  "archive": {
+    "archive_bytes": 49227687,
+    "archive_sha256": "e6b376d0cc3fe8a6896ea6148ac41bcc70a60a2bc75e4850c82bcf9f94e2816f",
+    "assignment_sha256": "aeb3352509ba0de29bf7e209be00bbcbcc057a7787919eb30c3690911b74e7f4",
+    "body_bytes": 49227563,
+    "body_sha256": "7b710cdb1eb40385d6e53680b7258d946b8a46ab2f0424e7e17fa797f88769e3",
+    "external_assertions": 1,
+    "external_failures": 0,
+    "field": "F2",
+    "format": "PQ-RBBC-BR1CS",
+    "format_version": 1,
+    "keccak_permutations": 17,
+    "linear_assertions": 3534,
+    "linear_definitions": 2282475,
+    "nonlinear_constraints": 685571,
+    "public_inputs": 4032,
+    "secret_inputs": 8224,
+    "total_r1cs_rows": 2971580,
+    "wire_count": 2980304
+  },
+  "claim_boundary": {
+    "external_assertions": 1,
+    "external_component": "native Blind-UOV-III CAP.Commit-plus-H subrelation",
+    "external_failures_in_honest_vector": 0,
+    "not_yet_done": [
+      "native TCitH/Anemoi CAP.Commit-plus-H constraint import",
+      "lift the complete incremental relation into GF(2^193)",
+      "proof-system-specific affine elimination",
+      "post-quantum zero-knowledge and simulation-extractability qualification",
+      "production Goppa key import and threshold decoder"
+    ]
+  },
+  "constraint_accounting": {
+    "materialized_linear_rows": 2286009,
+    "nonlinear_only_cost_model_total": 685571,
+    "nonlinear_rows": 685571,
+    "portable_total_r1cs_rows": 2971580,
+    "warning": "portable row count is not directly comparable to a backend that soundly eliminates affine wires"
+  },
+  "format": {
+    "archive_header_bytes": 124,
+    "body_uses_unsigned_leb128_wire_ids": true,
+    "field": "F2",
+    "name": "PQ-RBBC-BR1CS",
+    "semantics": {
+      "linear_assertion": "(XOR(inputs) + constant)*1=0",
+      "linear_definition": "(out + XOR(inputs) + constant)*1=0",
+      "multiplication": "A*B=C"
+    },
+    "version": 1
+  },
+  "implementation_version": "1.8",
+  "native_import_contract": {
+    "current_archive_field_matches_target": false,
+    "linear_mask_equation_internalized": true,
+    "paper_profile_sha256": "1599775abfaa1b0f2a059d3ec3f10f8321394dae11cd6d01c9c9e8f5d1ba8e29",
+    "production_closed": false,
+    "relation_id": "blind-uov-iii/cap-hash/v1",
+    "target_field": "GF(2^193)"
+  },
+  "round_trip": {
+    "archive_corruption_rejected": true,
+    "assignment_bit_tamper_first_failure": "linear definition at record 2983596",
+    "assignment_bit_tamper_rejected": true,
+    "body_sha256_verified": true,
+    "external_assertions_unchecked": 1,
+    "honest_assignment_accepts": true,
+    "rows_checked": 2971580
+  },
+  "status": "Blind-UOV-III mask binding internalized; native CAP.Commit-plus-hash remains external",
+  "witness_independence": {
+    "honest_and_wrong_weight_body_digest_equal": true,
+    "wrong_weight_assignment_rejected": true,
+    "wrong_weight_failed_constraints": 320
+  }
+}

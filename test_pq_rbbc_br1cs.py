@@ -23,20 +23,20 @@ class BinaryR1CSBackendTests(unittest.TestCase):
 
     def test_exact_portable_row_counts(self) -> None:
         accounting = self.manifest["constraint_accounting"]
-        self.assertEqual(accounting["nonlinear_rows"], 684_419)
-        self.assertEqual(accounting["materialized_linear_rows"], 2_284_281)
-        self.assertEqual(accounting["portable_total_r1cs_rows"], 2_968_700)
+        self.assertEqual(accounting["nonlinear_rows"], 685_571)
+        self.assertEqual(accounting["materialized_linear_rows"], 2_286_009)
+        self.assertEqual(accounting["portable_total_r1cs_rows"], 2_971_580)
 
     def test_archive_is_complete_and_round_trips(self) -> None:
         archive = self.manifest["archive"]
         round_trip = self.manifest["round_trip"]
-        self.assertEqual(archive["wire_count"], 2_976_848)
+        self.assertEqual(archive["wire_count"], 2_980_304)
         self.assertEqual(archive["public_inputs"], 4032)
-        self.assertEqual(archive["secret_inputs"], 7072)
+        self.assertEqual(archive["secret_inputs"], 8224)
         self.assertEqual(archive["keccak_permutations"], 17)
         self.assertTrue(round_trip["honest_assignment_accepts"])
         self.assertTrue(round_trip["body_sha256_verified"])
-        self.assertEqual(round_trip["rows_checked"], 2_968_700)
+        self.assertEqual(round_trip["rows_checked"], 2_971_580)
 
     def test_assignment_and_archive_tampering_are_rejected(self) -> None:
         round_trip = self.manifest["round_trip"]
@@ -54,11 +54,15 @@ class BinaryR1CSBackendTests(unittest.TestCase):
         self.assertEqual(boundary["external_assertions"], 1)
         self.assertEqual(
             boundary["external_component"],
-            "native Blind-UOV-III pi_1/CAP request relation",
+            "native Blind-UOV-III CAP.Commit-plus-H subrelation",
         )
         self.assertEqual(
             self.manifest["round_trip"]["external_assertions_unchecked"], 1
         )
+        contract = self.manifest["native_import_contract"]
+        self.assertTrue(contract["linear_mask_equation_internalized"])
+        self.assertFalse(contract["current_archive_field_matches_target"])
+        self.assertFalse(contract["production_closed"])
 
 
 if __name__ == "__main__":

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Binary F2-R1CS lowering for the executable PQ-RBBC v1.7 relation.
+"""Binary F2-R1CS lowering for the executable PQ-RBBC v1.8 relation.
 
 The format is intentionally small and auditable.  It serializes enough data to
 reconstruct ordinary rank-1 constraints over F2:
@@ -14,7 +14,8 @@ Unlike the nonlinear-only research cost model, this portable representation
 materializes affine definitions as R1CS rows.  A proof-system-specific compiler
 may later eliminate those rows, but it must prove that optimization separately.
 
-The native Blind-UOV-III request relation remains an external assertion and is not
+The linear Blind-UOV-III mask equation is materialized.  The native
+CAP.Commit-plus-hash subrelation remains an external assertion and is not
 silently converted into an R1CS row by this module.
 """
 
@@ -32,6 +33,7 @@ from pathlib import Path
 from typing import BinaryIO, Sequence
 
 import pq_rbbc_reference as core
+import pq_rbbc_blind_uov_native as native_blind_uov
 
 
 MAGIC = b"PQR1CS1\0"
@@ -648,8 +650,8 @@ def build_backend_manifest(output_path: str | os.PathLike[str]) -> dict[str, obj
         honest.metadata.linear_definitions + honest.metadata.linear_assertions
     )
     return {
-        "implementation_version": "1.7",
-        "status": "Blind-UOV-III hidden-input F2-R1CS backend; native relation remains external",
+        "implementation_version": "1.8",
+        "status": "Blind-UOV-III mask binding internalized; native CAP.Commit-plus-hash remains external",
         "format": {
             "name": honest.metadata.format,
             "version": honest.metadata.format_version,
@@ -687,13 +689,23 @@ def build_backend_manifest(output_path: str | os.PathLike[str]) -> dict[str, obj
         "claim_boundary": {
             "external_assertions": honest.metadata.external_assertions,
             "external_failures_in_honest_vector": honest.metadata.external_failures,
-            "external_component": "native Blind-UOV-III pi_1/CAP request relation",
+            "external_component": "native Blind-UOV-III CAP.Commit-plus-H subrelation",
             "not_yet_done": [
-                "native Blind-UOV constraint import",
+                "native TCitH/Anemoi CAP.Commit-plus-H constraint import",
+                "lift the complete incremental relation into GF(2^193)",
                 "proof-system-specific affine elimination",
                 "post-quantum zero-knowledge and simulation-extractability qualification",
                 "production Goppa key import and threshold decoder",
             ],
+        },
+        "native_import_contract": {
+            "relation_id": native_blind_uov.RELATION_ID,
+            "target_field": native_blind_uov.TARGET_FIELD,
+            "paper_profile_sha256": native_blind_uov.PAPER_PROFILE.fingerprint(),
+            "current_archive_field_matches_target": honest.metadata.field
+            == native_blind_uov.TARGET_FIELD,
+            "linear_mask_equation_internalized": True,
+            "production_closed": False,
         },
     }
 

@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Executable v1.7 reference relation for the PQ-RBBC/SGTD research draft.
+"""Executable v1.8 reference relation for the PQ-RBBC/SGTD research draft.
 
 This module implements the *incremental* five-block issuance relation described
 in the accompanying proof document.  It emits a streaming characteristic-two
 circuit IR and checks an honest witness.  It deliberately does not implement:
 
-* Blind-UOV's native well-built-request circuit (a test adapter is used);
+* Blind-UOV's native CAP.Commit-plus-hash circuit (a test adapter is used);
 * a proof-system backend or flattened R1CS matrix serialization;
 * a certified Goppa parity-check key or threshold decoder.
 
@@ -24,6 +24,7 @@ import subprocess
 from dataclasses import asdict, dataclass, field, replace
 from typing import Iterable, Protocol, Sequence
 
+import pq_rbbc_blind_uov_native as native_blind_uov
 from pq_rbbc_blind_uov_abi import (
     BlindUOVAdapter,
     BlindUOVRequest as BlindRequest,
@@ -294,6 +295,7 @@ class IssueWitness:
     error: int
     blind_mask: bytes
     blind_randomness: bytes
+    blind_hash_image: bytes
 
 
 @dataclass(frozen=True)
@@ -339,9 +341,17 @@ def build_honest_instance(
     payload = _derive_trace(matrix, common_ctx, rid, sn, holder_key, error)
     digest = hashlib.shake_256(LABEL_TICKET + payload.encode()).digest(32)
     request = adapter.create(digest, blind_mask, blind_randomness)
+    hash_image = adapter.hash_image(digest, blind_mask, blind_randomness)
     return (
         IssueStatement(common_ctx, rid, payload, request),
-        IssueWitness(sn, holder_key, error, blind_mask, blind_randomness),
+        IssueWitness(
+            sn,
+            holder_key,
+            error,
+            blind_mask,
+            blind_randomness,
+            hash_image,
+        ),
     )
 
 
@@ -383,13 +393,22 @@ def verify_relation(
         failures.append("trace_tag")
 
     expected_digest = hashlib.shake_256(LABEL_TICKET + encoded).digest(32)
-    if not adapter.verify(
-        statement.blind_request,
+    if not adapter.verify_cap_hash(
         expected_digest,
         witness.blind_mask,
         witness.blind_randomness,
+        witness.blind_hash_image,
     ):
-        failures.append("blind_request")
+        failures.append("blind_cap_hash")
+    try:
+        expected_target = xor_bytes(
+            witness.blind_mask, witness.blind_hash_image
+        )
+    except ValueError:
+        failures.append("blind_witness_layout")
+    else:
+        if statement.blind_request.masked_target != expected_target:
+            failures.append("blind_mask_equation")
     return VerificationResult(not failures, tuple(failures))
 
 
@@ -570,6 +589,15 @@ class Char2CircuitBuilder:
             satisfied = left.value == right
             constant = right
         self.sink.linear_assertion(self.block, identifiers, constant, satisfied)
+
+    def assert_xor_zero(self, *wires: Wire) -> None:
+        """Assert that the xor of all input wires is zero without a new wire."""
+        self.sink.linear_assertion(
+            self.block,
+            tuple(wire.identifier for wire in wires),
+            0,
+            satisfied=not bool(sum((wire.value for wire in wires), 0) & 1),
+        )
 
     def external_assert(self, name: str, satisfied: bool) -> None:
         self.sink.external_assertion(self.block, name, satisfied)
@@ -874,16 +902,38 @@ def generate_issue_circuit(
         builder, constant_wires(builder, LABEL_TICKET) + payload_wires, 32
     )
 
-    builder.set_block("blind_uov_mask_increment")
+    builder.set_block("blind_uov_mask_binding")
     if wire_bytes(public_blind_target) != statement.blind_request.masked_target:
         raise AssertionError("public Blind-UOV target wire encoding changed")
+    blind_mask = input_wires(
+        builder,
+        witness.blind_mask,
+        "secret",
+        "witness.blind_mask",
+        True,
+    )
+    blind_hash_image = input_wires(
+        builder,
+        witness.blind_hash_image,
+        "secret",
+        "witness.blind_hash_image",
+        True,
+    )
+    if not (
+        len(public_blind_target) == len(blind_mask) == len(blind_hash_image)
+    ):
+        raise ValueError("Blind-UOV mask equation widths differ")
+    for y_bit, r_bit, h_bit in zip(
+        public_blind_target, blind_mask, blind_hash_image
+    ):
+        builder.assert_xor_zero(y_bit, r_bit, h_bit)
     builder.external_assert(
-        "native_blind_uov_iii_request",
-        adapter.verify(
-            statement.blind_request,
+        "native_blind_uov_iii_cap_hash",
+        adapter.verify_cap_hash(
             wire_bytes(computed_digest),
             witness.blind_mask,
             witness.blind_randomness,
+            witness.blind_hash_image,
         ),
     )
 
@@ -947,8 +997,8 @@ def reference_fixture() -> tuple[SystematicParityCheck, IssueStatement, IssueWit
     sn = hashlib.shake_256(b"PQ-RBBC/v1.4/serial").digest(16)
     holder_key = hashlib.shake_256(b"PQ-RBBC/v1.4/holder-key").digest(32)
     error = sample_weight_error(b"reference-vector")
-    blind_mask = hashlib.shake_256(b"PQ-RBBC/v1.7/blind-mask").digest(72)
-    blind_randomness = hashlib.shake_256(b"PQ-RBBC/v1.7/blind-randomness").digest(32)
+    blind_mask = hashlib.shake_256(b"PQ-RBBC/v1.8/blind-mask").digest(72)
+    blind_randomness = hashlib.shake_256(b"PQ-RBBC/v1.8/blind-randomness").digest(32)
     statement, witness = build_honest_instance(
         matrix,
         common_ctx,
@@ -1049,6 +1099,24 @@ def negative_cases(
             ),
             witness,
         ),
+        "blind_mask_tamper": (
+            statement,
+            replace(witness, blind_mask=flip(witness.blind_mask)),
+        ),
+        "blind_hash_image_tamper": (
+            statement,
+            replace(
+                witness,
+                blind_hash_image=flip(witness.blind_hash_image),
+            ),
+        ),
+        "blind_randomness_tamper": (
+            statement,
+            replace(
+                witness,
+                blind_randomness=flip(witness.blind_randomness),
+            ),
+        ),
         "context_tamper": (replace(statement, common_ctx=flip(statement.common_ctx)), witness),
     }
 
@@ -1083,11 +1151,11 @@ def build_manifest(full_negative_circuits: bool = False) -> dict[str, object]:
             ).items()
         }
     return {
-        "implementation_version": "1.7",
+        "implementation_version": "1.8",
         "status": "executable research relation; not a deployment implementation",
         "claim_boundary": {
-            "implemented": "incremental five-block characteristic-two relation",
-            "blind_uov": "correct hidden-state ABI with a test-only adapter; native pi_1 remains external",
+            "implemented": "incremental relation plus the in-circuit y = r + hash_image mask equation",
+            "blind_uov": "native CAP.Commit-plus-H subrelation remains one external assertion",
             "r1cs_backend": "streaming IR events only; no flattened matrices or proof backend",
             "trace_key": "deterministic systematic test fixture; not a certified Goppa key",
         },
@@ -1116,6 +1184,14 @@ def build_manifest(full_negative_circuits: bool = False) -> dict[str, object]:
                 else all(negative_circuit_results.values())
             ),
             "full_circuit_cases": negative_circuit_results,
+        },
+        "native_import_contract": {
+            "relation_id": native_blind_uov.RELATION_ID,
+            "target_field": native_blind_uov.TARGET_FIELD,
+            "paper_profile_sha256": native_blind_uov.PAPER_PROFILE.fingerprint(),
+            "linear_mask_equation_internalized": True,
+            "native_cap_hash_external_assertions": circuit.external_assertions,
+            "production_closed": False,
         },
         "reference_vector": {
             "matrix_seed_sha256": hashlib.sha256(matrix.seed).hexdigest(),

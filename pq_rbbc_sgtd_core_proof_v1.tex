@@ -41,7 +41,7 @@
 
 \title{A Post-Quantum Relation-Bound Blind Certification Core\\
 with Signature-Gated Threshold Decryption}
-\author{Research construction draft, version 1.7}
+\author{Research construction draft, version 1.8}
 \date{23 August 2026}
 
 \begin{document}
@@ -86,7 +86,12 @@ cross-message request binding in the QROM from CAP unique-witness soundness and
 the collision bound for a shifted 576-bit random function.  The cached issuer
 key grows to 189.2~KB, while the online ticket remains 12,012 bytes.  Native
 Blind-UOV circuit integration and proof-backend qualification remain explicit
-obligations.
+obligations.  Version 1.8 writes $h_{\BUOV}=H_{\BUOV}(m,c_r)$ and internalizes
+the linear request equation $y=r+h_{\BUOV}$ as 576 binary equalities.  It
+narrows the sole external boundary to
+$h_{\BUOV}=H_{\BUOV}(m,\mathsf{CAP.Commit}(r;\rho))$ and adds a fail-closed
+native-import contract.  It also freezes the paper's NIST-III/Shorter TCitH
+tree parameters and exposes the required $\mathbb F_{2^{193}}$ backend lift.
 \end{abstract}
 
 \section{Status, scope, and non-goals}
@@ -969,6 +974,22 @@ Blind-UOV-III target and Theorem~\ref{thm:j-qrom}.  The removed
 ticket commitment $c_M$ remains unnecessary: extraction supplies $M$, while
 ticket-hash collision resistance prevents a second payload under one digest.
 
+\paragraph{Executable refinement in version 1.8.}
+Introduce the hidden 576-bit value
+\[
+ h_{\BUOV}=H_{\BUOV}(m,c_r).
+\]
+The executable incremental circuit now allocates $r$ and $h_{\BUOV}$ as secret
+binary inputs, enforces their bitness, and materializes all 576 linear equations
+$y_j+r_j+h_{\BUOV,j}=0$.  Its only remaining external assertion is the narrower
+native subrelation
+\[
+ h_{\BUOV}=H_{\BUOV}(m,\mathsf{CAP.Commit}(r;\rho)),
+\]
+where $m$ is passed directly from the circuit-produced ticket-digest wires.
+Thus a future native importer cannot choose a different $y$, $r$, hash image,
+or ticket message without failing an ordinary circuit row.
+
 \paragraph{Frozen Blind-UOV costing profile.}
 Version 1.7 fixes the 31 October 2025 revision and its
 \emph{Blind-UOV-III, Shorter, TCitH} row.  The paper gives security parameter
@@ -987,13 +1008,40 @@ augments this $\pi_1$; it does \emph{not} replace the final CAP proof.
 Consequently the 11,644-byte final signature remains unchanged, while the
 ticket/trace blocks are included only in the augmented issuance relation.
 
+\paragraph{Native import contract and field boundary.}
+For NIST-III/Shorter/TCitH, Table~2 of the paper fixes
+$\tau=18$: two $2^{12}$-leaf trees and sixteen $2^{11}$-leaf trees,
+$T_{\mathrm{open}}=174$, an explicit proof-of-work of 9 bits, and total
+proof-of-work 13.9 bits.  The SNARK-friendly level-III profile uses an
+eight-element Anemoi state over $\mathbb F_{2^{193}}$, with 240 R1CS
+constraints per permutation~\cite{blind-uov}.  In particular, the abstract
+$\rho$ contains the CAP salt and GGM-tree randomness; it is not the 32-byte
+nonce used by the test adapter.
+
+The paper specifies the algorithms but does not ship an executable CAP
+constraint generator.  The new
+\texttt{pq\_rbbc\_blind\_uov\_native.py} therefore defines a fail-closed import
+contract.  Closure requires a source and parameter digest, a deterministic
+native row-stream digest, zero external assertions, witness-independent
+topology, verified Anemoi vectors, message/mask/hash-image wire identity, and
+four independent tamper rejections.  It also requires the complete augmented
+relation to be lifted from the portable $\mathbb F_2$ archive into
+$\mathbb F_{2^{193}}$.  This structural certificate prevents accidental
+under-constraint; it is not a substitute for cryptographic review of the CAP
+implementation.  The official Anemoi repository supplies permutation and
+equation-generation code, but not the paper's complete CAP importer
+\cite{anemoi-code}.
+
 For costing, use the paper's illustrative Shockwave/Anemoi NIST-I row only as
 an anchor.  Blind-UOV-Is/Shorter is reported as approximately 16 million R1CS
 constraints, a 2.8~MB proof, 32~s proving, and 2.5~s verification.  The paper
 does not report the corresponding Blind-UOV-III row.  Scaling the native
 constraint anchor by the witness-width ratio
 $(576+1472)/(256+640)=2.2857$ gives a rough 36.57-million-row native baseline;
-after the exact 684,419-row increment below, the total is about 37.26 million.
+after the exact 684,419-row non-overlapping ticket/trace increment below, the
+total is about 37.26 million.  The extra 1,152 bitness rows in the portable
+v1.8 archive are already part of a genuine native $\pi_1$ relation and are not
+double-counted in this combined estimate.
 This is an extrapolation, not a paper result or local benchmark.  The paper
 explicitly treats these as estimates and notes that the benchmarked
 implementations do not provide the required zero-knowledge mode.  It also does
@@ -1246,14 +1294,19 @@ Block & Constraints & Contents\\
 \midrule
 $\mathcal C_{\mathsf{shape}}$ & 128 & serial bitness; widths/wiring linear\\
 $\mathcal C_{\mathsf{ticketHash}}$ & 115,200 & three SHAKE permutations\\
-$\mathcal C_{\mathsf{BUOVmask}}$ & 0 & already in the paper baseline\\
+$\mathcal C_{\mathsf{BUOVmask}}$ & 1,152 & bitness of $r,h_{\BUOV}$; 576 mask equations linear\\
 $\mathcal C_{\mathsf{holder}}$ & 38,656 & 256 bitness + one SHAKE permutation\\
 $\mathcal C_{\mathsf{trace}}$ & 530,435 & $e$ bitness, weight, KDF, and KMAC\\
 \midrule
-Added relation & 684,419 & exact for the specified gadgets\\
+Portable v1.8 relation & 685,571 & includes 1,152 native-overlap hardening rows\\
 \bottomrule
 \end{tabular}
 \end{center}
+Of the portable total, 1,152 bitness rows protect the explicit $r$ and
+$h_{\BUOV}$ interface while the native generator is absent.  A genuine native
+$\pi_1$ already constrains those binary values, so only 684,419 rows are
+non-overlapping additions to the paper-anchored native baseline.  The 576
+$y=r+h_{\BUOV}$ equations are linear.
 The syndrome equation adds 1,664 linear output equalities but no nonlinear
 gate.  The xor pad, associated-data construction, external/internal serial
 equality, and final constant comparisons are also linear.
@@ -1313,7 +1366,7 @@ mistaken for a benchmark.
 \subsection{Executable reference relation and rejection tests}
 \label{sec:executable-relation}
 
-Version 1.7 extends the incremental relation in
+Version 1.8 extends the incremental relation in
 \texttt{pq\_rbbc\_reference.py}.  The witness builder derives
 $h$, $s$, $c_\mu$, $\gamma$, the canonical 368-byte payload, and its ticket
 digest from $(\rid,\ctx,\sn,k_{\mathrm{hold}},e)$.  The circuit builder then
@@ -1333,11 +1386,12 @@ For the frozen honest vector the generated circuit reports:
 \toprule
 Measured generator quantity & Value\\
 \midrule
-Allocated wire identifiers & 2,976,848\\
-Linear definitions & 2,281,323\\
-Linear equality assertions & 2,958\\
-Nonlinear constraints & 684,419\\
+Allocated wire identifiers & 2,980,304\\
+Linear definitions & 2,282,475\\
+Linear equality assertions & 3,534\\
+Nonlinear constraints & 685,571\\
 Public input bits & 4,032\\
+Secret input bits & 8,224\\
 External Blind-UOV assertions & 1\\
 Keccak-f permutations & 17\\
 Failed assertions & 0\\
@@ -1353,29 +1407,31 @@ environment, one honest streaming generation takes about six seconds.  This is P
 generation time, not NIZK proving time, and no prover-memory claim follows from
 it.
 
-The regression suite accepts the honest witness and sends eight independent
+The regression suite accepts the honest witness and sends eleven independent
 mutations through the complete circuit: wrong error weight, changed syndrome,
 changed masked identity, changed holder hash, changed KMAC tag, changed serial,
-changed blind request, and changed common context.  All eight are rejected.
+changed blind request, changed blind mask, changed Blind-UOV hash image, changed
+CAP randomness, and changed common context.  All eleven are rejected.
 The checked output is recorded in
-\path{pq_rbbc_reference_manifest_v1_7.json}.
+\path{pq_rbbc_reference_manifest_v1_8.json}.
 
 \paragraph{Exact implementation boundary.}
 The $H=(I\mid T)$ matrix in the reference vector is generated deterministically
 from a public seed and is only a rank-controlled test fixture; it is not a
 certified binary Goppa key.  Similarly,
-\texttt{TestBlindUOVAdapter} checks message/request binding with a deterministic
+\texttt{TestBlindUOVAdapter} checks the CAP-hash subrelation with a deterministic
 SHAKE construction, but is not a blind signature.  It marks one native
-Blind-UOV-III $\pi_1$/CAP boundary whose nonlinear cost remains in the
-paper-anchored baseline.  The 576 public $y$ bits are serialized as circuit
-inputs, while $m,r,\rho,c_r$ remain hidden.  Consequently this implementation establishes that the incremental
+Blind-UOV-III CAP.Commit-plus-hash boundary whose nonlinear cost remains in the
+paper-anchored baseline.  The 576 public $y$ bits and 1,152 secret
+$r,h_{\BUOV}$ bits are serialized as circuit inputs; $m$ is derived internally,
+and $\rho,c_r$ remain hidden behind the native boundary.  Consequently this implementation establishes that the incremental
 relation is internally consistent and executable; it does not establish that
 the combined native Blind-UOV proof is zero knowledge or simulation
 extractable.
 
 \subsection{Portable binary R1CS lowering}\label{sec:br1cs}
 
-Version 1.7 uses the proof-backend exchange layer in
+Version 1.8 uses the proof-backend exchange layer in
 \texttt{pq\_rbbc\_br1cs.py}.  It consumes the same event stream as the counting
 sink and serializes three standard rank-one forms over $\mathbb F_2$:
 \begin{align*}
@@ -1396,19 +1452,19 @@ The resulting honest archive has the following exact dimensions:
 \toprule
 Portable backend quantity & Value\\
 \midrule
-Wires & 2,976,848\\
+Wires & 2,980,304\\
 Public input bits & 4,032\\
-Secret input bits & 7,072\\
-Nonlinear R1CS rows & 684,419\\
-Materialized affine-definition rows & 2,281,323\\
-Linear assertion rows & 2,958\\
-Total R1CS rows & 2,968,700\\
-Archive size & 49,184,487 bytes\\
+Secret input bits & 8,224\\
+Nonlinear R1CS rows & 685,571\\
+Materialized affine-definition rows & 2,282,475\\
+Linear assertion rows & 3,534\\
+Total R1CS rows & 2,971,580\\
+Archive size & 49,227,687 bytes\\
 \bottomrule
 \end{tabular}
 \end{center}
-The 684,419 figure is therefore a \emph{nonlinear-only} cost under the affine
-elimination model used in Section~\ref{sec:circuit-audit}.  The 2,968,700 figure
+The 685,571 figure is therefore a \emph{nonlinear-only} cost under the affine
+elimination model used in Section~\ref{sec:circuit-audit}.  The 2,971,580 figure
 is the portable total when every affine definition is materialized as its own
 rank-one row.  They are not competing measurements.  A concrete proof backend
 may recover the smaller representation by substituting affine expressions into
@@ -1418,26 +1474,28 @@ and resource benchmark.
 Although the exchange format names $\mathbb F_2$ as its base relation, the same
 Boolean assignment and equations embed into $\mathbb F_{2^d}$: addition remains
 xor, and the input bitness equations prevent non-Boolean witnesses.  This makes
-the archive compatible in principle with the $\mathbb F_{2^{129}}$ cost anchor,
-without claiming that a specific prover has been integrated.
+the archive compatible in principle with both the $\mathbb F_{2^{129}}$
+costing anchor and the target $\mathbb F_{2^{193}}$ level-III field, without
+claiming that the required lift or a specific prover has been integrated.
 
-An independent reader reconstructs and evaluates all 2,968,700 rows.  It
+An independent reader reconstructs and evaluates all 2,971,580 rows.  It
 accepts the honest assignment, rejects a one-bit assignment mutation, and
 rejects a one-bit archive corruption through the body digest.  Lowering a
-wrong-weight witness produces exactly the same 49,184,363-byte body and the
+wrong-weight witness produces exactly the same 49,227,563-byte body and the
 same digest as the honest witness, showing that circuit structure is
 witness-independent; its assignment nevertheless fails 320 rows.  Five
 end-to-end backend tests pass; wall time is environment-dependent.  The checked
 metadata is recorded in
-\texttt{pq\_rbbc\_br1cs\_manifest\_v1\_7.json}.
+\texttt{pq\_rbbc\_br1cs\_manifest\_v1\_8.json}.
 
 \paragraph{Remaining external rows.}
-The archive records one named external assertion for the native Blind-UOV-III
-$\pi_1$/CAP request relation, but cannot evaluate it.  This is deliberate and
-machine-visible: an archive with an unchecked external assertion is not a
-closed issuance proof.  The next integration must replace that marker with the
-actual Blind-UOV constraints; deleting or treating it as automatically true is
-forbidden.
+The archive records one named external assertion for
+$h_{\BUOV}=H_{\BUOV}(m,\mathsf{CAP.Commit}(r;\rho))$, but cannot evaluate it.
+The linear equation $y=r+h_{\BUOV}$ is no longer external.  This narrowed
+boundary is deliberate and machine-visible: an archive with an unchecked
+external assertion is not a closed issuance proof.  The next integration must
+replace that marker with the actual TCitH/Anemoi constraints; deleting or
+treating it as automatically true is forbidden.
 
 \subsection{Local mixing as a future trace-encryption candidate}
 
@@ -1470,15 +1528,16 @@ authorization unforgeability.\\
 Concretely instantiated & Blind-UOV-III/Shorter size profile; executable
 five-block augmented relation; exact Niederreiter--SHAKE--KMAC trace relation;
 information-theoretic unique opening; independently checked SHAKE/KMAC;
-full-circuit positive and negative tests; a checksummed portable R1CS archive
-with independent row evaluation; 684,419 incremental nonlinear rows; 2,968,700
-materialized total rows; a 72-byte issuance request excluding proof; and a
-12,012-byte online-ticket target.\\
+full-circuit positive and negative tests; an internally constrained
+$y=r+h_{\BUOV}$ equation; a fail-closed native-import contract; a checksummed
+portable R1CS archive with independent row evaluation; 685,571 incremental
+nonlinear rows; 2,971,580 materialized total rows; a 72-byte issuance request
+excluding proof; and a 12,012-byte online-ticket target.\\
 \addlinespace
 Not yet instantiated & A post-quantum zero-knowledge and
-simulation-extractable implementation of $\Piiss$; a native Blind-UOV-III
-circuit import and validation of the CAP properties used by
-Theorem~\ref{thm:j-qrom};
+simulation-extractable implementation of $\Piiss$; a native
+$\mathbb F_{2^{193}}$ Blind-UOV-III CAP-hash circuit import and validation of
+the CAP properties used by Theorem~\ref{thm:j-qrom};
 proof-system-specific affine elimination; import of a real Goppa
 key; peak prover memory; robust threshold-share transcript; proof benchmarks;
 and a reviewed response to the August 2026 McEliece cryptanalysis.\\
@@ -1535,21 +1594,29 @@ machine-tested or enforced by type/API boundaries.
   generation or verification.
   \item Any nonzero external-assertion count makes the archive incomplete for
   production issuance; the Blind-UOV-III marker must be replaced, never ignored.
+  \item The 576 mask bits and 576 Blind-UOV hash-image bits are secret circuit
+  inputs with bitness constraints; all 576 equations $y_j+r_j+h_{\BUOV,j}=0$
+  must remain ordinary rows after lowering.
+  \item A native import is accepted only if it matches the frozen
+  $\mathbb F_{2^{193}}$ profile, has witness-independent topology and zero
+  external assertions, and satisfies every check in the native-import contract.
 \end{enumerate}
 
 \section{Next proof step}
 
-The incremental relation, unique opening, fixed layout, circuit audit,
-executable witness builder, rejection tests, and portable R1CS lowering are now
-complete.  The next step has two coupled proof obligations:
+The incremental relation, linear mask binding, unique opening, fixed layout,
+circuit audit, executable witness builder, rejection tests, portable R1CS
+lowering, and native-import contract are now complete.  The next step has two
+coupled proof obligations:
 
 \begin{quote}
-\emph{First replace the single external marker with the native
-Blind-UOV-III $\pi_1$/CAP constraints and verify that its hidden message input
-is exactly the 256-bit digest produced by
-$\mathcal C_{\mathsf{ticketHash}}$.  Validate the straightline-extraction,
-unique-mask, commit-before-hash, and domain-separation conditions used in
-Theorem~\ref{thm:j-qrom}.  Then select a concrete backend,
+\emph{Implement or obtain a bit-exact TCitH/Anemoi generator for Protocols
+8--10, pin its source and parameter files, and compile its CAP.Commit-plus-hash
+subrelation over $\mathbb F_{2^{193}}$.  Feed it the exact digest, mask, and
+hash-image wires already named by the import contract; the resulting combined
+archive must contain zero external assertions and pass all four native tamper
+tests.  Validate the straightline-extraction, unique-mask, commit-before-hash,
+and domain-separation conditions used in Theorem~\ref{thm:j-qrom}.  Then select a concrete backend,
 prove any affine-elimination pass sound, and establish post-quantum zero
 knowledge and simulation extractability in the model required by the GCCA
 reduction.}
@@ -1569,6 +1636,12 @@ Julia Sauvage, and Damien Vergnaud,
 \emph{Blinding Post-Quantum Hash-and-Sign Signatures},
 IACR Cryptology ePrint Archive, Report 2025/895, 2025.
 \url{https://eprint.iacr.org/2025/895}
+
+\bibitem{anemoi-code}
+Cl\'emence Bouvier et al.,
+\emph{Anemoi: a Family of ZK-friendly Arithmetization-Oriented Hash
+Functions}, reference Sage implementation.
+\url{https://github.com/anemoi-hash/anemoi-hash}
 
 \bibitem{bht}
 Gilles Brassard, Peter H\o yer, and Alain Tapp,

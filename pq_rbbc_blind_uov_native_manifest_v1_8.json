@@ -1,0 +1,62 @@
+{
+  "claim_boundary": {
+    "contract_validator_is_cryptographic_proof": false,
+    "current_f2_archive_is_native_anemoi_field": false,
+    "paper_supplies_executable_constraint_generator": false,
+    "production_closed": false
+  },
+  "closure_audit": {
+    "closed": false,
+    "failures": [
+      "native_import_evidence_missing"
+    ]
+  },
+  "implementation_version": "1.8",
+  "paper_anchor": {
+    "locations": [
+      "Protocols 3-4",
+      "Protocols 8-10",
+      "Tables 2 and 4"
+    ],
+    "report": "IACR ePrint 2025/895",
+    "revision": "2025-10-31"
+  },
+  "paper_profile": {
+    "anemoi_constraints_per_permutation": 240,
+    "anemoi_field_degree": 193,
+    "anemoi_state_elements": 8,
+    "cap_degree": 2,
+    "cap_parallel_repetitions": 18,
+    "cap_witness_bits": 2048,
+    "explicit_pow_bits": 9,
+    "final_signature_bytes": 11644,
+    "level_iii_nizk_cost_reported_by_paper": false,
+    "n_r_bits": 576,
+    "n_x_bits": 1472,
+    "opened_seeds_upper_bound": 174,
+    "public_key_kilobytes": 189.2,
+    "revision": "2025-10-31",
+    "security_parameter_bits": 192,
+    "total_pow_bits": 13.9,
+    "tree_groups": [
+      [
+        2,
+        4096
+      ],
+      [
+        16,
+        2048
+      ]
+    ]
+  },
+  "paper_profile_sha256": "1599775abfaa1b0f2a059d3ec3f10f8321394dae11cd6d01c9c9e8f5d1ba8e29",
+  "relation_contract": {
+    "internal_parent_relation": "y = r + hash_image",
+    "message_source": "circuit-produced H_ticket(Encode(M)) wires",
+    "native_subrelation": "hash_image = H_BUOV(m, CAP.Commit(r; rho))",
+    "relation_id": "blind-uov-iii/cap-hash/v1",
+    "target_field": "GF(2^193)",
+    "test_nonce_is_native_cap_randomness": false
+  },
+  "status": "native import contract implemented; native TCitH/Anemoi rows not imported"
+}

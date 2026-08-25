@@ -1,14 +1,14 @@
 {
   "circuit": {
     "blocks": {
-      "blind_uov_mask_increment": {
+      "blind_uov_mask_binding": {
         "and_gates": 0,
-        "bitness_constraints": 0,
+        "bitness_constraints": 1152,
         "failed_assertions": 0,
         "keccak_permutations": 0,
-        "linear_assertions": 0,
-        "linear_definitions": 0,
-        "nonlinear_constraints": 0
+        "linear_assertions": 576,
+        "linear_definitions": 1152,
+        "nonlinear_constraints": 1152
       },
       "holder": {
         "and_gates": 38400,
@@ -50,21 +50,21 @@
     "external_assertions": 1,
     "public_input_bits": 4032,
     "satisfied": true,
-    "secret_input_bits": 7072,
+    "secret_input_bits": 8224,
     "totals": {
       "and_gates": 677347,
-      "bitness_constraints": 7072,
+      "bitness_constraints": 8224,
       "failed_assertions": 0,
       "keccak_permutations": 17,
-      "linear_assertions": 2958,
-      "linear_definitions": 2281323,
-      "nonlinear_constraints": 684419
+      "linear_assertions": 3534,
+      "linear_definitions": 2282475,
+      "nonlinear_constraints": 685571
     },
-    "wire_count": 2976848
+    "wire_count": 2980304
   },
   "claim_boundary": {
-    "blind_uov": "correct hidden-state ABI with a test-only adapter; native pi_1 remains external",
-    "implemented": "incremental five-block characteristic-two relation",
+    "blind_uov": "native CAP.Commit-plus-H subrelation remains one external assertion",
+    "implemented": "incremental relation plus the in-circuit y = r + hash_image mask equation",
     "r1cs_backend": "streaming IR events only; no flattened matrices or proof backend",
     "trace_key": "deterministic systematic test fixture; not a certified Goppa key"
   },
@@ -81,12 +81,31 @@
     "concrete_accepts": true,
     "concrete_failures": []
   },
-  "implementation_version": "1.7",
+  "implementation_version": "1.8",
+  "native_import_contract": {
+    "linear_mask_equation_internalized": true,
+    "native_cap_hash_external_assertions": 1,
+    "paper_profile_sha256": "1599775abfaa1b0f2a059d3ec3f10f8321394dae11cd6d01c9c9e8f5d1ba8e29",
+    "production_closed": false,
+    "relation_id": "blind-uov-iii/cap-hash/v1",
+    "target_field": "GF(2^193)"
+  },
   "negative_tests": {
     "concrete_all_rejected": true,
     "concrete_cases": {
+      "blind_hash_image_tamper": [
+        "blind_cap_hash",
+        "blind_mask_equation"
+      ],
+      "blind_mask_tamper": [
+        "blind_cap_hash",
+        "blind_mask_equation"
+      ],
+      "blind_randomness_tamper": [
+        "blind_cap_hash"
+      ],
       "blind_request_tamper": [
-        "blind_request"
+        "blind_mask_equation"
       ],
       "context_tamper": [
         "context_binding",
@@ -95,23 +114,23 @@
       ],
       "holder_hash_tamper": [
         "holder_hash",
-        "blind_request"
+        "blind_cap_hash"
       ],
       "masked_identity_tamper": [
         "masked_identity",
-        "blind_request"
+        "blind_cap_hash"
       ],
       "serial_tamper": [
         "serial_binding",
-        "blind_request"
+        "blind_cap_hash"
       ],
       "syndrome_tamper": [
         "syndrome",
-        "blind_request"
+        "blind_cap_hash"
       ],
       "tag_tamper": [
         "trace_tag",
-        "blind_request"
+        "blind_cap_hash"
       ],
       "wrong_weight": [
         "exact_weight",
@@ -122,6 +141,9 @@
     },
     "full_circuit_all_rejected": true,
     "full_circuit_cases": {
+      "blind_hash_image_tamper": true,
+      "blind_mask_tamper": true,
+      "blind_randomness_tamper": true,
       "blind_request_tamper": true,
       "context_tamper": true,
       "holder_hash_tamper": true,
