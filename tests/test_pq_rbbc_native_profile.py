@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Tests for the fail-closed PQ-RBBC v2.13 fork import contract."""
+"""Tests for the fail-closed PQ-RBBC v2.14 fork import contract."""
 
 from __future__ import annotations
 
@@ -229,9 +229,33 @@ class ForkNativeProfileTests(unittest.TestCase):
                 "production_index0_output_values_match_tail"
             ]
         )
-        self.assertFalse(
+        tree2 = manifest["implemented_primitives"][
+            "production_tree2_producer_component"
+        ]
+        self.assertEqual(tree2["tree_index"], 2)
+        self.assertEqual(tree2["leaves"], 2_048)
+        self.assertEqual(tree2["extension_degree"], 12)
+        self.assertEqual(tree2["rows"], 25_666_386)
+        self.assertEqual(tree2["local_wires"], 19_478_436)
+        self.assertEqual(tree2["max_wire_id"], 59_673_032)
+        self.assertEqual(tuple(tree2["point_wire_starts"]), (39_945_673, 39_945_866))
+        self.assertEqual(
+            tuple(tree2["output_wire_starts"]),
+            (58_805_397, 59_595_925, 59_597_973, 59_668_401),
+        )
+        self.assertTrue(
             manifest["claim_boundary"][
                 "production_index2_2048_degree12_producer_native_closed"
+            ]
+        )
+        self.assertTrue(
+            manifest["claim_boundary"][
+                "production_index2_point_wire_identity_closed"
+            ]
+        )
+        self.assertTrue(
+            manifest["claim_boundary"][
+                "production_index2_output_values_match_tail"
             ]
         )
         self.assertTrue(

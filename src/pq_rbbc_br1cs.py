@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Binary F2-R1CS lowering for the executable PQ-RBBC v2.13 relation.
+"""Binary F2-R1CS lowering for the executable PQ-RBBC v2.14 relation.
 
 The format is intentionally small and auditable.  It serializes enough data to
 reconstruct ordinary rank-1 constraints over F2:
@@ -651,8 +651,8 @@ def build_backend_manifest(output_path: str | os.PathLike[str]) -> dict[str, obj
         honest.metadata.linear_definitions + honest.metadata.linear_assertions
     )
     return {
-        "implementation_version": "2.11",
-        "status": "the production reference and native shared global tail are frozen; reduced tree producers match the tail ABI, while production producers, exact cross-segment identities, and the parent join remain external",
+        "implementation_version": "2.14",
+        "status": "production tree indices 0 and 2 are archive-replayed checkpoints with exact point-wire imports and tail-value matches; output relocations, the remaining sixteen producers, exact cross-segment identities, and the parent join remain external",
         "format": {
             "name": honest.metadata.format,
             "version": honest.metadata.format_version,
@@ -814,7 +814,17 @@ def build_backend_manifest(output_path: str | os.PathLike[str]) -> dict[str, obj
             "production_index0_4096_degree13_producer_native_closed": True,
             "production_index0_point_wire_identity_closed": True,
             "production_index0_output_values_match_tail": True,
-            "production_index2_2048_degree12_producer_native_closed": False,
+            "production_tree2_producer_relation_id": native_profile.production_tree2.RELATION_ID,
+            "production_tree2_producer_rows": native_profile.production_tree2.FROZEN_ROWS,
+            "production_tree2_producer_local_wires": native_profile.production_tree2.FROZEN_LOCAL_WIRES,
+            "production_tree2_producer_max_wire_id": native_profile.production_tree2.FROZEN_MAX_WIRE_ID,
+            "production_tree2_producer_row_stream_sha256": native_profile.production_tree2.FROZEN_STREAM_SHA256,
+            "production_tree2_producer_assignment_sha256": native_profile.production_tree2.FROZEN_ASSIGNMENT_SHA256,
+            "production_tree2_point_wire_starts": native_profile.production_tree2.GLOBAL_POINT_STARTS,
+            "production_tree2_output_wire_starts": native_profile.production_tree2.FROZEN_OUTPUT_WIRE_STARTS,
+            "production_index2_2048_degree12_producer_native_closed": True,
+            "production_index2_point_wire_identity_closed": True,
+            "production_index2_output_values_match_tail": True,
             "production_h1_and_two_consistency_point_ports_native_closed": True,
             "production_tail_phase_a_to_phase_b_wire_identity_closed": True,
             "reduced_tree_producer_relation_id": native_profile.tree_producer.RELATION_ID,
