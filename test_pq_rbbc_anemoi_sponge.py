@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Regression tests for the independent PQ-RBBC v2.0 sponge profile."""
+"""Regression tests for the independent PQ-RBBC v2.2 sponge implementation."""
 
 from __future__ import annotations
 
@@ -94,6 +94,30 @@ class AnemoiSpongeTests(unittest.TestCase):
                         self.parameters,
                     ),
                 )
+                self.assertEqual(trace.failed_rows(), [])
+
+    def test_cap_width_native_outputs_match_masked_xof(self) -> None:
+        for output_bits in (193, 259, 386):
+            with self.subTest(output_bits=output_bits):
+                trace = sponge.build_sponge_trace(
+                    b"PQ-RBBC/v2.1/test-width",
+                    b"native-cap-width",
+                    self.parameters,
+                    output_bits=output_bits,
+                )
+                expected = int.from_bytes(
+                    sponge.evaluate_sponge(
+                        b"PQ-RBBC/v2.1/test-width",
+                        b"native-cap-width",
+                        (output_bits + 7) // 8,
+                        self.parameters,
+                    ),
+                    "little",
+                ) & ((1 << output_bits) - 1)
+                self.assertEqual(
+                    int.from_bytes(trace.output_bytes, "little"), expected
+                )
+                self.assertEqual(len(trace.output_bit_wires), output_bits)
                 self.assertEqual(trace.failed_rows(), [])
 
     def test_payload_tamper_rejects_stale_witness(self) -> None:

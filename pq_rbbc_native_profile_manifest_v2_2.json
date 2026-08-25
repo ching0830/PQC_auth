@@ -5,6 +5,8 @@
     "fork_security_proof_revalidated": false,
     "full_cap_hash_implemented": false,
     "production_closed": false,
+    "reduced_fixture_native_closed": true,
+    "reduced_fixture_security_profile": false,
     "reference_cap_hash_implemented": true,
     "signature_size_rebenchmarked": false
   },
@@ -49,12 +51,22 @@
     "permutation_nonlinear_rows": 336,
     "profile_sha256": "4fa0eb276ebba70a9f6c2f38f3f55d197c094121a2b614cc6ef9b7e8522cac87",
     "rate_bits": 772,
+    "reduced_native_component": {
+      "anemoi_permutations": 57,
+      "explicitly_non_secure": true,
+      "external_assertions": 0,
+      "relation_id": "pq-rbbc/cap/reduced-native/anemoi-193-336/v1",
+      "row_stream_sha256": "f6a6a0b65e6de16f7bb1d6b42302a12b004befa62b629d252861e2c986917263",
+      "rows": 88282,
+      "wires": 59602,
+      "xof_calls": 24
+    },
     "relation_id": "pq-rbbc-buov-iii-336/cap-hash/v1",
     "request_hash_bits": 576,
     "sponge_relation_id": "pq-rbbc/anemoi-193-336/sponge/v1",
     "target_field": "GF(2^193)"
   },
-  "implementation_version": "2.1",
+  "implementation_version": "2.2",
   "implemented_primitives": {
     "anemoi_permutation": true,
     "canonical_cap_serialization": true,
@@ -68,6 +80,10 @@
     "production_cap_inter_call_wire_identity": false,
     "production_cap_native_rows_materialized": false,
     "production_cap_reference_algorithm": true,
+    "reduced_cap_external_assertions": 0,
+    "reduced_cap_inter_call_wire_identity": true,
+    "reduced_cap_native_rows_materialized": true,
+    "reduced_cap_to_h_rbbc_native_wire_join": true,
     "request_binding_hash": true
   },
   "required_native_components": [
@@ -79,5 +95,5 @@
     "ggm_seed_expansion",
     "message_commitment_hash"
   ],
-  "status": "CAP.Commit reference algorithm, canonical serialization, and exact H_RBBC byte join implemented; full 18-tree native row stream remains external"
+  "status": "reduced CAP and exact H_RBBC wire join have a zero-callback native trace; full 18-tree production row stream remains external"
 }

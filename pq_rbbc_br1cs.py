@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Binary F2-R1CS lowering for the executable PQ-RBBC v2.1 relation.
+"""Binary F2-R1CS lowering for the executable PQ-RBBC v2.2 relation.
 
 The format is intentionally small and auditable.  It serializes enough data to
 reconstruct ordinary rank-1 constraints over F2:
@@ -651,8 +651,8 @@ def build_backend_manifest(output_path: str | os.PathLike[str]) -> dict[str, obj
         honest.metadata.linear_definitions + honest.metadata.linear_assertions
     )
     return {
-        "implementation_version": "2.1",
-        "status": "CAP.Commit reference and exact H_RBBC byte join exist; full 18-tree native row stream remains external",
+        "implementation_version": "2.2",
+        "status": "reduced CAP plus H_RBBC has a zero-callback native trace; full 18-tree production row stream remains external",
         "format": {
             "name": honest.metadata.format,
             "version": honest.metadata.format_version,
@@ -711,6 +711,13 @@ def build_backend_manifest(output_path: str | os.PathLike[str]) -> dict[str, obj
             "sponge_profile_relation_id": native_profile.sponge.PROFILE_RELATION_ID,
             "request_binding_hash_primitive_implemented": True,
             "production_cap_reference_algorithm_implemented": True,
+            "reduced_cap_native_relation_id": native_profile.reduced_native.PROFILE_RELATION_ID,
+            "reduced_cap_native_rows": native_profile.reduced_native.FROZEN_REDUCED_ROWS,
+            "reduced_cap_native_wires": native_profile.reduced_native.FROZEN_REDUCED_WIRES,
+            "reduced_cap_native_external_assertions": 0,
+            "reduced_cap_native_row_stream_sha256": native_profile.reduced_native.FROZEN_REDUCED_ROW_STREAM_SHA256,
+            "reduced_cap_to_h_rbbc_native_wire_join": True,
+            "reduced_cap_profile_is_secure": False,
             "canonical_cap_serialization_implemented": True,
             "canonical_cap_bytes_bound_to_h_rbbc": True,
             "cap_production_accounting": native_profile.cap.production_accounting(),

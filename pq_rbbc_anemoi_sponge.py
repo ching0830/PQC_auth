@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Independent PQ-RBBC Anemoi-193/336 sponge profile, version 2.0.
+"""Independent PQ-RBBC Anemoi-193/336 sponge profile, version 2.2.
 
 This module deliberately forks away from the unreproduced 240-constraint
 Blind-UOV level-III Anemoi instance.  It freezes a new, explicitly named
@@ -33,7 +33,7 @@ from typing import Mapping, Sequence
 import pq_rbbc_anemoi_f193 as permutation
 
 
-IMPLEMENTATION_VERSION = "2.0"
+IMPLEMENTATION_VERSION = "2.2"
 PROFILE_NAME = "PQ-RBBC-Anemoi-193/336-Sponge-v1"
 PROFILE_RELATION_ID = "pq-rbbc/anemoi-193-336/sponge/v1"
 FRAME_MAGIC = b"PQRBBC-SPONGE-V1"
@@ -269,6 +269,7 @@ class SpongeTrace:
     payload_bit_wires: tuple[int, ...]
     output_bit_wires: tuple[int, ...]
     output_bytes: bytes
+    requested_output_bits: int
     absorbed_blocks: int
     permutation_nonlinear_rows: int
     input_bitness_rows: int
@@ -300,10 +301,20 @@ def build_sponge_trace(
     domain: bytes,
     payload: bytes,
     parameters: permutation.AnemoiParameters | None = None,
+    *,
+    output_bits: int = REQUEST_HASH_BITS,
 ) -> SpongeTrace:
-    """Build and evaluate the native 576-bit sponge relation."""
+    """Build and evaluate a native sponge relation up to one rate block.
+
+    The default remains the frozen 576-bit request hash.  CAP lowering also
+    uses the same relation for 193-, 259-, and 386-bit XOF outputs.  Longer
+    production tapes require the later streaming squeeze extension and are
+    rejected here rather than silently truncated.
+    """
 
     parameters = parameters or permutation.derive_parameters()
+    if output_bits <= 0 or output_bits > RATE_BITS:
+        raise ValueError("native sponge trace supports 1..772 output bits")
     symbols = _frame_symbols(domain, len(payload))
     concrete_bits = _materialize_symbols(symbols, payload)
     builder = permutation.NativeRowBuilder()
@@ -383,7 +394,10 @@ def build_sponge_trace(
         raise AssertionError("padded sponge must absorb at least one block")
 
     output_bit_forms: list[permutation.LinearForm] = []
-    for lane in range(DECOMPOSED_OUTPUT_ELEMENTS):
+    decomposed_output_elements = (
+        output_bits + permutation.FIELD_DEGREE - 1
+    ) // permutation.FIELD_DEGREE
+    for lane in range(decomposed_output_elements):
         lane_value = builder.assignment[previous_output_wires[lane]]
         lane_bit_forms = [
             builder.new_wire(
@@ -413,19 +427,24 @@ def build_sponge_trace(
         )
         output_bit_forms.extend(lane_bit_forms)
 
-    output_forms = output_bit_forms[:REQUEST_HASH_BITS]
+    output_forms = output_bit_forms[:output_bits]
     output_wires = tuple(_wire_id(form) for form in output_forms)
-    constrained_output = bits_to_bytes_lsb(
-        [builder.assignment[wire_id] for wire_id in output_wires]
+    constrained_value = sum(
+        builder.assignment[wire_id] << index
+        for index, wire_id in enumerate(output_wires)
     )
-    direct_output = evaluate_sponge(
-        domain, payload, REQUEST_HASH_BYTES, parameters
-    )
+    output_byte_length = (output_bits + 7) // 8
+    constrained_output = constrained_value.to_bytes(output_byte_length, "little")
+    direct_value = int.from_bytes(
+        evaluate_sponge(domain, payload, output_byte_length, parameters),
+        "little",
+    ) & ((1 << output_bits) - 1)
+    direct_output = direct_value.to_bytes(output_byte_length, "little")
     if constrained_output != direct_output:
         raise AssertionError("constrained and direct sponge outputs disagree")
 
     input_bitness_rows = len(payload_bits)
-    output_bitness_rows = DECOMPOSED_OUTPUT_BITS
+    output_bitness_rows = decomposed_output_elements * permutation.FIELD_DEGREE
     permutation_nonlinear_rows = absorbed_blocks * permutation.NONLINEAR_ROWS
     total_nonlinear_rows = (
         input_bitness_rows + output_bitness_rows + permutation_nonlinear_rows
@@ -438,6 +457,7 @@ def build_sponge_trace(
         payload_bit_wires=payload_wires,
         output_bit_wires=output_wires,
         output_bytes=constrained_output,
+        requested_output_bits=output_bits,
         absorbed_blocks=absorbed_blocks,
         permutation_nonlinear_rows=permutation_nonlinear_rows,
         input_bitness_rows=input_bitness_rows,

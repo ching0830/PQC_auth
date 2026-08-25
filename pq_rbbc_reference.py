@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Executable v2.1 reference relation for the PQ-RBBC/SGTD research draft.
+"""Executable v2.2 reference relation for the PQ-RBBC/SGTD research draft.
 
 This module implements the *incremental* five-block issuance relation described
 in the accompanying proof document.  It emits a streaming characteristic-two
@@ -1154,11 +1154,11 @@ def build_manifest(full_negative_circuits: bool = False) -> dict[str, object]:
             ).items()
         }
     return {
-        "implementation_version": "2.1",
+        "implementation_version": "2.2",
         "status": "executable research relation; not a deployment implementation",
         "claim_boundary": {
             "implemented": "incremental relation plus the in-circuit y = r + hash_image mask equation",
-            "forked_issuance": "the CAP.Commit direct reference, canonical serialization, and exact H_RBBC byte join exist; the full 18-tree native row stream and inter-call wire identities remain one external assertion",
+            "forked_issuance": "the reduced CAP fixture and H_RBBC join have a zero-callback native trace; the full 18-tree production row stream and inter-call wire identities remain one external assertion",
             "r1cs_backend": "streaming IR events only; no flattened matrices or proof backend",
             "trace_key": "deterministic systematic test fixture; not a certified Goppa key",
         },
@@ -1202,6 +1202,13 @@ def build_manifest(full_negative_circuits: bool = False) -> dict[str, object]:
             "sponge_profile_relation_id": native_profile.sponge.PROFILE_RELATION_ID,
             "request_binding_hash_primitive_implemented": True,
             "production_cap_reference_algorithm_implemented": True,
+            "reduced_cap_native_relation_id": native_profile.reduced_native.PROFILE_RELATION_ID,
+            "reduced_cap_native_rows": native_profile.reduced_native.FROZEN_REDUCED_ROWS,
+            "reduced_cap_native_wires": native_profile.reduced_native.FROZEN_REDUCED_WIRES,
+            "reduced_cap_native_external_assertions": 0,
+            "reduced_cap_native_row_stream_sha256": native_profile.reduced_native.FROZEN_REDUCED_ROW_STREAM_SHA256,
+            "reduced_cap_to_h_rbbc_native_wire_join": True,
+            "reduced_cap_profile_is_secure": False,
             "canonical_cap_serialization_implemented": True,
             "canonical_cap_bytes_bound_to_h_rbbc": True,
             "cap_production_accounting": native_profile.cap.production_accounting(),

@@ -158,6 +158,18 @@ class BlindUOVVisibilityTests(unittest.TestCase):
                 "production_cap_canonical_serialization_bound_to_h_rbbc"
             ]
         )
+        self.assertTrue(
+            manifest["claim_boundary"][
+                "reduced_cap_to_h_rbbc_native_wire_join_complete"
+            ]
+        )
+        self.assertEqual(
+            manifest["claim_boundary"]["reduced_cap_native_external_assertions"],
+            0,
+        )
+        self.assertFalse(
+            manifest["claim_boundary"]["reduced_cap_profile_is_secure"]
+        )
         self.assertFalse(
             manifest["claim_boundary"][
                 "full_production_cap_native_rows_materialized"

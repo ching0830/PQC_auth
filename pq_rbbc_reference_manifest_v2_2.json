@@ -63,7 +63,7 @@
     "wire_count": 2980304
   },
   "claim_boundary": {
-    "forked_issuance": "the CAP.Commit direct reference, canonical serialization, and exact H_RBBC byte join exist; the full 18-tree native row stream and inter-call wire identities remain one external assertion",
+    "forked_issuance": "the reduced CAP fixture and H_RBBC join have a zero-callback native trace; the full 18-tree production row stream and inter-call wire identities remain one external assertion",
     "implemented": "incremental relation plus the in-circuit y = r + hash_image mask equation",
     "r1cs_backend": "streaming IR events only; no flattened matrices or proof backend",
     "trace_key": "deterministic systematic test fixture; not a certified Goppa key"
@@ -82,7 +82,7 @@
     "concrete_accepts": true,
     "concrete_failures": []
   },
-  "implementation_version": "2.1",
+  "implementation_version": "2.2",
   "native_import_contract": {
     "anemoi_component_nonlinear_rows": 336,
     "anemoi_component_relation_id": "anemoi/upstream-main/gf2-193/state-8/v1",
@@ -118,6 +118,13 @@
     "production_cap_native_rows_materialized": false,
     "production_cap_reference_algorithm_implemented": true,
     "production_closed": false,
+    "reduced_cap_native_external_assertions": 0,
+    "reduced_cap_native_relation_id": "pq-rbbc/cap/reduced-native/anemoi-193-336/v1",
+    "reduced_cap_native_row_stream_sha256": "f6a6a0b65e6de16f7bb1d6b42302a12b004befa62b629d252861e2c986917263",
+    "reduced_cap_native_rows": 88282,
+    "reduced_cap_native_wires": 59602,
+    "reduced_cap_profile_is_secure": false,
+    "reduced_cap_to_h_rbbc_native_wire_join": true,
     "relation_id": "pq-rbbc-buov-iii-336/cap-hash/v1",
     "request_binding_hash_primitive_implemented": true,
     "signature_size_rebenchmarked": false,

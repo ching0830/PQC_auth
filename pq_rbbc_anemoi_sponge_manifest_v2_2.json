@@ -40,7 +40,7 @@
     "wires": 2235,
     "witness_independent_topology_for_fixed_lengths": true
   },
-  "implementation_version": "2.0",
+  "implementation_version": "2.2",
   "profile": {
     "capacity_bits": 772,
     "capacity_elements": 4,
@@ -66,8 +66,8 @@
   "upstream_pin": {
     "anemoi_sage_sha256": "d170bef2a32382e6d644ac3500ca150506cbd543d95d4efe5bbaf550f753941c",
     "commit": "3e86ff0cafa54839709b2fa2de0e75d7dd2db464",
-    "observed_source_sha256": "d170bef2a32382e6d644ac3500ca150506cbd543d95d4efe5bbaf550f753941c",
+    "observed_source_sha256": null,
     "repository": "https://github.com/anemoi-hash/anemoi-hash",
-    "source_pin_verified_locally": true
+    "source_pin_verified_locally": false
   }
 }

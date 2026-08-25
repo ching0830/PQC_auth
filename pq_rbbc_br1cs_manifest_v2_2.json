@@ -50,7 +50,7 @@
     },
     "version": 1
   },
-  "implementation_version": "2.1",
+  "implementation_version": "2.2",
   "native_import_contract": {
     "anemoi_component_nonlinear_rows": 336,
     "anemoi_component_relation_id": "anemoi/upstream-main/gf2-193/state-8/v1",
@@ -86,6 +86,13 @@
     "production_cap_native_rows_materialized": false,
     "production_cap_reference_algorithm_implemented": true,
     "production_closed": false,
+    "reduced_cap_native_external_assertions": 0,
+    "reduced_cap_native_relation_id": "pq-rbbc/cap/reduced-native/anemoi-193-336/v1",
+    "reduced_cap_native_row_stream_sha256": "f6a6a0b65e6de16f7bb1d6b42302a12b004befa62b629d252861e2c986917263",
+    "reduced_cap_native_rows": 88282,
+    "reduced_cap_native_wires": 59602,
+    "reduced_cap_profile_is_secure": false,
+    "reduced_cap_to_h_rbbc_native_wire_join": true,
     "relation_id": "pq-rbbc-buov-iii-336/cap-hash/v1",
     "request_binding_hash_primitive_implemented": true,
     "signature_size_rebenchmarked": false,
@@ -101,7 +108,7 @@
     "honest_assignment_accepts": true,
     "rows_checked": 2971580
   },
-  "status": "CAP.Commit reference and exact H_RBBC byte join exist; full 18-tree native row stream remains external",
+  "status": "reduced CAP plus H_RBBC has a zero-callback native trace; full 18-tree production row stream remains external",
   "witness_independence": {
     "honest_and_wrong_weight_body_digest_equal": true,
     "wrong_weight_assignment_rejected": true,

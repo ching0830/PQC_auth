@@ -20,6 +20,9 @@
     "production_cap_canonical_serialization_bound_to_h_rbbc": true,
     "production_cap_inter_call_wire_identity_proved": false,
     "production_cap_reference_algorithm_implemented": true,
+    "reduced_cap_native_external_assertions": 0,
+    "reduced_cap_profile_is_secure": false,
+    "reduced_cap_to_h_rbbc_native_wire_join_complete": true,
     "test_adapter_is_native_blind_uov": false,
     "test_adapter_uses_forked_anemoi_request_hash": true,
     "test_cap_commitment_is_production_cap": false,
@@ -38,6 +41,8 @@
     "paper_security_reduction_revalidated": false,
     "paper_signature_size_rebenchmarked": false,
     "profile_fingerprint": "4fa0eb276ebba70a9f6c2f38f3f55d197c094121a2b614cc6ef9b7e8522cac87",
+    "reduced_native_relation_id": "pq-rbbc/cap/reduced-native/anemoi-193-336/v1",
+    "reduced_native_row_stream_sha256": "f6a6a0b65e6de16f7bb1d6b42302a12b004befa62b629d252861e2c986917263",
     "relation_id": "pq-rbbc/anemoi-193-336/sponge/v1"
   },
   "hidden_pi_issue_witness": [
@@ -50,7 +55,7 @@
     "holder key",
     "trace error vector"
   ],
-  "implementation_version": "2.1",
+  "implementation_version": "2.2",
   "paper_anchor": "Blind-UOV ePrint 2025/895 is a framework and size comparator, not a bit-exact implementation claim",
   "paper_parameters": {
     "anemoi_binary_field_degree": 193,
