@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Executable v1.8 reference relation for the PQ-RBBC/SGTD research draft.
+"""Executable v1.9 reference relation for the PQ-RBBC/SGTD research draft.
 
 This module implements the *incremental* five-block issuance relation described
 in the accompanying proof document.  It emits a streaming characteristic-two
@@ -1151,11 +1151,11 @@ def build_manifest(full_negative_circuits: bool = False) -> dict[str, object]:
             ).items()
         }
     return {
-        "implementation_version": "1.8",
+        "implementation_version": "1.9",
         "status": "executable research relation; not a deployment implementation",
         "claim_boundary": {
             "implemented": "incremental relation plus the in-circuit y = r + hash_image mask equation",
-            "blind_uov": "native CAP.Commit-plus-H subrelation remains one external assertion",
+            "blind_uov": "a GF(2^193) upstream-main Anemoi component probe exists, but the bit-exact CAP.Commit-plus-H subrelation remains one external assertion",
             "r1cs_backend": "streaming IR events only; no flattened matrices or proof backend",
             "trace_key": "deterministic systematic test fixture; not a certified Goppa key",
         },
@@ -1191,6 +1191,11 @@ def build_manifest(full_negative_circuits: bool = False) -> dict[str, object]:
             "paper_profile_sha256": native_blind_uov.PAPER_PROFILE.fingerprint(),
             "linear_mask_equation_internalized": True,
             "native_cap_hash_external_assertions": circuit.external_assertions,
+            "anemoi_component_relation_id": native_blind_uov.anemoi_f193.COMPONENT_RELATION_ID,
+            "anemoi_component_nonlinear_rows": native_blind_uov.anemoi_f193.NONLINEAR_ROWS,
+            "blind_uov_reported_anemoi_constraints": native_blind_uov.anemoi_f193.BLIND_UOV_REPORTED_CONSTRAINTS,
+            "reported_constraint_count_reproduced": False,
+            "parameter_gap_resolved": False,
             "production_closed": False,
         },
         "reference_vector": {

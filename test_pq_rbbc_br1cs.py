@@ -62,6 +62,10 @@ class BinaryR1CSBackendTests(unittest.TestCase):
         contract = self.manifest["native_import_contract"]
         self.assertTrue(contract["linear_mask_equation_internalized"])
         self.assertFalse(contract["current_archive_field_matches_target"])
+        self.assertEqual(contract["anemoi_component_nonlinear_rows"], 336)
+        self.assertEqual(contract["blind_uov_reported_anemoi_constraints"], 240)
+        self.assertFalse(contract["reported_constraint_count_reproduced"])
+        self.assertFalse(contract["parameter_gap_resolved"])
         self.assertFalse(contract["production_closed"])
 
 

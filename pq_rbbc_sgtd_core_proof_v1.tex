@@ -41,7 +41,7 @@
 
 \title{A Post-Quantum Relation-Bound Blind Certification Core\\
 with Signature-Gated Threshold Decryption}
-\author{Research construction draft, version 1.8}
+\author{Research construction draft, version 1.9}
 \date{23 August 2026}
 
 \begin{document}
@@ -92,6 +92,13 @@ narrows the sole external boundary to
 $h_{\BUOV}=H_{\BUOV}(m,\mathsf{CAP.Commit}(r;\rho))$ and adds a fail-closed
 native-import contract.  It also freezes the paper's NIST-III/Shorter TCitH
 tree parameters and exposes the required $\mathbb F_{2^{193}}$ backend lift.
+Version 1.9 implements polynomial-basis arithmetic for that field and a
+source-pinned eight-element Anemoi permutation as ordinary native rank-one
+rows.  The implementation also exposes a reproducibility blocker rather than
+hiding it: Blind-UOV reports 240 constraints per level-III permutation, while
+the public upstream round rule and the published characteristic-two rule give
+336 and 360 nonlinear rows, respectively, under the direct closed-Flystel
+lowering.  The full CAP-hash import therefore remains fail-closed.
 \end{abstract}
 
 \section{Status, scope, and non-goals}
@@ -974,7 +981,7 @@ Blind-UOV-III target and Theorem~\ref{thm:j-qrom}.  The removed
 ticket commitment $c_M$ remains unnecessary: extraction supplies $M$, while
 ticket-hash collision resistance prevents a second payload under one digest.
 
-\paragraph{Executable refinement in version 1.8.}
+\paragraph{Executable refinement in version 1.9.}
 Introduce the hidden 576-bit value
 \[
  h_{\BUOV}=H_{\BUOV}(m,c_r).
@@ -989,6 +996,8 @@ native subrelation
 where $m$ is passed directly from the circuit-produced ticket-digest wires.
 Thus a future native importer cannot choose a different $y$, $r$, hash image,
 or ticket message without failing an ordinary circuit row.
+Version 1.9 preserves this relation and adds the native component probe below;
+it does not weaken the remaining external CAP-hash boundary.
 
 \paragraph{Frozen Blind-UOV costing profile.}
 Version 1.7 fixes the 31 October 2025 revision and its
@@ -1032,6 +1041,42 @@ implementation.  The official Anemoi repository supplies permutation and
 equation-generation code, but not the paper's complete CAP importer
 \cite{anemoi-code}.
 
+\paragraph{Source-pinned native Anemoi component in version 1.9.}
+The companion implementation
+\texttt{pq\_rbbc\_anemoi\_f193.py} uses the polynomial basis defined by
+\[
+ X^{193}+X^8+X^7+X^6+X^5+X^4+X^2+X+1,
+\]
+the Conway polynomial $f_{2,193}$ published by Luebeck
+\cite{conway-polynomials}.  It pins the official Anemoi repository at commit
+\path{3e86ff0cafa54839709b2fa2de0e75d7dd2db464}, together with the SHA-256
+digest of its Sage source.  For security level 192,
+four columns, and $\alpha=3$, that source derives 14 rounds.  The explicit
+characteristic-two estimate in the Anemoi paper instead derives 15 rounds
+\cite{anemoi-paper}.
+
+The characteristic-two closed-Flystel equations contain two cubic terms.  The
+implemented direct lowering uses six multiplication rows per column per round:
+four square/cube rows and two closed equations.  Consequently the pinned
+14-round permutation has $14\cdot4\cdot6=336$ nonlinear rows; the paper-rule
+15-round variant would have 360.  Blind-UOV reports 240 constraints per
+level-III permutation but publishes neither the bit-exact parameter file nor a
+constraint stream reproducing that number~\cite{blind-uov}.  These values may
+reflect different unpublished parameters or an optimized lowering, but the
+public artifacts do not decide which.  Version 1.9 therefore records the
+$240/336/360$ gap as unresolved and forbids production closure.
+
+For the frozen zero-state topology, the native component archive contains 336
+nonlinear rows, eight final-state binding rows, and 352 allocated wires.  Its
+deterministic row-stream digest is
+\texttt{25deba5f7fa3f54f1ccc2fd165f2755f8d7137eaa924def12f0c28ba5cdbae4d}.
+Regression tests check field reduction and inversion, parameter derivation,
+direct-versus-constrained outputs on three inputs, witness-independent row
+topology, and stale-witness rejection after input or output mutation.  This is
+one permutation component only: it is not a sponge, CAP.Commit, GGM tree,
+Fiat--Shamir transcript, or complete Blind-UOV hash relation.  Independent
+Sage-generated vectors and all seven CAP components are still required.
+
 For costing, use the paper's illustrative Shockwave/Anemoi NIST-I row only as
 an anchor.  Blind-UOV-Is/Shorter is reported as approximately 16 million R1CS
 constraints, a 2.8~MB proof, 32~s proving, and 2.5~s verification.  The paper
@@ -1040,7 +1085,7 @@ constraint anchor by the witness-width ratio
 $(576+1472)/(256+640)=2.2857$ gives a rough 36.57-million-row native baseline;
 after the exact 684,419-row non-overlapping ticket/trace increment below, the
 total is about 37.26 million.  The extra 1,152 bitness rows in the portable
-v1.8 archive are already part of a genuine native $\pi_1$ relation and are not
+v1.9 archive are already part of a genuine native $\pi_1$ relation and are not
 double-counted in this combined estimate.
 This is an extrapolation, not a paper result or local benchmark.  The paper
 explicitly treats these as estimates and notes that the benchmarked
@@ -1358,7 +1403,7 @@ is never forwarded to a satellite verifier.
 
 \begin{remark}[Audit reproducibility]
 The companion executable relation recomputes every exact incremental integer
-above and records it in the version-1.7 manifest.  Native level-III estimates
+above and records it in the version-1.9 manifest.  Native level-III estimates
 are kept in separately labelled fields so a rounded extrapolation cannot be
 mistaken for a benchmark.
 \end{remark}
@@ -1366,7 +1411,7 @@ mistaken for a benchmark.
 \subsection{Executable reference relation and rejection tests}
 \label{sec:executable-relation}
 
-Version 1.8 extends the incremental relation in
+Version 1.9 preserves and audits the incremental relation in
 \texttt{pq\_rbbc\_reference.py}.  The witness builder derives
 $h$, $s$, $c_\mu$, $\gamma$, the canonical 368-byte payload, and its ticket
 digest from $(\rid,\ctx,\sn,k_{\mathrm{hold}},e)$.  The circuit builder then
@@ -1413,7 +1458,7 @@ changed masked identity, changed holder hash, changed KMAC tag, changed serial,
 changed blind request, changed blind mask, changed Blind-UOV hash image, changed
 CAP randomness, and changed common context.  All eleven are rejected.
 The checked output is recorded in
-\path{pq_rbbc_reference_manifest_v1_8.json}.
+\path{pq_rbbc_reference_manifest_v1_9.json}.
 
 \paragraph{Exact implementation boundary.}
 The $H=(I\mid T)$ matrix in the reference vector is generated deterministically
@@ -1431,7 +1476,7 @@ extractable.
 
 \subsection{Portable binary R1CS lowering}\label{sec:br1cs}
 
-Version 1.8 uses the proof-backend exchange layer in
+Version 1.9 preserves the proof-backend exchange layer in
 \texttt{pq\_rbbc\_br1cs.py}.  It consumes the same event stream as the counting
 sink and serializes three standard rank-one forms over $\mathbb F_2$:
 \begin{align*}
@@ -1532,11 +1577,14 @@ full-circuit positive and negative tests; an internally constrained
 $y=r+h_{\BUOV}$ equation; a fail-closed native-import contract; a checksummed
 portable R1CS archive with independent row evaluation; 685,571 incremental
 nonlinear rows; 2,971,580 materialized total rows; a 72-byte issuance request
-excluding proof; and a 12,012-byte online-ticket target.\\
+excluding proof; a 12,012-byte online-ticket target; and a source-pinned
+$\mathbb F_{2^{193}}$ Anemoi component with 336 nonlinear plus eight output
+binding rows and a machine-checked parameter-gap audit.\\
 \addlinespace
 Not yet instantiated & A post-quantum zero-knowledge and
 simulation-extractable implementation of $\Piiss$; a native
-$\mathbb F_{2^{193}}$ Blind-UOV-III CAP-hash circuit import and validation of
+$\mathbb F_{2^{193}}$ Blind-UOV-III CAP-hash circuit import, a bit-exact
+reproduction of the reported 240-constraint permutation, and validation of
 the CAP properties used by Theorem~\ref{thm:j-qrom};
 proof-system-specific affine elimination; import of a real Goppa
 key; peak prover memory; robust threshold-share transcript; proof benchmarks;
@@ -1600,23 +1648,35 @@ machine-tested or enforced by type/API boundaries.
   \item A native import is accepted only if it matches the frozen
   $\mathbb F_{2^{193}}$ profile, has witness-independent topology and zero
   external assertions, and satisfies every check in the native-import contract.
+  \item The version-1.9 Anemoi component is insufficient to satisfy the native
+  import contract: it contains none of the seven complete CAP/GGM/transcript
+  components and must never be relabelled as $H_{\BUOV}$.
+  \item Production closure requires an authoritative parameter and constraint
+  specification that independently resolves the reported 240 constraints
+  against the public 336- and 360-row derivations, plus independent Sage
+  vectors for the selected instance.
 \end{enumerate}
 
 \section{Next proof step}
 
 The incremental relation, linear mask binding, unique opening, fixed layout,
 circuit audit, executable witness builder, rejection tests, portable R1CS
-lowering, and native-import contract are now complete.  The next step has two
-coupled proof obligations:
+lowering, native-import contract, and first native field/permutation component
+are now complete.  The immediate next step is blocked on one authoritative
+reproducibility input, followed by two coupled proof obligations:
 
 \begin{quote}
-\emph{Implement or obtain a bit-exact TCitH/Anemoi generator for Protocols
-8--10, pin its source and parameter files, and compile its CAP.Commit-plus-hash
-subrelation over $\mathbb F_{2^{193}}$.  Feed it the exact digest, mask, and
-hash-image wires already named by the import contract; the resulting combined
-archive must contain zero external assertions and pass all four native tamper
-tests.  Validate the straightline-extraction, unique-mask, commit-before-hash,
-and domain-separation conditions used in Theorem~\ref{thm:j-qrom}.  Then select a concrete backend,
+\emph{Obtain from a published release or the Blind-UOV authors the bit-exact
+level-III Anemoi parameter set and constraint specification that explains the
+reported 240 rows.  Reproduce the count and outputs independently in Sage; do
+not tune the local implementation merely to hit the number.  Then implement
+all seven CAP/GGM/transcript components for Protocols 8--10, pin every source
+and parameter file, and compile the complete CAP.Commit-plus-hash subrelation
+over $\mathbb F_{2^{193}}$.  Feed it the exact digest, mask, and hash-image wires
+already named by the import contract; the combined archive must contain zero
+external assertions and pass all native tamper tests.  Validate the
+straightline-extraction, unique-mask, commit-before-hash, and domain-separation
+conditions used in Theorem~\ref{thm:j-qrom}.  Then select a concrete backend,
 prove any affine-elimination pass sound, and establish post-quantum zero
 knowledge and simulation extractability in the model required by the GCCA
 reduction.}
@@ -1642,6 +1702,19 @@ Cl\'emence Bouvier et al.,
 \emph{Anemoi: a Family of ZK-friendly Arithmetization-Oriented Hash
 Functions}, reference Sage implementation.
 \url{https://github.com/anemoi-hash/anemoi-hash}
+
+\bibitem{anemoi-paper}
+Cl\'emence Bouvier, Pierre Karpman, Cl\'ement Keller, Adeline Roux-Langlois,
+Yann Rotella, and Marine Verbraeken,
+\emph{New Design Techniques for Efficient Arithmetization-Oriented Hash
+Functions: Anemoi Permutations and Jive Compression Mode},
+IACR Cryptology ePrint Archive, Report 2022/840, 2022.
+\url{https://eprint.iacr.org/2022/840}
+
+\bibitem{conway-polynomials}
+Frank Luebeck,
+\emph{Conway Polynomials for Finite Fields: Characteristic 2}.
+\url{https://www.math.rwth-aachen.de/~Frank.Luebeck/data/ConwayPol/CP2.html}
 
 \bibitem{bht}
 Gilles Brassard, Peter H\o yer, and Alain Tapp,

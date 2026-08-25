@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Binary F2-R1CS lowering for the executable PQ-RBBC v1.8 relation.
+"""Binary F2-R1CS lowering for the executable PQ-RBBC v1.9 relation.
 
 The format is intentionally small and auditable.  It serializes enough data to
 reconstruct ordinary rank-1 constraints over F2:
@@ -650,7 +650,7 @@ def build_backend_manifest(output_path: str | os.PathLike[str]) -> dict[str, obj
         honest.metadata.linear_definitions + honest.metadata.linear_assertions
     )
     return {
-        "implementation_version": "1.8",
+        "implementation_version": "1.9",
         "status": "Blind-UOV-III mask binding internalized; native CAP.Commit-plus-hash remains external",
         "format": {
             "name": honest.metadata.format,
@@ -705,6 +705,11 @@ def build_backend_manifest(output_path: str | os.PathLike[str]) -> dict[str, obj
             "current_archive_field_matches_target": honest.metadata.field
             == native_blind_uov.TARGET_FIELD,
             "linear_mask_equation_internalized": True,
+            "anemoi_component_relation_id": native_blind_uov.anemoi_f193.COMPONENT_RELATION_ID,
+            "anemoi_component_nonlinear_rows": native_blind_uov.anemoi_f193.NONLINEAR_ROWS,
+            "blind_uov_reported_anemoi_constraints": native_blind_uov.anemoi_f193.BLIND_UOV_REPORTED_CONSTRAINTS,
+            "reported_constraint_count_reproduced": False,
+            "parameter_gap_resolved": False,
             "production_closed": False,
         },
     }

@@ -63,7 +63,7 @@
     "wire_count": 2980304
   },
   "claim_boundary": {
-    "blind_uov": "native CAP.Commit-plus-H subrelation remains one external assertion",
+    "blind_uov": "a GF(2^193) upstream-main Anemoi component probe exists, but the bit-exact CAP.Commit-plus-H subrelation remains one external assertion",
     "implemented": "incremental relation plus the in-circuit y = r + hash_image mask equation",
     "r1cs_backend": "streaming IR events only; no flattened matrices or proof backend",
     "trace_key": "deterministic systematic test fixture; not a certified Goppa key"
@@ -81,13 +81,18 @@
     "concrete_accepts": true,
     "concrete_failures": []
   },
-  "implementation_version": "1.8",
+  "implementation_version": "1.9",
   "native_import_contract": {
+    "anemoi_component_nonlinear_rows": 336,
+    "anemoi_component_relation_id": "anemoi/upstream-main/gf2-193/state-8/v1",
+    "blind_uov_reported_anemoi_constraints": 240,
     "linear_mask_equation_internalized": true,
     "native_cap_hash_external_assertions": 1,
     "paper_profile_sha256": "1599775abfaa1b0f2a059d3ec3f10f8321394dae11cd6d01c9c9e8f5d1ba8e29",
+    "parameter_gap_resolved": false,
     "production_closed": false,
     "relation_id": "blind-uov-iii/cap-hash/v1",
+    "reported_constraint_count_reproduced": false,
     "target_field": "GF(2^193)"
   },
   "negative_tests": {

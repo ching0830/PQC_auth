@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Tests for the v1.8 native Blind-UOV-III import contract."""
+"""Tests for the v1.9 native Blind-UOV-III import contract."""
 
 from __future__ import annotations
 
@@ -49,6 +49,24 @@ class NativeImportContractTests(unittest.TestCase):
             any(item.startswith("missing_tamper_cases:") for item in audit.failures)
         )
 
+    def test_missing_cap_component_prevents_closure(self) -> None:
+        component_rows = {name: 1 for name in native.REQUIRED_NATIVE_COMPONENTS}
+        component_rows.pop("consistency_check")
+        evidence = self._complete_synthetic_evidence(component_rows=component_rows)
+        audit = native.audit_native_import(evidence)
+        self.assertFalse(audit.closed)
+        self.assertTrue(
+            any(item.startswith("missing_native_components:") for item in audit.failures)
+        )
+
+    def test_unresolved_240_constraint_gap_prevents_closure(self) -> None:
+        evidence = self._complete_synthetic_evidence(
+            blind_uov_parameter_gap_resolved=False
+        )
+        audit = native.audit_native_import(evidence)
+        self.assertFalse(audit.closed)
+        self.assertIn("blind_uov_parameter_gap_resolved", audit.failures)
+
     def test_structurally_complete_synthetic_evidence_passes_validator(self) -> None:
         evidence = self._complete_synthetic_evidence()
         audit = native.audit_native_import(evidence)
@@ -73,6 +91,9 @@ class NativeImportContractTests(unittest.TestCase):
                 "cap_randomness": True,
                 "hash_image": True,
             },
+            "component_rows": {
+                name: 1 for name in native.REQUIRED_NATIVE_COMPONENTS
+            },
             "circuit_ticket_digest_is_native_message": True,
             "circuit_mask_is_native_mask": True,
             "circuit_hash_image_is_native_output": True,
@@ -81,7 +102,10 @@ class NativeImportContractTests(unittest.TestCase):
             "anemoi_test_vectors_verified": True,
             "cap_unique_witness_reviewed": True,
             "cap_straightline_extraction_reviewed": True,
+            "blind_uov_parameter_gap_resolved": True,
+            "blind_uov_bit_exact_match": True,
         }
+        values["native_rows"] = len(native.REQUIRED_NATIVE_COMPONENTS)
         values.update(changes)
         return native.NativeImportEvidence(**values)
 

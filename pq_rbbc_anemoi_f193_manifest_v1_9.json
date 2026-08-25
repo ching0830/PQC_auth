@@ -1,0 +1,307 @@
+{
+  "claim_boundary": {
+    "blind_uov_bit_exact_match": false,
+    "blind_uov_cap_commit_implemented": false,
+    "blind_uov_cap_hash_implemented": false,
+    "gf2_193_arithmetic_implemented": true,
+    "production_closed": false,
+    "rank_one_rows_evaluated": true,
+    "upstream_main_permutation_implemented": true
+  },
+  "component_relation_id": "anemoi/upstream-main/gf2-193/state-8/v1",
+  "field": {
+    "basis": "polynomial",
+    "canonical_element_bytes": 25,
+    "conway_polynomial_exponents": [
+      193,
+      8,
+      7,
+      6,
+      5,
+      4,
+      2,
+      1,
+      0
+    ],
+    "modulus_hex": "0x20000000000000000000000000000000000000000000001f7",
+    "name": "GF(2^193)",
+    "source": "Frank Luebeck Conway polynomial database f_{2,193}"
+  },
+  "implementation_version": "1.9",
+  "parameter_fingerprint": "5718d003de2fed43e675d36949320e7a140d0f278d7a44e825175f1ea0789b12",
+  "parameters": {
+    "alpha": 3,
+    "alpha_inverse": "8369468980515574351781052564276888554803140592618712683861",
+    "beta": "00000000000000000000000000000000000000000000000002",
+    "conway_exponents": [
+      193,
+      8,
+      7,
+      6,
+      5,
+      4,
+      2,
+      1,
+      0
+    ],
+    "delta": "010000000000000000000000000000000000000000000000fb",
+    "field": "GF(2^193)",
+    "mds_generator_exponent": 1,
+    "mds_matrix": [
+      [
+        "00000000000000000000000000000000000000000000000001",
+        "00000000000000000000000000000000000000000000000003",
+        "00000000000000000000000000000000000000000000000002",
+        "00000000000000000000000000000000000000000000000002"
+      ],
+      [
+        "00000000000000000000000000000000000000000000000004",
+        "00000000000000000000000000000000000000000000000006",
+        "00000000000000000000000000000000000000000000000003",
+        "00000000000000000000000000000000000000000000000001"
+      ],
+      [
+        "00000000000000000000000000000000000000000000000004",
+        "00000000000000000000000000000000000000000000000004",
+        "00000000000000000000000000000000000000000000000001",
+        "00000000000000000000000000000000000000000000000003"
+      ],
+      [
+        "00000000000000000000000000000000000000000000000003",
+        "00000000000000000000000000000000000000000000000001",
+        "00000000000000000000000000000000000000000000000002",
+        "00000000000000000000000000000000000000000000000003"
+      ]
+    ],
+    "n_cols": 4,
+    "quad": 3,
+    "round_constants_c": [
+      [
+        "00000000000000000000000000000000000000000000000002",
+        "014a47e17b989c04ca741949ed3c0ee225a520025caf453ffd",
+        "010051b4cb62f3145ae14f2ed80f8d7452e66dd585037c0209",
+        "00b85bfae1f297835e0973ae3efa654e5c32625acb1a6e8d81"
+      ],
+      [
+        "01eae229b79d4b2553dc1b48edcdb44023b0ea4c035df619f4",
+        "00bc2e83573ba8eca1293dbdda179ad5fb7db5924428ed584a",
+        "011c76868f7c7eb2c6a864d8a4e6a28e01cc9408f7b6bf5103",
+        "00d3cd34b892883a47c4d3132004aabaed199e1ec99a8c8556"
+      ],
+      [
+        "0077cddcfc370679a55fba5774cff654d50e3fbbc36063dcaf",
+        "0056ac3940fd762362b065cae38099ea172d7f3dba68af56a2",
+        "01e96eb1cd452b9ed80d8ff305788b8a9c59eed8e232a2502b",
+        "0034204e83fc6b4bf01562db4534361102ed5b1b84e172cc45"
+      ],
+      [
+        "0127babb568ac44d3d159fb7a6d9729dd70b62c97dac8527af",
+        "012e7dc90d5b8ff08791f192453f8468a840bd4f911643d9fa",
+        "007e1169de48c5a23f1529dcbb3ef256e6a235780e819cdae3",
+        "017e2a7309bb89febef660ad2686808932b48178f5c4e4796e"
+      ],
+      [
+        "00b5be2798b919d46e46ecfa762a42666275bcc3a2e47e0471",
+        "00193f097e992dfe540b11c647af5b420c1a30d785c7ddd096",
+        "004b1ce504c533c08327eb47f914e927bc718082010e279201",
+        "00b7fd9f32b19df426f1cb570968094c6435c3215721cdc16d"
+      ],
+      [
+        "00cc3bd32a3cbf805c6801ec3d9b83ddea1f192a6fa6cbf3b9",
+        "011dd77cea3b7e2d90d7b0dbcec9d9706f2aa0c01783cb15d4",
+        "006eeb98134631a106249a36ab6c8ddaf624406094c9d99f0a",
+        "0004bef489432b8a919aeab6fd6b72e5467e845640de89da3d"
+      ],
+      [
+        "016fed0dc6277b69c71b39cdcb9f64a937b044e9e94de06a89",
+        "003f177cb8dd121bcaa7f8225a590cf0e5caf46b4a225f6c02",
+        "0005d38c735c0b02d6280899569b6eb5d71ab4dd48f9c54e76",
+        "0077e99372fdf2d3d110a7d9220bd5e01ee089268e16052107"
+      ],
+      [
+        "000777455d66717823e15fc692c4c2ff3d13ba125c774a756a",
+        "00058d895744250b669c8f2b35258b5b476cfb76d5804774ed",
+        "01c72a401f5a43d1d13eec1e3af4b9545748a6575672f80c32",
+        "016e42e665a391d3416f041121220d32b2992825b44f50751b"
+      ],
+      [
+        "012e6156b6d9e8533b1d3fce9334e6610d6e422bfa8450d8ac",
+        "003b498f39aaa33a942bbfb877bb9aaff780e17f9438feb8de",
+        "015116b70f817cfd3ae76994f8e6fb4d99e3d693df719b8dc3",
+        "01cb95e5e58b6f3b48910461f11971c01d94a1cbfa4e8dd8e0"
+      ],
+      [
+        "013514e983b7a46fd38dfa84c21ea9da1ca3f358e4402c0bfd",
+        "0194f38d5d7c767c91c6db4b1f97863f1cb579c74acefd9102",
+        "01efc87265ede4f52e2b1a56822d939d0702afd0d0586aa19d",
+        "008cff553478a8bb76d29ecf404adb30f5d092e73eff0d7ba0"
+      ],
+      [
+        "01bb2d0a8cc33c17c6e242176256eb2f750600520ce1725d99",
+        "000c618cfe5ba1826669959d5a40342d657b69139d8c0c2a5a",
+        "0089601cadbb118fd7ebcf8ae5bd3dd350c5e127742c79c2ad",
+        "01220bcb27948aef7abd90a032d07b742ea231d453c7408618"
+      ],
+      [
+        "01871be535929f162e3b1ca38bd040d45d33333fd72e3d6aed",
+        "01949a7557949efebd57bc60dfcbe9c35a73d893b306dcf344",
+        "015eb38b9eecbc3260ba861efd8d7571d112e1576062cec8f9",
+        "0050fb4917acd209a1756a7f190903bd485774885d66e49565"
+      ],
+      [
+        "0175f77d92eaf1e4d9f26a86c123e6b33931bc52de037dcae4",
+        "00a37de2840f626db24d5b54758409367b97ab742320bb2a12",
+        "00e651195056c7aad997acabd64d8cc6a261004f42071a4127",
+        "00b93f75146c2b174029e1d249b09ceafa870a5dc08a192f81"
+      ],
+      [
+        "00f068a8153d6d80a91ab3bbd47ccfc8b72f1e81d3df0b3418",
+        "0075a7670aceb0cae1d10329375e861f3594b1d61825c997cd",
+        "00fa0e12627457644b5f5f5894c93f1001cc102303ca9b064c",
+        "002ba94dce173a13de19a36aa0df7c2b158a5d5756d67dc46e"
+      ]
+    ],
+    "round_constants_d": [
+      [
+        "010000000000000000000000000000000000000000000000f9",
+        "00a78e47b19afbcd58ae36b8a19e38b5af860db25d96a66775",
+        "00619ac5522b4a06ffe2bc81bede1fb87dab8b91b86d660443",
+        "0134fa44247caf70dc1231ada496db3d5c907205fd4b6fd659"
+      ],
+      [
+        "00c41be26a9821ea5dca6548a1a71ac2527ea0ddf64c36a529",
+        "017f1eee403ca5ea3de56c4cdadf02000090d2b3b000cebce4",
+        "0053443ccb30ad6f6dbde9778e5d9ec05f4f38dd3fc965eb6f",
+        "01719541a019da06cbc9ef10f602ba4b9c75c4d00ada4d62a8"
+      ],
+      [
+        "0093adc70365e67a343037aac95a502706f5525c5842cc1af2",
+        "005f058475adf1e96105c7c612b709ce4ef53f6a2073e3c88c",
+        "016cc5dbab5e728fec61f1a1de3cbf3560ef657b447e1790c7",
+        "005ce1ebb920b3bbe361ad2562cd2e11d1b426a32992dc513b"
+      ],
+      [
+        "00ca78e572168275ca0c031fc592da2278d4e107a31a726835",
+        "002e7631e3c5ae01e25242cb6ad61a808dbc13314e9957ce13",
+        "01f21846639d3a886d0f46dbbea4c825663050f2ed597193c8",
+        "001f4993e8a9f735cbf4be06dfa196459dc912e91d23126dd7"
+      ],
+      [
+        "0189ecae92d0b8830d8c602b5e81dd0b7b05874940b27b2692",
+        "01c8a426bef2eb60a51bb2e623a6f2789f4926ed66a83baa06",
+        "0116851d97e52b8545ee9439b76ee4868a4c5d4cde3638b653",
+        "01070ea8fd560450c7200585bbaf28527de7e8f48326c9b8ad"
+      ],
+      [
+        "010dc7dc650d4cd5792d48b9792d0e899058da6a2980fda100",
+        "0031e2d56f08eab12748d67fc6dd62739f4e4e30509c1e1f1e",
+        "01cedce6c53e7be6866220cc890b9242a32e6564ef81f5cb02",
+        "0149e34503fce02c36c4e1e023b141c23c9b574930a9bed3a7"
+      ],
+      [
+        "00a406c216bd4b3b2ea6f8b7e3a2e7a10b301c16115dbcc21a",
+        "01193515a2454580b1c016a93ec6b9af53698124b30be09ce2",
+        "01aff3323a8f82429a963a4c18777f71c4d70a668d8783e054",
+        "0130a3e267e9fa72bab624a0905ae89b22c2c186405758d2b7"
+      ],
+      [
+        "004ca729c94a1203f04e2fd880f65199b7a6cb5cb2705d4f7b",
+        "00a39443096a21b927e9d0c46bb52e6a47faa7883abeb3168f",
+        "01ed315d123f99b8a7926faf4e17b8fef2b0315d851bf53092",
+        "01a933343401ca5b10db360ca97c2027388e49346c19461429"
+      ],
+      [
+        "019e2856343ccd0d1aa3ac8b4bf354a19d14504346d7eef087",
+        "0066c929714de1ad274f030ce3de1e38edd9dea72952a3c886",
+        "018094c6142de0b1be5a097e46f0db4126d422bf5e4c3fa359",
+        "01f77d5ba2e07296eb34d527b3b27d738d4ca3fc704c32abe8"
+      ],
+      [
+        "015b30fc5acb4473906456394e2d4d2f999c1045e05dfe683e",
+        "01171e3e4e02f1a940f55807df06549d13a9b76a4feaccaab2",
+        "01e0271625d8bdfbc8c1454468cfe5a4ad70aa89e92ba2c4ef",
+        "006e7afe288a7054b7207071561581b6704d61a50cb3de4340"
+      ],
+      [
+        "0035c3d4c852951843a0ec582db88b17d91fac538c8f9646d8",
+        "016f46f470c86f4471f11423590c62424341e8a21cdb0b6968",
+        "016645b370630192f7aa926acc82cf27d391ab62c92c87df5d",
+        "002044aba68b1b137de47cece752a53f82198d8ae5f8a5c67a"
+      ],
+      [
+        "01815df5643ebf7598aeadfe412d74069a54ed6a8dc357b12a",
+        "017f15c3cc3ad954991822cc5994eb4617372b76e8d25570f0",
+        "01393eea56092543732cc4ec51a1d36f3938d94607e1be158f",
+        "00da1ce7838eca9995fb99214998891c8f92ba8231da8f1581"
+      ],
+      [
+        "00c5bc58721feff7aec12c04a6a9625d8a1335360da91b202b",
+        "01feff61aef81bb757a432275eacbb8f42960fa0f1b33e98ae",
+        "0137d14d29ea60ab0ba71986d7169ae43e0e6f6facc366ad59",
+        "0185d5ee31170df7b501e553b456a6774907936625717e9e6d"
+      ],
+      [
+        "01424f377ce2a91535f30ea7853810108fce5a2e3c651fad55",
+        "012a495ea9131396efe291c42ab86f908756d8c9f6a63e56f3",
+        "0129e2fc92e22ae372b511eba35c72041660b2c8d11e9599b0",
+        "01152f6c6246c675c0eb5c756bf71d802dc909a78f3d680600"
+      ]
+    ],
+    "rounds": 14,
+    "security_level": 192,
+    "state_elements": 8,
+    "upstream_commit": "3e86ff0cafa54839709b2fa2de0e75d7dd2db464",
+    "upstream_source_sha256": "d170bef2a32382e6d644ac3500ca150506cbd543d95d4efe5bbaf550f753941c"
+  },
+  "public_artifact_gap": {
+    "anemoi_paper_characteristic_two_round_rule": 15,
+    "bit_exact_blind_uov_parameter_file_published": false,
+    "blind_uov_reported_constraints": 240,
+    "direct_closed_flystel_rows_for_paper_round_rule": 360,
+    "direct_closed_flystel_rows_for_upstream_main": 336,
+    "gap_resolved": false,
+    "reported_count_reproduced": false,
+    "upstream_main_round_rule": 14
+  },
+  "regression_vectors": {
+    "independent_sage_vectors_verified": false,
+    "sequential_input_output": [
+      "01540cc9aa73b0fea4a8c39e41de9b562be12503dcb76e67bf",
+      "013b4909ecb53976eea8910fb310be113256e6bbc5baf9c7e6",
+      "0095708bab796a7728bb6140bae6dc4e9403f69734560fbe11",
+      "00d715c7016bc52b04b8d5027f462433c16d8e797a8770dad0",
+      "00fca6415b8e8b37bcc10b408eef62831a8beaae25dd51bb9f",
+      "0041d0d4cb7e8f4af74bec74411c64de18767bef16c9361109",
+      "00544adade7cf4d069a04e24c81b8831099af876a8f23e5561",
+      "013271c12b5dc983df3928607fed3dda56547deed9fda09e0b"
+    ],
+    "status": "generated by this implementation; Sage cross-check still required",
+    "zero_input_output": [
+      "008ac5ef11554c12fb56c9f9a33fb3ac7410698734ee055ae6",
+      "0080fd4135f7755bffc9dcf40a2ab7b21bc50e44d78f7f9dc4",
+      "0193a4de0d046ae35baa04d4937cda71575654a9a269871771",
+      "00ad3a430f1c3076fd47aab1486488ff4a2dfaca34b0248654",
+      "0038ea7ac0be45f341f177f28ccfd53d065156b4cd5b05f674",
+      "01ac53b3301ba69fc694bf6bd0ace9e477018453f38ee71605",
+      "00c7b4765969fec51793c77b644cc3f7f29f05f9e4dad141cd",
+      "016bed06f9fe3b411db4f8218832b0f3f2379a4816b792ef18"
+    ]
+  },
+  "row_stream": {
+    "format": "F193-R1CS-JSON-1",
+    "honest_failures": [],
+    "nonlinear_rows": 336,
+    "output_binding_rows": 8,
+    "sha256": "25deba5f7fa3f54f1ccc2fd165f2755f8d7137eaa924def12f0c28ba5cdbae4d",
+    "total_rows": 344,
+    "wires": 352,
+    "witness_independent_topology": true
+  },
+  "upstream_pin": {
+    "anemoi_sage_sha256": "d170bef2a32382e6d644ac3500ca150506cbd543d95d4efe5bbaf550f753941c",
+    "commit": "3e86ff0cafa54839709b2fa2de0e75d7dd2db464",
+    "observed_source_sha256": "d170bef2a32382e6d644ac3500ca150506cbd543d95d4efe5bbaf550f753941c",
+    "repository": "https://github.com/anemoi-hash/anemoi-hash",
+    "source_pin_verified_locally": true
+  }
+}

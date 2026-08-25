@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Native Blind-UOV-III import contract for the PQ-RBBC v1.8 core.
+"""Native Blind-UOV-III import contract for the PQ-RBBC v1.9 core.
 
 This module freezes the paper-level parameters and defines the evidence that a
 real TCitH/Anemoi constraint import must provide before the issuance relation
@@ -19,11 +19,24 @@ import hashlib
 import json
 from dataclasses import asdict, dataclass, field
 
+import pq_rbbc_anemoi_f193 as anemoi_f193
+
 
 RELATION_ID = "blind-uov-iii/cap-hash/v1"
 TARGET_FIELD = "GF(2^193)"
 REQUIRED_TAMPER_CASES = frozenset(
     {"message", "mask", "cap_randomness", "hash_image"}
+)
+REQUIRED_NATIVE_COMPONENTS = frozenset(
+    {
+        "cap_commit",
+        "ggm_seed_derivation",
+        "ggm_seed_commitments",
+        "ggm_seed_expansion",
+        "fiat_shamir_hash",
+        "consistency_check",
+        "message_commitment_hash",
+    }
 )
 
 
@@ -92,6 +105,7 @@ class NativeImportEvidence:
     witness_independent_topology: bool
     honest_accepts: bool
     tamper_rejections: dict[str, bool] = field(default_factory=dict)
+    component_rows: dict[str, int] = field(default_factory=dict)
     circuit_ticket_digest_is_native_message: bool = False
     circuit_mask_is_native_mask: bool = False
     circuit_hash_image_is_native_output: bool = False
@@ -100,6 +114,8 @@ class NativeImportEvidence:
     anemoi_test_vectors_verified: bool = False
     cap_unique_witness_reviewed: bool = False
     cap_straightline_extraction_reviewed: bool = False
+    blind_uov_parameter_gap_resolved: bool = False
+    blind_uov_bit_exact_match: bool = False
 
 
 @dataclass(frozen=True)
@@ -132,6 +148,18 @@ def audit_native_import(evidence: NativeImportEvidence | None) -> ClosureAudit:
         failures.append("native_rows_missing")
     if evidence.external_assertions != 0:
         failures.append("external_assertions_remain")
+    missing_components = REQUIRED_NATIVE_COMPONENTS - evidence.component_rows.keys()
+    if missing_components:
+        failures.append(
+            "missing_native_components:" + ",".join(sorted(missing_components))
+        )
+    if any(
+        evidence.component_rows.get(name, 0) <= 0
+        for name in REQUIRED_NATIVE_COMPONENTS
+    ):
+        failures.append("native_component_rows_missing")
+    if sum(evidence.component_rows.values()) > evidence.native_rows:
+        failures.append("component_rows_exceed_native_rows")
     for name in (
         "witness_independent_topology",
         "honest_accepts",
@@ -143,6 +171,8 @@ def audit_native_import(evidence: NativeImportEvidence | None) -> ClosureAudit:
         "anemoi_test_vectors_verified",
         "cap_unique_witness_reviewed",
         "cap_straightline_extraction_reviewed",
+        "blind_uov_parameter_gap_resolved",
+        "blind_uov_bit_exact_match",
     ):
         if not getattr(evidence, name):
             failures.append(name)
@@ -162,8 +192,8 @@ def audit_native_import(evidence: NativeImportEvidence | None) -> ClosureAudit:
 def build_native_import_manifest() -> dict[str, object]:
     audit = audit_native_import(None)
     return {
-        "implementation_version": "1.8",
-        "status": "native import contract implemented; native TCitH/Anemoi rows not imported",
+        "implementation_version": "1.9",
+        "status": "GF(2^193) Anemoi component rows implemented; bit-exact Blind-UOV CAP parameters remain unavailable",
         "paper_anchor": {
             "report": "IACR ePrint 2025/895",
             "revision": PAPER_PROFILE.revision,
@@ -178,12 +208,27 @@ def build_native_import_manifest() -> dict[str, object]:
             "native_subrelation": "hash_image = H_BUOV(m, CAP.Commit(r; rho))",
             "message_source": "circuit-produced H_ticket(Encode(M)) wires",
             "test_nonce_is_native_cap_randomness": False,
+            "required_native_components": sorted(REQUIRED_NATIVE_COMPONENTS),
+        },
+        "anemoi_component_probe": {
+            "relation_id": anemoi_f193.COMPONENT_RELATION_ID,
+            "upstream_commit": anemoi_f193.UPSTREAM_COMMIT,
+            "upstream_source_sha256": anemoi_f193.UPSTREAM_SOURCE_SHA256,
+            "field_modulus_exponents": list(anemoi_f193.CONWAY_EXPONENTS),
+            "upstream_main_rounds": anemoi_f193.UPSTREAM_ROUNDS,
+            "anemoi_paper_characteristic_two_rounds": anemoi_f193.PAPER_CHARACTERISTIC_TWO_ROUNDS,
+            "blind_uov_reported_constraints": anemoi_f193.BLIND_UOV_REPORTED_CONSTRAINTS,
+            "direct_upstream_main_nonlinear_rows": anemoi_f193.NONLINEAR_ROWS,
+            "component_is_complete_cap_hash": False,
+            "parameter_gap_resolved": False,
         },
         "closure_audit": asdict(audit),
         "claim_boundary": {
             "contract_validator_is_cryptographic_proof": False,
             "paper_supplies_executable_constraint_generator": False,
             "current_f2_archive_is_native_anemoi_field": False,
+            "gf2_193_anemoi_component_rows_exist": True,
+            "reported_240_constraint_instance_reproduced": False,
             "production_closed": False,
         },
     }

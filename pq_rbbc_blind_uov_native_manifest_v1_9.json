@@ -1,9 +1,33 @@
 {
+  "anemoi_component_probe": {
+    "anemoi_paper_characteristic_two_rounds": 15,
+    "blind_uov_reported_constraints": 240,
+    "component_is_complete_cap_hash": false,
+    "direct_upstream_main_nonlinear_rows": 336,
+    "field_modulus_exponents": [
+      193,
+      8,
+      7,
+      6,
+      5,
+      4,
+      2,
+      1,
+      0
+    ],
+    "parameter_gap_resolved": false,
+    "relation_id": "anemoi/upstream-main/gf2-193/state-8/v1",
+    "upstream_commit": "3e86ff0cafa54839709b2fa2de0e75d7dd2db464",
+    "upstream_main_rounds": 14,
+    "upstream_source_sha256": "d170bef2a32382e6d644ac3500ca150506cbd543d95d4efe5bbaf550f753941c"
+  },
   "claim_boundary": {
     "contract_validator_is_cryptographic_proof": false,
     "current_f2_archive_is_native_anemoi_field": false,
+    "gf2_193_anemoi_component_rows_exist": true,
     "paper_supplies_executable_constraint_generator": false,
-    "production_closed": false
+    "production_closed": false,
+    "reported_240_constraint_instance_reproduced": false
   },
   "closure_audit": {
     "closed": false,
@@ -11,7 +35,7 @@
       "native_import_evidence_missing"
     ]
   },
-  "implementation_version": "1.8",
+  "implementation_version": "1.9",
   "paper_anchor": {
     "locations": [
       "Protocols 3-4",
@@ -55,8 +79,17 @@
     "message_source": "circuit-produced H_ticket(Encode(M)) wires",
     "native_subrelation": "hash_image = H_BUOV(m, CAP.Commit(r; rho))",
     "relation_id": "blind-uov-iii/cap-hash/v1",
+    "required_native_components": [
+      "cap_commit",
+      "consistency_check",
+      "fiat_shamir_hash",
+      "ggm_seed_commitments",
+      "ggm_seed_derivation",
+      "ggm_seed_expansion",
+      "message_commitment_hash"
+    ],
     "target_field": "GF(2^193)",
     "test_nonce_is_native_cap_randomness": false
   },
-  "status": "native import contract implemented; native TCitH/Anemoi rows not imported"
+  "status": "GF(2^193) Anemoi component rows implemented; bit-exact Blind-UOV CAP parameters remain unavailable"
 }
