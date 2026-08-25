@@ -52,6 +52,10 @@ Version 2.11 exposes H1 and the consistency points as exact Phase-A output
 wires inside the unchanged canonical tail.  Phase B consumes those same wire
 IDs; producer-to-point relocation and production split materialization remain
 open.
+Version 2.12 replays the frozen 1,004,865,028-byte production assignment
+through that same observer.  It closes the production Phase-A/Phase-B ranges,
+H1, and both consistency-point wires with five exact-wire mutation probes;
+production tree producers and their relocation into those points remain open.
 Version 2.9 also materializes and replays the shared production global tail
 that consumes all 18 tree outputs: 17 correction pairs, H1, consistency
 points, alpha, xi, H2, one 5,391-byte commitment, and the request hash.  The
@@ -75,6 +79,7 @@ import pq_rbbc_anemoi_sponge as fork_sponge
 import pq_rbbc_cap_commit as fork_cap
 import pq_rbbc_cap_composer as cap_composer
 import pq_rbbc_cap_global_tail as cap_global_tail
+import pq_rbbc_cap_production_split_tail as cap_production_split_tail
 import pq_rbbc_cap_split_tail as cap_split_tail
 import pq_rbbc_cap_tree_producer as cap_tree_producer
 import pq_rbbc_cap_native as reduced_native_cap
@@ -339,7 +344,7 @@ def build_abi_manifest() -> dict[str, object]:
     hidden = adapter.hidden_state(message, mask, randomness)
     changed_message = bytes((message[0] ^ 1,)) + message[1:]
     return {
-        "implementation_version": "2.11",
+        "implementation_version": "2.12",
         "paper_anchor": "Blind-UOV ePrint 2025/895 is a framework and size comparator, not a bit-exact implementation claim",
         "profile": "PQ-RBBC-BUOV-III/Anemoi-193-336 experimental fork",
         "fork_profile": {
@@ -376,6 +381,10 @@ def build_abi_manifest() -> dict[str, object]:
             "split_tail_contract_id": cap_split_tail.CONTRACT_ID,
             "reduced_split_tail_row_stream_sha256": cap_split_tail.FROZEN_REDUCED_STREAM_SHA256,
             "reduced_split_tail_assignment_body_sha256": cap_split_tail.FROZEN_REDUCED_ASSIGNMENT_BODY_SHA256,
+            "production_split_tail_contract_id": cap_production_split_tail.CONTRACT_ID,
+            "production_split_tail_h1_wire_start": cap_production_split_tail.FROZEN_H1_WIRE_START,
+            "production_split_tail_point_wire_starts": cap_production_split_tail.FROZEN_POINT_WIRE_STARTS,
+            "production_split_tail_boundary_wire_probes": cap_production_split_tail.FROZEN_BOUNDARY_PROBES,
             "tree_producer_relation_id": cap_tree_producer.RELATION_ID,
             "reduced_tree_producer_row_stream_sha256": cap_tree_producer.FROZEN_REDUCED_STREAM_SHA256,
             "reduced_tree_producer_assignment_sha256": cap_tree_producer.FROZEN_REDUCED_ASSIGNMENT_SHA256,
@@ -528,7 +537,9 @@ def build_abi_manifest() -> dict[str, object]:
             "canonical_tail_stream_and_assignment_equivalent": True,
             "h1_and_consistency_point_ports_native_closed": True,
             "tail_phase_a_to_phase_b_wire_identity_closed": True,
-            "production_split_tail_materialized": False,
+            "production_split_tail_materialized": True,
+            "production_h1_and_two_consistency_point_ports_native_closed": True,
+            "production_tail_phase_a_to_phase_b_wire_identity_closed": True,
             "reduced_tree_producer_segments_native_closed": True,
             "reduced_producer_to_tail_port_values_match": True,
             "reduced_producer_point_wire_identity_closed": False,

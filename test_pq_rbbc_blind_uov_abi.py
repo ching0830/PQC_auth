@@ -336,8 +336,18 @@ class BlindUOVVisibilityTests(unittest.TestCase):
                 "tail_phase_a_to_phase_b_wire_identity_closed"
             ]
         )
-        self.assertFalse(
+        self.assertTrue(
             manifest["claim_boundary"]["production_split_tail_materialized"]
+        )
+        self.assertTrue(
+            manifest["claim_boundary"][
+                "production_h1_and_two_consistency_point_ports_native_closed"
+            ]
+        )
+        self.assertTrue(
+            manifest["claim_boundary"][
+                "production_tail_phase_a_to_phase_b_wire_identity_closed"
+            ]
         )
         self.assertFalse(
             manifest["claim_boundary"]["tree_producer_segments_materialized"]

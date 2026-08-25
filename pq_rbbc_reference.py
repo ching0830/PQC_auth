@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Executable v2.11 reference relation for the PQ-RBBC/SGTD research draft.
+"""Executable v2.12 reference relation for the PQ-RBBC/SGTD research draft.
 
 This module implements the *incremental* five-block issuance relation described
 in the accompanying proof document.  It emits a streaming characteristic-two
@@ -1291,7 +1291,13 @@ def build_manifest(full_negative_circuits: bool = False) -> dict[str, object]:
             "canonical_tail_stream_and_assignment_equivalent": True,
             "h1_and_consistency_point_ports_native_closed": True,
             "tail_phase_a_to_phase_b_wire_identity_closed": True,
-            "production_split_tail_materialized": False,
+            "production_split_tail_contract_id": native_profile.production_split_tail.CONTRACT_ID,
+            "production_split_tail_h1_wire_start": native_profile.production_split_tail.FROZEN_H1_WIRE_START,
+            "production_split_tail_point_wire_starts": native_profile.production_split_tail.FROZEN_POINT_WIRE_STARTS,
+            "production_split_tail_boundary_wire_probes": native_profile.production_split_tail.FROZEN_BOUNDARY_PROBES,
+            "production_split_tail_materialized": True,
+            "production_h1_and_two_consistency_point_ports_native_closed": True,
+            "production_tail_phase_a_to_phase_b_wire_identity_closed": True,
             "reduced_tree_producer_relation_id": native_profile.tree_producer.RELATION_ID,
             "reduced_tree_producer_rows_per_tree": native_profile.tree_producer.FROZEN_REDUCED_ROWS_PER_TREE,
             "reduced_tree_producer_wires_per_tree": native_profile.tree_producer.FROZEN_REDUCED_WIRES_PER_TREE,

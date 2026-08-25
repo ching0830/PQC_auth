@@ -133,7 +133,17 @@ class BinaryR1CSBackendTests(unittest.TestCase):
         self.assertTrue(
             contract["tail_phase_a_to_phase_b_wire_identity_closed"]
         )
-        self.assertFalse(contract["production_split_tail_materialized"])
+        self.assertTrue(contract["production_split_tail_materialized"])
+        self.assertTrue(
+            contract[
+                "production_h1_and_two_consistency_point_ports_native_closed"
+            ]
+        )
+        self.assertTrue(
+            contract[
+                "production_tail_phase_a_to_phase_b_wire_identity_closed"
+            ]
+        )
         self.assertTrue(contract["reduced_tree_producer_segments_native_closed"])
         self.assertTrue(contract["reduced_producer_to_tail_port_values_match"])
         self.assertFalse(contract["reduced_producer_point_wire_identity_closed"])

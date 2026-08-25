@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fail-closed native import contract for the PQ-RBBC v2.11 fork.
+"""Fail-closed native import contract for the PQ-RBBC v2.12 fork.
 
 The selected profile is deliberately independent of the unreproduced
 Blind-UOV 240-row instance.  It accepts no claim of bit-exact compatibility.
@@ -21,6 +21,7 @@ import pq_rbbc_anemoi_sponge as sponge
 import pq_rbbc_cap_commit as cap
 import pq_rbbc_cap_composer as composer
 import pq_rbbc_cap_global_tail as global_tail
+import pq_rbbc_cap_production_split_tail as production_split_tail
 import pq_rbbc_cap_split_tail as split_tail
 import pq_rbbc_cap_tree_producer as tree_producer
 import pq_rbbc_cap_native as reduced_native
@@ -29,7 +30,7 @@ import pq_rbbc_cap_shard_stream as shard_stream
 import pq_rbbc_horner_native as horner_native
 
 
-IMPLEMENTATION_VERSION = "2.11"
+IMPLEMENTATION_VERSION = "2.12"
 RELATION_ID = "pq-rbbc-buov-iii-336/cap-hash/v1"
 TARGET_FIELD = "GF(2^193)"
 REQUIRED_TAMPER_CASES = frozenset(
@@ -167,7 +168,7 @@ def build_native_profile_manifest() -> dict[str, object]:
     parameters = permutation.derive_parameters()
     return {
         "implementation_version": IMPLEMENTATION_VERSION,
-        "status": "the production reference and shared native global tail are frozen; the reduced two-tree producer segments now prove the port ABI, while production producer segments, exact cross-segment wire identity, and the parent join remain external",
+        "status": "the production global tail now has an archive-replayed Phase-A/Phase-B contract with exact H1 and two-point wires; production tree producers, producer-to-point relocation, the 18-tree join, and the parent join remain external",
         "fork_profile": {
             "name": sponge.PROFILE_NAME,
             "relation_id": RELATION_ID,
@@ -367,6 +368,19 @@ def build_native_profile_manifest() -> dict[str, object]:
                 "external_assertions": 0,
                 "explicitly_non_secure": True,
             },
+            "production_split_tail_component": {
+                "contract_id": production_split_tail.CONTRACT_ID,
+                "canonical_relation_id": production_split_tail.SOURCE_RELATION_ID,
+                "rows": global_tail.FROZEN_PRODUCTION_ROWS,
+                "wires": global_tail.FROZEN_PRODUCTION_WIRES,
+                "row_stream_sha256": global_tail.FROZEN_PRODUCTION_STREAM_SHA256,
+                "assignment_archive_sha256": global_tail.FROZEN_PRODUCTION_ASSIGNMENT_SHA256,
+                "h1_wire_start": production_split_tail.FROZEN_H1_WIRE_START,
+                "point_wire_starts": production_split_tail.FROZEN_POINT_WIRE_STARTS,
+                "boundary_wire_probes": production_split_tail.FROZEN_BOUNDARY_PROBES,
+                "external_assertions": 0,
+                "production_profile": True,
+            },
             "reduced_tree_producer_component": {
                 "relation_id": tree_producer.RELATION_ID,
                 "tree_count": 2,
@@ -412,7 +426,9 @@ def build_native_profile_manifest() -> dict[str, object]:
             "canonical_tail_stream_and_assignment_equivalent": True,
             "h1_and_consistency_point_ports_native_closed": True,
             "tail_phase_a_to_phase_b_wire_identity_closed": True,
-            "production_split_tail_materialized": False,
+            "production_split_tail_materialized": True,
+            "production_h1_and_two_consistency_point_ports_native_closed": True,
+            "production_tail_phase_a_to_phase_b_wire_identity_closed": True,
             "reduced_tree_producer_segments_native_closed": True,
             "reduced_producer_to_tail_port_values_match": True,
             "reduced_producer_point_wire_identity_closed": False,

@@ -43,7 +43,7 @@
 
 \title{A Post-Quantum Relation-Bound Blind Certification Core\\
 with Signature-Gated Threshold Decryption}
-\author{Research construction draft, version 2.11}
+\author{Research construction draft, version 2.12}
 \date{25 August 2026}
 
 \begin{document}
@@ -216,6 +216,14 @@ without serialization or reallocation.  The observed split has the identical
 the unobserved canonical tail; four exact boundary-wire mutations reject.  This
 closes only the reduced tail-internal boundary.  Production split
 materialization and producer-to-point relocation remain open.
+Version 2.12 reuses the frozen production assignment rather than regenerating
+the eighteen-tree execution.  An archive-driven observer replays all
+56,806,711 rows with zero failures, preserves the frozen row-stream digest,
+and records the exact production Phase-A/Phase-B ranges, the 386-bit $H_1$
+port, and both 193-bit consistency-point ports.  Five exact-wire mutations
+reject.  This closes the production tail-internal split; production producer
+segments, producer-to-point relocation, the complete composition, and the
+parent join remain open.
 \end{abstract}
 
 \section{Status, scope, and non-goals}
@@ -1180,6 +1188,10 @@ Version 2.11 closes the next reduced tail-internal boundary.  The canonical
 relation now exposes its $H_1$ and consistency-point wires as formal Phase-A
 outputs and records Phase B as consuming those same IDs.  The observer does not
 change a row, allocation, input port, commitment byte, or request-hash bit.
+Version 2.12 applies that same zero-row observer to the frozen production
+archive.  Complete replay preserves the version-2.9 stream and assignment
+identity while fixing both production consistency-point wires.  The remaining
+native gap now begins at the producer side of those two ports.
 
 \paragraph{Frozen Blind-UOV comparison profile.}
 Version 1.7 fixes the 31 October 2025 revision and its
@@ -1885,6 +1897,57 @@ whereas production has two.  The claims
 \path{production_split_tail_materialized} and
 \path{producer_point_wire_identity_closed} therefore remain false.
 
+\paragraph{Archive-driven production split-tail contract in version 2.12.}
+The production input prelude occupies rows $[0,15939162)$ and wires
+$[1,15939163)$.  Phase A occupies rows $[15939162,56375441)$ and wires
+$[15939163,39946062)$; Phase B occupies rows $[56375441,56806711)$ and wires
+$[39946062,40194597)$.  All ranges are half-open.
+
+\begin{proposition}[Production split-tail replay and exact two-point wires]
+For the frozen 1,004,865,028-byte assignment of relation
+\begin{center}
+\path{pq-rbbc/cap/production-global-tail/v1},
+\end{center}
+adding the logical contract
+\begin{center}\small
+\texttt{pq-rbbc/cap/production-global-tail-}\\
+\texttt{phase-contract/v1}
+\end{center}
+preserves all
+56,806,711 rows, all 40,194,596 wires, and row-stream SHA-256
+\begin{center}\small
+\texttt{c368d41de9e57910803e98284a4ec0a0}\par\vspace{-0.2em}
+\texttt{f45862fa80f3d070a50477f82627c9df}.
+\end{center}
+Complete mmap replay has zero failed rows and zero external assertions.  The
+386-bit $H_1$ port begins at wire 39,943,623.  The two contiguous 193-bit
+consistency points begin at wires 39,945,673 and 39,945,866.  The canonical
+5,391-byte commitment begins at wire 40,084,506, and the 576-bit request hash
+begins at wire 40,194,018.  Mutating either point, $H_1$, the commitment, or
+the request hash at its named native row rejects in all five cases.
+\end{proposition}
+\begin{proof}
+The observer uses a witness-independent production-shape fixture only to
+regenerate allocation order, labels, constants, and source-wire forms; fixture
+values are never used as assignment evidence.  Every generated rank-one row is
+evaluated against the frozen version-2.9 mmap assignment.  The replay matches
+the four frozen group names, row counts, byte counts, group digests, total
+stream digest, commitment digest, and request output.  Counters taken at the
+existing group boundaries yield the stated half-open ranges without allocating
+a wire or emitting a row.  The $H_2$ payload-source row directly contains the
+recorded $H_1$ wire, while the two point-validation rows contain the two
+recorded point starts.  The publication and sponge-packing rows similarly
+contain the commitment and request wires.  Flipping each named wire while
+keeping the rest of the frozen assignment stale falsifies that row.
+\end{proof}
+
+This proposition closes
+\path{production_split_tail_materialized} and the production tail-internal
+Phase-A-to-Phase-B identity only.  It neither constructs a tree producer nor
+equates a producer-local point input with either production point output.
+Consequently producer-to-point identity, complete eighteen-tree assignment
+replay, the parent join, and production closure remain false.
+
 The earlier 240/336/360 discrepancy remains documented, but it no longer
 blocks implementation: version 2.0 intentionally chooses the 336-row profile.
 The cost of that choice is loss of bit-exact Blind-UOV compatibility and loss
@@ -2384,6 +2447,11 @@ Version 2.11 proves that a tail-internal Phase-A/Phase-B boundary can retain
 exact $H_1$ and point wire identity without changing the canonical stream.  It
 still does not remove the production producer or parent portions of this
 external assertion.
+Version 2.12 completely replays that boundary on the frozen production
+assignment and fixes both production point outputs.  It removes the production
+split-tail portion of the uncertainty, but not the producer segments,
+producer-to-point relocation, full composition, or parent portions of the
+external assertion.
 The linear equation $y=r+h_{\RBBC}$ is no longer external.  This narrowed
 boundary is deliberate and machine-visible: an archive with an unchecked
 external assertion is not a closed issuance proof.  The next integration must
@@ -2460,7 +2528,10 @@ complete assignment replay, twelve rejected probes, and eight matching tail
 port values; plus a version-2.11 reduced split-tail contract with 36,801 rows,
 24,992 wires, exact canonical row-stream and assignment-body equality, four
 rejected boundary-wire probes, and native Phase-A-to-Phase-B $H_1$/point wire
-identity.\\
+identity; plus a version-2.12 production split-tail contract obtained by replaying all
+56,806,711 rows of the frozen 1,004,865,028-byte assignment, with zero failed
+rows, exact $H_1$ and two-point wire ranges, five rejected boundary-wire
+mutations, and an unchanged canonical stream digest.\\
 \addlinespace
 Not yet instantiated & A post-quantum zero-knowledge and
 simulation-extractable implementation of $\Piiss$; a native
@@ -2541,7 +2612,9 @@ machine-tested or enforced by type/API boundaries.
   additionally fixes and replays the reduced producer-side port ABI.  The
   version-2.11 reduced split-tail contract additionally fixes exact
   tail-internal $H_1$/point wire identity without changing the canonical
-  stream.  The production split, producer segments, producer-to-point and cross-segment wire
+  stream.  Version 2.12 additionally replays and fixes that split on the
+  production assignment, including both point outputs.  The producer segments,
+  producer-to-point and cross-segment wire
   identities, complete composition replay, and parent-circuit wire identities
   are still required.
   \item The fork must never claim bit-exact Blind-UOV compatibility.  The
@@ -2575,15 +2648,16 @@ tree.  Each has a frozen bounded-memory row-stream digest, a complete
   rejecting twelve selected stale witnesses and matching all eight consumer
   ports by value.  Version 2.11 exposes the reduced tail's $H_1$ and point
   wires as Phase-A outputs, proves exact stream and assignment equivalence,
-  and rejects four boundary-wire mutations.  The 240-row
+  and rejects four boundary-wire mutations.  Version 2.12 replays the frozen
+  production assignment under the same observer, fixes the production $H_1$
+  and both point wire starts, and rejects five boundary-wire mutations.  The 240-row
 artifact gap is no longer
 an engineering blocker because the fork intentionally gives up bit-exact
 compatibility.  The next component is exact native multi-tree composition:
 
 \begin{quote}
-\emph{Materialize the Phase-A/Phase-B contract on the frozen production tail,
-including its two exact consistency-point outputs.  Then materialize one actual
-4,096-leaf/degree-13 and one actual 2,048-leaf/degree-12 producer without
+\emph{Materialize one actual 4,096-leaf/degree-13 and one actual
+2,048-leaf/degree-12 producer without
 duplicating the tail, freeze every point and output port-to-wire relocation,
 expand to all eighteen positions, and replay the complete composition with
 zero failures.  Then join the resulting
@@ -2597,8 +2671,8 @@ zero-knowledge and simulation-extractable backend.}
 
 \paragraph{Delivery roadmap.}
 The companion file
-\texttt{PQ\_RBBC\_CRYPTO\_CORE\_ROADMAP\_v2\_11.md} records the ordered gates:
-(R1b-c/d) production split-tail point ports, production producer segmentation, wire
+\texttt{PQ\_RBBC\_CRYPTO\_CORE\_ROADMAP\_v2\_12.md} records the ordered gates:
+(R1b-d) production producer segmentation, point-wire and output-wire
 relocation, and full assignment replay;
 (R2) parent exact wire join and zero external assertions; (R3) fork-specific CAP, request-binding, blindness,
 one-more-unforgeability, SE-NIZK, and QROM reductions; (R4)
