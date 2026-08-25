@@ -94,8 +94,14 @@ class RelationTests(unittest.TestCase):
         self.assertEqual(
             contract["production_2048_leaf_shard_external_assertions"], 0
         )
-        self.assertFalse(
+        self.assertTrue(
             contract["production_2048_leaf_shard_assignment_materialized"]
+        )
+        self.assertTrue(
+            contract["production_2048_leaf_shard_whole_assignment_verified"]
+        )
+        self.assertTrue(
+            contract["production_2048_leaf_shard_stale_witness_rejected"]
         )
         self.assertFalse(contract["production_2048_leaf_shard_profile_is_secure"])
         self.assertTrue(contract["canonical_cap_bytes_bound_to_h_rbbc"])

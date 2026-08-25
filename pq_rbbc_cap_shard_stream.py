@@ -30,10 +30,11 @@ import resource
 import struct
 import tempfile
 import time
+from collections import deque
 from concurrent.futures import ProcessPoolExecutor
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Callable, Iterable, Iterator, Mapping, Sequence
+from typing import Callable, Iterable, Iterator, Mapping, Protocol, Sequence
 
 import pq_rbbc_anemoi_f193 as field
 import pq_rbbc_anemoi_sponge as sponge
@@ -45,6 +46,7 @@ PROFILE_NAME = "PQ-RBBC-CAP-PRODUCTION-TREE-SHARD-2048-v1"
 PROFILE_RELATION_ID = "pq-rbbc/cap/production-tree-shard-2048/v1"
 STREAM_FORMAT = "F193-R1CS-NDJSON-SHA256-1"
 SPOOL_FORMAT = "PQRBBC-WIRE-SPOOL-U64LE-1"
+ASSIGNMENT_VALUE_BYTES = field.FIELD_ELEMENT_BYTES
 
 FROZEN_PRODUCTION_WIRES = 19_903_324
 FROZEN_PRODUCTION_ROWS = 26_126_283
@@ -204,10 +206,68 @@ class StreamGroup:
     sha256: str
 
 
+class AssignmentWriter(Protocol):
+    def append_values(self, values: Sequence[int]) -> None:
+        ...
+
+    def append_encoded(self, encoded: bytes, count: int) -> None:
+        ...
+
+
+def _evaluate_form_fast(form: BitForm, assignment: Mapping[int, int]) -> int:
+    value = form.constant
+    for wire_id, coefficient in form.terms:
+        wire_value = assignment[wire_id]
+        if coefficient == 1:
+            value ^= wire_value
+        elif wire_value:
+            value ^= field.fmul(wire_value, coefficient)
+    return value
+
+
+def _row_satisfied_fast(
+    row: field.RankOneRow,
+    assignment: Mapping[int, int],
+) -> bool:
+    zero = BitForm.const(0)
+    one = BitForm.const(1)
+    if (
+        row.output == zero
+        and len(row.left.terms) == 1
+        and row.left.terms[0][1] == 1
+        and row.left.constant == 0
+        and row.right.terms == row.left.terms
+        and row.right.constant == 1
+    ):
+        value = assignment[row.left.terms[0][0]]
+        return value == 0 or value == 1
+    if row.right == one:
+        return _evaluate_form_fast(row.left, assignment) == _evaluate_form_fast(
+            row.output, assignment
+        )
+    if row.left == one:
+        return _evaluate_form_fast(row.right, assignment) == _evaluate_form_fast(
+            row.output, assignment
+        )
+    left = _evaluate_form_fast(row.left, assignment)
+    output = _evaluate_form_fast(row.output, assignment)
+    if row.left == row.right:
+        return field.fsquare(left) == output
+    right = _evaluate_form_fast(row.right, assignment)
+    return field.fmul(left, right) == output
+
+
 class StreamingRowSink:
     """Canonical NDJSON row hasher with no retained row list."""
 
-    def __init__(self, header: Mapping[str, object]) -> None:
+    def __init__(
+        self,
+        header: Mapping[str, object],
+        *,
+        assignment_writer: AssignmentWriter | None = None,
+        verification_assignment: Mapping[int, int] | None = None,
+        capture_labels: Iterable[str] = (),
+    ) -> None:
         self.next_wire = 1
         self.rows = 0
         self.nonlinear_rows = 0
@@ -219,15 +279,42 @@ class StreamingRowSink:
         self._group_rows = 0
         self._group_bytes = 0
         self.groups: list[StreamGroup] = []
+        self.assignment_writer = assignment_writer
+        self.verification_assignment = verification_assignment
+        self.verification_failures = 0
+        self.first_verification_failure: str | None = None
+        self.capture_labels = frozenset(capture_labels)
+        self.captured_rows: dict[str, field.RankOneRow] = {}
         self._write_record({"kind": "header", **dict(header)}, count_row=False)
 
     @property
     def wire_count(self) -> int:
         return self.next_wire - 1
 
-    def allocate(self, count: int = 1) -> int:
+    def allocate(
+        self,
+        count: int = 1,
+        *,
+        values: Sequence[int] | None = None,
+        encoded_values: bytes | None = None,
+    ) -> int:
         if count <= 0:
             raise ValueError("wire allocation must be positive")
+        if values is not None and encoded_values is not None:
+            raise ValueError("assignment values have two representations")
+        if values is not None and len(values) != count:
+            raise ValueError("assignment value count mismatch")
+        if encoded_values is not None and len(encoded_values) != (
+            count * ASSIGNMENT_VALUE_BYTES
+        ):
+            raise ValueError("encoded assignment width mismatch")
+        if self.assignment_writer is not None:
+            if values is None and encoded_values is None:
+                raise ValueError("assignment-backed allocation lacks values")
+            if values is not None:
+                self.assignment_writer.append_values(values)
+            else:
+                self.assignment_writer.append_encoded(encoded_values or b"", count)
         start = self.next_wire
         self.next_wire += count
         return start
@@ -279,6 +366,15 @@ class StreamingRowSink:
         *,
         nonlinear: bool,
     ) -> None:
+        row = field.RankOneRow(label, left, right, output)
+        if label in self.capture_labels:
+            self.captured_rows[label] = row
+        if self.verification_assignment is not None and not _row_satisfied_fast(
+            row, self.verification_assignment
+        ):
+            self.verification_failures += 1
+            if self.first_verification_failure is None:
+                self.first_verification_failure = label
         document = {
             "kind": "row",
             "label": label,
@@ -344,9 +440,190 @@ class LoweredSpongeCall:
     accounting: SpongeAccounting
 
 
+def _permutation_assignment_values(
+    state: Sequence[int],
+    parameters: field.AnemoiParameters,
+) -> tuple[tuple[int, ...], tuple[int, ...]]:
+    """Return the native-template wire values without building row objects."""
+
+    if len(state) != field.STATE_ELEMENTS:
+        raise ValueError("wrong Anemoi state width")
+    values = list(state)
+    x = list(state[: field.N_COLS])
+    y = list(state[field.N_COLS :])
+    for round_index in range(parameters.rounds):
+        x = [
+            value ^ parameters.round_constants_c[round_index][column]
+            for column, value in enumerate(x)
+        ]
+        y = [
+            value ^ parameters.round_constants_d[round_index][column]
+            for column, value in enumerate(y)
+        ]
+        x, y = field.linear_layer(x, y, parameters)
+        next_x: list[int] = []
+        next_y: list[int] = []
+        for column in range(field.N_COLS):
+            x_value = x[column]
+            y_value = y[column]
+            u_value, v_value = field.evaluate_sbox(
+                x_value, y_value, parameters
+            )
+            w_value = y_value ^ v_value
+            values.extend(
+                (
+                    u_value,
+                    v_value,
+                    field.fsquare(w_value),
+                    field.fsquare(y_value),
+                    field.fpow(y_value, 3),
+                    field.fsquare(v_value),
+                )
+            )
+            next_x.append(u_value)
+            next_y.append(v_value)
+        x, y = next_x, next_y
+    x, y = field.linear_layer(x, y, parameters)
+    output = tuple(x + y)
+    values.extend(output)
+    if len(values) != 352:
+        raise AssertionError("native permutation assignment width changed")
+    return tuple(values), output
+
+
+def _encode_assignment_values(values: Iterable[int]) -> bytes:
+    return b"".join(
+        value.to_bytes(ASSIGNMENT_VALUE_BYTES, "little") for value in values
+    )
+
+
+def _sponge_assignment_blob(call: cap.XOFCall) -> tuple[str, bytes]:
+    """Generate values in the exact allocation order used by ``lower``."""
+
+    parameters = field.derive_parameters()
+    values: list[int] = list(sponge.bytes_to_bits_lsb(call.payload))
+    state = [0] * field.STATE_ELEMENTS
+    for block in sponge.framed_rate_blocks(call.domain, call.payload):
+        values.extend(block)
+        for lane, lane_value in enumerate(block):
+            state[lane] ^= lane_value
+        permutation_values, output = _permutation_assignment_values(
+            state, parameters
+        )
+        values.extend(permutation_values)
+        state = list(output)
+
+    remaining = call.output_bits
+    squeeze_block = 0
+    exposed: list[int] = []
+    while remaining:
+        if squeeze_block:
+            permutation_values, output = _permutation_assignment_values(
+                state, parameters
+            )
+            values.extend(permutation_values)
+            state = list(output)
+        block_bits = min(sponge.RATE_BITS, remaining)
+        elements = (block_bits + field.FIELD_DEGREE - 1) // field.FIELD_DEGREE
+        for lane in range(elements):
+            lane_bits = tuple(
+                (state[lane] >> bit) & 1 for bit in range(field.FIELD_DEGREE)
+            )
+            values.extend(lane_bits)
+            take = min(
+                field.FIELD_DEGREE,
+                block_bits - lane * field.FIELD_DEGREE,
+            )
+            exposed.extend(lane_bits[:take])
+        remaining -= block_bits
+        squeeze_block += 1
+
+    output_value = sum(bit << index for index, bit in enumerate(exposed))
+    if output_value != call.output:
+        raise AssertionError(f"sponge assignment disagrees for {call.label}")
+    return call.label, _encode_assignment_values(values)
+
+
+class AssignmentBlobCursor:
+    def __init__(self, encoded: bytes) -> None:
+        self.encoded = encoded
+        self.offset = 0
+
+    def take(self, count: int) -> bytes:
+        size = count * ASSIGNMENT_VALUE_BYTES
+        end = self.offset + size
+        if end > len(self.encoded):
+            raise AssertionError("sponge assignment cursor exhausted")
+        chunk = self.encoded[self.offset : end]
+        self.offset = end
+        return chunk
+
+    def finish(self) -> None:
+        if self.offset != len(self.encoded):
+            raise AssertionError("unused sponge assignment values")
+
+
+class OrderedSpongeWitnessPool:
+    """Bounded ordered prefetch for independently computable sponge witnesses."""
+
+    def __init__(self, calls: Sequence[cap.XOFCall], workers: int) -> None:
+        self.calls = tuple(calls)
+        self.workers = max(1, workers)
+        self.index = 0
+        self.submitted = 0
+        self.executor = (
+            None
+            if self.workers == 1
+            else ProcessPoolExecutor(max_workers=self.workers)
+        )
+        self.pending: deque[object] = deque()
+        self._fill()
+
+    def _fill(self) -> None:
+        if self.executor is None:
+            return
+        limit = min(len(self.calls), self.workers * 2)
+        while self.submitted < len(self.calls) and len(self.pending) < limit:
+            self.pending.append(
+                self.executor.submit(
+                    _sponge_assignment_blob, self.calls[self.submitted]
+                )
+            )
+            self.submitted += 1
+
+    def take(self, label: str) -> AssignmentBlobCursor:
+        if self.index >= len(self.calls):
+            raise AssertionError("sponge witness pool exhausted")
+        expected = self.calls[self.index]
+        if expected.label != label:
+            raise AssertionError(
+                f"sponge witness order mismatch: {expected.label} != {label}"
+            )
+        if self.executor is None:
+            result_label, encoded = _sponge_assignment_blob(expected)
+        else:
+            future = self.pending.popleft()
+            result_label, encoded = future.result()
+            self._fill()
+        self.index += 1
+        if result_label != label:
+            raise AssertionError("sponge witness label mismatch")
+        return AssignmentBlobCursor(encoded)
+
+    def close(self) -> None:
+        if self.executor is not None:
+            self.executor.shutdown()
+            self.executor = None
+
+
 class StreamingSpongeLowerer:
-    def __init__(self, sink: StreamingRowSink) -> None:
+    def __init__(
+        self,
+        sink: StreamingRowSink,
+        witness_pool: OrderedSpongeWitnessPool | None = None,
+    ) -> None:
         self.sink = sink
+        self.witness_pool = witness_pool
         self.parameters = field.derive_parameters()
         self.permutation_template = field.build_native_trace(
             (0,) * field.STATE_ELEMENTS,
@@ -366,10 +643,19 @@ class StreamingSpongeLowerer:
         )
 
     def _instantiate_permutation(
-        self, prefix: str
+        self,
+        prefix: str,
+        assignment_cursor: AssignmentBlobCursor | None,
     ) -> tuple[tuple[int, ...], tuple[int, ...]]:
         template = self.permutation_template
-        base = self.sink.allocate(len(template.assignment))
+        encoded_values = (
+            None
+            if assignment_cursor is None
+            else assignment_cursor.take(len(template.assignment))
+        )
+        base = self.sink.allocate(
+            len(template.assignment), encoded_values=encoded_values
+        )
         for index, row in enumerate(template.rows):
             self.sink.row(
                 f"{prefix}.{row.label}",
@@ -409,13 +695,25 @@ class StreamingSpongeLowerer:
         source_fields: Sequence[BitSource],
         call_index: int,
     ) -> LoweredSpongeCall:
+        assignment_cursor = (
+            None
+            if self.witness_pool is None
+            else self.witness_pool.take(call.label)
+        )
         source_payload = encoded_transcript_source(source_fields)
         payload_bytes = len(call.payload)
         if source_payload.bit_length != payload_bytes * 8:
             raise AssertionError(f"source payload width mismatch for {call.label}")
 
         payload_bits = payload_bytes * 8
-        payload_start = self.sink.allocate(payload_bits)
+        payload_values = (
+            None
+            if assignment_cursor is None
+            else assignment_cursor.take(payload_bits)
+        )
+        payload_start = self.sink.allocate(
+            payload_bits, encoded_values=payload_values
+        )
         prefix = f"xof[{call_index}].{call.label}"
         for index in range(payload_bits):
             self.sink.bitness(
@@ -440,7 +738,14 @@ class StreamingSpongeLowerer:
         for block_index in range(absorbed_blocks):
             lane_wires: list[int] = []
             for lane in range(sponge.RATE_ELEMENTS):
-                lane_wire = self.sink.allocate()
+                lane_values = (
+                    None
+                    if assignment_cursor is None
+                    else assignment_cursor.take(1)
+                )
+                lane_wire = self.sink.allocate(
+                    encoded_values=lane_values
+                )
                 lane_wires.append(lane_wire)
                 terms: list[tuple[int, int]] = [(lane_wire, 1)]
                 constant = 0
@@ -468,7 +773,7 @@ class StreamingSpongeLowerer:
                 linear_rows += 1
 
             inputs, outputs = self._instantiate_permutation(
-                f"{prefix}.perm[{block_index}]"
+                f"{prefix}.perm[{block_index}]", assignment_cursor
             )
             for lane, input_wire in enumerate(inputs):
                 terms = [(input_wire, 1)]
@@ -495,7 +800,8 @@ class StreamingSpongeLowerer:
         while remaining:
             if squeeze_block:
                 inputs, current_outputs = self._instantiate_permutation(
-                    f"{prefix}.squeeze[{squeeze_block}].perm"
+                    f"{prefix}.squeeze[{squeeze_block}].perm",
+                    assignment_cursor,
                 )
                 squeeze_permutations += 1
                 for lane, input_wire in enumerate(inputs):
@@ -524,7 +830,15 @@ class StreamingSpongeLowerer:
                     if squeeze_block == 0
                     else f"{prefix}.digest.block[{squeeze_block}].lane[{lane}]"
                 )
-                bit_start = self.sink.allocate(field.FIELD_DEGREE)
+                output_values = (
+                    None
+                    if assignment_cursor is None
+                    else assignment_cursor.take(field.FIELD_DEGREE)
+                )
+                bit_start = self.sink.allocate(
+                    field.FIELD_DEGREE,
+                    encoded_values=output_values,
+                )
                 for bit in range(field.FIELD_DEGREE):
                     self.sink.bitness(
                         f"{label_prefix}.bit[{bit}].bit", bit_start + bit
@@ -557,6 +871,8 @@ class StreamingSpongeLowerer:
         if source_count != payload_bits:
             raise AssertionError("source-link count mismatch")
         linear_rows += source_count
+        if assignment_cursor is not None:
+            assignment_cursor.finish()
 
         permutations = absorbed_blocks + squeeze_permutations
         return LoweredSpongeCall(
@@ -972,14 +1288,18 @@ class ShardTraceSummary:
     peak_rss_kib: int
     assignment_materialized: bool
     external_assertions: int
+    verification_failures: int = 0
+    first_verification_failure: str | None = None
 
 
 def _allocate_input_bits(
     sink: StreamingRowSink,
     bit_length: int,
     prefix: str,
+    value: int,
 ) -> int:
-    start = sink.allocate(bit_length)
+    values = tuple((value >> bit) & 1 for bit in range(bit_length))
+    start = sink.allocate(bit_length, values=values)
     for index in range(bit_length):
         sink.bitness(f"{prefix}[{index}].bit", start + index)
     return start
@@ -988,6 +1308,7 @@ def _allocate_input_bits(
 def _point_validation(
     sink: StreamingRowSink,
     point_starts: Sequence[int],
+    point_values: Sequence[int],
     prefix: str,
 ) -> int:
     forms = [
@@ -1001,8 +1322,8 @@ def _point_validation(
         for start in point_starts
     ]
     rows = 0
-    for index, form in enumerate(forms):
-        inverse = sink.allocate()
+    for index, (form, point_value) in enumerate(zip(forms, point_values)):
+        inverse = sink.allocate(values=(field.finv(point_value),))
         sink.row(
             f"{prefix}.point[{index}].nonzero",
             form,
@@ -1013,7 +1334,8 @@ def _point_validation(
         rows += 1
     for left in range(len(forms)):
         for right in range(left + 1, len(forms)):
-            inverse = sink.allocate()
+            difference = point_values[left] ^ point_values[right]
+            inverse = sink.allocate(values=(field.finv(difference),))
             sink.row(
                 f"{prefix}.difference[{left},{right}].nonzero",
                 forms[left].add(forms[right]),
@@ -1035,9 +1357,11 @@ def _pack_coefficient(ids: Sequence[int]) -> BitForm:
 def _horner_leaf(
     sink: StreamingRowSink,
     witness_ids: Sequence[int],
+    witness_value: int,
     point_starts: Sequence[int],
+    point_values: Sequence[int],
     leaf_index: int,
-) -> tuple[BitForm, ...]:
+) -> tuple[tuple[BitForm, ...], tuple[int, ...]]:
     coefficients = tuple(
         _pack_coefficient(
             witness_ids[offset : offset + field.FIELD_DEGREE]
@@ -1055,10 +1379,19 @@ def _horner_leaf(
         for start in point_starts
     )
     outputs: list[BitForm] = []
-    for point_index, point in enumerate(point_forms):
+    output_values: list[int] = []
+    coefficient_values = tuple(
+        (witness_value >> offset) & field.FIELD_MASK
+        for offset in range(0, len(witness_ids), field.FIELD_DEGREE)
+    )
+    for point_index, (point, point_value) in enumerate(
+        zip(point_forms, point_values)
+    ):
         accumulator = coefficients[-1]
+        accumulator_value = coefficient_values[-1]
         for coefficient_index in range(len(coefficients) - 2, -1, -1):
-            product = sink.allocate()
+            product_value = field.fmul(accumulator_value, point_value)
+            product = sink.allocate(values=(product_value,))
             sink.row(
                 (
                     f"horner.leaf[{leaf_index}].point[{point_index}]"
@@ -1072,30 +1405,41 @@ def _horner_leaf(
             accumulator = BitForm.wire(product).add(
                 coefficients[coefficient_index]
             )
+            accumulator_value = (
+                product_value ^ coefficient_values[coefficient_index]
+            )
         outputs.append(accumulator)
-    return tuple(outputs)
+        output_values.append(accumulator_value)
+    return tuple(outputs), tuple(output_values)
 
 
 def _aggregate_form(
     sink: StreamingRowSink,
     current_wire: int | None,
+    current_value: int | None,
     item: BitForm,
+    item_value: int,
     label: str,
-) -> int:
-    output = sink.allocate()
+) -> tuple[int, int]:
+    output_value = item_value ^ (0 if current_value is None else current_value)
+    output = sink.allocate(values=(output_value,))
     terms = item.add(BitForm.wire(output))
     if current_wire is not None:
         terms = terms.add(BitForm.wire(current_wire))
     sink.linear_zero(label, terms)
-    return output
+    return output, output_value
 
 
 def _decompose_field(
     sink: StreamingRowSink,
     source_wire: int,
+    source_value: int,
     prefix: str,
 ) -> int:
-    start = sink.allocate(field.FIELD_DEGREE)
+    values = tuple(
+        (source_value >> bit) & 1 for bit in range(field.FIELD_DEGREE)
+    )
+    start = sink.allocate(field.FIELD_DEGREE, values=values)
     for bit in range(field.FIELD_DEGREE):
         sink.bitness(f"{prefix}.bit[{bit}].bit", start + bit)
     terms = [(source_wire, 1)] + [
@@ -1129,9 +1473,12 @@ def _wide_mask_form(
 def _publish_source(
     sink: StreamingRowSink,
     source: BitSource,
+    values: Sequence[int],
     prefix: str,
 ) -> int:
-    start = sink.allocate(source.bit_length)
+    if len(values) != source.bit_length:
+        raise ValueError("published assignment width mismatch")
+    start = sink.allocate(source.bit_length, values=values)
     for index, form in enumerate(source):
         sink.bitness(f"{prefix}[{index}].bit", start + index)
         sink.linear_zero(
@@ -1149,6 +1496,10 @@ def build_streaming_shard(
     workers: int = 1,
     execution: cap.CAPExecution | None = None,
     progress: Callable[[str], None] | None = None,
+    assignment_writer: AssignmentWriter | None = None,
+    verification_assignment: Mapping[int, int] | None = None,
+    capture_labels: Iterable[str] = (),
+    captured_rows_output: dict[str, field.RankOneRow] | None = None,
 ) -> ShardTraceSummary:
     if parameters.tree_count != 1:
         raise ValueError("streaming shard supports exactly one tree")
@@ -1167,6 +1518,31 @@ def build_streaming_shard(
         progress(f"reference execution complete: {len(execution.xof_calls)} CAP XOF calls")
     reference_calls = execution.xof_calls
     cursor = CallCursor(reference_calls)
+    request_payload = sponge.encode_transcript(
+        (message, execution.commitment.encoded)
+    )
+    request_output = int.from_bytes(
+        sponge.evaluate_sponge(
+            sponge.REQUEST_BINDING_DOMAIN,
+            request_payload,
+            sponge.REQUEST_HASH_BYTES,
+        ),
+        "little",
+    )
+    request_call = cap.XOFCall(
+        "request-binding",
+        sponge.REQUEST_BINDING_DOMAIN,
+        (message, execution.commitment.encoded),
+        sponge.REQUEST_HASH_BITS,
+        request_output,
+    )
+    witness_pool = (
+        None
+        if assignment_writer is None
+        else OrderedSpongeWitnessPool(
+            tuple(reference_calls) + (request_call,), workers
+        )
+    )
 
     header = {
         "cap_profile_fingerprint": cap.profile_fingerprint(parameters),
@@ -1178,16 +1554,31 @@ def build_streaming_shard(
             field.derive_parameters()
         ),
     }
-    sink = StreamingRowSink(header)
-    lowerer = StreamingSpongeLowerer(sink)
+    sink = StreamingRowSink(
+        header,
+        assignment_writer=assignment_writer,
+        verification_assignment=verification_assignment,
+        capture_labels=capture_labels,
+    )
+    lowerer = StreamingSpongeLowerer(sink, witness_pool)
     sponge_accounting = SpongeAccounting()
 
     sink.start_group("inputs")
-    salt_0 = _allocate_input_bits(sink, field.FIELD_DEGREE, "input.salt[0]")
-    salt_1 = _allocate_input_bits(sink, field.FIELD_DEGREE, "input.salt[1]")
-    root_0 = _allocate_input_bits(sink, field.FIELD_DEGREE, "input.root[0]")
-    root_1 = _allocate_input_bits(sink, field.FIELD_DEGREE, "input.root[1]")
-    message_start = _allocate_input_bits(sink, 256, "input.message")
+    salt_0 = _allocate_input_bits(
+        sink, field.FIELD_DEGREE, "input.salt[0]", randomness.salt[0]
+    )
+    salt_1 = _allocate_input_bits(
+        sink, field.FIELD_DEGREE, "input.salt[1]", randomness.salt[1]
+    )
+    root_0 = _allocate_input_bits(
+        sink, field.FIELD_DEGREE, "input.root[0]", randomness.roots[0][0]
+    )
+    root_1 = _allocate_input_bits(
+        sink, field.FIELD_DEGREE, "input.root[1]", randomness.roots[0][1]
+    )
+    message_start = _allocate_input_bits(
+        sink, 256, "input.message", int.from_bytes(message, "little")
+    )
     sink.finish_group()
 
     salt_source = source_pad_to_byte(
@@ -1234,6 +1625,7 @@ def build_streaming_shard(
     )
     spool_writer = WireSpool(len(selected_output_positions))
     commitments: list[tuple[int, int]] = []
+    tape_values: list[int] = []
     sink.start_group("leaf-commit-and-tape")
     for leaf_index, (seed_start, _) in enumerate(nodes, start=1):
         metadata = source_constant(cap._meta(0, 0, leaf_index))
@@ -1262,6 +1654,7 @@ def build_streaming_shard(
         spool_writer.append(
             tuple(tape.output_wires[index] for index in selected_output_positions)
         )
+        tape_values.append(tape_call.output)
         if progress is not None and (leaf_index % 128 == 0 or leaf_index == leaves):
             progress(f"stream leaf XOFs: {leaf_index}/{leaves}")
     sink.finish_group()
@@ -1317,8 +1710,13 @@ def build_streaming_shard(
         points.output_wires[0],
         points.output_wires[field.FIELD_DEGREE],
     )
+    point_values = tuple(
+        (points_call.output >> (index * field.FIELD_DEGREE))
+        & field.FIELD_MASK
+        for index in range(parameters.consistency_points)
+    )
     point_validation_rows = _point_validation(
-        sink, point_starts, "consistency.validate"
+        sink, point_starts, point_values, "consistency.validate"
     )
     sink.finish_group()
 
@@ -1335,7 +1733,11 @@ def build_streaming_shard(
     )
     sink.start_group("leaf-horner-and-field-aggregation")
     plain_accumulators: list[int | None] = [None, None]
+    plain_accumulator_values: list[int | None] = [None, None]
     mask_accumulators: list[list[int | None]] = [
+        [None, None] for _ in range(extension_degree)
+    ]
+    mask_accumulator_values: list[list[int | None]] = [
         [None, None] for _ in range(extension_degree)
     ]
     multiplication_rows = 0
@@ -1343,28 +1745,45 @@ def build_streaming_shard(
     for leaf in range(leaves):
         record = spool.record(leaf)
         witness_ids = record[:witness_bits]
-        outputs = _horner_leaf(
-            sink, witness_ids, point_starts, leaf + 1
+        outputs, output_values = _horner_leaf(
+            sink,
+            witness_ids,
+            tape_values[leaf] & ((1 << witness_bits) - 1),
+            point_starts,
+            point_values,
+            leaf + 1,
         )
         coefficient_count = (
             len(witness_ids) + field.FIELD_DEGREE - 1
         ) // field.FIELD_DEGREE
         multiplication_rows += len(outputs) * (coefficient_count - 1)
         inverse = cap.gf2m_inv(leaf + 1, extension_degree)
-        for point_index, item in enumerate(outputs):
-            plain_accumulators[point_index] = _aggregate_form(
+        for point_index, (item, item_value) in enumerate(
+            zip(outputs, output_values)
+        ):
+            (
+                plain_accumulators[point_index],
+                plain_accumulator_values[point_index],
+            ) = _aggregate_form(
                 sink,
                 plain_accumulators[point_index],
+                plain_accumulator_values[point_index],
                 item,
+                item_value,
                 f"aggregate.plain.leaf[{leaf + 1}].point[{point_index}]",
             )
             aggregate_rows += 1
             for extension_bit in range(extension_degree):
                 if (inverse >> extension_bit) & 1:
-                    mask_accumulators[extension_bit][point_index] = _aggregate_form(
+                    (
+                        mask_accumulators[extension_bit][point_index],
+                        mask_accumulator_values[extension_bit][point_index],
+                    ) = _aggregate_form(
                         sink,
                         mask_accumulators[extension_bit][point_index],
+                        mask_accumulator_values[extension_bit][point_index],
                         item,
+                        item_value,
                         (
                             f"aggregate.mask[{extension_bit}].leaf[{leaf + 1}]"
                             f".point[{point_index}]"
@@ -1376,12 +1795,17 @@ def build_streaming_shard(
 
     if any(item is None for item in plain_accumulators):
         raise AssertionError("plain Horner accumulator missing")
+    if any(item is None for item in plain_accumulator_values):
+        raise AssertionError("plain Horner accumulator value missing")
     if any(item is None for row in mask_accumulators for item in row):
         raise AssertionError("mask Horner accumulator missing")
+    if any(item is None for row in mask_accumulator_values for item in row):
+        raise AssertionError("mask Horner accumulator value missing")
     plain_output_starts = tuple(
         _decompose_field(
             sink,
             int(plain_accumulators[point]),
+            int(plain_accumulator_values[point]),
             f"consistency.plain.point[{point}].output",
         )
         for point in range(2)
@@ -1391,6 +1815,7 @@ def build_streaming_shard(
             _decompose_field(
                 sink,
                 int(mask_accumulators[extension_bit][point]),
+                int(mask_accumulator_values[extension_bit][point]),
                 (
                     f"consistency.mask[{extension_bit}]"
                     f".point[{point}].output"
@@ -1487,7 +1912,14 @@ def build_streaming_shard(
     if commitment_source.bit_length // 8 != len(execution.commitment.encoded):
         raise AssertionError("canonical commitment source length mismatch")
     commitment_start = _publish_source(
-        sink, commitment_source, "output.commitment"
+        sink,
+        commitment_source,
+        tuple(
+            (byte >> bit) & 1
+            for byte in execution.commitment.encoded
+            for bit in range(8)
+        ),
+        "output.commitment",
     )
 
     def plain_witness_source(offset: int, length: int) -> BitSource:
@@ -1502,6 +1934,10 @@ def build_streaming_shard(
     mask_start = _publish_source(
         sink,
         plain_witness_source(0, parameters.mask_bits),
+        tuple(
+            (execution.commitment.derived_mask >> bit) & 1
+            for bit in range(parameters.mask_bits)
+        ),
         "output.derived_mask",
     )
     append_start = _publish_source(
@@ -1509,27 +1945,13 @@ def build_streaming_shard(
         plain_witness_source(
             parameters.mask_bits, parameters.appended_signature_bits
         ),
+        tuple(
+            (execution.commitment.append_base >> bit) & 1
+            for bit in range(parameters.appended_signature_bits)
+        ),
         "output.append_base",
     )
 
-    request_payload = sponge.encode_transcript(
-        (message, execution.commitment.encoded)
-    )
-    request_output = int.from_bytes(
-        sponge.evaluate_sponge(
-            sponge.REQUEST_BINDING_DOMAIN,
-            request_payload,
-            sponge.REQUEST_HASH_BYTES,
-        ),
-        "little",
-    )
-    request_call = cap.XOFCall(
-        "request-binding",
-        sponge.REQUEST_BINDING_DOMAIN,
-        (message, execution.commitment.encoded),
-        sponge.REQUEST_HASH_BITS,
-        request_output,
-    )
     request = lowerer.lower(
         request_call,
         (
@@ -1581,9 +2003,15 @@ def build_streaming_shard(
         spool.sha256,
         elapsed,
         peak_rss,
-        False,
+        assignment_writer is not None,
         0,
+        sink.verification_failures,
+        sink.first_verification_failure,
     )
+    if captured_rows_output is not None:
+        captured_rows_output.update(sink.captured_rows)
+    if witness_pool is not None:
+        witness_pool.close()
     spool.close()
     if progress is not None:
         progress(

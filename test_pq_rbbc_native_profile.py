@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Tests for the fail-closed PQ-RBBC v2.5 fork import contract."""
+"""Tests for the fail-closed PQ-RBBC v2.6 fork import contract."""
 
 from __future__ import annotations
 
@@ -87,7 +87,12 @@ class ForkNativeProfileTests(unittest.TestCase):
         self.assertEqual(shard["rows"], 26_126_283)
         self.assertEqual(shard["wires"], 19_903_324)
         self.assertEqual(shard["external_assertions"], 0)
-        self.assertFalse(shard["assignment_materialized"])
+        self.assertTrue(shard["assignment_materialized"])
+        self.assertEqual(shard["assignment_archive_bytes"], 497_583_228)
+        self.assertEqual(shard["whole_shard_rows_verified"], 26_126_283)
+        self.assertEqual(shard["whole_shard_verification_failures"], 0)
+        self.assertEqual(shard["stale_witness_probes"], 5)
+        self.assertTrue(shard["stale_witness_probes_rejected"])
         self.assertTrue(
             manifest["claim_boundary"]["arithmetic_primitive_native_closed"]
         )
@@ -114,7 +119,7 @@ class ForkNativeProfileTests(unittest.TestCase):
                 "production_2048_leaf_tree_shard_security_profile"
             ]
         )
-        self.assertFalse(
+        self.assertTrue(
             manifest["claim_boundary"]["production_shard_full_assignment_closed"]
         )
 

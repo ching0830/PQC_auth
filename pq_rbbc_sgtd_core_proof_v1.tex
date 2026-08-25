@@ -43,7 +43,7 @@
 
 \title{A Post-Quantum Relation-Bound Blind Certification Core\\
 with Signature-Gated Threshold Decryption}
-\author{Research construction draft, version 2.5}
+\author{Research construction draft, version 2.6}
 \date{24 August 2026}
 
 \begin{document}
@@ -165,6 +165,15 @@ assertions; its peak resident set was 140,932~KiB.  This is a non-secure
 one-tree topology result, not a complete satisfiability archive: the full
 assignment, the $2^{12}$-leaf shard, the other 17 trees, the parent wire join,
 fork-specific security proof, and fresh proof benchmarks remain open.
+Version 2.6 closes the assignment boundary for that shard.  It writes every
+one of the 19,903,324 field-wire values as a canonical 25-byte element in a
+497,583,228-byte fixed-width archive, verifies the archive digest, and replays
+all 26,126,283 rows through an mmap-backed assignment evaluator with zero
+failures.  Five exact stale-witness probes covering GGM source binding, tape
+packing, Horner multiplication, commitment publication, and request binding
+are rejected.  This still does not close the $2^{12}$-leaf shard, all eighteen
+trees, the parent wire join, the fork-specific security proof, or a
+post-quantum proof backend.
 \end{abstract}
 
 \section{Status, scope, and non-goals}
@@ -1107,7 +1116,9 @@ two-coefficient CAP fixture; the full 11-coefficient, 18-tree composition is
 not yet materialized.  Version 2.5 executes the full eleven-coefficient path
 and every degree-12 symbolic mask slice in one real 2,048-leaf production tree
 shape, while deliberately stopping short of a full assignment archive and the
-18-tree parent composition.
+18-tree parent composition.  Version 2.6 removes the first of those two
+limitations: the complete one-tree assignment is archived and every row is
+evaluated successfully, while the 18-tree parent composition remains open.
 
 \paragraph{Frozen Blind-UOV comparison profile.}
 Version 1.7 fixes the 31 October 2025 revision and its
@@ -1140,7 +1151,7 @@ $\rho$ contains the CAP salt and GGM-tree randomness; it is not the 32-byte
 nonce used by the test adapter.
 
 The paper specifies the algorithms but does not ship an executable CAP
-constraint generator.  Version 2.5 uses
+constraint generator.  Version 2.6 uses
 \texttt{pq\_rbbc\_native\_profile.py} as the fail-closed contract for the fork.
 Closure requires a source and parameter digest, a deterministic native
 row-stream digest, zero external assertions, witness-independent topology,
@@ -1284,8 +1295,8 @@ corrections, packing, and wire equalities.  It is therefore a lower component
 count, not a complete $\pi_{\mathsf{issue}}$ benchmark.
 
 The full 18-tree production execution is deliberately opt-in and has not been
-run for this release.  Version 2.5 runs one 2,048-leaf tree shape, but no
-18-tree native row stream, complete shard assignment, or parent inter-call
+run for this release.  Version 2.6 runs and assignment-verifies one
+2,048-leaf tree shape, but no 18-tree native row stream or parent inter-call
 wire-identity proof has been produced.  Consequently the parent archive still has one named
 external assertion.  Version 2.1 establishes reference semantics and the exact
 byte ABI; it does not establish native circuit closure, CAP extraction,
@@ -1494,13 +1505,62 @@ those wire forms.  Canonical serialization counts and hashes every emitted
 row, and the manifest records an external-assertion count of zero.
 \end{proof}
 
-The proposition is intentionally about topology, not full shard witness
-evaluation or production security.  The implementation does not archive a
-complete 19,903,324-wire assignment, so it cannot yet supply a backend-checked
-honest assignment or stale-witness mutation proof for the whole shard.  The
-profile also contains only one tree, omits all cross-tree corrections, and is
-explicitly marked non-secure.  Those omissions prevent any inference that the
-full CAP relation, Blind-UOV fork, or $\pi_{\mathsf{issue}}$ is closed.
+The proposition was intentionally about topology, not full shard witness
+evaluation or production security.  Version 2.6 supplies the previously
+missing assignment evidence as follows.
+
+\paragraph{Assignment-backed shard verification in version 2.6.}
+Wire $i$ is stored at offset $128+25(i-1)$ as the canonical little-endian
+representation of one $\mathbb F_{2^{193}}$ element.  The 128-byte header binds
+the field degree, element width, wire count, assignment-body digest, and
+canonical row-stream digest.  The body is 497,583,100 bytes with SHA-256
+\begin{center}
+\texttt{e16ca6a9228f9f13901d0e0228751010}\par\vspace{-0.2em}
+\texttt{fa25889ed02a7291aaceebe69590843a}.
+\end{center}
+Including the header, the archive is 497,583,228 bytes with SHA-256
+\begin{center}
+\texttt{6df38b0cadc2390ea953511ed20c1c22}\par\vspace{-0.2em}
+\texttt{668f85f63a0519965f2d5a78b44d0095}.
+\end{center}
+
+The writer receives allocation-order values from a bounded ordered worker
+pool.  Sponge witnesses include payload bits, framed rate lanes, all native
+permutation intermediates, and output decompositions.  Horner products,
+point inverses, accumulators, public outputs, and request-binding values are
+computed in the same allocation order as the unchanged row generator.  No
+list of 19.9 million Python integers is retained.
+
+\begin{proposition}[One-shard assignment satisfiability closure]
+For the frozen one-tree profile and deterministic vector, the complete
+19,903,324-wire assignment satisfies all 26,126,283 canonical native rows.
+The replayed row stream has the version-2.5 digest, and changing one archived
+wire in each of five selected subsystems violates the corresponding exact row.
+\end{proposition}
+\begin{proof}
+The archive reader first checks its size, fixed profile fields, assignment-body
+digest, and embedded row-stream digest.  The row generator is then replayed
+without an assignment writer.  For every emitted rank-one row $(L,R,O)$, the
+verifier resolves each linear form from the mmap-backed archive and checks
+$L(\mathbf w)R(\mathbf w)=O(\mathbf w)$ in $\mathbb F_{2^{193}}$; bitness,
+linear, and square rows use algebraically equivalent specialized evaluators.
+The replay checks 26,126,283 rows, records zero failures, and regenerates
+SHA-256
+\begin{center}
+\texttt{2cfc3641a94635af35dfa5494c61e74a}\par\vspace{-0.2em}
+\texttt{416ef2fb446975cd417891d244943dfc}.
+\end{center}
+Finally, the test harness flips the low bit of one wire in an exact GGM
+payload-source row, tape-output pack row, Horner multiplication row,
+commitment-link row, and request-binding pack row.  The honest assignment
+satisfies each captured row and every mutated assignment fails it.
+\end{proof}
+
+This proposition closes whole-shard satisfiability for one deterministic,
+non-secure $2^{11}$-leaf fixture.  It does not prove CAP unique-mask or
+straightline extraction, does not instantiate either $2^{12}$-leaf tree, and
+does not connect this assignment to the parent issuance archive.  Those
+remaining boundaries prevent any production-security claim.
 
 The earlier 240/336/360 discrepancy remains documented, but it no longer
 blocks implementation: version 2.0 intentionally chooses the 336-row profile.
@@ -1726,7 +1786,7 @@ $24\cdot1600=38{,}400$ constraints~\cite{blind-uov}.  The audit counts only
 constraints added beyond a native well-built-request $\pi_1$ relation.  The
 complete PQ-RBBC-BUOV-336 CAP circuit is not yet materialized, so the
 historical paper-anchored level-III baseline below is an explicit version-1.9
-comparator, not a version-2.5 fork estimate.
+comparator, not a version-2.6 fork estimate.
 
 \paragraph{Exact-weight gadget.}
 The witness $e$ has 6,688 bits.  Pad it with 1,504 public zeros to 8,192 inputs
@@ -1777,7 +1837,7 @@ $\mathcal C_{\mathsf{RBBCmask}}$ & 1,152 & bitness of $r,h_{\RBBC}$; 576 mask eq
 $\mathcal C_{\mathsf{holder}}$ & 38,656 & 256 bitness + one SHAKE permutation\\
 $\mathcal C_{\mathsf{trace}}$ & 530,435 & $e$ bitness, weight, KDF, and KMAC\\
 \midrule
-Portable v2.5 relation & 685,571 & includes 1,152 native-overlap hardening rows\\
+Portable v2.6 relation & 685,571 & includes 1,152 native-overlap hardening rows\\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -1842,19 +1902,19 @@ as a provisional fork target gives
  |T|=|M|+|\sigma|=12{,}012\text{ bytes}
 \]
 before transport framing.  This is conditional arithmetic, not a measured
-version-2.5 signature size.  Under the same provisional assumption, cached
+version-2.6 signature size.  Under the same provisional assumption, cached
 public material is approximately
 1,044,992 bytes for the trace key plus the paper's rounded 189.2~KB Blind-UOV
 verification key.  Relative to a 70~KB online credential,
 the target is about 5.83 times smaller.  The roughly 4.27~MB issuance-NIZK
-figure is a superseded historical comparator; version 2.5 already counts more
+figure is a superseded historical comparator; version 2.6 already counts more
 than 131 million CAP permutation rows.  Both the CAP commitment and
 $\pi_{\mathsf{issue}}$ remain offline and are never forwarded to a satellite
 verifier.
 
 \begin{remark}[Audit reproducibility]
 The companion executable relation recomputes every exact incremental integer
-above and records it in the version-2.5 manifest.  Fork signature and native
+above and records it in the version-2.6 manifest.  Fork signature and native
 CAP estimates
 are kept in separately labelled fields so a rounded extrapolation cannot be
 mistaken for a benchmark.
@@ -1863,7 +1923,7 @@ mistaken for a benchmark.
 \subsection{Executable reference relation and rejection tests}
 \label{sec:executable-relation}
 
-Version 2.5 preserves and audits the incremental relation in
+Version 2.6 preserves and audits the incremental relation in
 \texttt{pq\_rbbc\_reference.py}.  The witness builder derives
 $h$, $s$, $c_\mu$, $\gamma$, the canonical 368-byte payload, and its ticket
 digest from $(\rid,\ctx,\sn,k_{\mathrm{hold}},e)$.  The circuit builder then
@@ -2052,14 +2112,15 @@ a 2,845-row production-width 11-coefficient Horner trace; a 125,401-row
 two-coefficient CAP/Horner integration whose eight tapes have production width
 and a bounded-memory one-tree production-shape stream with 26,126,283 rows,
 19,903,324 wires, the full 2,048-bit witness, degree-12 masks, two points, and
-2,450-bit tapes (all CAP fixtures non-secure and zero external assertions; the
-one-tree run freezes topology but not a complete assignment archive).\\
+2,450-bit tapes, plus a 497,583,228-byte fixed-width archive whose complete
+assignment satisfies every row and rejects five stale-witness probes (all CAP
+fixtures non-secure and zero external assertions).\\
 \addlinespace
 Not yet instantiated & A post-quantum zero-knowledge and
 simulation-extractable implementation of $\Piiss$; a native
 $\mathbb F_{2^{193}}$ materialization of the full 18-tree CAP row stream and
-exact inter-call wire identities; a complete assignment or backend-linked
-witness for each streamed shard; the $2^{12}$-leaf shard; execution of a full
+exact inter-call wire identities across all trees; the $2^{12}$-leaf shard;
+execution of a full
 18-tree production vector; a fork-specific
 blindness/one-more-unforgeability proof; fresh key, signature, and proof-size
 benchmarks; validation of the CAP properties used by
@@ -2126,11 +2187,11 @@ machine-tested or enforced by type/API boundaries.
   external assertions, and satisfies every check in the native-import contract.
   \item The selected sponge, version-2.1 CAP reference, version-2.2 reduced
   native trace, version-2.3 extended multi-squeeze trace, version-2.4 Horner
-  relations, and version-2.5 2,048-leaf streamed shard define the implemented
+  relations, and version-2.6 assignment-backed 2,048-leaf streamed shard define
+  the implemented
   $H_{\RBBC}$ wires unambiguously.  The CAP fixtures are explicitly non-secure
-  and cannot satisfy the production import contract; a full shard assignment,
-  the 4,096-leaf shard, all 18 trees, and exact parent-circuit wire identities
-  are still required.
+  and cannot satisfy the production import contract; the 4,096-leaf shard, all
+  18 trees, and exact parent-circuit wire identities are still required.
   \item The fork must never claim bit-exact Blind-UOV compatibility.  The
   reported 240 rows remain comparison data; the selected fork uses 336 rows.
   \item Production closure requires independent fork vectors and cryptanalysis,
@@ -2151,16 +2212,15 @@ CAP integration, bit-bound native multiplication, production-width Horner
 hashing, and a two-coefficient symbolic-mask CAP integration are complete as
 well.  The full 2,048-bit witness and every degree-12 symbolic mask slice have
 now been executed in one real 2,048-leaf production tree shape, with a frozen
-bounded-memory row-stream digest and zero external assertions.  The 240-row
+bounded-memory row-stream digest, a complete fixed-width assignment, whole-row
+verification, five stale-witness rejections, and zero external assertions.  The 240-row
 artifact gap is no longer
 an engineering blocker because the fork intentionally gives up bit-exact
-compatibility.  The next component is assignment-backed production
-composition:
+compatibility.  The next component is multi-tree production composition:
 
 \begin{quote}
-\emph{Give the streamed 2,048-leaf shard a complete backend-linked witness
-assignment and whole-shard stale-witness mutation tests.  Add the
-4,096-leaf/degree-13 shard, then compose all eighteen trees and their
+\emph{Add the 4,096-leaf/degree-13 shard with the same complete-assignment and
+whole-shard verification discipline.  Then compose all eighteen trees and their
 cross-tree corrections under one canonical transcript.  The final parent
 archive must reject changed $m$, $r$, $\rho$, $c_r$, or hash output and reach
 zero external assertions.  Then prove

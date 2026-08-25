@@ -35,6 +35,11 @@ Version 2.5 executes one real 2,048-leaf production tree shape with the full
 2,450-bit tapes.  Its 26,126,283 rows are hashed through a bounded-memory
 stream; the complete assignment, 4,096-leaf shard, other 17 trees, and parent
 archive join remain outside the closed boundary.
+Version 2.6 materializes all 19,903,324 field-wire values in a fixed-width
+assignment archive, replays all 26,126,283 rows from that archive with zero
+failures, and rejects five stale-witness probes.  The shard remains a
+non-secure one-tree fixture; the 4,096-leaf shard, other 17 trees, and parent
+archive join remain outside the closed boundary.
 """
 
 from __future__ import annotations
@@ -49,6 +54,7 @@ from typing import Protocol
 import pq_rbbc_anemoi_sponge as fork_sponge
 import pq_rbbc_cap_commit as fork_cap
 import pq_rbbc_cap_native as reduced_native_cap
+import pq_rbbc_cap_shard_assignment as shard_assignment
 import pq_rbbc_cap_shard_stream as shard_stream
 import pq_rbbc_horner_native as horner_native
 
@@ -309,7 +315,7 @@ def build_abi_manifest() -> dict[str, object]:
     hidden = adapter.hidden_state(message, mask, randomness)
     changed_message = bytes((message[0] ^ 1,)) + message[1:]
     return {
-        "implementation_version": "2.5",
+        "implementation_version": "2.6",
         "paper_anchor": "Blind-UOV ePrint 2025/895 is a framework and size comparator, not a bit-exact implementation claim",
         "profile": "PQ-RBBC-BUOV-III/Anemoi-193-336 experimental fork",
         "fork_profile": {
@@ -447,7 +453,14 @@ def build_abi_manifest() -> dict[str, object]:
             "production_2048_leaf_shard_stream_bytes": shard_stream.FROZEN_PRODUCTION_STREAM_BYTES,
             "production_2048_leaf_shard_external_assertions": 0,
             "production_2048_leaf_shard_executed": True,
-            "production_2048_leaf_shard_assignment_materialized": False,
+            "production_2048_leaf_shard_assignment_materialized": True,
+            "production_2048_leaf_shard_assignment_format": shard_assignment.ASSIGNMENT_FORMAT,
+            "production_2048_leaf_shard_assignment_archive_bytes": shard_assignment.FROZEN_PRODUCTION_ASSIGNMENT_ARCHIVE_BYTES,
+            "production_2048_leaf_shard_assignment_archive_sha256": shard_assignment.FROZEN_PRODUCTION_ASSIGNMENT_ARCHIVE_SHA256,
+            "production_2048_leaf_shard_whole_assignment_verified": True,
+            "production_2048_leaf_shard_verification_failures": 0,
+            "production_2048_leaf_shard_stale_witness_probes": shard_assignment.FROZEN_PRODUCTION_STALE_WITNESS_PROBES,
+            "production_2048_leaf_shard_stale_witness_rejected": True,
             "production_2048_leaf_shard_profile_is_secure": False,
             "full_production_cap_vector_executed": False,
             "full_production_cap_native_rows_materialized": False,

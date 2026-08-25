@@ -241,9 +241,19 @@ class BlindUOVVisibilityTests(unittest.TestCase):
             ],
             0,
         )
-        self.assertFalse(
+        self.assertTrue(
             manifest["claim_boundary"][
                 "production_2048_leaf_shard_assignment_materialized"
+            ]
+        )
+        self.assertTrue(
+            manifest["claim_boundary"][
+                "production_2048_leaf_shard_whole_assignment_verified"
+            ]
+        )
+        self.assertTrue(
+            manifest["claim_boundary"][
+                "production_2048_leaf_shard_stale_witness_rejected"
             ]
         )
         self.assertFalse(
