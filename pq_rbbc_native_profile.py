@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fail-closed native import contract for the PQ-RBBC v2.12 fork.
+"""Fail-closed native import contract for the PQ-RBBC v2.13 fork.
 
 The selected profile is deliberately independent of the unreproduced
 Blind-UOV 240-row instance.  It accepts no claim of bit-exact compatibility.
@@ -22,6 +22,7 @@ import pq_rbbc_cap_commit as cap
 import pq_rbbc_cap_composer as composer
 import pq_rbbc_cap_global_tail as global_tail
 import pq_rbbc_cap_production_split_tail as production_split_tail
+import pq_rbbc_cap_production_tree0_producer as production_tree0
 import pq_rbbc_cap_split_tail as split_tail
 import pq_rbbc_cap_tree_producer as tree_producer
 import pq_rbbc_cap_native as reduced_native
@@ -30,7 +31,7 @@ import pq_rbbc_cap_shard_stream as shard_stream
 import pq_rbbc_horner_native as horner_native
 
 
-IMPLEMENTATION_VERSION = "2.12"
+IMPLEMENTATION_VERSION = "2.13"
 RELATION_ID = "pq-rbbc-buov-iii-336/cap-hash/v1"
 TARGET_FIELD = "GF(2^193)"
 REQUIRED_TAMPER_CASES = frozenset(
@@ -381,6 +382,23 @@ def build_native_profile_manifest() -> dict[str, object]:
                 "external_assertions": 0,
                 "production_profile": True,
             },
+            "production_tree0_producer_component": {
+                "relation_id": production_tree0.RELATION_ID,
+                "tree_index": production_tree0.TREE_INDEX,
+                "leaves": production_tree0.LEAVES,
+                "extension_degree": production_tree0.EXTENSION_DEGREE,
+                "rows": production_tree0.FROZEN_ROWS,
+                "local_wires": production_tree0.FROZEN_LOCAL_WIRES,
+                "max_wire_id": production_tree0.FROZEN_MAX_WIRE_ID,
+                "row_stream_sha256": production_tree0.FROZEN_STREAM_SHA256,
+                "assignment_archive_bytes": production_tree0.FROZEN_ASSIGNMENT_BYTES,
+                "assignment_archive_sha256": production_tree0.FROZEN_ASSIGNMENT_SHA256,
+                "point_wire_starts": production_tree0.GLOBAL_POINT_STARTS,
+                "tree_component_sha256": production_tree0.FROZEN_TREE_COMPONENT_SHA256,
+                "external_assertions": 0,
+                "verification_failures": 0,
+                "point_mutation_probes": 3,
+            },
             "reduced_tree_producer_component": {
                 "relation_id": tree_producer.RELATION_ID,
                 "tree_count": 2,
@@ -429,6 +447,10 @@ def build_native_profile_manifest() -> dict[str, object]:
             "production_split_tail_materialized": True,
             "production_h1_and_two_consistency_point_ports_native_closed": True,
             "production_tail_phase_a_to_phase_b_wire_identity_closed": True,
+            "production_index0_4096_degree13_producer_native_closed": True,
+            "production_index0_point_wire_identity_closed": True,
+            "production_index0_output_values_match_tail": True,
+            "production_index2_2048_degree12_producer_native_closed": False,
             "reduced_tree_producer_segments_native_closed": True,
             "reduced_producer_to_tail_port_values_match": True,
             "reduced_producer_point_wire_identity_closed": False,

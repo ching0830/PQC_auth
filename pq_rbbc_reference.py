@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Executable v2.12 reference relation for the PQ-RBBC/SGTD research draft.
+"""Executable v2.13 reference relation for the PQ-RBBC/SGTD research draft.
 
 This module implements the *incremental* five-block issuance relation described
 in the accompanying proof document.  It emits a streaming characteristic-two
@@ -1156,11 +1156,11 @@ def build_manifest(full_negative_circuits: bool = False) -> dict[str, object]:
             ).items()
         }
     return {
-        "implementation_version": "2.11",
+        "implementation_version": "2.13",
         "status": "executable research relation; not a deployment implementation",
         "claim_boundary": {
             "implemented": "incremental relation plus the in-circuit y = r + hash_image mask equation",
-            "forked_issuance": "the production reference and native shared global tail are frozen; reduced position-sensitive producers match every tail port, while production producers, point/cross-segment identities, and the parent join remain one external assertion",
+            "forked_issuance": "the production reference and native shared global tail are frozen; production tree index 0 is a replayed 4096-leaf producer with exact point-wire imports, while index 2, the remaining producers, output relocations, and the parent join remain open",
             "r1cs_backend": "streaming IR events only; no flattened matrices or proof backend",
             "trace_key": "deterministic systematic test fixture; not a certified Goppa key",
         },
@@ -1298,6 +1298,17 @@ def build_manifest(full_negative_circuits: bool = False) -> dict[str, object]:
             "production_split_tail_materialized": True,
             "production_h1_and_two_consistency_point_ports_native_closed": True,
             "production_tail_phase_a_to_phase_b_wire_identity_closed": True,
+            "production_tree0_producer_relation_id": native_profile.production_tree0.RELATION_ID,
+            "production_tree0_producer_rows": native_profile.production_tree0.FROZEN_ROWS,
+            "production_tree0_producer_local_wires": native_profile.production_tree0.FROZEN_LOCAL_WIRES,
+            "production_tree0_producer_max_wire_id": native_profile.production_tree0.FROZEN_MAX_WIRE_ID,
+            "production_tree0_producer_row_stream_sha256": native_profile.production_tree0.FROZEN_STREAM_SHA256,
+            "production_tree0_producer_assignment_sha256": native_profile.production_tree0.FROZEN_ASSIGNMENT_SHA256,
+            "production_tree0_point_wire_starts": native_profile.production_tree0.GLOBAL_POINT_STARTS,
+            "production_index0_4096_degree13_producer_native_closed": True,
+            "production_index0_point_wire_identity_closed": True,
+            "production_index0_output_values_match_tail": True,
+            "production_index2_2048_degree12_producer_native_closed": False,
             "reduced_tree_producer_relation_id": native_profile.tree_producer.RELATION_ID,
             "reduced_tree_producer_rows_per_tree": native_profile.tree_producer.FROZEN_REDUCED_ROWS_PER_TREE,
             "reduced_tree_producer_wires_per_tree": native_profile.tree_producer.FROZEN_REDUCED_WIRES_PER_TREE,

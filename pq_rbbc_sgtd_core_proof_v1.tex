@@ -43,8 +43,8 @@
 
 \title{A Post-Quantum Relation-Bound Blind Certification Core\\
 with Signature-Gated Threshold Decryption}
-\author{Research construction draft, version 2.12}
-\date{25 August 2026}
+\author{Research construction draft, version 2.13}
+\date{26 August 2026}
 
 \begin{document}
 \maketitle
@@ -224,6 +224,14 @@ port, and both 193-bit consistency-point ports.  Five exact-wire mutations
 reject.  This closes the production tail-internal split; production producer
 segments, producer-to-point relocation, the complete composition, and the
 parent join remain open.
+Version 2.13 materializes and completely replays the first position-sensitive
+production producer: tree index zero, 4,096 leaves, and extension degree 13.
+Its Horner rows import the two production consistency-point ranges at exact
+global wires 39,945,673 and 39,945,866; no local point copy is allocated.
+All 51,325,080 rows replay with zero failures and zero external assertions,
+nine selected mutations reject, and all four producer outputs equal their
+frozen tail-consumer values.  Tree index two, output-wire relocations, the
+eighteen-tree replay, and the parent join remain open.
 \end{abstract}
 
 \section{Status, scope, and non-goals}
@@ -1948,6 +1956,67 @@ equates a producer-local point input with either production point output.
 Consequently producer-to-point identity, complete eighteen-tree assignment
 replay, the parent join, and production closure remain false.
 
+\paragraph{Production tree-index-zero producer in version 2.13.}
+The first production producer uses relation identifier
+\begin{center}\small
+\path{pq-rbbc/cap/production-tree-producer-index-0/v1}.
+\end{center}
+It is position-sensitive: its canonical XOF inputs include tree index zero,
+and its tree component matches the frozen version-2.8 full-profile execution.
+
+\begin{proposition}[Production index-zero producer replay and exact point import]
+The tree-index-zero producer with 4,096 leaves and extension degree 13 has
+51,325,080 rows and 38,953,830 local wires.  Its local namespace is the
+half-open global range $[40194597,79148427)$.  Its row stream has SHA-256
+\begin{center}\small
+\texttt{496f5279f914d72b15864414f1a54808}\par\vspace{-0.2em}
+\texttt{9236de1e14cdde3a8d360c28a21ca43e},
+\end{center}
+and its 973,845,878-byte fixed-width assignment has SHA-256
+\begin{center}\small
+\texttt{213fa3c90b62db64436ec8e7dd7ee5a}\par\vspace{-0.2em}
+\texttt{6e0ec6b546ae4fa02b3cbfb50fdf502db}.
+\end{center}
+Complete replay has zero failed rows and zero external assertions.  The two
+193-bit Horner-point inputs directly reference the frozen global-tail ranges
+beginning at wires 39,945,673 and 39,945,866, and no local point copy exists.
+Flipping either point or swapping the points rejects.  Six producer-local
+stale-witness probes also reject.  Finally, the leaf-commitment,
+$p$-plain, $\widehat m$-plain, and $\xi$-mask outputs beginning at wires
+77,419,669, 79,000,725, 79,002,773, and 79,143,409 equal the four frozen
+tail-consumer values.
+\end{proposition}
+\begin{proof}
+The producer material is extracted from the frozen full-profile execution,
+while the position-sensitive XOF cache is sealed to the profile fingerprint,
+randomness label, source component digest, and tree index.  A binary-row sink
+starts allocation at global wire 40,194,597.  For the two point ports it emits
+forms containing the existing global-tail wire identifiers rather than
+allocating input wires, copy rows, or host-language assertions.  A composite
+assignment reader resolves lower identifiers against the frozen global-tail
+archive and producer identifiers against the producer archive.  Evaluation of
+every emitted row gives the stated zero-failure replay and stream digest.
+
+Each point mutation keeps the producer archive stale and changes only the
+selected global-tail range, so rejection demonstrates that the named Horner
+row uses the imported identifier.  The salt, last-leaf tape, and four output
+mutations similarly falsify named native rows.  Independent extraction of all
+four producer output bit-vectors and their tail-consumer counterparts gives
+equal length and SHA-256 for each class.  This proves value equality, but not
+wire identity, because the producer and consumer starts differ.
+\end{proof}
+
+The proposition closes only these three machine claims:
+\begin{center}\small
+\texttt{production\_index0\_4096\_degree13\_producer\_native\_closed},\\
+\texttt{production\_index0\_point\_wire\_identity\_closed},\\
+\texttt{production\_index0\_output\_values\_match\_tail}.
+\end{center}
+The claims for the
+tree-index-two 2,048-leaf/degree-12 producer, all four output relocations,
+complete production producer materialization, eighteen-tree replay, the parent
+join, security revalidation, and production closure remain false.
+
 The earlier 240/336/360 discrepancy remains documented, but it no longer
 blocks implementation: version 2.0 intentionally chooses the 336-row profile.
 The cost of that choice is loss of bit-exact Blind-UOV compatibility and loss
@@ -2452,6 +2521,11 @@ assignment and fixes both production point outputs.  It removes the production
 split-tail portion of the uncertainty, but not the producer segments,
 producer-to-point relocation, full composition, or parent portions of the
 external assertion.
+Version 2.13 completely replays the index-zero 4,096-leaf producer and binds
+its Horner inputs directly to those two point outputs.  It removes that one
+position-sensitive producer and point-import uncertainty.  The index-two
+shape, output-wire relocations, remaining positions, full composition, and
+parent portions of the external assertion remain.
 The linear equation $y=r+h_{\RBBC}$ is no longer external.  This narrowed
 boundary is deliberate and machine-visible: an archive with an unchecked
 external assertion is not a closed issuance proof.  The next integration must
@@ -2531,13 +2605,18 @@ rejected boundary-wire probes, and native Phase-A-to-Phase-B $H_1$/point wire
 identity; plus a version-2.12 production split-tail contract obtained by replaying all
 56,806,711 rows of the frozen 1,004,865,028-byte assignment, with zero failed
 rows, exact $H_1$ and two-point wire ranges, five rejected boundary-wire
-mutations, and an unchanged canonical stream digest.\\
+mutations, and an unchanged canonical stream digest; plus a version-2.13
+tree-index-zero production producer with 51,325,080 rows,
+38,953,830 local wires, a 973,845,878-byte assignment, direct imports of both
+production point ranges, zero failures, zero external assertions, nine
+rejected mutations, and four output-value matches.\\
 \addlinespace
 Not yet instantiated & A post-quantum zero-knowledge and
 simulation-extractable implementation of $\Piiss$; a native
-$\mathbb F_{2^{193}}$ materialization of all 18 tree-producer segments, exact
-wire identities from those segments into the closed shared tail, and complete
-composition replay; a fork-specific
+$\mathbb F_{2^{193}}$ materialization of the remaining production
+tree-producer shapes and positions, exact output-wire identities from all
+eighteen segments into the closed shared tail, and complete composition
+replay; a fork-specific
 blindness/one-more-unforgeability proof; fresh key, signature, and proof-size
 benchmarks; validation of the CAP properties used by
 Theorem~\ref{thm:j-qrom};
@@ -2613,10 +2692,11 @@ machine-tested or enforced by type/API boundaries.
   version-2.11 reduced split-tail contract additionally fixes exact
   tail-internal $H_1$/point wire identity without changing the canonical
   stream.  Version 2.12 additionally replays and fixes that split on the
-  production assignment, including both point outputs.  The producer segments,
-  producer-to-point and cross-segment wire
-  identities, complete composition replay, and parent-circuit wire identities
-  are still required.
+  production assignment, including both point outputs.  Version 2.13
+  additionally replays the index-zero 4,096-leaf producer and directly imports
+  those exact point wires without a local copy.  The index-two shape, remaining
+  positions, all output relocations, complete composition replay, and
+  parent-circuit wire identities are still required.
   \item The fork must never claim bit-exact Blind-UOV compatibility.  The
   reported 240 rows remain comparison data; the selected fork uses 336 rows.
   \item Production closure requires independent fork vectors and cryptanalysis,
@@ -2650,15 +2730,19 @@ tree.  Each has a frozen bounded-memory row-stream digest, a complete
   wires as Phase-A outputs, proves exact stream and assignment equivalence,
   and rejects four boundary-wire mutations.  Version 2.12 replays the frozen
   production assignment under the same observer, fixes the production $H_1$
-  and both point wire starts, and rejects five boundary-wire mutations.  The 240-row
+  and both point wire starts, and rejects five boundary-wire mutations.
+  Version 2.13 materializes the position-zero 4,096-leaf/degree-13 producer,
+  replays all 51,325,080 rows, directly imports both exact point ranges,
+  rejects nine mutations, and matches all four tail output values.  The 240-row
 artifact gap is no longer
 an engineering blocker because the fork intentionally gives up bit-exact
 compatibility.  The next component is exact native multi-tree composition:
 
 \begin{quote}
-\emph{Materialize one actual 4,096-leaf/degree-13 and one actual
-2,048-leaf/degree-12 producer without
-duplicating the tail, freeze every point and output port-to-wire relocation,
+\emph{Materialize the actual tree-index-two
+2,048-leaf/degree-12 producer without duplicating the tail, import the same
+two exact point wires, then freeze every output port-to-wire relocation for
+both production shapes,
 expand to all eighteen positions, and replay the complete composition with
 zero failures.  Then join the resulting
 CAP bytes to the parent archive, which must reject changed $m$, $r$, $\rho$,
@@ -2671,7 +2755,7 @@ zero-knowledge and simulation-extractable backend.}
 
 \paragraph{Delivery roadmap.}
 The companion file
-\texttt{PQ\_RBBC\_CRYPTO\_CORE\_ROADMAP\_v2\_12.md} records the ordered gates:
+\texttt{PQ\_RBBC\_CRYPTO\_CORE\_ROADMAP\_v2\_13.md} records the ordered gates:
 (R1b-d) production producer segmentation, point-wire and output-wire
 relocation, and full assignment replay;
 (R2) parent exact wire join and zero external assertions; (R3) fork-specific CAP, request-binding, blindness,

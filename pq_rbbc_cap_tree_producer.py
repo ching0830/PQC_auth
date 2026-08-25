@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Position-sensitive native CAP tree producers for PQ-RBBC v2.10.
+"""Position-sensitive native CAP tree producers for PQ-RBBC v2.13.
 
 The v2.9 shared global tail consumes four ports from every production tree:
 leaf commitments, the plain witness polynomial, the plain consistency tail,
@@ -14,9 +14,12 @@ four contiguous bit-constrained output ports whose IDs, widths, and value
 digests match the v2.9 tail consumer ports.
 
 The reduced two-tree checkpoint proves the segmentation architecture with
-assignment generation, complete replay, and stale-witness probes.  Production
-tree segments, point-wire identity to the global tail, the complete 18-tree
-replay, and the parent join remain separate fail-closed obligations.
+assignment generation, complete replay, and stale-witness probes.  Version
+2.13 also exposes a production-segment entry point: callers may provide one
+position-sensitive tree polynomial/call schedule, import the two global point
+wire ranges without local copies, and allocate local wires after a frozen
+relation.  The complete 18-tree replay and the parent join remain separate
+fail-closed obligations.
 """
 
 from __future__ import annotations
@@ -37,7 +40,7 @@ import pq_rbbc_cap_shard_assignment as assignment
 import pq_rbbc_cap_shard_stream as shard
 
 
-IMPLEMENTATION_VERSION = "2.10"
+IMPLEMENTATION_VERSION = "2.13"
 RELATION_ID = "pq-rbbc/cap/tree-producer-segment/v1"
 STREAM_FORMAT = tail.STREAM_FORMAT
 FROZEN_MESSAGE = bytes(32)
@@ -89,6 +92,22 @@ class ProducerSummary:
     first_verification_failure: str | None
     wall_seconds: float
     peak_rss_kib: int
+    local_wire_start: int = 1
+    max_wire_id: int = 0
+    imported_point_wires: tuple[int, ...] = ()
+
+
+@dataclass(frozen=True)
+class TreeProducerMaterial:
+    """All position-sensitive values needed by one producer-only relation."""
+
+    tree_index: int
+    polynomial: cap.TreePolynomial
+    point_values: tuple[int, ...]
+    p_plain: int
+    mhat_plain: int
+    xi_masks: tuple[int, ...]
+    calls: tuple[cap.XOFCall, ...]
 
 
 @dataclass(frozen=True)
@@ -141,6 +160,80 @@ def _tree_calls(
     return calls
 
 
+def material_from_execution(
+    parameters: cap.CAPParameters,
+    execution: cap.CAPExecution,
+    tree_index: int,
+    message: bytes = FROZEN_MESSAGE,
+) -> TreeProducerMaterial:
+    material = tail.derive_tail_material(parameters, execution, message)
+    return TreeProducerMaterial(
+        tree_index,
+        execution.tree_polynomials[tree_index],
+        material.points,
+        material.p_plain[tree_index],
+        material.mhat_plain[tree_index],
+        material.xi_masks[tree_index],
+        _tree_calls(execution, tree_index),
+    )
+
+
+def material_from_local_tree(
+    parameters: cap.CAPParameters,
+    tree_index: int,
+    polynomial: cap.TreePolynomial,
+    point_values: Sequence[int],
+    calls: Sequence[cap.XOFCall],
+) -> TreeProducerMaterial:
+    """Derive producer outputs without constructing the other 17 trees."""
+
+    if len(point_values) != parameters.consistency_points:
+        raise ValueError("producer point count mismatch")
+    if any(point == 0 for point in point_values):
+        raise ValueError("producer consistency points must be nonzero")
+    if len(set(point_values)) != len(point_values):
+        raise ValueError("producer consistency points must be distinct")
+    leaves = parameters.expanded_leaf_counts()[tree_index]
+    extension_degree = parameters.expanded_extension_degrees()[tree_index]
+    if (polynomial.leaves, polynomial.extension_degree) != (
+        leaves,
+        extension_degree,
+    ):
+        raise ValueError("producer polynomial shape mismatch")
+    prefix = f"tree[{tree_index}]."
+    local_calls = tuple(calls)
+    if not local_calls or any(
+        not call.label.startswith(prefix) for call in local_calls
+    ):
+        raise ValueError("producer call schedule is not tree-local")
+    witness_mask = (1 << parameters.witness_bits) - 1
+    consistency_mask = (1 << parameters.consistency_bits) - 1
+    mhat_shift = (
+        parameters.witness_bits + (parameters.degree - 1) * parameters.rho
+    )
+    p_plain = polynomial.plain & witness_mask
+    mhat_plain = (polynomial.plain >> mhat_shift) & consistency_mask
+    hashed = cap._linear_hash_masks(
+        polynomial.masks[: parameters.witness_bits],
+        parameters.witness_bits,
+        extension_degree,
+        tuple(point_values),
+    )
+    mhat_masks = polynomial.masks[
+        mhat_shift : mhat_shift + parameters.consistency_bits
+    ]
+    xi_masks = tuple(left ^ right for left, right in zip(hashed, mhat_masks))
+    return TreeProducerMaterial(
+        tree_index,
+        polynomial,
+        tuple(point_values),
+        p_plain,
+        mhat_plain,
+        xi_masks,
+        local_calls,
+    )
+
+
 def _flatten_xi(values: Sequence[int], extension_degree: int) -> int:
     return sum(
         bit << (coordinate * extension_degree + extension_bit)
@@ -154,7 +247,18 @@ def capture_labels(
     execution: cap.CAPExecution,
     tree_index: int,
 ) -> tuple[str, ...]:
-    poly = execution.tree_polynomials[tree_index]
+    return capture_material_labels(
+        parameters,
+        material_from_execution(parameters, execution, tree_index),
+    )
+
+
+def capture_material_labels(
+    parameters: cap.CAPParameters,
+    material: TreeProducerMaterial,
+) -> tuple[str, ...]:
+    tree_index = material.tree_index
+    poly = material.polynomial
     leaves = poly.leaves
     first_tape_call = leaves - 1
     prefix = f"output.tree[{tree_index}]"
@@ -178,10 +282,13 @@ def capture_labels(
 def build_tree_producer(
     parameters: cap.CAPParameters,
     randomness: cap.CAPRandomness,
-    execution: cap.CAPExecution,
+    execution: cap.CAPExecution | None,
     tree_index: int,
     message: bytes = FROZEN_MESSAGE,
     *,
+    producer_material: TreeProducerMaterial | None = None,
+    external_point_starts: Sequence[int] | None = None,
+    local_wire_start: int = 1,
     workers: int = 1,
     assignment_writer: shard.AssignmentWriter | None = None,
     verification_assignment: Mapping[int, int] | None = None,
@@ -191,32 +298,47 @@ def build_tree_producer(
 ) -> ProducerSummary:
     """Build one actual profile-position tree producer.
 
-    The execution and randomness belong to the complete multi-tree profile;
-    tree labels and metadata therefore retain their real profile position.
+    The execution and randomness normally belong to the complete multi-tree
+    profile.  A production segment may instead pass ``producer_material`` and
+    import the already-constrained global point wires directly.
     """
 
     if not 0 <= tree_index < parameters.tree_count:
         raise ValueError("tree index outside profile")
-    if len(execution.tree_polynomials) != parameters.tree_count:
-        raise ValueError("execution tree count mismatch")
     if len(randomness.roots) != parameters.tree_count:
         raise ValueError("randomness tree count mismatch")
     if len(message) != 32:
         raise ValueError("request message must be 32 bytes")
     if parameters.consistency_points <= 0:
         raise ValueError("tree producer requires consistency points")
-    if execution.commitment.parameters_fingerprint != cap.profile_fingerprint(
-        parameters
-    ):
-        raise ValueError("execution profile mismatch")
+    if producer_material is None:
+        if execution is None:
+            raise ValueError("tree producer requires execution or local material")
+        if len(execution.tree_polynomials) != parameters.tree_count:
+            raise ValueError("execution tree count mismatch")
+        if execution.commitment.parameters_fingerprint != cap.profile_fingerprint(
+            parameters
+        ):
+            raise ValueError("execution profile mismatch")
+        producer_material = material_from_execution(
+            parameters, execution, tree_index, message
+        )
+    elif producer_material.tree_index != tree_index:
+        raise ValueError("producer material tree index mismatch")
+    if external_point_starts is not None:
+        if len(external_point_starts) != parameters.consistency_points:
+            raise ValueError("external point wire count mismatch")
+        if any(start <= 0 for start in external_point_starts):
+            raise ValueError("external point wires must be positive")
+    if local_wire_start <= 0:
+        raise ValueError("local producer wire start must be positive")
 
     started = time.perf_counter()
-    poly = execution.tree_polynomials[tree_index]
+    poly = producer_material.polynomial
     leaves = poly.leaves
     extension_degree = poly.extension_degree
-    material = tail.derive_tail_material(parameters, execution, message)
-    point_values = material.points
-    calls = _tree_calls(execution, tree_index)
+    point_values = producer_material.point_values
+    calls = producer_material.calls
     cursor = shard.CallCursor(calls)
     witness_pool = (
         None
@@ -232,8 +354,16 @@ def build_tree_producer(
         "leaves": leaves,
         "extension_degree": extension_degree,
     }
+    if local_wire_start != 1 or external_point_starts is not None:
+        header.update(
+            {
+                "local_wire_start": local_wire_start,
+                "imported_point_wires": list(external_point_starts or ()),
+            }
+        )
     sink = tail.BinaryRowSink(
         header,
+        initial_wire=local_wire_start,
         assignment_writer=assignment_writer,
         verification_assignment=verification_assignment,
         capture_labels=capture_rows,
@@ -286,15 +416,24 @@ def build_tree_producer(
                 _field_tuple_digest(roots),
             )
         )
-        point_starts = tuple(
-            shard._allocate_input_bits(
-                sink,
-                field.FIELD_DEGREE,
-                f"input.consistency-point[{point_index}]",
-                point_value,
+        point_starts = (
+            tuple(external_point_starts)
+            if external_point_starts is not None
+            else tuple(
+                shard._allocate_input_bits(
+                    sink,
+                    field.FIELD_DEGREE,
+                    f"input.consistency-point[{point_index}]",
+                    point_value,
+                )
+                for point_index, point_value in enumerate(point_values)
             )
-            for point_index, point_value in enumerate(point_values)
         )
+        if any(
+            right != left + field.FIELD_DEGREE
+            for left, right in zip(point_starts, point_starts[1:])
+        ):
+            raise ValueError("producer point wire ranges must be contiguous")
         ports.append(
             ProducerPort(
                 "global.consistency-points",
@@ -305,11 +444,15 @@ def build_tree_producer(
                 _field_tuple_digest(point_values),
             )
         )
-        point_validation_rows = shard._point_validation(
-            sink,
-            point_starts,
-            point_values,
-            f"tree[{tree_index}].consistency.validate",
+        point_validation_rows = (
+            0
+            if external_point_starts is not None
+            else shard._point_validation(
+                sink,
+                point_starts,
+                point_values,
+                f"tree[{tree_index}].consistency.validate",
+            )
         )
         sink.finish_group()
 
@@ -444,7 +587,7 @@ def build_tree_producer(
                 hashlib.sha256(commitment_encoded).hexdigest(),
             )
         )
-        p_value = material.p_plain[tree_index]
+        p_value = producer_material.p_plain
         p_start = shard._publish_source(
             sink,
             plain_source(0, witness_bits),
@@ -461,7 +604,7 @@ def build_tree_producer(
                 _bits_digest(p_value, witness_bits),
             )
         )
-        mhat_value = material.mhat_plain[tree_index]
+        mhat_value = producer_material.mhat_plain
         mhat_start = shard._publish_source(
             sink,
             plain_source(witness_bits, parameters.consistency_bits),
@@ -578,7 +721,7 @@ def build_tree_producer(
                         mask_output_starts[extension_bit][point] + bit
                     ).add(mask_tail_form(extension_bit, coordinate))
 
-        xi_values = material.xi_masks[tree_index]
+        xi_values = producer_material.xi_masks
         xi_flat = _flatten_xi(xi_values, extension_degree)
         xi_width = parameters.consistency_bits * extension_degree
         sink.start_group("tree-post-output-port")
@@ -627,8 +770,16 @@ def build_tree_producer(
             ],
             "rows": sink.rows,
             "tree_index": tree_index,
-            "wires": sink.wire_count,
+            "wires": sink.allocated_wires,
         }
+        if local_wire_start != 1 or external_point_starts is not None:
+            trailer.update(
+                {
+                    "local_wire_start": local_wire_start,
+                    "max_wire_id": sink.wire_count,
+                    "imported_point_wires": list(external_point_starts or ()),
+                }
+            )
         stream_bytes, stream_sha256 = sink.finish(trailer)
         if captured_rows_output is not None:
             captured_rows_output.update(sink.captured_rows)
@@ -639,7 +790,7 @@ def build_tree_producer(
             extension_degree,
             stream_bytes,
             stream_sha256,
-            sink.wire_count,
+            sink.allocated_wires,
             sink.rows,
             sink.nonlinear_rows,
             sink.linear_rows,
@@ -653,6 +804,9 @@ def build_tree_producer(
             sink.first_verification_failure,
             time.perf_counter() - started,
             resource.getrusage(resource.RUSAGE_SELF).ru_maxrss,
+            local_wire_start,
+            sink.wire_count,
+            tuple(external_point_starts or ()),
         )
     finally:
         if witness_pool is not None:

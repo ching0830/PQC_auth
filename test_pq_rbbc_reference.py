@@ -147,6 +147,22 @@ class RelationTests(unittest.TestCase):
                 "production_tail_phase_a_to_phase_b_wire_identity_closed"
             ]
         )
+        self.assertEqual(contract["production_tree0_producer_rows"], 51_325_080)
+        self.assertEqual(
+            contract["production_tree0_producer_local_wires"], 38_953_830
+        )
+        self.assertEqual(
+            tuple(contract["production_tree0_point_wire_starts"]),
+            (39_945_673, 39_945_866),
+        )
+        self.assertTrue(
+            contract["production_index0_4096_degree13_producer_native_closed"]
+        )
+        self.assertTrue(contract["production_index0_point_wire_identity_closed"])
+        self.assertTrue(contract["production_index0_output_values_match_tail"])
+        self.assertFalse(
+            contract["production_index2_2048_degree12_producer_native_closed"]
+        )
         self.assertTrue(contract["reduced_tree_producer_segments_native_closed"])
         self.assertTrue(contract["reduced_producer_to_tail_port_values_match"])
         self.assertFalse(contract["reduced_producer_point_wire_identity_closed"])

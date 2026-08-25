@@ -349,6 +349,35 @@ class BlindUOVVisibilityTests(unittest.TestCase):
                 "production_tail_phase_a_to_phase_b_wire_identity_closed"
             ]
         )
+        interface = manifest["fork_profile"]
+        self.assertEqual(interface["production_tree0_producer_rows"], 51_325_080)
+        self.assertEqual(
+            interface["production_tree0_producer_local_wires"], 38_953_830
+        )
+        self.assertEqual(
+            tuple(interface["production_tree0_point_wire_starts"]),
+            (39_945_673, 39_945_866),
+        )
+        self.assertTrue(
+            manifest["claim_boundary"][
+                "production_index0_4096_degree13_producer_native_closed"
+            ]
+        )
+        self.assertTrue(
+            manifest["claim_boundary"][
+                "production_index0_point_wire_identity_closed"
+            ]
+        )
+        self.assertTrue(
+            manifest["claim_boundary"][
+                "production_index0_output_values_match_tail"
+            ]
+        )
+        self.assertFalse(
+            manifest["claim_boundary"][
+                "production_index2_2048_degree12_producer_native_closed"
+            ]
+        )
         self.assertFalse(
             manifest["claim_boundary"]["tree_producer_segments_materialized"]
         )

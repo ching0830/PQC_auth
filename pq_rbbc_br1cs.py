@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Binary F2-R1CS lowering for the executable PQ-RBBC v2.12 relation.
+"""Binary F2-R1CS lowering for the executable PQ-RBBC v2.13 relation.
 
 The format is intentionally small and auditable.  It serializes enough data to
 reconstruct ordinary rank-1 constraints over F2:
@@ -804,6 +804,17 @@ def build_backend_manifest(output_path: str | os.PathLike[str]) -> dict[str, obj
             "production_split_tail_point_wire_starts": native_profile.production_split_tail.FROZEN_POINT_WIRE_STARTS,
             "production_split_tail_boundary_wire_probes": native_profile.production_split_tail.FROZEN_BOUNDARY_PROBES,
             "production_split_tail_materialized": True,
+            "production_tree0_producer_relation_id": native_profile.production_tree0.RELATION_ID,
+            "production_tree0_producer_rows": native_profile.production_tree0.FROZEN_ROWS,
+            "production_tree0_producer_local_wires": native_profile.production_tree0.FROZEN_LOCAL_WIRES,
+            "production_tree0_producer_max_wire_id": native_profile.production_tree0.FROZEN_MAX_WIRE_ID,
+            "production_tree0_producer_row_stream_sha256": native_profile.production_tree0.FROZEN_STREAM_SHA256,
+            "production_tree0_producer_assignment_sha256": native_profile.production_tree0.FROZEN_ASSIGNMENT_SHA256,
+            "production_tree0_point_wire_starts": native_profile.production_tree0.GLOBAL_POINT_STARTS,
+            "production_index0_4096_degree13_producer_native_closed": True,
+            "production_index0_point_wire_identity_closed": True,
+            "production_index0_output_values_match_tail": True,
+            "production_index2_2048_degree12_producer_native_closed": False,
             "production_h1_and_two_consistency_point_ports_native_closed": True,
             "production_tail_phase_a_to_phase_b_wire_identity_closed": True,
             "reduced_tree_producer_relation_id": native_profile.tree_producer.RELATION_ID,

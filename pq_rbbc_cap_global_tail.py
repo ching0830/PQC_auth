@@ -92,11 +92,15 @@ class BinaryRowSink:
         self,
         header: Mapping[str, object],
         *,
+        initial_wire: int = 1,
         assignment_writer: shard.AssignmentWriter | None = None,
         verification_assignment: Mapping[int, int] | None = None,
         capture_labels: Iterable[str] = (),
     ) -> None:
-        self.next_wire = 1
+        if initial_wire <= 0:
+            raise ValueError("initial wire must be positive")
+        self.initial_wire = initial_wire
+        self.next_wire = initial_wire
         self.rows = 0
         self.nonlinear_rows = 0
         self.linear_rows = 0
@@ -123,6 +127,10 @@ class BinaryRowSink:
     @property
     def wire_count(self) -> int:
         return self.next_wire - 1
+
+    @property
+    def allocated_wires(self) -> int:
+        return self.next_wire - self.initial_wire
 
     def allocate(
         self,
