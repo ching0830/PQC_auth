@@ -166,8 +166,10 @@ class ProductionShardParameterTests(unittest.TestCase):
         )
 
     def test_frozen_production_manifest(self) -> None:
-        path = Path(__file__).with_name(
-            "pq_rbbc_cap_shard_stream_manifest_v2_5.json"
+        path = (
+            Path(__file__).resolve().parents[1]
+            / "manifests"
+            / "pq_rbbc_cap_shard_stream_manifest_v2_5.json"
         )
         manifest = json.loads(path.read_text(encoding="utf-8"))
         trace = manifest["trace"]

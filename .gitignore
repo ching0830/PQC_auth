@@ -1,16 +1,25 @@
-# Original release snapshots used to reconstruct this repository
-/version/
-
-# Large generated circuit archives
+# Large generated circuit and assignment artifacts
 *.br1cs
 *.f193r1cs
+*.f193assign
+*.f193assign.part
+*.part
+*.pkl
+*.tar
+*.tar.gz
 
-# Python caches and test artifacts
+# Runtime logs, caches, and restored/downloaded workspaces
+*.log
 __pycache__/
 *.py[cod]
 .pytest_cache/
 .coverage
 htmlcov/
+release_extract/
+library_releases/
+restored_*/
+production_tree*/
+global_tail_parts/
 
 # LaTeX intermediate files (release PDFs remain tracked)
 *.aux
@@ -18,7 +27,6 @@ htmlcov/
 *.blg
 *.fdb_latexmk
 *.fls
-*.log
 *.out
 *.synctex.gz
 *.toc

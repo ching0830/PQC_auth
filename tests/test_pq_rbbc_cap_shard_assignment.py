@@ -106,8 +106,10 @@ class AssignmentBackedProbeTests(unittest.TestCase):
 
 class ProductionAssignmentManifestTests(unittest.TestCase):
     def test_frozen_production_assignment_manifest(self) -> None:
-        path = Path(__file__).with_name(
-            "pq_rbbc_cap_shard_assignment_manifest_v2_6.json"
+        path = (
+            Path(__file__).resolve().parents[1]
+            / "manifests"
+            / "pq_rbbc_cap_shard_assignment_manifest_v2_6.json"
         )
         if not path.exists():
             self.skipTest("v2.6 production assignment vector not frozen yet")
@@ -149,8 +151,10 @@ class ProductionAssignmentManifestTests(unittest.TestCase):
 
 class Production4096AssignmentManifestTests(unittest.TestCase):
     def test_frozen_production_4096_assignment_manifest(self) -> None:
-        path = Path(__file__).with_name(
-            "pq_rbbc_cap_shard_assignment_4096_manifest_v2_7.json"
+        path = (
+            Path(__file__).resolve().parents[1]
+            / "manifests"
+            / "pq_rbbc_cap_shard_assignment_4096_manifest_v2_7.json"
         )
         manifest = json.loads(path.read_text(encoding="utf-8"))
         profile = manifest["profile"]

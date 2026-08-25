@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import os
 import unittest
 from pathlib import Path
 
@@ -12,12 +13,14 @@ import pq_rbbc_cap_production_tree2_producer as production
 import pq_rbbc_cap_shard_assignment as assignment
 
 
-ROOT = Path(__file__).resolve().parent
-DIRECTORY = ROOT / "production_tree2_v2_14"
+ROOT = Path(__file__).resolve().parents[1]
+ARTIFACT_ROOT = Path(os.environ.get("PQRBBC_ARTIFACT_ROOT", ROOT))
+DIRECTORY = ROOT / "artifacts" / "metadata" / "production_tree2_v2_14"
 MANIFEST_PATH = DIRECTORY / "pq_rbbc_cap_production_tree2_manifest_v2_14.json"
-ARCHIVE_PATH = DIRECTORY / "pq_rbbc_production_tree_2_producer_v2_14.f193assign"
-CACHE_PATH = DIRECTORY / "tree_2_execution_checkpoint_v2_14.pkl"
-GLOBAL_ARCHIVE_PATH = ROOT / "pq_rbbc_cap_global_tail_assignment_v2_9.f193assign"
+EXTERNAL_DIRECTORY = ARTIFACT_ROOT / "production_tree2_v2_14"
+ARCHIVE_PATH = EXTERNAL_DIRECTORY / "pq_rbbc_production_tree_2_producer_v2_14.f193assign"
+CACHE_PATH = EXTERNAL_DIRECTORY / "tree_2_execution_checkpoint_v2_14.pkl"
+GLOBAL_ARCHIVE_PATH = ARTIFACT_ROOT / "pq_rbbc_cap_global_tail_assignment_v2_9.f193assign"
 
 
 class ProductionTree2ProducerTests(unittest.TestCase):
@@ -26,6 +29,8 @@ class ProductionTree2ProducerTests(unittest.TestCase):
         cls.manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
 
     def test_frozen_vector_and_archive_are_exact(self) -> None:
+        if not ARCHIVE_PATH.exists():
+            self.skipTest("external v2.14 tree-2 assignment is not installed")
         trace = self.manifest["trace"]
         archive = self.manifest["assignment_archive"]
         self.assertEqual(trace["rows"], production.FROZEN_ROWS)
@@ -58,6 +63,8 @@ class ProductionTree2ProducerTests(unittest.TestCase):
         )
 
     def test_checkpoint_cache_is_complete_and_identity_sealed(self) -> None:
+        if not CACHE_PATH.exists() or not GLOBAL_ARCHIVE_PATH.exists():
+            self.skipTest("external v2.14 replay artifacts are not installed")
         with assignment.AssignmentArchiveReader(
             GLOBAL_ARCHIVE_PATH, verify_body=False
         ) as global_values:

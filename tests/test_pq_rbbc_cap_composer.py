@@ -80,7 +80,11 @@ class CAPComposerTests(unittest.TestCase):
         )
 
     def test_frozen_document_when_present_is_fail_closed(self) -> None:
-        path = Path("pq_rbbc_cap_composition_manifest_v2_8.json")
+        path = (
+            Path(__file__).resolve().parents[1]
+            / "manifests"
+            / "pq_rbbc_cap_composition_manifest_v2_8.json"
+        )
         if not path.exists():
             self.skipTest("production composition vector has not been generated")
         self.assertEqual(composer.verify_frozen_document(path), ())

@@ -15,10 +15,12 @@ import pq_rbbc_cap_production_split_tail as production_split
 import pq_rbbc_cap_split_tail as reduced_split
 
 
-ROOT = Path(__file__).resolve().parent
-SOURCE_MANIFEST = ROOT / "pq_rbbc_cap_global_tail_manifest_v2_9.json"
+ROOT = Path(__file__).resolve().parents[1]
+SOURCE_MANIFEST = ROOT / "manifests" / "pq_rbbc_cap_global_tail_manifest_v2_9.json"
 PRODUCTION_MANIFEST = (
     ROOT
+    / "artifacts"
+    / "metadata"
     / "production_split_v2_12"
     / "pq_rbbc_cap_production_split_tail_manifest_v2_12.json"
 )
