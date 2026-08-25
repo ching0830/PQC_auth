@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fail-closed native import contract for the PQ-RBBC v2.0 fork.
+"""Fail-closed native import contract for the PQ-RBBC v2.1 fork.
 
 The selected profile is deliberately independent of the unreproduced
 Blind-UOV 240-row instance.  It accepts no claim of bit-exact compatibility.
@@ -16,9 +16,10 @@ from dataclasses import asdict, dataclass, field
 
 import pq_rbbc_anemoi_f193 as permutation
 import pq_rbbc_anemoi_sponge as sponge
+import pq_rbbc_cap_commit as cap
 
 
-IMPLEMENTATION_VERSION = "2.0"
+IMPLEMENTATION_VERSION = "2.1"
 RELATION_ID = "pq-rbbc-buov-iii-336/cap-hash/v1"
 TARGET_FIELD = "GF(2^193)"
 REQUIRED_TAMPER_CASES = frozenset(
@@ -156,7 +157,7 @@ def build_native_profile_manifest() -> dict[str, object]:
     parameters = permutation.derive_parameters()
     return {
         "implementation_version": IMPLEMENTATION_VERSION,
-        "status": "independent Anemoi-193/336 fork selected; request hash primitive implemented; full CAP remains external",
+        "status": "CAP.Commit reference algorithm, canonical serialization, and exact H_RBBC byte join implemented; full 18-tree native row stream remains external",
         "fork_profile": {
             "name": sponge.PROFILE_NAME,
             "relation_id": RELATION_ID,
@@ -167,6 +168,14 @@ def build_native_profile_manifest() -> dict[str, object]:
             "rate_bits": sponge.RATE_BITS,
             "capacity_bits": sponge.CAPACITY_BITS,
             "request_hash_bits": sponge.REQUEST_HASH_BITS,
+            "cap_relation_id": cap.PROFILE_RELATION_ID,
+            "cap_profile_sha256": cap.profile_fingerprint(
+                cap.PRODUCTION_PARAMETERS
+            ),
+            "cap_commitment_bytes": cap.commitment_bytes(
+                cap.PRODUCTION_PARAMETERS
+            ),
+            "cap_production_accounting": cap.production_accounting(),
         },
         "compatibility": {
             "blind_uov_framework_used_as_design_source": True,
@@ -182,13 +191,22 @@ def build_native_profile_manifest() -> dict[str, object]:
             "anemoi_permutation": True,
             "canonical_sponge": True,
             "request_binding_hash": True,
-            "production_cap_commit": False,
+            "production_cap_reference_algorithm": True,
+            "ggm_seed_tree_reference": True,
+            "consistency_hash_reference": True,
+            "canonical_cap_serialization": True,
+            "cap_to_h_rbbc_byte_join": True,
+            "production_cap_full_vector_executed": False,
+            "production_cap_native_rows_materialized": False,
+            "production_cap_inter_call_wire_identity": False,
             "complete_message_commitment_hash_wiring": False,
         },
         "closure_audit": asdict(audit),
         "claim_boundary": {
             "external_assertions_in_parent_archive": 1,
             "full_cap_hash_implemented": False,
+            "reference_cap_hash_implemented": True,
+            "canonical_cap_bytes_bound_to_h_rbbc": True,
             "fork_security_proof_revalidated": False,
             "signature_size_rebenchmarked": False,
             "production_closed": False,

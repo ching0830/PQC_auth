@@ -54,7 +54,7 @@ class BinaryR1CSBackendTests(unittest.TestCase):
         self.assertEqual(boundary["external_assertions"], 1)
         self.assertEqual(
             boundary["external_component"],
-            "native PQ-RBBC-BUOV-336 CAP.Commit-plus-H_RBBC subrelation",
+            "native PQ-RBBC-CAP-v1 full 18-tree row stream and exact H_RBBC wire join",
         )
         self.assertEqual(
             self.manifest["round_trip"]["external_assertions_unchecked"], 1
@@ -64,6 +64,9 @@ class BinaryR1CSBackendTests(unittest.TestCase):
         self.assertFalse(contract["current_archive_field_matches_target"])
         self.assertEqual(contract["anemoi_component_nonlinear_rows"], 336)
         self.assertTrue(contract["request_binding_hash_primitive_implemented"])
+        self.assertTrue(contract["production_cap_reference_algorithm_implemented"])
+        self.assertTrue(contract["canonical_cap_bytes_bound_to_h_rbbc"])
+        self.assertFalse(contract["production_cap_native_rows_materialized"])
         self.assertFalse(contract["complete_cap_hash_implemented"])
         self.assertFalse(contract["blind_uov_bit_exact_compatible"])
         self.assertFalse(contract["paper_240_gap_blocks_fork_engineering"])

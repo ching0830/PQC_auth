@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Binary F2-R1CS lowering for the executable PQ-RBBC v2.0 relation.
+"""Binary F2-R1CS lowering for the executable PQ-RBBC v2.1 relation.
 
 The format is intentionally small and auditable.  It serializes enough data to
 reconstruct ordinary rank-1 constraints over F2:
@@ -14,9 +14,10 @@ Unlike the nonlinear-only research cost model, this portable representation
 materializes affine definitions as R1CS rows.  A proof-system-specific compiler
 may later eliminate those rows, but it must prove that optimization separately.
 
-The linear PQ-RBBC-BUOV-336 mask equation is materialized.  The native
-CAP.Commit-plus-H_RBBC subrelation remains an external assertion and is not
-silently converted into an R1CS row by this module.
+The linear PQ-RBBC-BUOV-336 mask equation is materialized.  The CAP reference
+algorithm and exact byte-level H_RBBC join exist separately, but their full
+18-tree native row stream and inter-call wire identities remain an external
+assertion and are not silently converted into R1CS rows here.
 """
 
 from __future__ import annotations
@@ -650,8 +651,8 @@ def build_backend_manifest(output_path: str | os.PathLike[str]) -> dict[str, obj
         honest.metadata.linear_definitions + honest.metadata.linear_assertions
     )
     return {
-        "implementation_version": "2.0",
-        "status": "PQ-RBBC-BUOV-336 mask binding internalized; forked request-hash primitive exists; production CAP.Commit-plus-H_RBBC remains external",
+        "implementation_version": "2.1",
+        "status": "CAP.Commit reference and exact H_RBBC byte join exist; full 18-tree native row stream remains external",
         "format": {
             "name": honest.metadata.format,
             "version": honest.metadata.format_version,
@@ -689,9 +690,9 @@ def build_backend_manifest(output_path: str | os.PathLike[str]) -> dict[str, obj
         "claim_boundary": {
             "external_assertions": honest.metadata.external_assertions,
             "external_failures_in_honest_vector": honest.metadata.external_failures,
-            "external_component": "native PQ-RBBC-BUOV-336 CAP.Commit-plus-H_RBBC subrelation",
+            "external_component": "native PQ-RBBC-CAP-v1 full 18-tree row stream and exact H_RBBC wire join",
             "not_yet_done": [
-                "native CAP.Commit and complete H_RBBC wire import",
+                "materialize the full 18-tree CAP row stream and exact H_RBBC wire join",
                 "lift the complete incremental relation into GF(2^193)",
                 "proof-system-specific affine elimination",
                 "post-quantum zero-knowledge and simulation-extractability qualification",
@@ -709,6 +710,13 @@ def build_backend_manifest(output_path: str | os.PathLike[str]) -> dict[str, obj
             "anemoi_component_nonlinear_rows": native_profile.permutation.NONLINEAR_ROWS,
             "sponge_profile_relation_id": native_profile.sponge.PROFILE_RELATION_ID,
             "request_binding_hash_primitive_implemented": True,
+            "production_cap_reference_algorithm_implemented": True,
+            "canonical_cap_serialization_implemented": True,
+            "canonical_cap_bytes_bound_to_h_rbbc": True,
+            "cap_production_accounting": native_profile.cap.production_accounting(),
+            "production_cap_full_vector_executed": False,
+            "production_cap_native_rows_materialized": False,
+            "production_cap_inter_call_wire_identity": False,
             "complete_cap_hash_implemented": False,
             "blind_uov_bit_exact_compatible": False,
             "paper_240_gap_blocks_fork_engineering": False,

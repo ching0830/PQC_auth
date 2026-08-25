@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
-"""Executable v2.0 reference relation for the PQ-RBBC/SGTD research draft.
+"""Executable v2.1 reference relation for the PQ-RBBC/SGTD research draft.
 
 This module implements the *incremental* five-block issuance relation described
 in the accompanying proof document.  It emits a streaming characteristic-two
-circuit IR and checks an honest witness.  It deliberately does not implement:
+circuit IR and checks an honest witness.  The separate CAP module implements
+the source-grounded reference algorithm, canonical commitment serialization,
+and exact byte join to H_RBBC.  This module deliberately does not implement:
 
-* the fork's native CAP.Commit-plus-hash circuit (a test CAP adapter is used);
+* the full 18-tree native CAP row stream and inter-call wire identities (a test
+  CAP adapter is still used by this incremental relation);
 * a proof-system backend or flattened R1CS matrix serialization;
 * a certified Goppa parity-check key or threshold decoder.
 
@@ -928,7 +931,7 @@ def generate_issue_circuit(
     ):
         builder.assert_xor_zero(y_bit, r_bit, h_bit)
     builder.external_assert(
-        "native_pq_rbbc_buov_336_cap_hash",
+        "native_pq_rbbc_cap_v1_full_18_tree_row_stream_and_h_rbbc_wire_join",
         adapter.verify_cap_hash(
             wire_bytes(computed_digest),
             witness.blind_mask,
@@ -1151,11 +1154,11 @@ def build_manifest(full_negative_circuits: bool = False) -> dict[str, object]:
             ).items()
         }
     return {
-        "implementation_version": "2.0",
+        "implementation_version": "2.1",
         "status": "executable research relation; not a deployment implementation",
         "claim_boundary": {
             "implemented": "incremental relation plus the in-circuit y = r + hash_image mask equation",
-            "forked_issuance": "the Anemoi-193/336 sponge and request-binding hash primitive exist, but production CAP.Commit-plus-H_RBBC remains one external assertion",
+            "forked_issuance": "the CAP.Commit direct reference, canonical serialization, and exact H_RBBC byte join exist; the full 18-tree native row stream and inter-call wire identities remain one external assertion",
             "r1cs_backend": "streaming IR events only; no flattened matrices or proof backend",
             "trace_key": "deterministic systematic test fixture; not a certified Goppa key",
         },
@@ -1166,6 +1169,9 @@ def build_manifest(full_negative_circuits: bool = False) -> dict[str, object]:
             "paper_signature_bytes_provisional_target": SIGNATURE_BYTES,
             "issuance_request_bytes_excluding_proof": len(statement.blind_request.encode()),
             "online_ticket_bytes_provisional_target": len(statement.payload.encode()) + SIGNATURE_BYTES,
+            "cap_commitment_bytes_hidden_offline": native_profile.cap.commitment_bytes(
+                native_profile.cap.PRODUCTION_PARAMETERS
+            ),
         },
         "self_checks": self_checks(),
         "honest_relation": {
@@ -1195,6 +1201,13 @@ def build_manifest(full_negative_circuits: bool = False) -> dict[str, object]:
             "anemoi_component_nonlinear_rows": native_profile.permutation.NONLINEAR_ROWS,
             "sponge_profile_relation_id": native_profile.sponge.PROFILE_RELATION_ID,
             "request_binding_hash_primitive_implemented": True,
+            "production_cap_reference_algorithm_implemented": True,
+            "canonical_cap_serialization_implemented": True,
+            "canonical_cap_bytes_bound_to_h_rbbc": True,
+            "cap_production_accounting": native_profile.cap.production_accounting(),
+            "production_cap_full_vector_executed": False,
+            "production_cap_native_rows_materialized": False,
+            "production_cap_inter_call_wire_identity": False,
             "complete_cap_hash_implemented": False,
             "blind_uov_bit_exact_compatible": False,
             "paper_240_gap_blocks_fork_engineering": False,

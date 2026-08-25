@@ -1,9 +1,11 @@
 {
   "claim_boundary": {
+    "canonical_cap_bytes_bound_to_h_rbbc": true,
     "external_assertions_in_parent_archive": 1,
     "fork_security_proof_revalidated": false,
     "full_cap_hash_implemented": false,
     "production_closed": false,
+    "reference_cap_hash_implemented": true,
     "signature_size_rebenchmarked": false
   },
   "closure_audit": {
@@ -21,6 +23,27 @@
     "reported_240_constraint_gap_blocks_fork_engineering": false
   },
   "fork_profile": {
+    "cap_commitment_bytes": 5378,
+    "cap_production_accounting": {
+      "commitment_bytes": 5378,
+      "consistency_point_permutations": 2,
+      "h1_permutations": 21281,
+      "h2_permutations": 123,
+      "leaf_count": 40960,
+      "permutation_nonlinear_rows": 131031264,
+      "seed_commit_calls": 40960,
+      "seed_commit_permutations_per_call": 2,
+      "seed_derive_calls": 40924,
+      "seed_derive_permutations_per_call": 2,
+      "tape_expand_calls": 40960,
+      "tape_expand_permutations_per_call": 5,
+      "total_anemoi_permutations": 389974,
+      "total_xof_calls": 122847,
+      "transcript_xof_calls": 3,
+      "tree_count": 18
+    },
+    "cap_profile_sha256": "2ac471f8d7c6cb4e6352bbc5a2eb7f9394b807ff132aec8cadebd696f7b1fa38",
+    "cap_relation_id": "pq-rbbc/cap/tcith-iii/anemoi-193-336/v1",
     "capacity_bits": 772,
     "name": "PQ-RBBC-Anemoi-193/336-Sponge-v1",
     "permutation_nonlinear_rows": 336,
@@ -31,13 +54,20 @@
     "sponge_relation_id": "pq-rbbc/anemoi-193-336/sponge/v1",
     "target_field": "GF(2^193)"
   },
-  "implementation_version": "2.0",
+  "implementation_version": "2.1",
   "implemented_primitives": {
     "anemoi_permutation": true,
+    "canonical_cap_serialization": true,
     "canonical_sponge": true,
+    "cap_to_h_rbbc_byte_join": true,
     "complete_message_commitment_hash_wiring": false,
+    "consistency_hash_reference": true,
     "field_arithmetic": true,
-    "production_cap_commit": false,
+    "ggm_seed_tree_reference": true,
+    "production_cap_full_vector_executed": false,
+    "production_cap_inter_call_wire_identity": false,
+    "production_cap_native_rows_materialized": false,
+    "production_cap_reference_algorithm": true,
     "request_binding_hash": true
   },
   "required_native_components": [
@@ -49,5 +79,5 @@
     "ggm_seed_expansion",
     "message_commitment_hash"
   ],
-  "status": "independent Anemoi-193/336 fork selected; request hash primitive implemented; full CAP remains external"
+  "status": "CAP.Commit reference algorithm, canonical serialization, and exact H_RBBC byte join implemented; full 18-tree native row stream remains external"
 }

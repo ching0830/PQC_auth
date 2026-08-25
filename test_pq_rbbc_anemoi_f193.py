@@ -32,6 +32,22 @@ class AnemoiF193Tests(unittest.TestCase):
     def test_field_inverse_and_reduction(self) -> None:
         for value in (1, 2, 3, 0x123456789ABCDEF, anemoi.FIELD_MASK):
             self.assertEqual(anemoi.fmul(value, anemoi.finv(value)), 1)
+
+    def test_fast_square_and_cube_root_match_generic_arithmetic(self) -> None:
+        for value in (0, 1, 2, 3, (1 << 192) | 0xA5A5, anemoi.FIELD_MASK):
+            with self.subTest(value=value):
+                self.assertEqual(
+                    anemoi.fsquare(value),
+                    anemoi.fmul(value, value),
+                )
+                self.assertEqual(
+                    anemoi.fcuberoot(value),
+                    anemoi.fpow(value, pow(3, -1, anemoi.FIELD_ORDER - 1)),
+                )
+                self.assertEqual(
+                    anemoi.fpow(anemoi.fcuberoot(value), 3),
+                    value,
+                )
         reduced_x_193 = anemoi.fmul(1 << 192, 2)
         self.assertEqual(reduced_x_193, anemoi.REDUCTION_POLYNOMIAL)
 

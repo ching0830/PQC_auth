@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Regression tests for the executable PQ-RBBC/SGTD v2.0 relation."""
+"""Regression tests for the executable PQ-RBBC/SGTD v2.1 relation."""
 
 from __future__ import annotations
 
@@ -66,6 +66,12 @@ class RelationTests(unittest.TestCase):
         self.assertEqual(contract["native_cap_hash_external_assertions"], 1)
         self.assertEqual(contract["anemoi_component_nonlinear_rows"], 336)
         self.assertTrue(contract["request_binding_hash_primitive_implemented"])
+        self.assertTrue(contract["production_cap_reference_algorithm_implemented"])
+        self.assertTrue(contract["canonical_cap_bytes_bound_to_h_rbbc"])
+        self.assertFalse(contract["production_cap_native_rows_materialized"])
+        self.assertEqual(
+            contract["cap_production_accounting"]["commitment_bytes"], 5_378
+        )
         self.assertFalse(contract["complete_cap_hash_implemented"])
         self.assertFalse(contract["blind_uov_bit_exact_compatible"])
         self.assertFalse(contract["paper_240_gap_blocks_fork_engineering"])

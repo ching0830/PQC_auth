@@ -48,6 +48,37 @@ MODULUS_POLYNOMIAL = sum(1 << exponent for exponent in CONWAY_EXPONENTS)
 REDUCTION_POLYNOMIAL = MODULUS_POLYNOMIAL ^ FIELD_ORDER
 FIELD_ELEMENT_BYTES = (FIELD_DEGREE + 7) // 8
 
+
+def _build_reduction_tables() -> tuple[tuple[int, ...], ...]:
+    """Precompute byte-wise reductions of degrees 193 through 385."""
+
+    basis: list[int] = []
+    current = REDUCTION_POLYNOMIAL
+    for _ in range(FIELD_DEGREE):
+        basis.append(current)
+        current <<= 1
+        if current & FIELD_ORDER:
+            current ^= MODULUS_POLYNOMIAL
+    tables: list[tuple[int, ...]] = []
+    for byte_position in range((FIELD_DEGREE + 7) // 8):
+        entries: list[int] = []
+        for byte in range(256):
+            reduced = 0
+            for bit in range(8):
+                index = 8 * byte_position + bit
+                if index < FIELD_DEGREE and ((byte >> bit) & 1):
+                    reduced ^= basis[index]
+            entries.append(reduced)
+        tables.append(tuple(entries))
+    return tuple(tables)
+
+
+_REDUCTION_BYTE_TABLES = _build_reduction_tables()
+_SQUARE_BYTE_TABLE = tuple(
+    sum(((byte >> bit) & 1) << (2 * bit) for bit in range(8))
+    for byte in range(256)
+)
+
 SECURITY_LEVEL = 192
 N_COLS = 4
 STATE_ELEMENTS = 2 * N_COLS
@@ -82,17 +113,38 @@ def fmul(left: int, right: int) -> int:
 
     if left < 0 or left > FIELD_MASK or right < 0 or right > FIELD_MASK:
         raise ValueError("field element outside canonical 193-bit representation")
-    result = 0
-    multiplicand = left
+    # Four-bit comb multiplication uses only 49 Python-level iterations for a
+    # 193-bit operand.  Reduction is then handled in 25 byte-table lookups.
+    partials = [0] * 16
+    for nibble in range(1, 16):
+        partial = 0
+        for bit in range(4):
+            if (nibble >> bit) & 1:
+                partial ^= left << bit
+        partials[nibble] = partial
+    product = 0
     multiplier = right
+    shift = 0
     while multiplier:
-        if multiplier & 1:
-            result ^= multiplicand
-        multiplier >>= 1
-        multiplicand <<= 1
-        if multiplicand & FIELD_ORDER:
-            multiplicand ^= MODULUS_POLYNOMIAL
-    return result
+        product ^= partials[multiplier & 0xF] << shift
+        multiplier >>= 4
+        shift += 4
+    return _freduce(product)
+
+
+def fsquare(value: int) -> int:
+    """Frobenius square using byte interleaving and frozen reduction tables."""
+
+    if value < 0 or value > FIELD_MASK:
+        raise ValueError("field element outside canonical 193-bit representation")
+    expanded = 0
+    byte_position = 0
+    remaining = value
+    while remaining:
+        expanded ^= _SQUARE_BYTE_TABLE[remaining & 0xFF] << (16 * byte_position)
+        remaining >>= 8
+        byte_position += 1
+    return _freduce(expanded)
 
 
 def fpow(base: int, exponent: int) -> int:
@@ -104,15 +156,91 @@ def fpow(base: int, exponent: int) -> int:
     while power:
         if power & 1:
             result = fmul(result, factor)
-        factor = fmul(factor, factor)
+        factor = fsquare(factor)
         power >>= 1
     return result
 
 
+def _freduce(value: int) -> int:
+    """Reduce a binary polynomial modulo the frozen degree-193 modulus."""
+
+    if value < 0:
+        raise ValueError("cannot reduce a negative polynomial")
+    # The byte tables cover products and squares up to degree 385.  Retain a
+    # generic prefix for extended-Euclid intermediates that happen to be wider.
+    while value.bit_length() - 1 >= 2 * FIELD_DEGREE:
+        shift = value.bit_length() - 1 - FIELD_DEGREE
+        value ^= MODULUS_POLYNOMIAL << shift
+    reduced = value & FIELD_MASK
+    high = value >> FIELD_DEGREE
+    byte_position = 0
+    while high:
+        reduced ^= _REDUCTION_BYTE_TABLES[byte_position][high & 0xFF]
+        high >>= 8
+        byte_position += 1
+    return reduced
+
+
+def fcuberoot(value: int) -> int:
+    """Return the unique cube root in GF(2^193) with a short addition chain.
+
+    Since ``3^{-1} mod (2^193-1) = 1 + 2^2 + ... + 2^192``, a direct binary
+    exponentiation needs 96 multiplications.  The divide-and-conquer recurrence
+    for the geometric sum needs only logarithmically many multiplications while
+    preserving the same exponent.
+    """
+
+    if value < 0 or value > FIELD_MASK:
+        raise ValueError("field element outside canonical 193-bit representation")
+
+    def fourth_power_repeated(element: int, count: int) -> int:
+        for _ in range(count):
+            element = fsquare(fsquare(element))
+        return element
+
+    def geometric_sum_power(terms: int) -> int:
+        if terms == 1:
+            return value
+        half = terms // 2
+        lower = geometric_sum_power(half)
+        if terms % 2 == 0:
+            return fmul(lower, fourth_power_repeated(lower, half))
+        extended = fmul(
+            lower,
+            fourth_power_repeated(value, half),
+        )
+        return fmul(lower, fourth_power_repeated(extended, half))
+
+    return geometric_sum_power((FIELD_DEGREE + 1) // 2)
+
+
 def finv(value: int) -> int:
+    """Invert with binary-polynomial extended Euclid.
+
+    This is mathematically identical to exponentiation by ``2^193 - 2`` but
+    avoids hundreds of carry-less field multiplications per inverse.  The
+    faster implementation matters for CAP seed trees, which invoke the frozen
+    Anemoi permutation many thousands of times.
+    """
+
     if value == 0:
         raise ZeroDivisionError("zero has no multiplicative inverse")
-    return fpow(value, FIELD_ORDER - 2)
+    if value < 0 or value > FIELD_MASK:
+        raise ValueError("field element outside canonical 193-bit representation")
+
+    u = value
+    v = MODULUS_POLYNOMIAL
+    g_u = 1
+    g_v = 0
+    while u != 1:
+        shift = u.bit_length() - v.bit_length()
+        if shift < 0:
+            u, v = v, u
+            g_u, g_v = g_v, g_u
+            shift = -shift
+        u ^= v << shift
+        g_u ^= g_v << shift
+    return _freduce(g_u)
 
 
 def fhex(value: int) -> str:
@@ -332,7 +460,7 @@ def evaluate_sbox(
     x: int, y: int, parameters: AnemoiParameters
 ) -> tuple[int, int]:
     x_value = x ^ fmul(parameters.beta, fpow(y, QUAD))
-    y_value = y ^ fpow(x_value, parameters.alpha_inverse)
+    y_value = y ^ fcuberoot(x_value)
     x_value ^= fmul(parameters.beta, fpow(y_value, QUAD)) ^ parameters.delta
     return x_value, y_value
 

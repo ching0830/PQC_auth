@@ -5,9 +5,11 @@ from __future__ import annotations
 
 import dataclasses
 import hashlib
+from types import SimpleNamespace
 import unittest
 
 import pq_rbbc_blind_uov_abi as abi
+import pq_rbbc_cap_commit as cap
 import pq_rbbc_reference as core
 
 
@@ -88,6 +90,36 @@ class BlindUOVVisibilityTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.adapter.create(self.message, self.mask[:-1], self.randomness)
 
+    def test_production_cap_byte_join_is_strict(self) -> None:
+        view = SimpleNamespace(
+            parameters_fingerprint=cap.profile_fingerprint(
+                cap.PRODUCTION_PARAMETERS
+            ),
+            derived_mask=int.from_bytes(self.mask, "little"),
+            encoded=bytes(cap.commitment_bytes(cap.PRODUCTION_PARAMETERS)),
+        )
+        state = abi.request_from_production_cap(self.message, view)
+        self.assertEqual(len(state.request.encode()), 72)
+        self.assertEqual(state.mask, self.mask)
+        self.assertEqual(
+            state.request.masked_target,
+            abi.xor_bytes(state.mask, state.hash_image),
+        )
+        bad_profile = SimpleNamespace(
+            parameters_fingerprint="00" * 32,
+            derived_mask=view.derived_mask,
+            encoded=view.encoded,
+        )
+        with self.assertRaises(ValueError):
+            abi.request_from_production_cap(self.message, bad_profile)
+        bad_length = SimpleNamespace(
+            parameters_fingerprint=view.parameters_fingerprint,
+            derived_mask=view.derived_mask,
+            encoded=view.encoded[:-1],
+        )
+        with self.assertRaises(ValueError):
+            abi.request_from_production_cap(self.message, bad_length)
+
     def test_manifest_records_fork_boundary_and_qrom_assumption(self) -> None:
         manifest = abi.build_abi_manifest()
         checks = manifest["regression_checks"]
@@ -115,6 +147,21 @@ class BlindUOVVisibilityTests(unittest.TestCase):
         self.assertFalse(manifest["fork_profile"]["paper_signature_size_rebenchmarked"])
         self.assertFalse(
             manifest["claim_boundary"]["native_tcih_anemoi_constraint_import_complete"]
+        )
+        self.assertTrue(
+            manifest["claim_boundary"][
+                "production_cap_reference_algorithm_implemented"
+            ]
+        )
+        self.assertTrue(
+            manifest["claim_boundary"][
+                "production_cap_canonical_serialization_bound_to_h_rbbc"
+            ]
+        )
+        self.assertFalse(
+            manifest["claim_boundary"][
+                "full_production_cap_native_rows_materialized"
+            ]
         )
 
 

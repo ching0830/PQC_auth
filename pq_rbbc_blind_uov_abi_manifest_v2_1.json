@@ -11,10 +11,15 @@
   },
   "claim_boundary": {
     "blind_uov_bit_exact_compatibility": false,
+    "full_production_cap_native_rows_materialized": false,
+    "full_production_cap_vector_executed": false,
     "linear_y_equals_r_plus_h_internalized": true,
     "native_cap_randomness_is_not_fixed_to_test_nonce": true,
     "native_tcih_anemoi_constraint_import_complete": false,
     "paper_supplies_executable_constraint_generator": false,
+    "production_cap_canonical_serialization_bound_to_h_rbbc": true,
+    "production_cap_inter_call_wire_identity_proved": false,
+    "production_cap_reference_algorithm_implemented": true,
     "test_adapter_is_native_blind_uov": false,
     "test_adapter_uses_forked_anemoi_request_hash": true,
     "test_cap_commitment_is_production_cap": false,
@@ -27,6 +32,9 @@
   ],
   "fork_profile": {
     "blind_uov_bit_exact_compatible": false,
+    "canonical_cap_commitment_bytes": 5378,
+    "cap_profile_fingerprint": "2ac471f8d7c6cb4e6352bbc5a2eb7f9394b807ff132aec8cadebd696f7b1fa38",
+    "cap_relation_id": "pq-rbbc/cap/tcith-iii/anemoi-193-336/v1",
     "paper_security_reduction_revalidated": false,
     "paper_signature_size_rebenchmarked": false,
     "profile_fingerprint": "4fa0eb276ebba70a9f6c2f38f3f55d197c094121a2b614cc6ef9b7e8522cac87",
@@ -42,7 +50,7 @@
     "holder key",
     "trace error vector"
   ],
-  "implementation_version": "2.0",
+  "implementation_version": "2.1",
   "paper_anchor": "Blind-UOV ePrint 2025/895 is a framework and size comparator, not a bit-exact implementation claim",
   "paper_parameters": {
     "anemoi_binary_field_degree": 193,
@@ -63,6 +71,8 @@
     "explicit_pow_bits": 9,
     "final_signature_bytes_provisional_target": 11644,
     "fork_anemoi_constraints_per_permutation": 336,
+    "fork_cap_consistency_bits": 386,
+    "fork_cap_rho": 16,
     "hash_and_sign_signature_bits": 1472,
     "mask_bits": 576,
     "public_key_kilobytes": 189.2,

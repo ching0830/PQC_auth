@@ -14,7 +14,10 @@ soundness, J_mu(r,rho)=r+H(mu,CAP.Commit(r;rho)) is a pointwise shift of a
 72-byte hidden-state ABI but explicitly forks the hash instantiation to
 PQ-RBBC-Anemoi-193/336-Sponge-v1.  The CAP commitment remains a test fixture;
 the fork is not bit-exact Blind-UOV and the paper's signature size is only a
-provisional target until the fork is re-benchmarked.
+provisional target until the fork is re-benchmarked.  Version 2.1 adds the
+strict byte-level join from the independently serialized 5,378-byte production
+CAP profile to ``H_RBBC``; it deliberately rejects the reduced CAP fixture and
+does not claim that the full 18-tree native trace has been materialized.
 """
 
 from __future__ import annotations
@@ -25,6 +28,7 @@ from dataclasses import asdict, dataclass
 from typing import Protocol
 
 import pq_rbbc_anemoi_sponge as fork_sponge
+import pq_rbbc_cap_commit as fork_cap
 
 
 MESSAGE_BYTES = 32
@@ -96,6 +100,57 @@ class BlindUOVAdapter(Protocol):
     ) -> bool:
         """Verify only the native CAP.Commit-plus-hash subrelation."""
         ...
+
+
+class ProductionCAPCommitmentView(Protocol):
+    """Minimal canonical output needed by the request-binding ABI."""
+
+    parameters_fingerprint: str
+    derived_mask: int
+    encoded: bytes
+
+
+@dataclass(frozen=True)
+class CAPBoundRequestState:
+    request: BlindUOVRequest
+    mask: bytes
+    cap_commitment: bytes
+    hash_image: bytes
+
+
+def request_from_production_cap(
+    message: bytes,
+    commitment: ProductionCAPCommitmentView,
+) -> CAPBoundRequestState:
+    """Join a canonical production-profile CAP output to ``H_RBBC``.
+
+    This function closes the byte-level ABI join only.  It rejects reduced
+    fixtures and malformed lengths, and does not claim that the full 18-tree
+    CAP row stream has been materialized in the parent circuit.
+    """
+
+    if len(message) != MESSAGE_BYTES:
+        raise ValueError("message digest must be 32 bytes")
+    expected_fingerprint = fork_cap.profile_fingerprint(
+        fork_cap.PRODUCTION_PARAMETERS
+    )
+    if commitment.parameters_fingerprint != expected_fingerprint:
+        raise ValueError("CAP commitment uses the wrong fork profile")
+    if len(commitment.encoded) != fork_cap.commitment_bytes(
+        fork_cap.PRODUCTION_PARAMETERS
+    ):
+        raise ValueError("CAP commitment has the wrong canonical length")
+    if not 0 <= commitment.derived_mask < 1 << (8 * MASK_BYTES):
+        raise ValueError("derived CAP mask is not 576 bits")
+    mask = commitment.derived_mask.to_bytes(MASK_BYTES, "little")
+    hash_image = fork_sponge.hash_request_binding(message, commitment.encoded)
+    request = BlindUOVRequest(xor_bytes(mask, hash_image))
+    return CAPBoundRequestState(
+        request=request,
+        mask=mask,
+        cap_commitment=commitment.encoded,
+        hash_image=hash_image,
+    )
 
 
 class TestBlindUOVAdapter:
@@ -232,7 +287,7 @@ def build_abi_manifest() -> dict[str, object]:
     hidden = adapter.hidden_state(message, mask, randomness)
     changed_message = bytes((message[0] ^ 1,)) + message[1:]
     return {
-        "implementation_version": "2.0",
+        "implementation_version": "2.1",
         "paper_anchor": "Blind-UOV ePrint 2025/895 is a framework and size comparator, not a bit-exact implementation claim",
         "profile": "PQ-RBBC-BUOV-III/Anemoi-193-336 experimental fork",
         "fork_profile": {
@@ -243,6 +298,13 @@ def build_abi_manifest() -> dict[str, object]:
             "blind_uov_bit_exact_compatible": False,
             "paper_security_reduction_revalidated": False,
             "paper_signature_size_rebenchmarked": False,
+            "cap_relation_id": fork_cap.PROFILE_RELATION_ID,
+            "cap_profile_fingerprint": fork_cap.profile_fingerprint(
+                fork_cap.PRODUCTION_PARAMETERS
+            ),
+            "canonical_cap_commitment_bytes": fork_cap.commitment_bytes(
+                fork_cap.PRODUCTION_PARAMETERS
+            ),
         },
         "paper_parameters": {
             "security_level_bits": 192,
@@ -251,6 +313,8 @@ def build_abi_manifest() -> dict[str, object]:
             "public_key_kilobytes": 189.2,
             "final_signature_bytes_provisional_target": 11644,
             "cap_parallel_repetitions": 18,
+            "fork_cap_consistency_bits": fork_cap.PRODUCTION_PARAMETERS.consistency_bits,
+            "fork_cap_rho": fork_cap.PRODUCTION_PARAMETERS.rho,
             "cap_tree_groups": [
                 {"trees": 2, "leaves_per_tree": 4096},
                 {"trees": 16, "leaves_per_tree": 2048}
@@ -326,6 +390,11 @@ def build_abi_manifest() -> dict[str, object]:
             "blind_uov_bit_exact_compatibility": False,
             "paper_supplies_executable_constraint_generator": False,
             "native_tcih_anemoi_constraint_import_complete": False,
+            "production_cap_reference_algorithm_implemented": True,
+            "production_cap_canonical_serialization_bound_to_h_rbbc": True,
+            "full_production_cap_vector_executed": False,
+            "full_production_cap_native_rows_materialized": False,
+            "production_cap_inter_call_wire_identity_proved": False,
             "linear_y_equals_r_plus_h_internalized": True,
             "test_cap_randomness_bytes": TEST_CAP_RANDOMNESS_BYTES,
             "native_cap_randomness_is_not_fixed_to_test_nonce": True,
