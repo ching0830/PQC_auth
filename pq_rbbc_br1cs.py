@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Binary F2-R1CS lowering for the executable PQ-RBBC v2.4 relation.
+"""Binary F2-R1CS lowering for the executable PQ-RBBC v2.5 relation.
 
 The format is intentionally small and auditable.  It serializes enough data to
 reconstruct ordinary rank-1 constraints over F2:
@@ -651,8 +651,8 @@ def build_backend_manifest(output_path: str | os.PathLike[str]) -> dict[str, obj
         honest.metadata.linear_definitions + honest.metadata.linear_assertions
     )
     return {
-        "implementation_version": "2.4",
-        "status": "native multiplication and generic Horner hashing are closed, including a two-coefficient symbolic-mask CAP integration with 2450-bit tapes; the 2048-bit full 18-tree row stream remains external",
+        "implementation_version": "2.5",
+        "status": "one 2048-leaf production-shape CAP shard is closed at the bounded-memory streamed row-topology boundary; the complete assignment, 4096-leaf shard, full 18-tree relation, and exact parent join remain external",
         "format": {
             "name": honest.metadata.format,
             "version": honest.metadata.format_version,
@@ -736,6 +736,17 @@ def build_backend_manifest(output_path: str | os.PathLike[str]) -> dict[str, obj
             "horner_2450_cap_native_external_assertions": 0,
             "horner_2450_cap_native_row_stream_sha256": native_profile.reduced_native.FROZEN_HORNER_ROW_STREAM_SHA256,
             "horner_2450_cap_profile_is_secure": False,
+            "production_2048_leaf_shard_relation_id": native_profile.shard_stream.PROFILE_RELATION_ID,
+            "production_2048_leaf_shard_rows": native_profile.shard_stream.FROZEN_PRODUCTION_ROWS,
+            "production_2048_leaf_shard_wires": native_profile.shard_stream.FROZEN_PRODUCTION_WIRES,
+            "production_2048_leaf_shard_stream_bytes": native_profile.shard_stream.FROZEN_PRODUCTION_STREAM_BYTES,
+            "production_2048_leaf_shard_row_stream_sha256": native_profile.shard_stream.FROZEN_PRODUCTION_STREAM_SHA256,
+            "production_2048_leaf_shard_spool_bytes": native_profile.shard_stream.FROZEN_PRODUCTION_SPOOL_BYTES,
+            "production_2048_leaf_shard_spool_sha256": native_profile.shard_stream.FROZEN_PRODUCTION_SPOOL_SHA256,
+            "production_2048_leaf_shard_external_assertions": 0,
+            "production_2048_leaf_shard_executed": True,
+            "production_2048_leaf_shard_assignment_materialized": False,
+            "production_2048_leaf_shard_profile_is_secure": False,
             "canonical_cap_serialization_implemented": True,
             "canonical_cap_bytes_bound_to_h_rbbc": True,
             "cap_production_accounting": native_profile.cap.production_accounting(),

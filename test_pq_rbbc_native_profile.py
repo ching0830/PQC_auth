@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Tests for the fail-closed PQ-RBBC v2.4 fork import contract."""
+"""Tests for the fail-closed PQ-RBBC v2.5 fork import contract."""
 
 from __future__ import annotations
 
@@ -76,6 +76,18 @@ class ForkNativeProfileTests(unittest.TestCase):
         self.assertEqual(combined["wires"], 92_816)
         self.assertEqual(combined["multiplication_rows"], 14)
         self.assertEqual(combined["external_assertions"], 0)
+        shard = manifest["fork_profile"][
+            "production_2048_leaf_shard_component"
+        ]
+        self.assertEqual(shard["leaves"], 2_048)
+        self.assertEqual(shard["extension_degree"], 12)
+        self.assertEqual(shard["witness_bits"], 2_048)
+        self.assertEqual(shard["coefficients"], 11)
+        self.assertEqual(shard["tape_bits"], 2_450)
+        self.assertEqual(shard["rows"], 26_126_283)
+        self.assertEqual(shard["wires"], 19_903_324)
+        self.assertEqual(shard["external_assertions"], 0)
+        self.assertFalse(shard["assignment_materialized"])
         self.assertTrue(
             manifest["claim_boundary"]["arithmetic_primitive_native_closed"]
         )
@@ -87,10 +99,23 @@ class ForkNativeProfileTests(unittest.TestCase):
                 "production_polynomial_hash_blocker_closed"
             ]
         )
-        self.assertFalse(
+        self.assertTrue(
             manifest["claim_boundary"][
                 "production_2048_bit_cap_integration_closed"
             ]
+        )
+        self.assertTrue(
+            manifest["claim_boundary"][
+                "production_2048_leaf_tree_shard_closed"
+            ]
+        )
+        self.assertFalse(
+            manifest["claim_boundary"][
+                "production_2048_leaf_tree_shard_security_profile"
+            ]
+        )
+        self.assertFalse(
+            manifest["claim_boundary"]["production_shard_full_assignment_closed"]
         )
 
     def test_missing_import_is_fail_closed(self) -> None:

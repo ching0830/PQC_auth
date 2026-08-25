@@ -88,6 +88,16 @@ class RelationTests(unittest.TestCase):
         self.assertEqual(contract["horner_2450_cap_native_rows"], 125_401)
         self.assertEqual(contract["horner_2450_cap_native_wires"], 92_816)
         self.assertEqual(contract["horner_2450_cap_native_external_assertions"], 0)
+        self.assertTrue(contract["production_2048_leaf_shard_executed"])
+        self.assertEqual(contract["production_2048_leaf_shard_rows"], 26_126_283)
+        self.assertEqual(contract["production_2048_leaf_shard_wires"], 19_903_324)
+        self.assertEqual(
+            contract["production_2048_leaf_shard_external_assertions"], 0
+        )
+        self.assertFalse(
+            contract["production_2048_leaf_shard_assignment_materialized"]
+        )
+        self.assertFalse(contract["production_2048_leaf_shard_profile_is_secure"])
         self.assertTrue(contract["canonical_cap_bytes_bound_to_h_rbbc"])
         self.assertFalse(contract["production_cap_native_rows_materialized"])
         self.assertEqual(

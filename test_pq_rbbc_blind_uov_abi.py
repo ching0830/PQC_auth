@@ -222,6 +222,35 @@ class BlindUOVVisibilityTests(unittest.TestCase):
             ],
             0,
         )
+        self.assertTrue(
+            manifest["claim_boundary"][
+                "production_2048_leaf_shard_executed"
+            ]
+        )
+        self.assertEqual(
+            manifest["claim_boundary"]["production_2048_leaf_shard_rows"],
+            26_126_283,
+        )
+        self.assertEqual(
+            manifest["claim_boundary"]["production_2048_leaf_shard_wires"],
+            19_903_324,
+        )
+        self.assertEqual(
+            manifest["claim_boundary"][
+                "production_2048_leaf_shard_external_assertions"
+            ],
+            0,
+        )
+        self.assertFalse(
+            manifest["claim_boundary"][
+                "production_2048_leaf_shard_assignment_materialized"
+            ]
+        )
+        self.assertFalse(
+            manifest["claim_boundary"][
+                "production_2048_leaf_shard_profile_is_secure"
+            ]
+        )
 
 
 if __name__ == "__main__":

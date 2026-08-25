@@ -1,0 +1,118 @@
+{
+  "claim_boundary": {
+    "production_closed": false,
+    "production_tree_shard_topology_closed": true,
+    "remaining": [
+      "materialize or backend-link a complete shard witness assignment",
+      "add the 4096-leaf degree-13 shard",
+      "compose all 18 production trees",
+      "replace the parent archive external assertion",
+      "complete fork-specific extraction and security proofs",
+      "qualify the post-quantum proof backend and benchmark signatures"
+    ]
+  },
+  "frozen_vector": {
+    "commitment_bytes": 206,
+    "commitment_sha256": "14fab7548083411124176bb8e094628fe6d20347cd78929573b76ab2cd3e757a",
+    "request_hash_hex": "148316172737069cf7b6b54e28da3ae48a41ce3c3d7fa6f61f67d67b96d3d85189ec1f860f733d7bb050ea1b77566f1cebaf52b212d00c6128918225e8a20719b76b303ac2ee073a"
+  },
+  "implementation_version": "2.5",
+  "implemented": {
+    "bounded_memory_wire_spool": true,
+    "callbacks_or_external_assertions": false,
+    "degree_12_extension_mask_slices": true,
+    "full_18_tree_relation": false,
+    "full_2048_bit_eleven_coefficient_witness": true,
+    "full_assignment_archive_materialized": false,
+    "production_width_2450_bit_tapes": true,
+    "real_2048_leaf_production_tree_shape": true,
+    "streamed_expanded_row_digest": true,
+    "two_consistency_points": true
+  },
+  "profile": {
+    "cap_profile_fingerprint": "33dab46d27e34e0196249b166e6bfedf901c54c39f20b8f09e74a5236e3b335c",
+    "coefficients": 11,
+    "consistency_points": 2,
+    "explicitly_non_secure_one_tree_shard": true,
+    "extension_degree": 12,
+    "field": "GF(2^193)",
+    "fixture_parameter_name": "PQ-RBBC-CAP-PRODUCTION-TREE-SHARD-2048-TEST-ONLY",
+    "leaves": 2048,
+    "name": "PQ-RBBC-CAP-PRODUCTION-TREE-SHARD-2048-v1",
+    "relation_id": "pq-rbbc/cap/production-tree-shard-2048/v1",
+    "spool_format": "PQRBBC-WIRE-SPOOL-U64LE-1",
+    "stream_format": "F193-R1CS-NDJSON-SHA256-1",
+    "tape_bits": 2450,
+    "witness_bits": 2048
+  },
+  "trace": {
+    "assignment_materialized": false,
+    "external_assertions": 0,
+    "groups": [
+      {
+        "bytes": 430024,
+        "name": "inputs",
+        "rows": 1028,
+        "sha256": "a71a4d9258b0e249a43a3662c7bd06ace48bcdb569b536b2dfcd183d24c93c32"
+      },
+      {
+        "bytes": 3924624930,
+        "name": "ggm-derive",
+        "rows": 6440808,
+        "sha256": "60934ea92e11b4753ef5cfdb1e0d65d69766ead602e6194de6ed7c3735fa7460"
+      },
+      {
+        "bytes": 11714415498,
+        "name": "leaf-commit-and-tape",
+        "rows": 17559552,
+        "sha256": "38de2bd3a0f9c4c66c08f8955e7cc97e2fff183973ecb860f03735c0b6f57708"
+      },
+      {
+        "bytes": 1172964467,
+        "name": "h1-and-points",
+        "rows": 2021759,
+        "sha256": "5dda1966da3e5e15aaf54ee686111eb7d9223bf8662748250fe29d15358397ca"
+      },
+      {
+        "bytes": 1374447334,
+        "name": "leaf-horner-and-field-aggregation",
+        "rows": 74550,
+        "sha256": "c408cc3e575d4392a726ef8e5159e9244bfdbebffd14a6ddfa2399e314d03480"
+      },
+      {
+        "bytes": 683052612,
+        "name": "h2-commitment-and-request-binding",
+        "rows": 28586,
+        "sha256": "bb1486f7d5681d687cc03de129067a77050a9d406f970c3143f9672a20a8aa68"
+      }
+    ],
+    "horner_accounting": {
+      "aggregate_rows": 28546,
+      "leaf_calls": 2048,
+      "multiplication_rows": 40960,
+      "output_bitness_rows": 5018,
+      "output_pack_rows": 26,
+      "point_validation_rows": 3
+    },
+    "linear_rows": 6617029,
+    "nonlinear_rows": 19509254,
+    "peak_rss_kib": 140932,
+    "rows": 26126283,
+    "sponge_accounting": {
+      "calls": 6146,
+      "linear_rows": 6584761,
+      "output_bitness_rows": 6720453,
+      "payload_bitness_rows": 6184416,
+      "permutation_rows": 6553680,
+      "permutations": 19505,
+      "source_link_rows": 6184416
+    },
+    "spool_bytes": 39878656,
+    "spool_sha256": "87960a5803e2663a40b3c0bda1611840806e649f3927c238bd63bdce08812f49",
+    "stream_bytes": 18869935441,
+    "stream_sha256": "2cfc3641a94635af35dfa5494c61e74a416ef2fb446975cd417891d244943dfc",
+    "wall_seconds": 781.7574550879999,
+    "wires": 19903324,
+    "xof_calls": 6146
+  }
+}

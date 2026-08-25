@@ -63,7 +63,7 @@
     "wire_count": 2980304
   },
   "claim_boundary": {
-    "forked_issuance": "native multiplication and generic Horner hashing are closed, including a two-coefficient symbolic-mask CAP integration with 2450-bit tapes; the 2048-bit full 18-tree row stream remains one external assertion",
+    "forked_issuance": "one 2048-leaf production-shape CAP shard is closed at the bounded-memory streamed row-topology boundary; the complete assignment, 4096-leaf shard, full 18-tree relation, and exact parent join remain one external assertion",
     "implemented": "incremental relation plus the in-circuit y = r + hash_image mask equation",
     "r1cs_backend": "streaming IR events only; no flattened matrices or proof backend",
     "trace_key": "deterministic systematic test fixture; not a certified Goppa key"
@@ -82,7 +82,7 @@
     "concrete_accepts": true,
     "concrete_failures": []
   },
-  "implementation_version": "2.4",
+  "implementation_version": "2.5",
   "native_import_contract": {
     "anemoi_component_nonlinear_rows": 336,
     "anemoi_component_relation_id": "anemoi/upstream-main/gf2-193/state-8/v1",
@@ -129,6 +129,17 @@
     "production_2048_bit_horner_coefficients": 11,
     "production_2048_bit_horner_multiplication_rows": 20,
     "production_2048_bit_horner_vector_native": true,
+    "production_2048_leaf_shard_assignment_materialized": false,
+    "production_2048_leaf_shard_executed": true,
+    "production_2048_leaf_shard_external_assertions": 0,
+    "production_2048_leaf_shard_profile_is_secure": false,
+    "production_2048_leaf_shard_relation_id": "pq-rbbc/cap/production-tree-shard-2048/v1",
+    "production_2048_leaf_shard_row_stream_sha256": "2cfc3641a94635af35dfa5494c61e74a416ef2fb446975cd417891d244943dfc",
+    "production_2048_leaf_shard_rows": 26126283,
+    "production_2048_leaf_shard_spool_bytes": 39878656,
+    "production_2048_leaf_shard_spool_sha256": "87960a5803e2663a40b3c0bda1611840806e649f3927c238bd63bdce08812f49",
+    "production_2048_leaf_shard_stream_bytes": 18869935441,
+    "production_2048_leaf_shard_wires": 19903324,
     "production_cap_full_vector_executed": false,
     "production_cap_inter_call_wire_identity": false,
     "production_cap_native_rows_materialized": false,

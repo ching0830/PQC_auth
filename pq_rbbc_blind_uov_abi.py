@@ -30,6 +30,11 @@ the production-width 2,048-bit/11-coefficient Horner vector, and integrates
 the same generic lowering with symbolic extension-mask slices in a 386-bit,
 two-coefficient, two-point, 2,450-bit-tape CAP fixture.  The full 18-tree
 production relation remains outside the closed boundary.
+Version 2.5 executes one real 2,048-leaf production tree shape with the full
+2,048-bit witness, degree-12 extension masks, two consistency points, and
+2,450-bit tapes.  Its 26,126,283 rows are hashed through a bounded-memory
+stream; the complete assignment, 4,096-leaf shard, other 17 trees, and parent
+archive join remain outside the closed boundary.
 """
 
 from __future__ import annotations
@@ -44,6 +49,7 @@ from typing import Protocol
 import pq_rbbc_anemoi_sponge as fork_sponge
 import pq_rbbc_cap_commit as fork_cap
 import pq_rbbc_cap_native as reduced_native_cap
+import pq_rbbc_cap_shard_stream as shard_stream
 import pq_rbbc_horner_native as horner_native
 
 
@@ -303,7 +309,7 @@ def build_abi_manifest() -> dict[str, object]:
     hidden = adapter.hidden_state(message, mask, randomness)
     changed_message = bytes((message[0] ^ 1,)) + message[1:]
     return {
-        "implementation_version": "2.4",
+        "implementation_version": "2.5",
         "paper_anchor": "Blind-UOV ePrint 2025/895 is a framework and size comparator, not a bit-exact implementation claim",
         "profile": "PQ-RBBC-BUOV-III/Anemoi-193-336 experimental fork",
         "fork_profile": {
@@ -328,6 +334,8 @@ def build_abi_manifest() -> dict[str, object]:
             "production_width_horner_row_stream_sha256": "0c9d742d44808a20a35838be84a638924dc5b2f9183bba731eefba1cb9069850",
             "horner_2450_native_relation_id": reduced_native_cap.HORNER_PROFILE_RELATION_ID,
             "horner_2450_native_row_stream_sha256": reduced_native_cap.FROZEN_HORNER_ROW_STREAM_SHA256,
+            "production_2048_leaf_shard_relation_id": shard_stream.PROFILE_RELATION_ID,
+            "production_2048_leaf_shard_row_stream_sha256": shard_stream.FROZEN_PRODUCTION_STREAM_SHA256,
         },
         "paper_parameters": {
             "security_level_bits": 192,
@@ -434,6 +442,13 @@ def build_abi_manifest() -> dict[str, object]:
             "horner_2450_cap_native_wires": reduced_native_cap.FROZEN_HORNER_WIRES,
             "horner_2450_cap_native_external_assertions": 0,
             "horner_2450_cap_profile_is_secure": False,
+            "production_2048_leaf_shard_rows": shard_stream.FROZEN_PRODUCTION_ROWS,
+            "production_2048_leaf_shard_wires": shard_stream.FROZEN_PRODUCTION_WIRES,
+            "production_2048_leaf_shard_stream_bytes": shard_stream.FROZEN_PRODUCTION_STREAM_BYTES,
+            "production_2048_leaf_shard_external_assertions": 0,
+            "production_2048_leaf_shard_executed": True,
+            "production_2048_leaf_shard_assignment_materialized": False,
+            "production_2048_leaf_shard_profile_is_secure": False,
             "full_production_cap_vector_executed": False,
             "full_production_cap_native_rows_materialized": False,
             "production_cap_inter_call_wire_identity_proved": False,
