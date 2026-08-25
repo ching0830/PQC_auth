@@ -1,0 +1,510 @@
+{
+  "claim_boundary": {
+    "complete_18_tree_assignment_replayed": false,
+    "cross_segment_wire_identity_closed": false,
+    "fork_security_proof_revalidated": false,
+    "global_points_are_explicit_producer_inputs": true,
+    "parent_cap_to_h_rbbc_join_closed": false,
+    "point_wire_identity_to_global_tail_closed": false,
+    "producer_output_ports_are_native_bit_constrained": true,
+    "producer_to_tail_port_values_match": true,
+    "production_closed": false,
+    "production_tree_producer_segments_materialized": false,
+    "reduced_tree_producer_segments_native_closed": true
+  },
+  "implementation_version": "2.10",
+  "port_matches": [
+    {
+      "bit_length": 1544,
+      "consumer_wire_start": 643,
+      "exact_value_match": true,
+      "exact_wire_identity": false,
+      "port_id": "tree[0].leaf-commitments",
+      "producer_tree_index": 0,
+      "producer_wire_start": 20363,
+      "value_sha256": "363cf3d665c0535df4e180f351e4815a15055a642892872354b3bc773e219923"
+    },
+    {
+      "bit_length": 64,
+      "consumer_wire_start": 2187,
+      "exact_value_match": true,
+      "exact_wire_identity": false,
+      "port_id": "tree[0].p-plain",
+      "producer_tree_index": 0,
+      "producer_wire_start": 21907,
+      "value_sha256": "6cb3e0d85dff6042d1c22eef1c7e31722107ab461a09576e27d85a826cd92e80"
+    },
+    {
+      "bit_length": 193,
+      "consumer_wire_start": 2251,
+      "exact_value_match": true,
+      "exact_wire_identity": false,
+      "port_id": "tree[0].mhat-plain",
+      "producer_tree_index": 0,
+      "producer_wire_start": 21971,
+      "value_sha256": "7136e83fcb0b48f26b94182f5079d9c53170ccfc8a5ba48c733570977b0b286f"
+    },
+    {
+      "bit_length": 579,
+      "consumer_wire_start": 2444,
+      "exact_value_match": true,
+      "exact_wire_identity": false,
+      "port_id": "tree[0].xi-masks",
+      "producer_tree_index": 0,
+      "producer_wire_start": 22751,
+      "value_sha256": "e7e5ff69647e453e151b8076e58160e383b3f858d26e011ab9fb0359ae549e8a"
+    },
+    {
+      "bit_length": 1544,
+      "consumer_wire_start": 3023,
+      "exact_value_match": true,
+      "exact_wire_identity": false,
+      "port_id": "tree[1].leaf-commitments",
+      "producer_tree_index": 1,
+      "producer_wire_start": 20363,
+      "value_sha256": "c29a8c935c2d28a30cea30e8b7fce2ac6851b1febf8e6ad31ea1fd67be9a7285"
+    },
+    {
+      "bit_length": 64,
+      "consumer_wire_start": 4567,
+      "exact_value_match": true,
+      "exact_wire_identity": false,
+      "port_id": "tree[1].p-plain",
+      "producer_tree_index": 1,
+      "producer_wire_start": 21907,
+      "value_sha256": "0c1922a1e9d710de2144305684b94e7accbfbed9490dc05f574ea9c18fa4c0b5"
+    },
+    {
+      "bit_length": 193,
+      "consumer_wire_start": 4631,
+      "exact_value_match": true,
+      "exact_wire_identity": false,
+      "port_id": "tree[1].mhat-plain",
+      "producer_tree_index": 1,
+      "producer_wire_start": 21971,
+      "value_sha256": "45d0f68f02df10d3cc2684fde3bb72f9074129a3f5ea931fb4bbf7898c0330fe"
+    },
+    {
+      "bit_length": 579,
+      "consumer_wire_start": 4824,
+      "exact_value_match": true,
+      "exact_wire_identity": false,
+      "port_id": "tree[1].xi-masks",
+      "producer_tree_index": 1,
+      "producer_wire_start": 22751,
+      "value_sha256": "fa654f181d1dcdb98c50c194ab2d04ad2b1e80b02576355fad05ec9b6ac24fdd"
+    }
+  ],
+  "producer_segments": [
+    {
+      "assignment_archive": {
+        "archive_bytes": 583353,
+        "archive_sha256": "5413f331c706184dc7546c262c8541ee812aec4a1c3a5ba029fdd4f0a9bd6db0",
+        "body_bytes": 583225,
+        "body_sha256": "444f2f7d314f5eed143eb3f854dfa85fe60f913c3d2c2d515f829b5ccc1cd112",
+        "field_degree": 193,
+        "format": "PQRBBC-F193-ASSIGNMENT-LE25-1",
+        "header_bytes": 128,
+        "row_stream_sha256": "ff5ad52cd7d39777023b8ded3e4f8fcfd1e840172ac210e59d996232c9613da1",
+        "value_bytes": 25,
+        "wires": 23329
+      },
+      "extension_degree": 3,
+      "generation_seconds": 1.7450762609987578,
+      "leaves": 4,
+      "ports": [
+        {
+          "bit_length": 386,
+          "direction": "input",
+          "phase": "tree-pre",
+          "port_id": "shared.salt",
+          "value_sha256": "8184bbf89d87b7a8c9e8e3e5fe907310ef86a01655fb274bce6a7482bc97c9ed",
+          "wire_start": 1
+        },
+        {
+          "bit_length": 386,
+          "direction": "input",
+          "phase": "tree-pre",
+          "port_id": "tree[0].roots",
+          "value_sha256": "5e9c1761b696a3e07ca7ec6e2226393e77b6c6ea772e03318c87f803afc6c9c6",
+          "wire_start": 387
+        },
+        {
+          "bit_length": 193,
+          "direction": "input",
+          "phase": "tree-post",
+          "port_id": "global.consistency-points",
+          "value_sha256": "0dab228a3083f1edba00e8e19e905d0e2595d10663963d97ca4d3d827a41ec3c",
+          "wire_start": 773
+        },
+        {
+          "bit_length": 1544,
+          "direction": "output",
+          "phase": "tree-pre",
+          "port_id": "tree[0].leaf-commitments",
+          "value_sha256": "363cf3d665c0535df4e180f351e4815a15055a642892872354b3bc773e219923",
+          "wire_start": 20363
+        },
+        {
+          "bit_length": 64,
+          "direction": "output",
+          "phase": "tree-pre",
+          "port_id": "tree[0].p-plain",
+          "value_sha256": "6cb3e0d85dff6042d1c22eef1c7e31722107ab461a09576e27d85a826cd92e80",
+          "wire_start": 21907
+        },
+        {
+          "bit_length": 193,
+          "direction": "output",
+          "phase": "tree-pre",
+          "port_id": "tree[0].mhat-plain",
+          "value_sha256": "7136e83fcb0b48f26b94182f5079d9c53170ccfc8a5ba48c733570977b0b286f",
+          "wire_start": 21971
+        },
+        {
+          "bit_length": 579,
+          "direction": "output",
+          "phase": "tree-post",
+          "port_id": "tree[0].xi-masks",
+          "value_sha256": "e7e5ff69647e453e151b8076e58160e383b3f858d26e011ab9fb0359ae549e8a",
+          "wire_start": 22751
+        }
+      ],
+      "stale_witness_probes": [
+        {
+          "honest_row_satisfied": true,
+          "label": "xof[0].tree[0].derive[2,1].payload[240].source",
+          "original_value_hex": "00000000000000000000000000000000000000000000000000",
+          "rejected": true,
+          "stale_row_satisfied": false,
+          "stale_value_hex": "01000000000000000000000000000000000000000000000000",
+          "wire": 1
+        },
+        {
+          "honest_row_satisfied": true,
+          "label": "xof[3].tree[0].leaf[1].tape.digest.lane[0].pack",
+          "original_value_hex": "c89f3dd990da5152084b21b930cac2fc71bd0a59360656b701",
+          "rejected": true,
+          "stale_row_satisfied": false,
+          "stale_value_hex": "c99f3dd990da5152084b21b930cac2fc71bd0a59360656b701",
+          "wire": 8605
+        },
+        {
+          "honest_row_satisfied": true,
+          "label": "output.tree[0].leaf-commitments[0].link",
+          "original_value_hex": "00000000000000000000000000000000000000000000000000",
+          "rejected": true,
+          "stale_row_satisfied": false,
+          "stale_value_hex": "01000000000000000000000000000000000000000000000000",
+          "wire": 6947
+        },
+        {
+          "honest_row_satisfied": true,
+          "label": "output.tree[0].p-plain[0].link",
+          "original_value_hex": "00000000000000000000000000000000000000000000000000",
+          "rejected": true,
+          "stale_row_satisfied": false,
+          "stale_value_hex": "01000000000000000000000000000000000000000000000000",
+          "wire": 8613
+        },
+        {
+          "honest_row_satisfied": true,
+          "label": "output.tree[0].mhat-plain[0].link",
+          "original_value_hex": "00000000000000000000000000000000000000000000000000",
+          "rejected": true,
+          "stale_row_satisfied": false,
+          "stale_value_hex": "01000000000000000000000000000000000000000000000000",
+          "wire": 8679
+        },
+        {
+          "honest_row_satisfied": true,
+          "label": "output.tree[0].xi-masks[0].link",
+          "original_value_hex": "00000000000000000000000000000000000000000000000000",
+          "rejected": true,
+          "stale_row_satisfied": false,
+          "stale_value_hex": "01000000000000000000000000000000000000000000000000",
+          "wire": 8679
+        }
+      ],
+      "trace": {
+        "external_assertions": 0,
+        "groups": [
+          {
+            "bytes": 190116,
+            "name": "producer-inputs",
+            "rows": 966,
+            "sha256": "f442e590612340e067c711e1df58f88f9836409f5f5e967689d9c8d39b619009"
+          },
+          {
+            "bytes": 1826014,
+            "name": "tree-pre-ggm-derive",
+            "rows": 6296,
+            "sha256": "013afa1ccca3d65b96bfc86a903ce3612f305869c724df8a3f5886387ef51b32"
+          },
+          {
+            "bytes": 6542672,
+            "name": "tree-pre-leaf-commit-and-tape",
+            "rows": 21536,
+            "sha256": "86a8c7dbcc5abc01d20bc418fecb80711923cc890bf8556ede9cd2c98fe6ec59"
+          },
+          {
+            "bytes": 755482,
+            "name": "tree-pre-output-ports",
+            "rows": 3602,
+            "sha256": "ae30cb7f16751ebd36ed8db0e25f6b7011f63963406f58d4f39fd5b7814860cd"
+          },
+          {
+            "bytes": 164549,
+            "name": "tree-post-horner",
+            "rows": 590,
+            "sha256": "361819cb3e1b231eb37564447ef364117ab5186fc55c8f5808a15125b6c98784"
+          },
+          {
+            "bytes": 277121,
+            "name": "tree-post-output-port",
+            "rows": 1158,
+            "sha256": "9b4caa6c1d892fc003201eb695d9cf19763290a4cd85fdea5e0c56a762daddd7"
+          }
+        ],
+        "horner_accounting": {
+          "aggregate_rows": 8,
+          "leaf_calls": 4,
+          "multiplication_rows": 0,
+          "output_bitness_rows": 579,
+          "output_pack_rows": 3,
+          "point_validation_rows": 1
+        },
+        "linear_rows": 11227,
+        "nonlinear_rows": 22921,
+        "rows": 34148,
+        "sponge_accounting": {
+          "calls": 10,
+          "linear_rows": 8836,
+          "output_bitness_rows": 3860,
+          "payload_bitness_rows": 8416,
+          "permutation_rows": 6720,
+          "permutations": 20,
+          "source_link_rows": 8416
+        },
+        "stream_bytes": 9756635,
+        "stream_sha256": "ff5ad52cd7d39777023b8ded3e4f8fcfd1e840172ac210e59d996232c9613da1",
+        "verification_failures": 0,
+        "wires": 23329
+      },
+      "tree_index": 0,
+      "verification_seconds": 1.4001927549998072
+    },
+    {
+      "assignment_archive": {
+        "archive_bytes": 583353,
+        "archive_sha256": "a165562be53216f89137efbc1c6b4d70cb5cb8145232d937f89f2781b29c947c",
+        "body_bytes": 583225,
+        "body_sha256": "f6f588e5e531dda75f200409a257c21d338f29491d4b3e3bae4ac3e7d665ba40",
+        "field_degree": 193,
+        "format": "PQRBBC-F193-ASSIGNMENT-LE25-1",
+        "header_bytes": 128,
+        "row_stream_sha256": "fe0bcd20c92c58406bd86a0251b22ce92fabb781c3c132c7b407b7d9542f5eb7",
+        "value_bytes": 25,
+        "wires": 23329
+      },
+      "extension_degree": 3,
+      "generation_seconds": 1.8541398549987207,
+      "leaves": 4,
+      "ports": [
+        {
+          "bit_length": 386,
+          "direction": "input",
+          "phase": "tree-pre",
+          "port_id": "shared.salt",
+          "value_sha256": "8184bbf89d87b7a8c9e8e3e5fe907310ef86a01655fb274bce6a7482bc97c9ed",
+          "wire_start": 1
+        },
+        {
+          "bit_length": 386,
+          "direction": "input",
+          "phase": "tree-pre",
+          "port_id": "tree[1].roots",
+          "value_sha256": "6c8cb204d2abcebe3fded3d44e3c70b3d620b24b21977f1f35e8850bebada671",
+          "wire_start": 387
+        },
+        {
+          "bit_length": 193,
+          "direction": "input",
+          "phase": "tree-post",
+          "port_id": "global.consistency-points",
+          "value_sha256": "0dab228a3083f1edba00e8e19e905d0e2595d10663963d97ca4d3d827a41ec3c",
+          "wire_start": 773
+        },
+        {
+          "bit_length": 1544,
+          "direction": "output",
+          "phase": "tree-pre",
+          "port_id": "tree[1].leaf-commitments",
+          "value_sha256": "c29a8c935c2d28a30cea30e8b7fce2ac6851b1febf8e6ad31ea1fd67be9a7285",
+          "wire_start": 20363
+        },
+        {
+          "bit_length": 64,
+          "direction": "output",
+          "phase": "tree-pre",
+          "port_id": "tree[1].p-plain",
+          "value_sha256": "0c1922a1e9d710de2144305684b94e7accbfbed9490dc05f574ea9c18fa4c0b5",
+          "wire_start": 21907
+        },
+        {
+          "bit_length": 193,
+          "direction": "output",
+          "phase": "tree-pre",
+          "port_id": "tree[1].mhat-plain",
+          "value_sha256": "45d0f68f02df10d3cc2684fde3bb72f9074129a3f5ea931fb4bbf7898c0330fe",
+          "wire_start": 21971
+        },
+        {
+          "bit_length": 579,
+          "direction": "output",
+          "phase": "tree-post",
+          "port_id": "tree[1].xi-masks",
+          "value_sha256": "fa654f181d1dcdb98c50c194ab2d04ad2b1e80b02576355fad05ec9b6ac24fdd",
+          "wire_start": 22751
+        }
+      ],
+      "stale_witness_probes": [
+        {
+          "honest_row_satisfied": true,
+          "label": "xof[0].tree[1].derive[2,1].payload[240].source",
+          "original_value_hex": "00000000000000000000000000000000000000000000000000",
+          "rejected": true,
+          "stale_row_satisfied": false,
+          "stale_value_hex": "01000000000000000000000000000000000000000000000000",
+          "wire": 1
+        },
+        {
+          "honest_row_satisfied": true,
+          "label": "xof[3].tree[1].leaf[1].tape.digest.lane[0].pack",
+          "original_value_hex": "e04131846a6252046ac69e6e26363d6857af1fb98f90b18a00",
+          "rejected": true,
+          "stale_row_satisfied": false,
+          "stale_value_hex": "e14131846a6252046ac69e6e26363d6857af1fb98f90b18a00",
+          "wire": 8605
+        },
+        {
+          "honest_row_satisfied": true,
+          "label": "output.tree[1].leaf-commitments[0].link",
+          "original_value_hex": "01000000000000000000000000000000000000000000000000",
+          "rejected": true,
+          "stale_row_satisfied": false,
+          "stale_value_hex": "00000000000000000000000000000000000000000000000000",
+          "wire": 6947
+        },
+        {
+          "honest_row_satisfied": true,
+          "label": "output.tree[1].p-plain[0].link",
+          "original_value_hex": "00000000000000000000000000000000000000000000000000",
+          "rejected": true,
+          "stale_row_satisfied": false,
+          "stale_value_hex": "01000000000000000000000000000000000000000000000000",
+          "wire": 8613
+        },
+        {
+          "honest_row_satisfied": true,
+          "label": "output.tree[1].mhat-plain[0].link",
+          "original_value_hex": "00000000000000000000000000000000000000000000000000",
+          "rejected": true,
+          "stale_row_satisfied": false,
+          "stale_value_hex": "01000000000000000000000000000000000000000000000000",
+          "wire": 8679
+        },
+        {
+          "honest_row_satisfied": true,
+          "label": "output.tree[1].xi-masks[0].link",
+          "original_value_hex": "00000000000000000000000000000000000000000000000000",
+          "rejected": true,
+          "stale_row_satisfied": false,
+          "stale_value_hex": "01000000000000000000000000000000000000000000000000",
+          "wire": 8679
+        }
+      ],
+      "trace": {
+        "external_assertions": 0,
+        "groups": [
+          {
+            "bytes": 190116,
+            "name": "producer-inputs",
+            "rows": 966,
+            "sha256": "ec9d816fb41a102d4139705d0d2ce335c50ecf556b520f6983ac203a38d68d05"
+          },
+          {
+            "bytes": 1826014,
+            "name": "tree-pre-ggm-derive",
+            "rows": 6296,
+            "sha256": "77442c349f3fa957de25f286cecd854965a7194e5cb3e108f188e64a332336d2"
+          },
+          {
+            "bytes": 6542672,
+            "name": "tree-pre-leaf-commit-and-tape",
+            "rows": 21536,
+            "sha256": "c6f515fe753f5abbfec06245a404716ce30432f4b5ea8c9040510bb8138e0b10"
+          },
+          {
+            "bytes": 755482,
+            "name": "tree-pre-output-ports",
+            "rows": 3602,
+            "sha256": "2dceac544f136bc052444b610d7f97a89f215205e8cadc97825a91881c2c26ac"
+          },
+          {
+            "bytes": 164549,
+            "name": "tree-post-horner",
+            "rows": 590,
+            "sha256": "c5a718436120d0a59d2636450b24de89494f5b7c5cf50e3654463087c08c7215"
+          },
+          {
+            "bytes": 277121,
+            "name": "tree-post-output-port",
+            "rows": 1158,
+            "sha256": "97f9a83d39cc82f9eb6c62e596379b6d00b712f9d765ed6e06983d54cc03ae4a"
+          }
+        ],
+        "horner_accounting": {
+          "aggregate_rows": 8,
+          "leaf_calls": 4,
+          "multiplication_rows": 0,
+          "output_bitness_rows": 579,
+          "output_pack_rows": 3,
+          "point_validation_rows": 1
+        },
+        "linear_rows": 11227,
+        "nonlinear_rows": 22921,
+        "rows": 34148,
+        "sponge_accounting": {
+          "calls": 10,
+          "linear_rows": 8836,
+          "output_bitness_rows": 3860,
+          "payload_bitness_rows": 8416,
+          "permutation_rows": 6720,
+          "permutations": 20,
+          "source_link_rows": 8416
+        },
+        "stream_bytes": 9756635,
+        "stream_sha256": "fe0bcd20c92c58406bd86a0251b22ce92fabb781c3c132c7b407b7d9542f5eb7",
+        "verification_failures": 0,
+        "wires": 23329
+      },
+      "tree_index": 1,
+      "verification_seconds": 1.3352443519997905
+    }
+  ],
+  "profile": {
+    "assignment_format": "PQRBBC-F193-ASSIGNMENT-LE25-1",
+    "cap_profile_fingerprint": "5d067a55e2ea9104b2604dc7efa393f44d1ce1880c3974bdcaae32aeb825f2ea",
+    "reduced_test_profile": true,
+    "relation_id": "pq-rbbc/cap/tree-producer-segment/v1",
+    "stream_format": "PQRBBC-F193-R1CS-BINARY-1",
+    "tree_count": 2
+  },
+  "tail_consumer": {
+    "relation_id": "pq-rbbc/cap/production-global-tail/v1",
+    "rows": 36801,
+    "stream_sha256": "4d2f53ba3a039a9c88cd7dd0b7e0e19ad4f7e39d5db2bce67af19ee09302c6fa",
+    "wires": 24992
+  }
+}

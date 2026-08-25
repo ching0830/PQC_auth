@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Binary F2-R1CS lowering for the executable PQ-RBBC v2.9 relation.
+"""Binary F2-R1CS lowering for the executable PQ-RBBC v2.10 relation.
 
 The format is intentionally small and auditable.  It serializes enough data to
 reconstruct ordinary rank-1 constraints over F2:
@@ -651,8 +651,8 @@ def build_backend_manifest(output_path: str | os.PathLike[str]) -> dict[str, obj
         honest.metadata.linear_definitions + honest.metadata.linear_assertions
     )
     return {
-        "implementation_version": "2.9",
-        "status": "the full 18-tree CAP reference, canonical schedule, and native shared global tail are frozen; tree-producer segments, exact cross-segment identities, and the parent join remain external",
+        "implementation_version": "2.10",
+        "status": "the production reference and native shared global tail are frozen; reduced tree producers match the tail ABI, while production producers, exact cross-segment identities, and the parent join remain external",
         "format": {
             "name": honest.metadata.format,
             "version": honest.metadata.format_version,
@@ -792,6 +792,12 @@ def build_backend_manifest(output_path: str | os.PathLike[str]) -> dict[str, obj
             "production_global_tail_assignment_sha256": native_profile.global_tail.FROZEN_PRODUCTION_ASSIGNMENT_SHA256,
             "production_global_tail_replay_failures": 0,
             "production_global_tail_stale_witness_probes": 6,
+            "reduced_tree_producer_relation_id": native_profile.tree_producer.RELATION_ID,
+            "reduced_tree_producer_rows_per_tree": native_profile.tree_producer.FROZEN_REDUCED_ROWS_PER_TREE,
+            "reduced_tree_producer_wires_per_tree": native_profile.tree_producer.FROZEN_REDUCED_WIRES_PER_TREE,
+            "reduced_tree_producer_segments_native_closed": True,
+            "reduced_producer_to_tail_port_values_match": True,
+            "reduced_producer_point_wire_identity_closed": False,
             "tree_producer_segments_materialized": False,
             "cross_segment_wire_identity_closed": False,
             "monolithic_18_tree_assignment_verified": False,

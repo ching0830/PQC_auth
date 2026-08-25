@@ -171,6 +171,21 @@ class ForkNativeProfileTests(unittest.TestCase):
                 "production_global_tail_native_closed"
             ]
         )
+        self.assertTrue(
+            manifest["claim_boundary"][
+                "reduced_tree_producer_segments_native_closed"
+            ]
+        )
+        self.assertTrue(
+            manifest["claim_boundary"][
+                "reduced_producer_to_tail_port_values_match"
+            ]
+        )
+        self.assertFalse(
+            manifest["claim_boundary"][
+                "reduced_producer_point_wire_identity_closed"
+            ]
+        )
         self.assertFalse(
             manifest["claim_boundary"]["tree_producer_segments_materialized"]
         )

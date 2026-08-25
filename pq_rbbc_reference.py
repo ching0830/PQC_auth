@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Executable v2.9 reference relation for the PQ-RBBC/SGTD research draft.
+"""Executable v2.10 reference relation for the PQ-RBBC/SGTD research draft.
 
 This module implements the *incremental* five-block issuance relation described
 in the accompanying proof document.  It emits a streaming characteristic-two
@@ -1156,11 +1156,11 @@ def build_manifest(full_negative_circuits: bool = False) -> dict[str, object]:
             ).items()
         }
     return {
-        "implementation_version": "2.9",
+        "implementation_version": "2.10",
         "status": "executable research relation; not a deployment implementation",
         "claim_boundary": {
             "implemented": "incremental relation plus the in-circuit y = r + hash_image mask equation",
-            "forked_issuance": "the full 18-tree CAP reference vector, canonical schedule, and native shared global tail are frozen; tree-producer segments, exact cross-segment identities, and the parent join remain one external assertion",
+            "forked_issuance": "the production reference and native shared global tail are frozen; reduced position-sensitive producers match every tail port, while production producers, point/cross-segment identities, and the parent join remain one external assertion",
             "r1cs_backend": "streaming IR events only; no flattened matrices or proof backend",
             "trace_key": "deterministic systematic test fixture; not a certified Goppa key",
         },
@@ -1284,6 +1284,12 @@ def build_manifest(full_negative_circuits: bool = False) -> dict[str, object]:
             "production_global_tail_assignment_sha256": native_profile.global_tail.FROZEN_PRODUCTION_ASSIGNMENT_SHA256,
             "production_global_tail_replay_failures": 0,
             "production_global_tail_stale_witness_probes": 6,
+            "reduced_tree_producer_relation_id": native_profile.tree_producer.RELATION_ID,
+            "reduced_tree_producer_rows_per_tree": native_profile.tree_producer.FROZEN_REDUCED_ROWS_PER_TREE,
+            "reduced_tree_producer_wires_per_tree": native_profile.tree_producer.FROZEN_REDUCED_WIRES_PER_TREE,
+            "reduced_tree_producer_segments_native_closed": True,
+            "reduced_producer_to_tail_port_values_match": True,
+            "reduced_producer_point_wire_identity_closed": False,
             "tree_producer_segments_materialized": False,
             "cross_segment_wire_identity_closed": False,
             "monolithic_18_tree_assignment_verified": False,

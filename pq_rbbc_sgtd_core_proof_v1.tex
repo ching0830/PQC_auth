@@ -43,7 +43,7 @@
 
 \title{A Post-Quantum Relation-Bound Blind Certification Core\\
 with Signature-Gated Threshold Decryption}
-\author{Research construction draft, version 2.9}
+\author{Research construction draft, version 2.10}
 \date{25 August 2026}
 
 \begin{document}
@@ -201,6 +201,14 @@ the request-binding hash.  Its fixed-width assignment is replayed completely
 with zero failures and six stale-witness probes reject.  This does not yet
 materialize the eighteen tree-producer segments or their exact cross-segment
 wire identities, so the complete composition and parent join remain open.
+Version 2.10 implements the complementary producer relation on the reduced
+two-tree fixture.  Each position-sensitive segment constrains GGM derivation,
+leaf commitments and tapes, wide plain XORs, and point-dependent mask Horner
+evaluation without duplicating $H_1$ or $H_2$.  Both assignments replay with
+zero failures, twelve selected stale witnesses reject, and all eight producer
+output ports match the version-2.9 tail consumer ABI by ID, width, and value
+digest.  The consistency points remain explicit local inputs rather than
+identical tail wires, and no production producer has yet been materialized.
 \end{abstract}
 
 \section{Status, scope, and non-goals}
@@ -1156,6 +1164,11 @@ The remaining native gap is narrower: generate all eighteen position-specific
 tree-producer segments without duplicated tails, relocate their exact output
 wires into the frozen tail ports, and replay the combined composition before
 performing the parent join.
+Version 2.10 tests that segmentation boundary end to end on both positions of
+the reduced profile.  It closes the producer constraints and value-level port
+ABI for that non-secure fixture, but deliberately leaves point-wire identity,
+the two production shapes, all eighteen production positions, and the parent
+join open.
 
 \paragraph{Frozen Blind-UOV comparison profile.}
 Version 1.7 fixes the 31 October 2025 revision and its
@@ -1772,6 +1785,41 @@ the producer segments for this relation.  Version 2.9 therefore keeps
 \path{cross_segment_wire_identity_closed}, and
 \path{complete_18_tree_assignment_replayed} false.
 
+\paragraph{Reduced position-sensitive tree producers in version 2.10.}
+For tree position $i$, the producer relation accepts the shared salt, the two
+roots assigned to $i$, and the profile consistency points.  Tree index $i$ is
+retained in every GGM and leaf metadata field.  The relation publishes four
+contiguous Boolean-constrained ports named exactly as the shared-tail
+consumers: leaf commitments, $P_i$, $\widehat M_i$, and the flattened
+extension-field $\xi$ masks.
+
+\begin{proposition}[Reduced producer assignment and port-ABI closure]
+For each of the two four-leaf, degree-3 reduced trees, relation
+\path{pq-rbbc/cap/tree-producer-segment/v1} has 34,148 rows and 23,329 wires.
+The fixed-width assignment is 583,353 bytes and a complete replay has zero
+failures and zero external assertions.  Six stale-witness probes per tree
+reject.  All eight producer output ports match the version-2.9 reduced-tail
+consumer ports by canonical ID, bit width, and value digest.
+\end{proposition}
+\begin{proof}
+The generator allocates Boolean inputs for salt, roots, and consistency
+points, then lowers only tree-local XOF calls in their actual profile position.
+A temporary wire spool retains the selected tape-output wire IDs.  Wide XOR
+forms publish $P_i$ and $\widehat M_i$; native Horner rows at the supplied
+points and extension-field leaf selection publish the $\xi$ masks.  The mmap
+verifier regenerates the same witness-independent topology and evaluates every
+row.  Selected mutations cover GGM source binding, tape packing, and each of
+the four output-port publications.  Finally, the port validator compares the
+producer and tail ID, width, and canonical value digest for every output.
+\end{proof}
+
+This is not a native wire join.  Producer-local and tail-local wire IDs differ,
+and a different valid consistency-point input is not rejected by the producer
+alone.  The next relation must expose the tail $H_1$ points as phase-A outputs
+and either share or explicitly constrain those exact wires before any
+cross-segment identity claim becomes true.  The reduced fixture is
+deliberately non-secure and supplies no production CAP claim.
+
 The earlier 240/336/360 discrepancy remains documented, but it no longer
 blocks implementation: version 2.0 intentionally chooses the 336-row profile.
 The cost of that choice is loss of bit-exact Blind-UOV compatibility and loss
@@ -2264,6 +2312,9 @@ closed shared tail, and the final $H_{\RBBC}$ parent wire join.  Direct
 reference evaluation, shared-tail replay, and the canonical byte join exist,
 but the archive cannot yet evaluate those operations as one native
 witness-independent row stream.
+Version 2.10 narrows the engineering uncertainty by executing the producer
+architecture on the reduced fixture; it does not remove any part of this
+production external assertion.
 The linear equation $y=r+h_{\RBBC}$ is no longer external.  This narrowed
 boundary is deliberate and machine-visible: an archive with an unchecked
 external assertion is not a closed issuance proof.  The next integration must
@@ -2334,7 +2385,10 @@ one 5,391-byte commitment, and five rejected stale-document probes (the shard
 fixtures remain non-secure and the linked schedule is not a native assignment);
 plus a version-2.9 shared global tail with 56,806,711 rows and 40,194,596 wires,
 a completely replayed fixed-width assignment, zero external assertions, and
-six rejected stale-witness probes.\\
+six rejected stale-witness probes; plus two version-2.10 reduced
+position-sensitive producer segments with 34,148 rows and 23,329 wires each,
+complete assignment replay, twelve rejected probes, and eight matching tail
+port values.\\
 \addlinespace
 Not yet instantiated & A post-quantum zero-knowledge and
 simulation-extractable implementation of $\Piiss$; a native
@@ -2411,9 +2465,11 @@ machine-tested or enforced by type/API boundaries.
   the implemented
   $H_{\RBBC}$ wires unambiguously.  The CAP fixtures are explicitly non-secure
   and cannot satisfy the production import contract.  Version 2.9 additionally
-  fixes and completely replays the exact shared global tail.  The eighteen
-  producer segments, cross-segment wire identities, complete composition
-  replay, and parent-circuit wire identities are still required.
+  fixes and completely replays the exact shared global tail.  Version 2.10
+  additionally fixes and replays the reduced producer-side port ABI.  The
+  production producer segments, consistency-point and cross-segment wire
+  identities, complete composition replay, and parent-circuit wire identities
+  are still required.
   \item The fork must never claim bit-exact Blind-UOV compatibility.  The
   reported 240 rows remain comparison data; the selected fork uses 336 rows.
   \item Production closure requires independent fork vectors and cryptanalysis,
@@ -2440,16 +2496,21 @@ tree.  Each has a frozen bounded-memory row-stream digest, a complete
   production reference and freezes its canonical 18-tree linked schedule,
   corrections, commitment, and request transcript.  Version 2.9 materializes
   the shared consumer tail, replays its complete fixed-width assignment with
-  zero failures, and rejects six selected stale witnesses.  The 240-row
+  zero failures, and rejects six selected stale witnesses.  Version 2.10
+  implements and replays two reduced position-sensitive producer segments,
+  rejecting twelve selected stale witnesses and matching all eight consumer
+  ports by value.  The 240-row
 artifact gap is no longer
 an engineering blocker because the fork intentionally gives up bit-exact
 compatibility.  The next component is exact native multi-tree composition:
 
 \begin{quote}
-\emph{Generate the eighteen position-specific tree-producer segments without
-duplicating the now-closed shared global transcript tail, freeze every
-port-to-wire relocation, and replay the complete composition with zero
-failures.  Then join the resulting
+\emph{Expose the shared tail's $H_1$ consistency-point wires as a phase-A
+output port and prove split-tail equivalence.  Then materialize one actual
+4,096-leaf/degree-13 and one actual 2,048-leaf/degree-12 producer without
+duplicating the tail, freeze every point and output port-to-wire relocation,
+expand to all eighteen positions, and replay the complete composition with
+zero failures.  Then join the resulting
 CAP bytes to the parent archive, which must reject changed $m$, $r$, $\rho$,
 $c_r$, correction, serialization, or hash output and reach zero external
 assertions.  Then prove
@@ -2460,8 +2521,9 @@ zero-knowledge and simulation-extractable backend.}
 
 \paragraph{Delivery roadmap.}
 The companion file
-\texttt{PQ\_RBBC\_CRYPTO\_CORE\_ROADMAP\_v2\_9.md} records the ordered gates:
-(R1b) exact tree-producer segmentation, wire relocation, and full assignment replay;
+\texttt{PQ\_RBBC\_CRYPTO\_CORE\_ROADMAP\_v2\_10.md} records the ordered gates:
+(R1b-b/c) split-tail point ports, production producer segmentation, wire
+relocation, and full assignment replay;
 (R2) parent exact wire join and zero external assertions; (R3) fork-specific CAP, request-binding, blindness,
 one-more-unforgeability, SE-NIZK, and QROM reductions; (R4)
 signature-gated-decryption implementation and reduction; (R5) post-quantum
