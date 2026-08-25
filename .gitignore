@@ -1,0 +1,28 @@
+# Original release snapshots used to reconstruct this repository
+/version/
+
+# Large generated circuit archives
+*.br1cs
+*.f193r1cs
+
+# Python caches and test artifacts
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+
+# LaTeX intermediate files (release PDFs remain tracked)
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.synctex.gz
+*.toc
+
+# Editor and operating-system files
+.DS_Store
+*~
