@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Executable v2.3 reference relation for the PQ-RBBC/SGTD research draft.
+"""Executable v2.4 reference relation for the PQ-RBBC/SGTD research draft.
 
 This module implements the *incremental* five-block issuance relation described
 in the accompanying proof document.  It emits a streaming characteristic-two
@@ -1155,11 +1155,11 @@ def build_manifest(full_negative_circuits: bool = False) -> dict[str, object]:
             ).items()
         }
     return {
-        "implementation_version": "2.3",
+        "implementation_version": "2.4",
         "status": "executable research relation; not a deployment implementation",
         "claim_boundary": {
             "implemented": "incremental relation plus the in-circuit y = r + hash_image mask equation",
-            "forked_issuance": "the reduced and 2450-bit extended CAP fixtures plus H_RBBC join have zero-callback native traces; production multi-coefficient hashing and the full 18-tree row stream remain one external assertion",
+            "forked_issuance": "native multiplication and generic Horner hashing are closed, including a two-coefficient symbolic-mask CAP integration with 2450-bit tapes; the 2048-bit full 18-tree row stream remains one external assertion",
             "r1cs_backend": "streaming IR events only; no flattened matrices or proof backend",
             "trace_key": "deterministic systematic test fixture; not a certified Goppa key",
         },
@@ -1217,6 +1217,17 @@ def build_manifest(full_negative_circuits: bool = False) -> dict[str, object]:
             "extended_2450_cap_native_external_assertions": 0,
             "extended_2450_cap_native_row_stream_sha256": native_profile.reduced_native.FROZEN_EXTENDED_ROW_STREAM_SHA256,
             "extended_2450_cap_profile_is_secure": False,
+            "bit_bound_gf193_multiplication_native": True,
+            "generic_multi_coefficient_horner_native": True,
+            "production_2048_bit_horner_vector_native": True,
+            "production_2048_bit_horner_coefficients": 11,
+            "production_2048_bit_horner_multiplication_rows": 20,
+            "symbolic_extension_mask_horner_native": True,
+            "horner_2450_cap_native_rows": native_profile.reduced_native.FROZEN_HORNER_ROWS,
+            "horner_2450_cap_native_wires": native_profile.reduced_native.FROZEN_HORNER_WIRES,
+            "horner_2450_cap_native_external_assertions": 0,
+            "horner_2450_cap_native_row_stream_sha256": native_profile.reduced_native.FROZEN_HORNER_ROW_STREAM_SHA256,
+            "horner_2450_cap_profile_is_secure": False,
             "canonical_cap_serialization_implemented": True,
             "canonical_cap_bytes_bound_to_h_rbbc": True,
             "cap_production_accounting": native_profile.cap.production_accounting(),

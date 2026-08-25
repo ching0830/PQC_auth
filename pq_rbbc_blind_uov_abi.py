@@ -25,6 +25,11 @@ Version 2.3 extends the same native relation across four squeeze blocks and
 freezes an extended CAP fixture whose eight leaf tapes are each 2,450 bits.
 The fixture remains non-secure because its witness has only one GF(2^193)
 coefficient and its tree topology is deliberately tiny.
+Version 2.4 adds a bit-bound native GF(2^193) multiplication gadget, freezes
+the production-width 2,048-bit/11-coefficient Horner vector, and integrates
+the same generic lowering with symbolic extension-mask slices in a 386-bit,
+two-coefficient, two-point, 2,450-bit-tape CAP fixture.  The full 18-tree
+production relation remains outside the closed boundary.
 """
 
 from __future__ import annotations
@@ -39,6 +44,7 @@ from typing import Protocol
 import pq_rbbc_anemoi_sponge as fork_sponge
 import pq_rbbc_cap_commit as fork_cap
 import pq_rbbc_cap_native as reduced_native_cap
+import pq_rbbc_horner_native as horner_native
 
 
 MESSAGE_BYTES = 32
@@ -297,7 +303,7 @@ def build_abi_manifest() -> dict[str, object]:
     hidden = adapter.hidden_state(message, mask, randomness)
     changed_message = bytes((message[0] ^ 1,)) + message[1:]
     return {
-        "implementation_version": "2.3",
+        "implementation_version": "2.4",
         "paper_anchor": "Blind-UOV ePrint 2025/895 is a framework and size comparator, not a bit-exact implementation claim",
         "profile": "PQ-RBBC-BUOV-III/Anemoi-193-336 experimental fork",
         "fork_profile": {
@@ -318,6 +324,10 @@ def build_abi_manifest() -> dict[str, object]:
             "reduced_native_relation_id": reduced_native_cap.PROFILE_RELATION_ID,
             "reduced_native_row_stream_sha256": reduced_native_cap.FROZEN_REDUCED_ROW_STREAM_SHA256,
             "extended_2450_native_row_stream_sha256": reduced_native_cap.FROZEN_EXTENDED_ROW_STREAM_SHA256,
+            "horner_relation_id": horner_native.PROFILE_RELATION_ID,
+            "production_width_horner_row_stream_sha256": "0c9d742d44808a20a35838be84a638924dc5b2f9183bba731eefba1cb9069850",
+            "horner_2450_native_relation_id": reduced_native_cap.HORNER_PROFILE_RELATION_ID,
+            "horner_2450_native_row_stream_sha256": reduced_native_cap.FROZEN_HORNER_ROW_STREAM_SHA256,
         },
         "paper_parameters": {
             "security_level_bits": 192,
@@ -414,6 +424,16 @@ def build_abi_manifest() -> dict[str, object]:
             "extended_2450_cap_native_wires": reduced_native_cap.FROZEN_EXTENDED_WIRES,
             "extended_2450_cap_native_external_assertions": 0,
             "extended_2450_cap_profile_is_secure": False,
+            "bit_bound_gf193_multiplication_native": True,
+            "generic_multi_coefficient_horner_native": True,
+            "production_2048_bit_horner_vector_native": True,
+            "production_2048_bit_horner_coefficients": 11,
+            "production_2048_bit_horner_multiplication_rows": 20,
+            "symbolic_extension_mask_horner_native": True,
+            "horner_2450_cap_native_rows": reduced_native_cap.FROZEN_HORNER_ROWS,
+            "horner_2450_cap_native_wires": reduced_native_cap.FROZEN_HORNER_WIRES,
+            "horner_2450_cap_native_external_assertions": 0,
+            "horner_2450_cap_profile_is_secure": False,
             "full_production_cap_vector_executed": False,
             "full_production_cap_native_rows_materialized": False,
             "production_cap_inter_call_wire_identity_proved": False,

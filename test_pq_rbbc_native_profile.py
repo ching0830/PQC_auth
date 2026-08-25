@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Tests for the fail-closed PQ-RBBC v2.3 fork import contract."""
+"""Tests for the fail-closed PQ-RBBC v2.4 fork import contract."""
 
 from __future__ import annotations
 
@@ -62,9 +62,34 @@ class ForkNativeProfileTests(unittest.TestCase):
                 "extended_2450_fixture_native_closed"
             ]
         )
-        self.assertFalse(
+        arithmetic = manifest["fork_profile"][
+            "production_width_horner_component"
+        ]
+        self.assertEqual(arithmetic["vector_bits"], 2_048)
+        self.assertEqual(arithmetic["coefficients"], 11)
+        self.assertEqual(arithmetic["multiplication_rows"], 20)
+        self.assertEqual(arithmetic["external_assertions"], 0)
+        combined = manifest["fork_profile"]["horner_2450_native_component"]
+        self.assertEqual(combined["witness_bits"], 386)
+        self.assertEqual(combined["consistency_points"], 2)
+        self.assertEqual(combined["rows"], 125_401)
+        self.assertEqual(combined["wires"], 92_816)
+        self.assertEqual(combined["multiplication_rows"], 14)
+        self.assertEqual(combined["external_assertions"], 0)
+        self.assertTrue(
+            manifest["claim_boundary"]["arithmetic_primitive_native_closed"]
+        )
+        self.assertTrue(
+            manifest["claim_boundary"]["horner_2450_fixture_native_closed"]
+        )
+        self.assertTrue(
             manifest["claim_boundary"][
                 "production_polynomial_hash_blocker_closed"
+            ]
+        )
+        self.assertFalse(
+            manifest["claim_boundary"][
+                "production_2048_bit_cap_integration_closed"
             ]
         )
 

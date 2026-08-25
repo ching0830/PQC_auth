@@ -63,7 +63,7 @@
     "wire_count": 2980304
   },
   "claim_boundary": {
-    "forked_issuance": "the reduced and 2450-bit extended CAP fixtures plus H_RBBC join have zero-callback native traces; production multi-coefficient hashing and the full 18-tree row stream remain one external assertion",
+    "forked_issuance": "native multiplication and generic Horner hashing are closed, including a two-coefficient symbolic-mask CAP integration with 2450-bit tapes; the 2048-bit full 18-tree row stream remains one external assertion",
     "implemented": "incremental relation plus the in-circuit y = r + hash_image mask equation",
     "r1cs_backend": "streaming IR events only; no flattened matrices or proof backend",
     "trace_key": "deterministic systematic test fixture; not a certified Goppa key"
@@ -82,11 +82,12 @@
     "concrete_accepts": true,
     "concrete_failures": []
   },
-  "implementation_version": "2.3",
+  "implementation_version": "2.4",
   "native_import_contract": {
     "anemoi_component_nonlinear_rows": 336,
     "anemoi_component_relation_id": "anemoi/upstream-main/gf2-193/state-8/v1",
     "arbitrary_length_multi_squeeze_native": true,
+    "bit_bound_gf193_multiplication_native": true,
     "blind_uov_bit_exact_compatible": false,
     "canonical_cap_bytes_bound_to_h_rbbc": true,
     "canonical_cap_serialization_implemented": true,
@@ -116,9 +117,18 @@
     "extended_2450_cap_profile_is_secure": false,
     "fork_profile_sha256": "4fa0eb276ebba70a9f6c2f38f3f55d197c094121a2b614cc6ef9b7e8522cac87",
     "fork_security_proof_revalidated": false,
+    "generic_multi_coefficient_horner_native": true,
+    "horner_2450_cap_native_external_assertions": 0,
+    "horner_2450_cap_native_row_stream_sha256": "ca391f7d64f649b26c98d646dd1c382aebcf848ab849316cb1f65d040c184525",
+    "horner_2450_cap_native_rows": 125401,
+    "horner_2450_cap_native_wires": 92816,
+    "horner_2450_cap_profile_is_secure": false,
     "linear_mask_equation_internalized": true,
     "native_cap_hash_external_assertions": 1,
     "paper_240_gap_blocks_fork_engineering": false,
+    "production_2048_bit_horner_coefficients": 11,
+    "production_2048_bit_horner_multiplication_rows": 20,
+    "production_2048_bit_horner_vector_native": true,
     "production_cap_full_vector_executed": false,
     "production_cap_inter_call_wire_identity": false,
     "production_cap_native_rows_materialized": false,
@@ -136,6 +146,7 @@
     "request_binding_hash_primitive_implemented": true,
     "signature_size_rebenchmarked": false,
     "sponge_profile_relation_id": "pq-rbbc/anemoi-193-336/sponge/v1",
+    "symbolic_extension_mask_horner_native": true,
     "target_field": "GF(2^193)"
   },
   "negative_tests": {

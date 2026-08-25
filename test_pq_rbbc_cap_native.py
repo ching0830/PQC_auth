@@ -25,7 +25,7 @@ class ReducedNativeCAPTests(unittest.TestCase):
 
     def test_frozen_native_profile_and_vector(self) -> None:
         manifest = native.build_manifest(self.trace)
-        self.assertEqual(manifest["implementation_version"], "2.3")
+        self.assertEqual(manifest["implementation_version"], "2.4")
         self.assertTrue(
             manifest["profile"]["explicitly_non_secure_reduced_profile"]
         )
@@ -267,6 +267,156 @@ class ExtendedMultiSqueezeCAPTests(unittest.TestCase):
         changed = native.build_native_cap_trace(
             changed_randomness,
             bytes([0xC3]) * 32,
+            self.parameters,
+        )
+        changed_stream = native.serialize_row_stream(changed)
+        self.assertEqual(changed.failed_rows(), [])
+        self.assertEqual(changed_stream, self.row_stream)
+        self.assertNotEqual(changed.commitment_bytes, self.trace.commitment_bytes)
+        self.assertNotEqual(
+            changed.request_hash_bytes,
+            self.trace.request_hash_bytes,
+        )
+
+
+class HornerMultiSqueezeCAPTests(unittest.TestCase):
+    """Integrate native Horner rows with symbolic extension-mask slices."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.parameters = native.HORNER_MULTISQUEEZE_TEST_PARAMETERS
+        cls.randomness = cap.deterministic_randomness(cls.parameters)
+        cls.message = bytes([0x5A]) * 32
+        cls.trace = native.build_native_cap_trace(
+            cls.randomness,
+            cls.message,
+            cls.parameters,
+        )
+        cls.row_stream = native.serialize_row_stream(cls.trace)
+        cls.manifest = native.build_manifest(cls.trace)
+
+    def test_combined_fixture_boundary(self) -> None:
+        self.assertEqual(self.parameters.witness_bits, 386)
+        self.assertEqual(self.parameters.consistency_points, 2)
+        self.assertEqual(self.parameters.consistency_bits, 386)
+        self.assertEqual(self.parameters.random_polynomial_bits, 2_450)
+        self.assertFalse(self.parameters.secure_profile)
+        self.assertEqual(
+            self.manifest["profile"]["cap_profile_fingerprint"],
+            "be310882699be0f65477e78d5e802d6d4026dec95be14139a3e8bbf1ecb28296",
+        )
+        self.assertTrue(
+            self.manifest["claim_boundary"][
+                "horner_multisqueeze_fixture_native_closed"
+            ]
+        )
+        self.assertFalse(self.manifest["claim_boundary"]["production_closed"])
+
+    def test_exact_horner_native_rows(self) -> None:
+        xof = self.trace.xof_accounting
+        arithmetic = self.trace.horner_accounting
+        self.assertEqual(xof.calls, native.FROZEN_HORNER_XOF_CALLS)
+        self.assertEqual(xof.permutations, native.FROZEN_HORNER_PERMUTATIONS)
+        self.assertEqual(xof.permutation_rows, 28_224)
+        self.assertEqual(xof.payload_bitness_rows, 29_616)
+        self.assertEqual(xof.output_bitness_rows, 26_441)
+        self.assertEqual(xof.source_link_rows, 29_616)
+        self.assertEqual(arithmetic.calls, 7)
+        self.assertEqual(arithmetic.multiplication_rows, 14)
+        self.assertEqual(arithmetic.point_validation_rows, 3)
+        self.assertEqual(arithmetic.output_bitness_rows, 2_702)
+        self.assertEqual(arithmetic.output_pack_rows, 14)
+        self.assertEqual(len(self.trace.rows), native.FROZEN_HORNER_ROWS)
+        self.assertEqual(len(self.trace.assignment), native.FROZEN_HORNER_WIRES)
+        self.assertEqual(
+            self.trace.nonlinear_rows,
+            native.FROZEN_HORNER_NONLINEAR_ROWS,
+        )
+        self.assertEqual(
+            self.trace.linear_rows,
+            native.FROZEN_HORNER_LINEAR_ROWS,
+        )
+        self.assertEqual(self.trace.external_assertions, 0)
+        self.assertEqual(self.trace.failed_rows(), [])
+
+    def test_exact_horner_row_stream_and_vector(self) -> None:
+        self.assertEqual(
+            len(self.row_stream), native.FROZEN_HORNER_ROW_STREAM_BYTES
+        )
+        self.assertEqual(
+            hashlib.sha256(self.row_stream).hexdigest(),
+            native.FROZEN_HORNER_ROW_STREAM_SHA256,
+        )
+        self.assertEqual(len(self.trace.commitment_bytes), 304)
+        self.assertEqual(
+            hashlib.sha256(self.trace.commitment_bytes).hexdigest(),
+            "52888b6f229d4e252534d594d0ceaf9b991be649a1230e269ea6273762499e21",
+        )
+        self.assertEqual(
+            self.trace.request_hash_bytes.hex(),
+            "c0513bf46157df4f7c21ebb0ff2323b8a06c95d0d30f3b04690e72630f5e525"
+            "7265ea4e4197f3211e066ee81f89c337f3e7d6010e1c489a995ab35ab5b09392"
+            "cfe84ce113701e6e8",
+        )
+
+    def test_combined_commitment_and_hash_match_reference(self) -> None:
+        execution = cap.execute_cap_commit(self.parameters, self.randomness)
+        self.assertEqual(self.trace.commitment_bytes, execution.commitment.encoded)
+        self.assertEqual(
+            self.trace.request_hash_bytes,
+            sponge.hash_request_binding(
+                self.message,
+                execution.commitment.encoded,
+            ),
+        )
+
+    def test_plain_horner_product_tamper_rejects(self) -> None:
+        label = "consistency.plain.point[0].mul[0]"
+        target = next(
+            wire_id
+            for wire_id, wire_label in self.trace.wire_labels.items()
+            if wire_label == label
+        )
+        assignment = dict(self.trace.assignment)
+        assignment[target] ^= 1
+        self.assertIn(label, self.trace.failed_rows(assignment))
+
+    def test_symbolic_mask_horner_product_tamper_rejects(self) -> None:
+        label = "consistency.tree[1].mask[2].point[1].mul[0]"
+        target = next(
+            wire_id
+            for wire_id, wire_label in self.trace.wire_labels.items()
+            if wire_label == label
+        )
+        assignment = dict(self.trace.assignment)
+        assignment[target] ^= 1
+        self.assertIn(label, self.trace.failed_rows(assignment))
+
+    def test_horner_output_tamper_rejects(self) -> None:
+        wire_label = "consistency.plain.point[1].output.bit[192]"
+        target = next(
+            wire_id
+            for wire_id, label in self.trace.wire_labels.items()
+            if label == wire_label
+        )
+        assignment = dict(self.trace.assignment)
+        assignment[target] ^= 1
+        self.assertIn(
+            "consistency.plain.point[1].output.pack",
+            self.trace.failed_rows(assignment),
+        )
+
+    def test_horner_topology_is_witness_independent(self) -> None:
+        roots = list(self.randomness.roots)
+        roots[0] = (roots[0][0] ^ 1, roots[0][1])
+        changed_randomness = dataclasses.replace(
+            self.randomness,
+            salt=(self.randomness.salt[0] ^ 1, self.randomness.salt[1]),
+            roots=tuple(roots),
+        )
+        changed = native.build_native_cap_trace(
+            changed_randomness,
+            bytes([0xA5]) * 32,
             self.parameters,
         )
         changed_stream = native.serialize_row_stream(changed)

@@ -1,0 +1,75 @@
+{
+  "claim_boundary": {
+    "extended_multisqueeze_fixture_native_closed": false,
+    "horner_multisqueeze_fixture_native_closed": true,
+    "production_blockers": [
+      "production 2048-bit/11-coefficient CAP integration",
+      "full 18-tree streaming execution and row-stream digest",
+      "fork-specific CAP extraction and security proof"
+    ],
+    "production_closed": false,
+    "reduced_fixture_native_closed": false
+  },
+  "frozen_vector": {
+    "commitment_bytes": 304,
+    "commitment_sha256": "52888b6f229d4e252534d594d0ceaf9b991be649a1230e269ea6273762499e21",
+    "request_hash_hex": "2b481c27209b93bef5a6ebec46f825ab11b3ddd2f1c6515e6072c0ea922f1e2b20f397aa301c0d6bff6f7367fd827de03bfd9d5ea5049415e9a6ae31bce56128de77f15f9e1f4aee"
+  },
+  "implementation_version": "2.4",
+  "implemented": {
+    "all_reduced_cap_xof_calls_native": true,
+    "all_selected_fixture_xof_calls_native": true,
+    "callbacks_or_external_assertions": false,
+    "canonical_commitment_output_wires_native": true,
+    "corrections_and_consistency_bytes_native": true,
+    "exact_cap_to_h_rbbc_wire_join_native": true,
+    "full_production_native_rows_materialized": false,
+    "full_production_vector_executed": false,
+    "leaf_commitment_and_tape_links_native": true,
+    "multi_block_xof_squeeze_native": true,
+    "multi_coefficient_gf193_horner_native": true,
+    "production_width_2450_bit_tape_native": true,
+    "salted_ggm_links_native": true,
+    "symbolic_extension_mask_horner_native": true,
+    "two_consistency_points_constrained": true,
+    "witness_independent_topology_for_fixed_profile": true
+  },
+  "profile": {
+    "cap_profile_fingerprint": "be310882699be0f65477e78d5e802d6d4026dec95be14139a3e8bbf1ecb28296",
+    "explicitly_non_secure_reduced_profile": false,
+    "explicitly_non_secure_test_profile": true,
+    "field": "GF(2^193)",
+    "fixture_parameter_name": "PQ-RBBC-CAP-HORNER-386-2450-TEST-ONLY",
+    "name": "PQ-RBBC-CAP-HORNER-NATIVE/Anemoi-193-336-v1",
+    "relation_id": "pq-rbbc/cap/horner-native/anemoi-193-336/v1",
+    "sponge_profile_fingerprint": "4fa0eb276ebba70a9f6c2f38f3f55d197c094121a2b614cc6ef9b7e8522cac87"
+  },
+  "trace": {
+    "boundary_link_rows": 2818,
+    "external_assertions": 0,
+    "honest_failures": [],
+    "horner_accounting": {
+      "calls": 7,
+      "multiplication_rows": 14,
+      "output_bitness_rows": 2702,
+      "output_pack_rows": 14,
+      "point_validation_rows": 3
+    },
+    "input_output_bitness_rows": 4232,
+    "linear_rows": 34169,
+    "nonlinear_rows": 91232,
+    "row_stream_bytes": 77156408,
+    "row_stream_sha256": "ca391f7d64f649b26c98d646dd1c382aebcf848ab849316cb1f65d040c184525",
+    "rows": 125401,
+    "wires": 92816,
+    "xof_accounting": {
+      "calls": 24,
+      "internal_linear_rows": 1721,
+      "output_bitness_rows": 26441,
+      "payload_bitness_rows": 29616,
+      "permutation_rows": 28224,
+      "permutations": 84,
+      "source_link_rows": 29616
+    }
+  }
+}

@@ -1,14 +1,19 @@
 {
   "claim_boundary": {
+    "arithmetic_primitive_native_closed": true,
     "canonical_cap_bytes_bound_to_h_rbbc": true,
     "extended_2450_fixture_native_closed": true,
     "extended_2450_fixture_security_profile": false,
     "external_assertions_in_parent_archive": 1,
     "fork_security_proof_revalidated": false,
     "full_cap_hash_implemented": false,
+    "horner_2450_fixture_native_closed": true,
+    "horner_2450_fixture_security_profile": false,
+    "production_2048_bit_cap_integration_closed": false,
     "production_closed": false,
     "production_multi_squeeze_blocker_closed": true,
-    "production_polynomial_hash_blocker_closed": false,
+    "production_polynomial_hash_blocker_closed": true,
+    "production_polynomial_hash_gadget_closed": true,
     "reduced_fixture_native_closed": true,
     "reduced_fixture_security_profile": false,
     "reference_cap_hash_implemented": true,
@@ -62,8 +67,33 @@
       "wires": 85034,
       "xof_calls": 24
     },
+    "horner_2450_native_component": {
+      "coefficients": 2,
+      "consistency_points": 2,
+      "explicitly_non_secure": true,
+      "external_assertions": 0,
+      "horner_calls": 7,
+      "multiplication_rows": 14,
+      "production_width_tape_bits": 2450,
+      "relation_id": "pq-rbbc/cap/horner-native/anemoi-193-336/v1",
+      "row_stream_sha256": "ca391f7d64f649b26c98d646dd1c382aebcf848ab849316cb1f65d040c184525",
+      "rows": 125401,
+      "wires": 92816,
+      "witness_bits": 386
+    },
     "name": "PQ-RBBC-Anemoi-193/336-Sponge-v1",
     "permutation_nonlinear_rows": 336,
+    "production_width_horner_component": {
+      "coefficients": 11,
+      "consistency_points": 2,
+      "external_assertions": 0,
+      "multiplication_rows": 20,
+      "relation_id": "pq-rbbc/gf2-193/horner/v1",
+      "row_stream_sha256": "0c9d742d44808a20a35838be84a638924dc5b2f9183bba731eefba1cb9069850",
+      "rows": 2845,
+      "vector_bits": 2048,
+      "wires": 2843
+    },
     "profile_sha256": "4fa0eb276ebba70a9f6c2f38f3f55d197c094121a2b614cc6ef9b7e8522cac87",
     "rate_bits": 772,
     "reduced_native_component": {
@@ -81,10 +111,11 @@
     "sponge_relation_id": "pq-rbbc/anemoi-193-336/sponge/v1",
     "target_field": "GF(2^193)"
   },
-  "implementation_version": "2.3",
+  "implementation_version": "2.4",
   "implemented_primitives": {
     "anemoi_permutation": true,
     "arbitrary_length_multi_squeeze_native": true,
+    "bit_bound_gf193_multiplication_native": true,
     "canonical_cap_serialization": true,
     "canonical_sponge": true,
     "cap_to_h_rbbc_byte_join": true,
@@ -93,7 +124,11 @@
     "extended_2450_cap_external_assertions": 0,
     "extended_2450_cap_native_rows_materialized": true,
     "field_arithmetic": true,
+    "generic_multi_coefficient_horner_native": true,
     "ggm_seed_tree_reference": true,
+    "horner_2450_cap_external_assertions": 0,
+    "horner_2450_cap_native_rows_materialized": true,
+    "production_2048_bit_horner_vector_native": true,
     "production_cap_full_vector_executed": false,
     "production_cap_inter_call_wire_identity": false,
     "production_cap_native_rows_materialized": false,
@@ -103,7 +138,9 @@
     "reduced_cap_inter_call_wire_identity": true,
     "reduced_cap_native_rows_materialized": true,
     "reduced_cap_to_h_rbbc_native_wire_join": true,
-    "request_binding_hash": true
+    "request_binding_hash": true,
+    "symbolic_extension_mask_horner_native": true,
+    "two_nonzero_distinct_consistency_points_constrained": true
   },
   "required_native_components": [
     "cap_commit",
@@ -114,5 +151,5 @@
     "ggm_seed_expansion",
     "message_commitment_hash"
   ],
-  "status": "reduced and 2450-bit extended CAP fixtures have zero-callback native traces; production multi-coefficient hashing and the full 18-tree row stream remain external"
+  "status": "native GF(2^193) multiplication and generic Horner hashing are closed, including a two-coefficient symbolic-mask CAP integration with 2450-bit tapes; the 2048-bit full 18-tree production row stream remains external"
 }

@@ -195,6 +195,33 @@ class BlindUOVVisibilityTests(unittest.TestCase):
             ],
             0,
         )
+        self.assertTrue(
+            manifest["claim_boundary"][
+                "generic_multi_coefficient_horner_native"
+            ]
+        )
+        self.assertEqual(
+            manifest["claim_boundary"][
+                "production_2048_bit_horner_coefficients"
+            ],
+            11,
+        )
+        self.assertEqual(
+            manifest["claim_boundary"][
+                "production_2048_bit_horner_multiplication_rows"
+            ],
+            20,
+        )
+        self.assertEqual(
+            manifest["claim_boundary"]["horner_2450_cap_native_rows"],
+            125_401,
+        )
+        self.assertEqual(
+            manifest["claim_boundary"][
+                "horner_2450_cap_native_external_assertions"
+            ],
+            0,
+        )
 
 
 if __name__ == "__main__":

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Regression tests for the executable PQ-RBBC/SGTD v2.3 relation."""
+"""Regression tests for the executable PQ-RBBC/SGTD v2.4 relation."""
 
 from __future__ import annotations
 
@@ -79,6 +79,15 @@ class RelationTests(unittest.TestCase):
         self.assertEqual(
             contract["extended_2450_cap_native_external_assertions"], 0
         )
+        self.assertTrue(contract["generic_multi_coefficient_horner_native"])
+        self.assertEqual(contract["production_2048_bit_horner_coefficients"], 11)
+        self.assertEqual(
+            contract["production_2048_bit_horner_multiplication_rows"], 20
+        )
+        self.assertTrue(contract["symbolic_extension_mask_horner_native"])
+        self.assertEqual(contract["horner_2450_cap_native_rows"], 125_401)
+        self.assertEqual(contract["horner_2450_cap_native_wires"], 92_816)
+        self.assertEqual(contract["horner_2450_cap_native_external_assertions"], 0)
         self.assertTrue(contract["canonical_cap_bytes_bound_to_h_rbbc"])
         self.assertFalse(contract["production_cap_native_rows_materialized"])
         self.assertEqual(

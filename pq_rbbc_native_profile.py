@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fail-closed native import contract for the PQ-RBBC v2.3 fork.
+"""Fail-closed native import contract for the PQ-RBBC v2.4 fork.
 
 The selected profile is deliberately independent of the unreproduced
 Blind-UOV 240-row instance.  It accepts no claim of bit-exact compatibility.
@@ -20,9 +20,10 @@ import pq_rbbc_anemoi_f193 as permutation
 import pq_rbbc_anemoi_sponge as sponge
 import pq_rbbc_cap_commit as cap
 import pq_rbbc_cap_native as reduced_native
+import pq_rbbc_horner_native as horner_native
 
 
-IMPLEMENTATION_VERSION = "2.3"
+IMPLEMENTATION_VERSION = "2.4"
 RELATION_ID = "pq-rbbc-buov-iii-336/cap-hash/v1"
 TARGET_FIELD = "GF(2^193)"
 REQUIRED_TAMPER_CASES = frozenset(
@@ -160,7 +161,7 @@ def build_native_profile_manifest() -> dict[str, object]:
     parameters = permutation.derive_parameters()
     return {
         "implementation_version": IMPLEMENTATION_VERSION,
-        "status": "reduced and 2450-bit extended CAP fixtures have zero-callback native traces; production multi-coefficient hashing and the full 18-tree row stream remain external",
+        "status": "native GF(2^193) multiplication and generic Horner hashing are closed, including a two-coefficient symbolic-mask CAP integration with 2450-bit tapes; the 2048-bit full 18-tree production row stream remains external",
         "fork_profile": {
             "name": sponge.PROFILE_NAME,
             "relation_id": RELATION_ID,
@@ -200,6 +201,31 @@ def build_native_profile_manifest() -> dict[str, object]:
                 "external_assertions": 0,
                 "row_stream_sha256": reduced_native.FROZEN_EXTENDED_ROW_STREAM_SHA256,
             },
+            "production_width_horner_component": {
+                "relation_id": horner_native.PROFILE_RELATION_ID,
+                "vector_bits": horner_native.PRODUCTION_WITNESS_BITS,
+                "coefficients": 11,
+                "consistency_points": horner_native.PRODUCTION_CONSISTENCY_POINTS,
+                "rows": 2_845,
+                "wires": 2_843,
+                "multiplication_rows": 20,
+                "external_assertions": 0,
+                "row_stream_sha256": "0c9d742d44808a20a35838be84a638924dc5b2f9183bba731eefba1cb9069850",
+            },
+            "horner_2450_native_component": {
+                "relation_id": reduced_native.HORNER_PROFILE_RELATION_ID,
+                "explicitly_non_secure": True,
+                "witness_bits": 386,
+                "coefficients": 2,
+                "consistency_points": 2,
+                "production_width_tape_bits": 2_450,
+                "rows": reduced_native.FROZEN_HORNER_ROWS,
+                "wires": reduced_native.FROZEN_HORNER_WIRES,
+                "horner_calls": 7,
+                "multiplication_rows": 14,
+                "external_assertions": 0,
+                "row_stream_sha256": reduced_native.FROZEN_HORNER_ROW_STREAM_SHA256,
+            },
         },
         "compatibility": {
             "blind_uov_framework_used_as_design_source": True,
@@ -228,6 +254,13 @@ def build_native_profile_manifest() -> dict[str, object]:
             "production_width_2450_bit_tape_native": True,
             "extended_2450_cap_native_rows_materialized": True,
             "extended_2450_cap_external_assertions": 0,
+            "bit_bound_gf193_multiplication_native": True,
+            "generic_multi_coefficient_horner_native": True,
+            "production_2048_bit_horner_vector_native": True,
+            "two_nonzero_distinct_consistency_points_constrained": True,
+            "symbolic_extension_mask_horner_native": True,
+            "horner_2450_cap_native_rows_materialized": True,
+            "horner_2450_cap_external_assertions": 0,
             "production_cap_full_vector_executed": False,
             "production_cap_native_rows_materialized": False,
             "production_cap_inter_call_wire_identity": False,
@@ -243,8 +276,13 @@ def build_native_profile_manifest() -> dict[str, object]:
             "reduced_fixture_security_profile": False,
             "extended_2450_fixture_native_closed": True,
             "extended_2450_fixture_security_profile": False,
+            "arithmetic_primitive_native_closed": True,
+            "horner_2450_fixture_native_closed": True,
+            "horner_2450_fixture_security_profile": False,
             "production_multi_squeeze_blocker_closed": True,
-            "production_polynomial_hash_blocker_closed": False,
+            "production_polynomial_hash_gadget_closed": True,
+            "production_polynomial_hash_blocker_closed": True,
+            "production_2048_bit_cap_integration_closed": False,
             "fork_security_proof_revalidated": False,
             "signature_size_rebenchmarked": False,
             "production_closed": False,

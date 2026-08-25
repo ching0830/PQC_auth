@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Binary F2-R1CS lowering for the executable PQ-RBBC v2.3 relation.
+"""Binary F2-R1CS lowering for the executable PQ-RBBC v2.4 relation.
 
 The format is intentionally small and auditable.  It serializes enough data to
 reconstruct ordinary rank-1 constraints over F2:
@@ -651,8 +651,8 @@ def build_backend_manifest(output_path: str | os.PathLike[str]) -> dict[str, obj
         honest.metadata.linear_definitions + honest.metadata.linear_assertions
     )
     return {
-        "implementation_version": "2.3",
-        "status": "reduced and 2450-bit extended CAP fixtures plus H_RBBC have zero-callback native traces; production multi-coefficient hashing and the full 18-tree row stream remain external",
+        "implementation_version": "2.4",
+        "status": "native multiplication and generic Horner hashing are closed, including a two-coefficient symbolic-mask CAP integration with 2450-bit tapes; the 2048-bit full 18-tree row stream remains external",
         "format": {
             "name": honest.metadata.format,
             "version": honest.metadata.format_version,
@@ -725,6 +725,17 @@ def build_backend_manifest(output_path: str | os.PathLike[str]) -> dict[str, obj
             "extended_2450_cap_native_external_assertions": 0,
             "extended_2450_cap_native_row_stream_sha256": native_profile.reduced_native.FROZEN_EXTENDED_ROW_STREAM_SHA256,
             "extended_2450_cap_profile_is_secure": False,
+            "bit_bound_gf193_multiplication_native": True,
+            "generic_multi_coefficient_horner_native": True,
+            "production_2048_bit_horner_vector_native": True,
+            "production_2048_bit_horner_coefficients": 11,
+            "production_2048_bit_horner_multiplication_rows": 20,
+            "symbolic_extension_mask_horner_native": True,
+            "horner_2450_cap_native_rows": native_profile.reduced_native.FROZEN_HORNER_ROWS,
+            "horner_2450_cap_native_wires": native_profile.reduced_native.FROZEN_HORNER_WIRES,
+            "horner_2450_cap_native_external_assertions": 0,
+            "horner_2450_cap_native_row_stream_sha256": native_profile.reduced_native.FROZEN_HORNER_ROW_STREAM_SHA256,
+            "horner_2450_cap_profile_is_secure": False,
             "canonical_cap_serialization_implemented": True,
             "canonical_cap_bytes_bound_to_h_rbbc": True,
             "cap_production_accounting": native_profile.cap.production_accounting(),

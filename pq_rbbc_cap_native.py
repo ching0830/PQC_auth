@@ -1,18 +1,15 @@
 #!/usr/bin/env python3
 """Zero-callback native lowering for PQ-RBBC CAP test profiles.
 
-Version 2.3 lowers every XOF call made by the explicitly non-secure reduced
-and 2450-bit multi-squeeze fixtures into the frozen Anemoi-193/336 rank-one
-relation.  It also
-materializes all salted GGM links, leaf commitment/tape links, corrections,
-consistency transcript bytes, the canonical CAP commitment, and the final
-``H_RBBC(message, c_r)`` byte join as ordinary rows.
+Version 2.4 keeps the frozen reduced and 2450-bit multi-squeeze fixtures and
+adds an explicitly non-secure combined fixture with a 386-bit, two-coefficient
+polynomial, two consistency points, and production-width 2450-bit tapes.  Its
+plain and extension-mask polynomial hashes are native GF(2^193) Horner rows;
+no callback or external assertion is used.
 
-Both test witnesses are only 64 bits, so their polynomial hash has one
-GF(2^193) coefficient.  All non-XOF CAP algebra is consequently linear in this
-checkpoint.  The production 2,048-bit witness needs additional native field
-multiplication rows and a full 18-tree streaming execution; this module rejects
-that topology rather than claiming production closure.
+The combined fixture closes the arithmetic integration boundary, not the
+production security boundary: the full profile still needs eleven
+coefficients, 18 trees, and the fork-specific extraction/security proof.
 """
 
 from __future__ import annotations
@@ -27,11 +24,16 @@ from typing import Mapping, Sequence
 import pq_rbbc_anemoi_f193 as field
 import pq_rbbc_anemoi_sponge as sponge
 import pq_rbbc_cap_commit as cap
+import pq_rbbc_horner_native as horner
 
 
-IMPLEMENTATION_VERSION = "2.3"
+# Keep the v2.3 identifiers for the two legacy fixtures so their canonical row
+# streams remain byte-for-byte frozen.  The Horner fixture gets its own IDs.
+IMPLEMENTATION_VERSION = "2.4"
 PROFILE_NAME = "PQ-RBBC-CAP-REDUCED-NATIVE/Anemoi-193-336-v1"
 PROFILE_RELATION_ID = "pq-rbbc/cap/reduced-native/anemoi-193-336/v1"
+HORNER_PROFILE_NAME = "PQ-RBBC-CAP-HORNER-NATIVE/Anemoi-193-336-v1"
+HORNER_PROFILE_RELATION_ID = "pq-rbbc/cap/horner-native/anemoi-193-336/v1"
 ROW_FORMAT = "F193-R1CS-JSON-1"
 
 FROZEN_REDUCED_WIRES = 59_602
@@ -54,6 +56,16 @@ FROZEN_EXTENDED_ROW_STREAM_BYTES = 69_273_394
 FROZEN_EXTENDED_ROW_STREAM_SHA256 = (
     "98222b0cafeb944184e3939a878d1e3fb3af05d10c9795ef0701c87f95462855"
 )
+FROZEN_HORNER_WIRES = 92_816
+FROZEN_HORNER_ROWS = 125_401
+FROZEN_HORNER_NONLINEAR_ROWS = 91_232
+FROZEN_HORNER_LINEAR_ROWS = 34_169
+FROZEN_HORNER_XOF_CALLS = 24
+FROZEN_HORNER_PERMUTATIONS = 84
+FROZEN_HORNER_ROW_STREAM_BYTES = 77_156_408
+FROZEN_HORNER_ROW_STREAM_SHA256 = (
+    "ca391f7d64f649b26c98d646dd1c382aebcf848ab849316cb1f65d040c184525"
+)
 
 # This fixture keeps the one-coefficient 64-bit witness and the tiny two-tree
 # topology, but stretches the unused degree-one rho region so each leaf tape
@@ -68,6 +80,22 @@ EXTENDED_MULTISQUEEZE_TEST_PARAMETERS = cap.CAPParameters(
     degree=2,
     rho=2_193,
     consistency_points=1,
+    tree_specs=(cap.TreeSpec(2, 4),),
+    secure_profile=False,
+)
+
+# One full field element of mask and one of appended signature make P exactly
+# two GF(2^193) coefficients.  With two consistency points and rho=1678, every
+# leaf tape is 386 + 1678 + 386 = 2450 bits.  The tiny two-tree topology keeps
+# this arithmetic-integration checkpoint runnable without a production claim.
+HORNER_MULTISQUEEZE_TEST_PARAMETERS = cap.CAPParameters(
+    name="PQ-RBBC-CAP-HORNER-386-2450-TEST-ONLY",
+    security_bits=0,
+    mask_bits=193,
+    appended_signature_bits=193,
+    degree=2,
+    rho=1_678,
+    consistency_points=2,
     tree_specs=(cap.TreeSpec(2, 4),),
     secure_profile=False,
 )
@@ -233,6 +261,30 @@ class NativeXOFAccounting:
                 key: getattr(self, key) + getattr(other, key)
                 for key in self.__dataclass_fields__
             }
+        )
+
+
+@dataclass(frozen=True)
+class NativeHornerAccounting:
+    calls: int = 0
+    multiplication_rows: int = 0
+    point_validation_rows: int = 0
+    output_bitness_rows: int = 0
+    output_pack_rows: int = 0
+
+    def add(self, item: horner.HornerLoweringAccounting) -> "NativeHornerAccounting":
+        return NativeHornerAccounting(
+            calls=self.calls + 1,
+            multiplication_rows=(
+                self.multiplication_rows + item.multiplication_rows
+            ),
+            point_validation_rows=(
+                self.point_validation_rows + item.point_validation_rows
+            ),
+            output_bitness_rows=(
+                self.output_bitness_rows + item.output_bitness_rows
+            ),
+            output_pack_rows=self.output_pack_rows + item.output_pack_rows,
         )
 
 
@@ -449,6 +501,7 @@ class ReducedNativeCAPTrace:
     commitment_bytes: bytes
     request_hash_bytes: bytes
     xof_accounting: NativeXOFAccounting
+    horner_accounting: NativeHornerAccounting
     input_output_bitness_rows: int
     boundary_link_rows: int
     external_assertions: int
@@ -463,6 +516,9 @@ class ReducedNativeCAPTrace:
             self.xof_accounting.permutation_rows
             + self.xof_accounting.payload_bitness_rows
             + self.xof_accounting.output_bitness_rows
+            + self.horner_accounting.multiplication_rows
+            + self.horner_accounting.point_validation_rows
+            + self.horner_accounting.output_bitness_rows
             + self.input_output_bitness_rows
         )
 
@@ -481,13 +537,10 @@ def build_native_cap_trace(
     supported = (
         cap.REDUCED_TEST_PARAMETERS,
         EXTENDED_MULTISQUEEZE_TEST_PARAMETERS,
+        HORNER_MULTISQUEEZE_TEST_PARAMETERS,
     )
     if parameters.secure_profile or parameters not in supported:
-        raise ValueError("only the frozen reduced and extended test profiles are native-lowered")
-    if parameters.witness_bits > field.FIELD_DEGREE:
-        raise ValueError("multi-coefficient polynomial hash is not lowered yet")
-    if parameters.consistency_points != 1:
-        raise ValueError("test-profile lowering requires one consistency point")
+        raise ValueError("only frozen non-secure test profiles are native-lowered")
     if len(message) != 32:
         raise ValueError("H_RBBC fixture message must be 32 bytes")
     randomness = randomness or cap.deterministic_randomness(parameters)
@@ -522,6 +575,7 @@ def build_native_cap_trace(
     )
     cursor = _CallCursor(execution.xof_calls)
     accounting = NativeXOFAccounting()
+    horner_accounting = NativeHornerAccounting()
     salt_bytes = _pad_to_byte(salt[0] + salt[1])
     symbolic_trees: list[_SymbolicTree] = []
 
@@ -669,17 +723,31 @@ def build_native_cap_trace(
         call_index,
     )
     accounting = accounting.add(item)
-    if len(points) != field.FIELD_DEGREE:
-        raise AssertionError("reduced profile must have one consistency point")
-
-    # The reduced 64-bit P vector occupies one GF(2^193) coefficient, so its
-    # polynomial hash is P itself and is independent of the evaluation point.
-    if parameters.witness_bits > field.FIELD_DEGREE:
-        raise ValueError("multi-coefficient polynomial hash is not lowered yet")
-    alpha = _xor_bits(
-        _zero_extend(p_plain[0], parameters.consistency_bits),
-        mhat_plain[0],
+    if len(points) != parameters.consistency_bits:
+        raise AssertionError("consistency-point output width mismatch")
+    point_vectors = tuple(
+        points[offset : offset + field.FIELD_DEGREE]
+        for offset in range(0, len(points), field.FIELD_DEGREE)
     )
+
+    use_native_horner = parameters == HORNER_MULTISQUEEZE_TEST_PARAMETERS
+    if use_native_horner:
+        hashed_plain, item = horner.lower_polynomial_hash(
+            builder,
+            p_plain[0],
+            point_vectors,
+            "consistency.plain",
+            validate_points=True,
+        )
+        horner_accounting = horner_accounting.add(item)
+    else:
+        # Preserve the frozen one-coefficient lowering and row streams.
+        if parameters.witness_bits > field.FIELD_DEGREE:
+            raise ValueError("legacy fixture requires one polynomial coefficient")
+        hashed_plain = _zero_extend(
+            p_plain[0], parameters.consistency_bits
+        )
+    alpha = _xor_bits(hashed_plain, mhat_plain[0])
     xi_components: list[Bits] = []
     for tree, extension_degree in zip(
         symbolic_trees, parameters.expanded_extension_degrees()
@@ -688,10 +756,38 @@ def build_native_cap_trace(
         mhat_masks = tree.masks[
             mhat_shift : mhat_shift + parameters.consistency_bits
         ]
-        hashed_masks = tuple(p_masks) + tuple(
-            (BitForm.const(0),) * extension_degree
-            for _ in range(parameters.consistency_bits - parameters.witness_bits)
-        )
+        if use_native_horner:
+            outputs_by_extension_bit: list[Bits] = []
+            for extension_bit in range(extension_degree):
+                vector_slice = tuple(
+                    mask[extension_bit] for mask in p_masks
+                )
+                output, item = horner.lower_polynomial_hash(
+                    builder,
+                    vector_slice,
+                    point_vectors,
+                    (
+                        f"consistency.tree[{len(xi_components)}]"
+                        f".mask[{extension_bit}]"
+                    ),
+                    validate_points=False,
+                )
+                horner_accounting = horner_accounting.add(item)
+                outputs_by_extension_bit.append(output)
+            hashed_masks = tuple(
+                tuple(
+                    outputs_by_extension_bit[extension_bit][coordinate]
+                    for extension_bit in range(extension_degree)
+                )
+                for coordinate in range(parameters.consistency_bits)
+            )
+        else:
+            hashed_masks = tuple(p_masks) + tuple(
+                (BitForm.const(0),) * extension_degree
+                for _ in range(
+                    parameters.consistency_bits - parameters.witness_bits
+                )
+            )
         xi_masks = tuple(
             _xor_bits(left, right)
             for left, right in zip(hashed_masks, mhat_masks)
@@ -799,6 +895,7 @@ def build_native_cap_trace(
         commitment_bytes=execution.commitment.encoded,
         request_hash_bytes=request_hash_bytes,
         xof_accounting=accounting,
+        horner_accounting=horner_accounting,
         input_output_bitness_rows=input_output_bitness_rows,
         boundary_link_rows=boundary_link_rows,
         external_assertions=0,
@@ -819,6 +916,9 @@ def build_reduced_native_trace(
 
 
 def serialize_row_stream(trace: ReducedNativeCAPTrace) -> bytes:
+    is_horner_fixture = (
+        trace.cap_parameters == HORNER_MULTISQUEEZE_TEST_PARAMETERS
+    )
     document = {
         "cap_profile_fingerprint": cap.profile_fingerprint(
             trace.cap_parameters
@@ -828,8 +928,14 @@ def serialize_row_stream(trace: ReducedNativeCAPTrace) -> bytes:
         "external_assertions": trace.external_assertions,
         "format": ROW_FORMAT,
         "message_bit_wires": list(trace.message_bit_wires),
-        "profile_name": PROFILE_NAME,
-        "relation_id": PROFILE_RELATION_ID,
+        "profile_name": (
+            HORNER_PROFILE_NAME if is_horner_fixture else PROFILE_NAME
+        ),
+        "relation_id": (
+            HORNER_PROFILE_RELATION_ID
+            if is_horner_fixture
+            else PROFILE_RELATION_ID
+        ),
         "request_hash_bit_wires": list(trace.request_hash_bit_wires),
         "rows": [row.canonical_dict() for row in trace.rows],
         "sponge_profile_fingerprint": sponge.profile_fingerprint(
@@ -843,11 +949,18 @@ def serialize_row_stream(trace: ReducedNativeCAPTrace) -> bytes:
 
 def build_manifest(trace: ReducedNativeCAPTrace) -> dict[str, object]:
     row_stream = serialize_row_stream(trace)
+    is_horner_fixture = (
+        trace.cap_parameters == HORNER_MULTISQUEEZE_TEST_PARAMETERS
+    )
     return {
         "implementation_version": IMPLEMENTATION_VERSION,
         "profile": {
-            "name": PROFILE_NAME,
-            "relation_id": PROFILE_RELATION_ID,
+            "name": HORNER_PROFILE_NAME if is_horner_fixture else PROFILE_NAME,
+            "relation_id": (
+                HORNER_PROFILE_RELATION_ID
+                if is_horner_fixture
+                else PROFILE_RELATION_ID
+            ),
             "field": "GF(2^193)",
             "cap_profile_fingerprint": cap.profile_fingerprint(
                 trace.cap_parameters
@@ -870,6 +983,7 @@ def build_manifest(trace: ReducedNativeCAPTrace) -> dict[str, object]:
             "linear_rows": trace.linear_rows,
             "external_assertions": trace.external_assertions,
             "xof_accounting": asdict(trace.xof_accounting),
+            "horner_accounting": asdict(trace.horner_accounting),
             "input_output_bitness_rows": trace.input_output_bitness_rows,
             "boundary_link_rows": trace.boundary_link_rows,
             "row_stream_bytes": len(row_stream),
@@ -888,6 +1002,9 @@ def build_manifest(trace: ReducedNativeCAPTrace) -> dict[str, object]:
             "all_selected_fixture_xof_calls_native": True,
             "multi_block_xof_squeeze_native": True,
             "production_width_2450_bit_tape_native": True,
+            "multi_coefficient_gf193_horner_native": is_horner_fixture,
+            "symbolic_extension_mask_horner_native": is_horner_fixture,
+            "two_consistency_points_constrained": is_horner_fixture,
             "salted_ggm_links_native": True,
             "leaf_commitment_and_tape_links_native": True,
             "corrections_and_consistency_bytes_native": True,
@@ -907,9 +1024,12 @@ def build_manifest(trace: ReducedNativeCAPTrace) -> dict[str, object]:
                 trace.cap_parameters == EXTENDED_MULTISQUEEZE_TEST_PARAMETERS
                 and trace.external_assertions == 0
             ),
+            "horner_multisqueeze_fixture_native_closed": (
+                is_horner_fixture and trace.external_assertions == 0
+            ),
             "production_closed": False,
             "production_blockers": [
-                "multi-coefficient GF(2^193) polynomial hash rows",
+                "production 2048-bit/11-coefficient CAP integration",
                 "full 18-tree streaming execution and row-stream digest",
                 "fork-specific CAP extraction and security proof",
             ],
@@ -923,15 +1043,15 @@ def main() -> None:
     parser.add_argument("--manifest", type=Path)
     parser.add_argument(
         "--fixture",
-        choices=("reduced", "extended-2450"),
+        choices=("reduced", "extended-2450", "horner-2450"),
         default="reduced",
     )
     args = parser.parse_args()
-    parameters = (
-        cap.REDUCED_TEST_PARAMETERS
-        if args.fixture == "reduced"
-        else EXTENDED_MULTISQUEEZE_TEST_PARAMETERS
-    )
+    parameters = {
+        "reduced": cap.REDUCED_TEST_PARAMETERS,
+        "extended-2450": EXTENDED_MULTISQUEEZE_TEST_PARAMETERS,
+        "horner-2450": HORNER_MULTISQUEEZE_TEST_PARAMETERS,
+    }[args.fixture]
     trace = build_native_cap_trace(parameters=parameters)
     row_stream = serialize_row_stream(trace)
     manifest = build_manifest(trace)
