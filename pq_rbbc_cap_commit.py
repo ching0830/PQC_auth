@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Reference CAP.Commit core for the independent PQ-RBBC v2.1 fork.
+"""Reference CAP.Commit core for the independent PQ-RBBC v2.8 fork.
 
 This module instantiates the *initial commitment* part of Protocols 8--10 in
 ePrint 2025/895, but under an independently named and serialized profile.  It
@@ -36,7 +36,7 @@ import pq_rbbc_anemoi_f193 as field
 import pq_rbbc_anemoi_sponge as sponge
 
 
-IMPLEMENTATION_VERSION = "2.1"
+IMPLEMENTATION_VERSION = "2.8"
 PROFILE_NAME = "PQ-RBBC-CAP-TCitH-III/Anemoi-193-336-v1"
 PROFILE_RELATION_ID = "pq-rbbc/cap/tcith-iii/anemoi-193-336/v1"
 COMMITMENT_MAGIC = b"PQRBBC-CAP-COMMIT-V1"
@@ -740,10 +740,16 @@ def profile_fingerprint(parameters: CAPParameters) -> str:
 
 
 def commitment_bytes(parameters: CAPParameters) -> int:
+    # serialize_commitment() byte-aligns alpha and every delta value
+    # separately.  Rounding the concatenated bit count once undercounts mixed
+    # widths (by 13 bytes for the 18-tree production profile).
     corrections = (
-        parameters.consistency_bits
+        (parameters.consistency_bits + 7) // 8
         + (parameters.tree_count - 1)
-        * (parameters.witness_bits + parameters.consistency_bits)
+        * (
+            (parameters.witness_bits + 7) // 8
+            + (parameters.consistency_bits + 7) // 8
+        )
     )
     return (
         len(COMMITMENT_MAGIC)
@@ -752,7 +758,7 @@ def commitment_bytes(parameters: CAPParameters) -> int:
         + 2 * field.FIELD_ELEMENT_BYTES
         + HASH_BYTES
         + 4
-        + (corrections + 7) // 8
+        + corrections
     )
 
 
@@ -880,7 +886,12 @@ def build_manifest(reduced_execution: CAPExecution | None = None) -> dict[str, o
             "blind_uov_bit_exact_compatible": False,
             "paper_security_reduction_automatically_inherited": False,
             "paper_signature_size_automatically_inherited": False,
-            "full_18_tree_vector_executed": False,
+            # This primitive manifest deliberately contains only the reduced
+            # execution below.  The production execution evidence lives in
+            # pq_rbbc_cap_composition_manifest_v2_8.json, whose canonical
+            # document also commits to every ordered XOF call.
+            "full_18_tree_vector_executed_in_this_manifest": False,
+            "linked_composer_manifest_required_for_full_vector_evidence": True,
             "fork_specific_cap_extraction_proof_complete": False,
             "production_closed": False,
         },

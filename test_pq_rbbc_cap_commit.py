@@ -31,7 +31,7 @@ class CAPCommitTests(unittest.TestCase):
         self.assertEqual(params.rho, 16)
         self.assertEqual(params.consistency_bits, 386)
         self.assertEqual(params.random_polynomial_bits, 2450)
-        self.assertEqual(cap.commitment_bytes(params), 5378)
+        self.assertEqual(cap.commitment_bytes(params), 5391)
         self.assertEqual(
             cap.profile_fingerprint(params),
             "2ac471f8d7c6cb4e6352bbc5a2eb7f9394b807ff132aec8cadebd696f7b1fa38",
@@ -48,6 +48,9 @@ class CAPCommitTests(unittest.TestCase):
 
     def test_reduced_vector_is_frozen(self) -> None:
         commitment = self.execution.commitment
+        self.assertEqual(
+            cap.commitment_bytes(self.parameters), len(commitment.encoded)
+        )
         self.assertEqual(len(self.execution.xof_calls), 23)
         self.assertEqual(len(commitment.encoded), 215)
         self.assertEqual(
@@ -162,6 +165,16 @@ class CAPCommitTests(unittest.TestCase):
             manifest["implemented"]["full_production_native_rows_materialized"]
         )
         self.assertFalse(manifest["implemented"]["inter_call_wire_identity_proved"])
+        self.assertFalse(
+            manifest["claim_boundary"][
+                "full_18_tree_vector_executed_in_this_manifest"
+            ]
+        )
+        self.assertTrue(
+            manifest["claim_boundary"][
+                "linked_composer_manifest_required_for_full_vector_evidence"
+            ]
+        )
         self.assertFalse(manifest["claim_boundary"]["production_closed"])
 
 

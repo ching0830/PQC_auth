@@ -34,7 +34,7 @@ class ForkNativeProfileTests(unittest.TestCase):
                 "production_cap_native_rows_materialized"
             ]
         )
-        self.assertEqual(manifest["fork_profile"]["cap_commitment_bytes"], 5_378)
+        self.assertEqual(manifest["fork_profile"]["cap_commitment_bytes"], 5_391)
         reduced = manifest["fork_profile"]["reduced_native_component"]
         self.assertEqual(reduced["rows"], 88_282)
         self.assertEqual(reduced["wires"], 59_602)
@@ -149,6 +149,21 @@ class ForkNativeProfileTests(unittest.TestCase):
         self.assertTrue(
             manifest["claim_boundary"][
                 "both_production_tree_shard_types_closed_separately"
+            ]
+        )
+        self.assertTrue(
+            manifest["implemented_primitives"][
+                "production_cap_full_vector_executed"
+            ]
+        )
+        self.assertTrue(
+            manifest["claim_boundary"][
+                "full_18_tree_reference_composition_closed"
+            ]
+        )
+        self.assertTrue(
+            manifest["claim_boundary"][
+                "canonical_18_tree_link_schedule_closed"
             ]
         )
         self.assertFalse(

@@ -1,0 +1,206 @@
+{
+  "claim_boundary": {
+    "blind_uov_bit_exact_compatible": false,
+    "fork_specific_cap_extraction_proof_complete": false,
+    "full_18_tree_vector_executed_in_this_manifest": false,
+    "linked_composer_manifest_required_for_full_vector_evidence": true,
+    "paper_security_reduction_automatically_inherited": false,
+    "paper_signature_size_automatically_inherited": false,
+    "production_closed": false
+  },
+  "implementation_version": "2.8",
+  "implemented": {
+    "append_signature_delta": true,
+    "canonical_commitment_serialization": true,
+    "canonical_randomness_serialization": true,
+    "cross_repetition_corrections": true,
+    "full_production_native_rows_materialized": false,
+    "ggm_seed_derivation_reference": true,
+    "inter_call_wire_identity_proved": false,
+    "leaf_seed_commitment_reference": true,
+    "leaf_tape_expansion_reference": true,
+    "mask_derived_from_cap_randomness": true,
+    "masked_consistency_digest": true,
+    "parent_archive_external_assertion_removed": false,
+    "random_polynomial_coefficients": true
+  },
+  "paper_source": {
+    "paper_reports_executable_generator": false,
+    "revision": "2025-10-31",
+    "source_algorithms": [
+      "Protocol 8",
+      "Protocol 9",
+      "Protocol 10"
+    ],
+    "url": "https://eprint.iacr.org/2025/895"
+  },
+  "production_accounting": {
+    "commitment_bytes": 5391,
+    "consistency_point_permutations": 2,
+    "h1_permutations": 21281,
+    "h2_permutations": 123,
+    "leaf_count": 40960,
+    "permutation_nonlinear_rows": 131031264,
+    "seed_commit_calls": 40960,
+    "seed_commit_permutations_per_call": 2,
+    "seed_derive_calls": 40924,
+    "seed_derive_permutations_per_call": 2,
+    "tape_expand_calls": 40960,
+    "tape_expand_permutations_per_call": 5,
+    "total_anemoi_permutations": 389974,
+    "total_xof_calls": 122847,
+    "transcript_xof_calls": 3,
+    "tree_count": 18
+  },
+  "profile": {
+    "anemoi_sponge_profile_sha256": "4fa0eb276ebba70a9f6c2f38f3f55d197c094121a2b614cc6ef9b7e8522cac87",
+    "appended_signature_bits": 1472,
+    "blind_uov_bit_exact_compatible": false,
+    "consistency_bits": 386,
+    "consistency_points": 2,
+    "degree": 2,
+    "domains": {
+      "consistency_points": "50512d524242432f76322e312f4341502f482d706f696e7473",
+      "h1": "50512d524242432f76322e312f4341502f6831",
+      "h2": "50512d524242432f76322e312f4341502f6832",
+      "seed_commit": "50512d524242432f76322e312f4341502f736565642d636f6d6d6974",
+      "seed_derive": "50512d524242432f76322e312f4341502f736565642d646572697665",
+      "tape_expand": "50512d524242432f76322e312f4341502f746170652d657870616e64"
+    },
+    "extension_moduli": {
+      "12": "0x1009",
+      "13": "0x201b"
+    },
+    "field": "GF(2^193)",
+    "field_modulus_exponents": [
+      193,
+      8,
+      7,
+      6,
+      5,
+      4,
+      2,
+      1,
+      0
+    ],
+    "hash_bits": 386,
+    "leaf_count": 40960,
+    "mask_bits": 576,
+    "name": "PQ-RBBC-CAP-TCitH-III/Anemoi-193-336-v1",
+    "random_polynomial_bits": 2450,
+    "relation_id": "pq-rbbc/cap/tcith-iii/anemoi-193-336/v1",
+    "rho": 16,
+    "secure_profile": true,
+    "security_bits": 192,
+    "seed_bits": 193,
+    "serialization": {
+      "bit_vectors": "coefficient/index order, LSB-first, zero-padded final byte",
+      "commitment_magic_hex": "5051524242432d4341502d434f4d4d49542d5631",
+      "corrections": "alpha || repeated(delta_P || delta_Mhat)",
+      "field_elements": "25-byte little-endian, unused high seven bits zero"
+    },
+    "tree_count": 18,
+    "tree_extension_degrees": [
+      13,
+      13,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12
+    ],
+    "tree_specs": [
+      {
+        "count": 2,
+        "leaves": 4096
+      },
+      {
+        "count": 16,
+        "leaves": 2048
+      }
+    ],
+    "witness_bits": 2048
+  },
+  "profile_fingerprint": "2ac471f8d7c6cb4e6352bbc5a2eb7f9394b807ff132aec8cadebd696f7b1fa38",
+  "reduced_test_vector": {
+    "commitment_bytes": 215,
+    "commitment_hex": "5051524242432d4341502d434f4d4d49542d563101005d067a55e2ea9104b2604dc7efa393f44d1ce1880c3974bdcaae32aeb825f2ea1a8a4f78e440697bc92a2a25f7c267a5972394969704c0640018008c17554b53190d315eac5567121c742ff2b99780766b008f7d225912dbfdc5fe95115fe80cffd6814e00c1600c623b1664f5876616988ff98544b84e294ed5aa7aea146bdc8da7013a0000004a1ceca77fba2ac13a09eaf8a83ba7ba2978103ad6ec3852009bfb8cc96541edd0f565abb404e690937e8e879af30c62c3cef5c58191fbff8900",
+    "commitment_sha256": "07a09a4f623233586af7ebca90d0eeba7d6a5bb94ff86c7dff29ade7be79b800",
+    "derived_mask_hex": "dd4907f4",
+    "explicitly_non_secure": true,
+    "h1_hex": "3d8436cdc32b29cf89bcfb98fb59e3ac4898139ad1ac87a0c1430dcd410737fd74f3a5eead67be8a0f625e344f5a79a600",
+    "h2_hex": "8f7d225912dbfdc5fe95115fe80cffd6814e00c1600c623b1664f5876616988ff98544b84e294ed5aa7aea146bdc8da701",
+    "parameters": {
+      "anemoi_sponge_profile_sha256": "4fa0eb276ebba70a9f6c2f38f3f55d197c094121a2b614cc6ef9b7e8522cac87",
+      "appended_signature_bits": 32,
+      "blind_uov_bit_exact_compatible": false,
+      "consistency_bits": 193,
+      "consistency_points": 1,
+      "degree": 2,
+      "domains": {
+        "consistency_points": "50512d524242432f76322e312f4341502f482d706f696e7473",
+        "h1": "50512d524242432f76322e312f4341502f6831",
+        "h2": "50512d524242432f76322e312f4341502f6832",
+        "seed_commit": "50512d524242432f76322e312f4341502f736565642d636f6d6d6974",
+        "seed_derive": "50512d524242432f76322e312f4341502f736565642d646572697665",
+        "tape_expand": "50512d524242432f76322e312f4341502f746170652d657870616e64"
+      },
+      "extension_moduli": {
+        "3": "0xb"
+      },
+      "field": "GF(2^193)",
+      "field_modulus_exponents": [
+        193,
+        8,
+        7,
+        6,
+        5,
+        4,
+        2,
+        1,
+        0
+      ],
+      "hash_bits": 386,
+      "leaf_count": 8,
+      "mask_bits": 32,
+      "name": "PQ-RBBC-CAP-REDUCED-TEST-ONLY",
+      "random_polynomial_bits": 259,
+      "relation_id": "pq-rbbc/cap/tcith-iii/anemoi-193-336/v1",
+      "rho": 2,
+      "secure_profile": false,
+      "security_bits": 0,
+      "seed_bits": 193,
+      "serialization": {
+        "bit_vectors": "coefficient/index order, LSB-first, zero-padded final byte",
+        "commitment_magic_hex": "5051524242432d4341502d434f4d4d49542d5631",
+        "corrections": "alpha || repeated(delta_P || delta_Mhat)",
+        "field_elements": "25-byte little-endian, unused high seven bits zero"
+      },
+      "tree_count": 2,
+      "tree_extension_degrees": [
+        3,
+        3
+      ],
+      "tree_specs": [
+        {
+          "count": 2,
+          "leaves": 4
+        }
+      ],
+      "witness_bits": 64
+    },
+    "profile_fingerprint": "5d067a55e2ea9104b2604dc7efa393f44d1ce1880c3974bdcaae32aeb825f2ea",
+    "xof_calls": 23
+  }
+}

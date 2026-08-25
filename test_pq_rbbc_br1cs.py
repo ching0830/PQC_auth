@@ -120,6 +120,10 @@ class BinaryR1CSBackendTests(unittest.TestCase):
         self.assertTrue(
             contract["both_production_tree_shard_types_closed_separately"]
         )
+        self.assertTrue(contract["production_cap_full_vector_executed"])
+        self.assertTrue(contract["canonical_18_tree_link_schedule_closed"])
+        self.assertFalse(contract["production_cap_native_global_tail_materialized"])
+        self.assertFalse(contract["monolithic_18_tree_assignment_verified"])
         self.assertTrue(contract["canonical_cap_bytes_bound_to_h_rbbc"])
         self.assertFalse(contract["production_cap_native_rows_materialized"])
         self.assertFalse(contract["complete_cap_hash_implemented"])

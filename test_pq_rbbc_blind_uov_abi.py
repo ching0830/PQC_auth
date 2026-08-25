@@ -305,6 +305,20 @@ class BlindUOVVisibilityTests(unittest.TestCase):
                 "both_production_tree_shard_types_closed_separately"
             ]
         )
+        self.assertTrue(
+            manifest["claim_boundary"]["production_cap_full_vector_executed"]
+        )
+        self.assertTrue(
+            manifest["claim_boundary"]["canonical_18_tree_link_schedule_closed"]
+        )
+        self.assertFalse(
+            manifest["claim_boundary"][
+                "production_cap_native_global_tail_materialized"
+            ]
+        )
+        self.assertFalse(
+            manifest["claim_boundary"]["monolithic_18_tree_assignment_verified"]
+        )
 
 
 if __name__ == "__main__":

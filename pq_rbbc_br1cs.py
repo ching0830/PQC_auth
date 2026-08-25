@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Binary F2-R1CS lowering for the executable PQ-RBBC v2.7 relation.
+"""Binary F2-R1CS lowering for the executable PQ-RBBC v2.8 relation.
 
 The format is intentionally small and auditable.  It serializes enough data to
 reconstruct ordinary rank-1 constraints over F2:
@@ -651,8 +651,8 @@ def build_backend_manifest(output_path: str | os.PathLike[str]) -> dict[str, obj
         honest.metadata.linear_definitions + honest.metadata.linear_assertions
     )
     return {
-        "implementation_version": "2.7",
-        "status": "both production CAP tree shapes are closed separately at the complete assignment and whole-shard verification boundary; full 18-tree composition and the exact parent join remain external",
+        "implementation_version": "2.8",
+        "status": "the full 18-tree CAP reference and canonical linked schedule are frozen; the native global-tail assignment and exact parent join remain external",
         "format": {
             "name": honest.metadata.format,
             "version": honest.metadata.format_version,
@@ -773,10 +773,18 @@ def build_backend_manifest(output_path: str | os.PathLike[str]) -> dict[str, obj
             "production_4096_leaf_shard_stale_witness_rejected": True,
             "production_4096_leaf_shard_profile_is_secure": False,
             "both_production_tree_shard_types_closed_separately": True,
+            "production_cap_composition_relation_id": native_profile.composer.RELATION_ID,
+            "production_cap_composition_document_sha256": native_profile.composer.FROZEN_DOCUMENT_SHA256,
+            "production_cap_commitment_sha256": native_profile.composer.FROZEN_COMMITMENT_SHA256,
+            "production_cap_request_hash_hex": native_profile.composer.FROZEN_REQUEST_HASH_HEX,
+            "production_cap_xof_trace_sha256": native_profile.composer.FROZEN_XOF_TRACE_SHA256,
             "canonical_cap_serialization_implemented": True,
             "canonical_cap_bytes_bound_to_h_rbbc": True,
             "cap_production_accounting": native_profile.cap.production_accounting(),
-            "production_cap_full_vector_executed": False,
+            "production_cap_full_vector_executed": True,
+            "canonical_18_tree_link_schedule_closed": True,
+            "production_cap_native_global_tail_materialized": False,
+            "monolithic_18_tree_assignment_verified": False,
             "production_cap_native_rows_materialized": False,
             "production_cap_inter_call_wire_identity": False,
             "complete_cap_hash_implemented": False,

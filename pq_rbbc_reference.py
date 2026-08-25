@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Executable v2.7 reference relation for the PQ-RBBC/SGTD research draft.
+"""Executable v2.8 reference relation for the PQ-RBBC/SGTD research draft.
 
 This module implements the *incremental* five-block issuance relation described
 in the accompanying proof document.  It emits a streaming characteristic-two
@@ -1155,11 +1155,11 @@ def build_manifest(full_negative_circuits: bool = False) -> dict[str, object]:
             ).items()
         }
     return {
-        "implementation_version": "2.7",
+        "implementation_version": "2.8",
         "status": "executable research relation; not a deployment implementation",
         "claim_boundary": {
             "implemented": "incremental relation plus the in-circuit y = r + hash_image mask equation",
-            "forked_issuance": "both production CAP tree shapes are closed separately at the complete assignment and whole-shard verification boundary; full 18-tree composition and the exact parent join remain one external assertion",
+            "forked_issuance": "the full 18-tree CAP reference vector and canonical linked schedule are frozen; the native global-tail assignment and exact parent join remain one external assertion",
             "r1cs_backend": "streaming IR events only; no flattened matrices or proof backend",
             "trace_key": "deterministic systematic test fixture; not a certified Goppa key",
         },
@@ -1265,10 +1265,18 @@ def build_manifest(full_negative_circuits: bool = False) -> dict[str, object]:
             "production_4096_leaf_shard_stale_witness_rejected": True,
             "production_4096_leaf_shard_profile_is_secure": False,
             "both_production_tree_shard_types_closed_separately": True,
+            "production_cap_composition_relation_id": native_profile.composer.RELATION_ID,
+            "production_cap_composition_document_sha256": native_profile.composer.FROZEN_DOCUMENT_SHA256,
+            "production_cap_commitment_sha256": native_profile.composer.FROZEN_COMMITMENT_SHA256,
+            "production_cap_request_hash_hex": native_profile.composer.FROZEN_REQUEST_HASH_HEX,
+            "production_cap_xof_trace_sha256": native_profile.composer.FROZEN_XOF_TRACE_SHA256,
             "canonical_cap_serialization_implemented": True,
             "canonical_cap_bytes_bound_to_h_rbbc": True,
             "cap_production_accounting": native_profile.cap.production_accounting(),
-            "production_cap_full_vector_executed": False,
+            "production_cap_full_vector_executed": True,
+            "canonical_18_tree_link_schedule_closed": True,
+            "production_cap_native_global_tail_materialized": False,
+            "monolithic_18_tree_assignment_verified": False,
             "production_cap_native_rows_materialized": False,
             "production_cap_inter_call_wire_identity": False,
             "complete_cap_hash_implemented": False,

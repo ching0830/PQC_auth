@@ -15,7 +15,7 @@ soundness, J_mu(r,rho)=r+H(mu,CAP.Commit(r;rho)) is a pointwise shift of a
 PQ-RBBC-Anemoi-193/336-Sponge-v1.  The CAP commitment remains a test fixture;
 the fork is not bit-exact Blind-UOV and the paper's signature size is only a
 provisional target until the fork is re-benchmarked.  Version 2.1 adds the
-strict byte-level join from the independently serialized 5,378-byte production
+strict byte-level join from the independently serialized 5,391-byte production
 CAP profile to ``H_RBBC``; it deliberately rejects the reduced CAP fixture and
 does not claim that the full 18-tree native trace has been materialized.
 Version 2.2 supplies a zero-callback native row stream for the explicitly
@@ -44,6 +44,10 @@ Version 2.7 repeats the same assignment-backed discipline for one real
 4,096-leaf degree-13 tree: 39,789,564 wires and 52,224,501 rows replay with
 zero failures, and five stale-witness probes reject.  Both production tree
 shapes are now closed separately; their 18-tree composition remains external.
+Version 2.8 executes the actual mixed 18-tree production reference, freezes
+all 122,847 CAP XOF calls, 17 correction pairs, one 5,391-byte commitment and
+one request hash in a canonical linked schedule.  The global native tail and
+monolithic assignment remain open, so parent closure is not claimed.
 """
 
 from __future__ import annotations
@@ -57,6 +61,7 @@ from typing import Protocol
 
 import pq_rbbc_anemoi_sponge as fork_sponge
 import pq_rbbc_cap_commit as fork_cap
+import pq_rbbc_cap_composer as cap_composer
 import pq_rbbc_cap_native as reduced_native_cap
 import pq_rbbc_cap_shard_assignment as shard_assignment
 import pq_rbbc_cap_shard_stream as shard_stream
@@ -319,7 +324,7 @@ def build_abi_manifest() -> dict[str, object]:
     hidden = adapter.hidden_state(message, mask, randomness)
     changed_message = bytes((message[0] ^ 1,)) + message[1:]
     return {
-        "implementation_version": "2.7",
+        "implementation_version": "2.8",
         "paper_anchor": "Blind-UOV ePrint 2025/895 is a framework and size comparator, not a bit-exact implementation claim",
         "profile": "PQ-RBBC-BUOV-III/Anemoi-193-336 experimental fork",
         "fork_profile": {
@@ -348,6 +353,8 @@ def build_abi_manifest() -> dict[str, object]:
             "production_2048_leaf_shard_row_stream_sha256": shard_stream.FROZEN_PRODUCTION_STREAM_SHA256,
             "production_4096_leaf_shard_relation_id": shard_stream.PROFILE_RELATION_ID_4096,
             "production_4096_leaf_shard_row_stream_sha256": shard_stream.FROZEN_PRODUCTION_4096_STREAM_SHA256,
+            "production_cap_composition_relation_id": cap_composer.RELATION_ID,
+            "production_cap_composition_document_sha256": cap_composer.FROZEN_DOCUMENT_SHA256,
         },
         "paper_parameters": {
             "security_level_bits": 192,
@@ -483,7 +490,14 @@ def build_abi_manifest() -> dict[str, object]:
             "production_4096_leaf_shard_stale_witness_rejected": True,
             "production_4096_leaf_shard_profile_is_secure": False,
             "both_production_tree_shard_types_closed_separately": True,
-            "full_production_cap_vector_executed": False,
+            "production_cap_full_vector_executed": True,
+            "canonical_18_tree_link_schedule_closed": True,
+            "production_cap_commitment_sha256": cap_composer.FROZEN_COMMITMENT_SHA256,
+            "production_cap_request_hash_hex": cap_composer.FROZEN_REQUEST_HASH_HEX,
+            "production_cap_xof_trace_sha256": cap_composer.FROZEN_XOF_TRACE_SHA256,
+            "production_cap_native_global_tail_materialized": False,
+            "monolithic_18_tree_assignment_verified": False,
+            "full_production_cap_vector_executed": True,
             "full_production_cap_native_rows_materialized": False,
             "production_cap_inter_call_wire_identity_proved": False,
             "linear_y_equals_r_plus_h_internalized": True,

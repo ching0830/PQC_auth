@@ -123,10 +123,14 @@ class RelationTests(unittest.TestCase):
         self.assertTrue(
             contract["both_production_tree_shard_types_closed_separately"]
         )
+        self.assertTrue(contract["production_cap_full_vector_executed"])
+        self.assertTrue(contract["canonical_18_tree_link_schedule_closed"])
+        self.assertFalse(contract["production_cap_native_global_tail_materialized"])
+        self.assertFalse(contract["monolithic_18_tree_assignment_verified"])
         self.assertTrue(contract["canonical_cap_bytes_bound_to_h_rbbc"])
         self.assertFalse(contract["production_cap_native_rows_materialized"])
         self.assertEqual(
-            contract["cap_production_accounting"]["commitment_bytes"], 5_378
+            contract["cap_production_accounting"]["commitment_bytes"], 5_391
         )
         self.assertFalse(contract["complete_cap_hash_implemented"])
         self.assertFalse(contract["blind_uov_bit_exact_compatible"])

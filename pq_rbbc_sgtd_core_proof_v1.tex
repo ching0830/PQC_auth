@@ -43,8 +43,8 @@
 
 \title{A Post-Quantum Relation-Bound Blind Certification Core\\
 with Signature-Gated Threshold Decryption}
-\author{Research construction draft, version 2.7}
-\date{24 August 2026}
+\author{Research construction draft, version 2.8}
+\date{25 August 2026}
 
 \begin{document}
 \maketitle
@@ -119,7 +119,7 @@ random degree-one polynomial coefficients, cross-repetition corrections,
 the consistency digest, canonical commitment serialization, and the exact
 byte-level join to $H_{\RBBC}$.  A reduced non-secure vector executes all code
 paths and mutation tests.  The production profile has 18 trees, 40,960 leaves,
-a 5,378-byte hidden commitment, and an exact estimate of 389,974 selected
+a 5,391-byte hidden commitment, and an exact estimate of 389,974 selected
 Anemoi permutations, or 131,031,264 nonlinear permutation rows.  The production
 vector and native inter-call row stream have not been materialized, so the
 parent archive deliberately retains one external assertion and production
@@ -182,6 +182,16 @@ field wires in a 994,739,228-byte archive.  An mmap replay accepts all
 probes reject.  Both constituent production tree shapes now have complete
 assignment evidence, but the 16-plus-2 tree composition, cross-tree
 corrections, exact parent wire join, fork-specific reductions, and proof
+backend remain open.
+Version 2.8 executes the actual mixed 18-tree production reference for the
+first time.  In canonical profile order, two 4,096-leaf degree-13 trees precede
+sixteen 2,048-leaf degree-12 trees.  A linked composition document freezes all
+122,847 ordered CAP XOF calls, 17 cross-tree correction pairs, the complete
+5,391-byte commitment, the request-binding hash, and the exact previously
+verified shard evidence selected at every tree position.  Five stale-document
+mutations reject.  This closes the full reference vector and canonical link
+schedule, not a monolithic native assignment: the shared global transcript
+tail, exact cross-segment wire identities, parent join, reductions, and proof
 backend remain open.
 \end{abstract}
 
@@ -1112,7 +1122,7 @@ Thus a future native importer cannot choose a different $y$, $r$, hash image,
 or ticket message without failing an ordinary circuit row.
 Version 2.0 replaced the test hash-image computation with the forked Anemoi
 sponge while retaining a test-only CAP commitment.  Version 2.1 adds a strict
-ABI that accepts only the canonical 5,378-byte production-profile CAP encoding
+ABI that accepts only the canonical 5,391-byte production-profile CAP encoding
 and its frozen profile fingerprint before computing $H_{\RBBC}$.  This closes
 the byte-level join; the full native row identities across the 18 CAP trees and
 the hash calls remain external.
@@ -1130,7 +1140,9 @@ limitations: the complete one-tree assignment is archived and every row is
 evaluated successfully, while the 18-tree parent composition remains open.
 Version 2.7 applies the same discipline to one real 4,096-leaf, degree-13
 tree.  Both production tree shapes are therefore closed separately, but they
-have not yet been composed under one transcript.
+have not yet been composed under one native row transcript.  Version 2.8 now
+executes them under one reference transcript and freezes their canonical link
+schedule; the native global-tail and parent wire identities remain external.
 
 \paragraph{Frozen Blind-UOV comparison profile.}
 Version 1.7 fixes the 31 October 2025 revision and its
@@ -1275,13 +1287,20 @@ $\rho=16$, two $\mathbb F_{2^{193}}$ consistency evaluation points (386 bits),
 and a 2,450-bit tape per leaf.  These are fork parameters and require their own
 security analysis.
 
-The canonical commitment encoding is exactly 5,378 bytes.  It contains the
+The canonical commitment encoding is exactly 5,391 bytes.  It contains the
 profile fingerprint, two salt elements, the 386-bit $h_2$, a 386-bit
 consistency value, and 17 pairs of 2,048-bit and 386-bit corrections.  It is
 hidden inside $\pi_{\mathsf{issue}}$: the signer still receives exactly the
 72-byte masked target $y$, not $c_r$ or $m$.  A strict API rejects reduced
 fixtures, wrong profile fingerprints, or any non-canonical length before
 joining these bytes to $H_{\RBBC}(m,c_r)$.
+
+Version 2.8 corrects the earlier 5,378-byte accounting value.  The serializer
+byte-aligns $\alpha$, every $\Delta P_i$, and every
+$\Delta\widehat M_i$ separately, whereas the old helper rounded the combined
+bit count only once.  The former helper therefore undercounted production by
+13 bytes (and the reduced two-tree vector by one byte).  The actual serializer,
+strict ABI, manifests, and tests now agree on 5,391 bytes.
 
 The reduced, explicitly non-secure two-tree fixture freezes profile fingerprint
 \begin{center}
@@ -1306,14 +1325,15 @@ This count omits non-permutation native rows for extension-field operations,
 corrections, packing, and wire equalities.  It is therefore a lower component
 count, not a complete $\pi_{\mathsf{issue}}$ benchmark.
 
-The full 18-tree production execution is deliberately opt-in and has not been
-run for this release.  Version 2.6 runs and assignment-verifies one
-2,048-leaf tree shape, but no 18-tree native row stream or parent inter-call
-wire-identity proof has been produced.  Consequently the parent archive still has one named
-external assertion.  Version 2.1 establishes reference semantics and the exact
-byte ABI; it does not establish native circuit closure, CAP extraction,
-fork-specific blindness, one-more unforgeability, or the paper's signature
-size.
+Version 2.8 runs the opt-in full 18-tree production reference.  It freezes the
+ordered 122,847-call XOF trace, every tree component, all 17 correction pairs,
+one 5,391-byte commitment, and the final request hash.  Both constituent tree
+shapes already have independent whole-assignment evidence.  No deduplicated
+18-tree native row stream, shared global-tail assignment, or parent inter-call
+wire-identity proof has yet been produced.  Consequently the parent archive
+still has one named external assertion.  Reference execution and the exact
+byte ABI do not establish native circuit closure, CAP extraction, fork-specific
+blindness, one-more unforgeability, or the paper's signature size.
 
 \paragraph{Zero-callback reduced native lowering in version 2.2.}
 The module \path{pq_rbbc_cap_native.py} replays all 23 reduced CAP XOF
@@ -1624,6 +1644,74 @@ measurements, not prover or proof-verifier benchmarks.  As with the degree-12
 fixture, this proposition establishes deterministic assignment
 satisfiability, not CAP extraction, zero knowledge, or production security.
 
+\paragraph{Canonical 18-tree reference composition in version 2.8.}
+Let the production tree order be
+\[
+ ((4096,13),(4096,13),\underbrace{(2048,12),\ldots,(2048,12)}_{16}).
+\]
+The composer derives deterministic full-profile salt and roots, executes all
+trees, computes the 17 pairs $(\Delta P_i,\Delta\widehat M_i)$ relative to tree
+zero, and derives $H_1$, two nonzero distinct consistency points, $\alpha$,
+all 18 $\xi_i$ components, $H_2$, the canonical commitment, and
+$H_{\RBBC}(m,c_r)$.  A reduced-profile regression first proves that the
+parallel executor is object-for-object equal to the original direct executor,
+including every ordered XOF call.
+
+\begin{proposition}[Full-reference composition and linked-schedule closure]
+For the frozen production randomness and 32-byte zero request message, the
+version-2.8 execution contains 18 trees, 40,960 leaves, 122,847 ordered CAP XOF
+calls, and 17 correction pairs.  Its 5,391-byte commitment and request hash are
+bound by one canonical linked document.  Changing tree order, constituent
+shard evidence, one correction, the commitment digest, or the request-message
+digest causes validation to reject.
+\end{proposition}
+\begin{proof}
+The profile itself fixes the tree order and the safe extension degree for each
+position.  Every linked record contains its tree index, shape, cumulative
+template offsets, exact frozen one-tree row and assignment digests, and the
+SHA-256 digest of the position-sensitive tree component.  The correction
+component contains 17 length-checked 2,048-bit values and 17 length-checked
+386-bit values.  The global record commits to $H_1,H_2,\alpha$, the serialized
+commitment, request message, and request hash.  Finally, a length-framed trace
+digest covers every call label, domain, injectively encoded payload, output
+width, and output in order.  The validator recomputes these values from the
+execution.  Each of the five mutations changes either a profile-order
+invariant, frozen evidence, a recomputed component, or a final transcript
+value, so at least one mandatory comparison fails.
+\end{proof}
+
+The CAP trace uses 389,974 Anemoi permutations.  Binding the 32-byte message to
+the actual 5,391-byte commitment requires one further XOF and 58 permutations.
+Thus the complete reference path through $H_{\RBBC}$ has 122,848 XOF calls and
+390,032 Anemoi permutations.  At 336 nonlinear rows per permutation, the CAP
+subtotal is 131,031,264 rows and request binding adds 19,488, for 131,050,752
+permutation rows in this end-to-end path.  The ordered trace digest below covers the
+122,847 CAP calls; the request-binding input length, message digest, output, and
+58-permutation accounting are recorded separately in the same document.
+
+The frozen linked-document, commitment, trace, and request digests are,
+respectively,
+\begin{center}
+\texttt{a7ef7eb4689d84c686074308d0d167e1567ab84578d66b5ad004970940ea0163},\\
+\texttt{12123e95b1b64d87da7a575dbf803fc53ded9eb9a23b807eeab2cba51dfe5b62},\\
+\texttt{ccfa51ec2aee9501483c65023c4a877316eb6dd0557ccd6c42dfdf5f20f2c4e6},\\
+\texttt{3f9ec0aeab100e4ebef8046068851874f08fcda6daa2e421},\\
+\texttt{78dd559f55e38a31da28af9ccd0653bb4ca574ec8264cce1f},\\
+\texttt{3c024c97e858e2c877bba7968c039dc61f516dfed995ba3}.
+\end{center}
+The last value is 72 bytes and is wrapped in the source only for typography.
+
+Adding all 18 verified one-tree fixture envelopes gives 398,032,312 wires,
+390,142,528 nonlinear rows, 132,327,002 linear rows, 522,469,530 total rows,
+377,830,939,120 virtual row-stream bytes, and 9,950,810,104 assignment-archive
+bytes.  These are conservative resource-envelope numbers, not the exact count
+of a deduplicated production circuit: every one-tree fixture contains its own
+inputs, $H_1$/points, $H_2$/commitment, and request tail.  A native composition
+must retain the tree-local constraints while sharing one global tail and
+constraining every cross-segment port.  The linked SHA-256 records are
+reproducibility evidence; they are not a substitute for those rank-one rows or
+for a complete assignment replay.
+
 The earlier 240/336/360 discrepancy remains documented, but it no longer
 blocks implementation: version 2.0 intentionally chooses the 336-row profile.
 The cost of that choice is loss of bit-exact Blind-UOV compatibility and loss
@@ -1848,7 +1936,7 @@ $24\cdot1600=38{,}400$ constraints~\cite{blind-uov}.  The audit counts only
 constraints added beyond a native well-built-request $\pi_1$ relation.  The
 complete PQ-RBBC-BUOV-336 CAP circuit is not yet materialized, so the
 historical paper-anchored level-III baseline below is an explicit version-1.9
-comparator, not a version-2.6 fork estimate.
+comparator, not a version-2.8 fork estimate.
 
 \paragraph{Exact-weight gadget.}
 The witness $e$ has 6,688 bits.  Pad it with 1,504 public zeros to 8,192 inputs
@@ -1899,7 +1987,7 @@ $\mathcal C_{\mathsf{RBBCmask}}$ & 1,152 & bitness of $r,h_{\RBBC}$; 576 mask eq
 $\mathcal C_{\mathsf{holder}}$ & 38,656 & 256 bitness + one SHAKE permutation\\
 $\mathcal C_{\mathsf{trace}}$ & 530,435 & $e$ bitness, weight, KDF, and KMAC\\
 \midrule
-Portable v2.7 relation & 685,571 & includes 1,152 native-overlap hardening rows\\
+Portable v2.8 relation & 685,571 & includes 1,152 native-overlap hardening rows\\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -1964,19 +2052,19 @@ as a provisional fork target gives
  |T|=|M|+|\sigma|=12{,}012\text{ bytes}
 \]
 before transport framing.  This is conditional arithmetic, not a measured
-version-2.6 signature size.  Under the same provisional assumption, cached
+version-2.8 signature size.  Under the same provisional assumption, cached
 public material is approximately
 1,044,992 bytes for the trace key plus the paper's rounded 189.2~KB Blind-UOV
 verification key.  Relative to a 70~KB online credential,
 the target is about 5.83 times smaller.  The roughly 4.27~MB issuance-NIZK
-figure is a superseded historical comparator; version 2.6 already counts more
+figure is a superseded historical comparator; version 2.8 already counts more
 than 131 million CAP permutation rows.  Both the CAP commitment and
 $\pi_{\mathsf{issue}}$ remain offline and are never forwarded to a satellite
 verifier.
 
 \begin{remark}[Audit reproducibility]
 The companion executable relation recomputes every exact incremental integer
-above and records it in the version-2.7 manifest.  Fork signature and native
+above and records it in the version-2.8 manifest.  Fork signature and native
 CAP estimates
 are kept in separately labelled fields so a rounded extrapolation cannot be
 mistaken for a benchmark.
@@ -1985,7 +2073,7 @@ mistaken for a benchmark.
 \subsection{Executable reference relation and rejection tests}
 \label{sec:executable-relation}
 
-Version 2.7 preserves and audits the incremental relation in
+Version 2.8 preserves and audits the incremental relation in
 \texttt{pq\_rbbc\_reference.py}.  The witness builder derives
 $h$, $s$, $c_\mu$, $\gamma$, the canonical 368-byte payload, and its ticket
 digest from $(\rid,\ctx,\sn,k_{\mathrm{hold}},e)$.  The circuit builder then
@@ -2167,7 +2255,7 @@ rate/772-bit capacity sponge with arbitrary-length native squeezing and a
 576-bit request output.  The frozen two-block
 hash trace has 2,238 rows and 2,235 wires; a direct CAP.Commit reference with
 salted GGM trees, leaf commitments/tapes, corrections, and consistency hashing;
-a canonical 5,378-byte production commitment encoding; a strict byte-level
+a canonical 5,391-byte production commitment encoding; a strict byte-level
 CAP-to-$H_{\RBBC}$ join; an 88,282-row zero-callback reduced native trace; a
 4,858-row standalone 2,450-bit tape trace; a 113,802-row extended CAP trace;
 a 2,845-row production-width 11-coefficient Horner trace; a 125,401-row
@@ -2178,14 +2266,16 @@ and a bounded-memory 2,048-leaf production-shape stream with 26,126,283 rows,
 assignment satisfies every row and rejects five stale-witness probes; and a
 4,096-leaf, degree-13 stream with 52,224,501 rows, 39,789,564 wires, a
 994,739,228-byte assignment archive, zero verification failures, and five
-rejected stale-witness probes (all CAP fixtures non-secure and zero external
-assertions).\\
+rejected stale-witness probes; plus a full 18-tree reference execution and
+canonical linked schedule covering 122,847 CAP XOF calls, 17 correction pairs,
+one 5,391-byte commitment, and five rejected stale-document probes (the shard
+fixtures remain non-secure and the linked schedule is not a native assignment).\\
 \addlinespace
 Not yet instantiated & A post-quantum zero-knowledge and
 simulation-extractable implementation of $\Piiss$; a native
-$\mathbb F_{2^{193}}$ materialization of the full 18-tree CAP row stream and
-exact inter-call wire identities across all trees; execution of a full
-18-tree production vector; a fork-specific
+$\mathbb F_{2^{193}}$ materialization of the full 18-tree CAP row stream,
+shared global transcript tail, exact inter-call wire identities across all
+trees, and complete assignment replay; a fork-specific
 blindness/one-more-unforgeability proof; fresh key, signature, and proof-size
 benchmarks; validation of the CAP properties used by
 Theorem~\ref{thm:j-qrom};
@@ -2251,13 +2341,13 @@ machine-tested or enforced by type/API boundaries.
   external assertions, and satisfies every check in the native-import contract.
   \item The selected sponge, version-2.1 CAP reference, version-2.2 reduced
   native trace, version-2.3 extended multi-squeeze trace, version-2.4 Horner
-  relations, and version-2.7 assignment-backed 2,048- and 4,096-leaf streamed
-  shards define
+  relations, version-2.7 assignment-backed 2,048- and 4,096-leaf streamed
+  shards, and the version-2.8 full-reference linked composition define
   the implemented
   $H_{\RBBC}$ wires unambiguously.  The CAP fixtures are explicitly non-secure
-  and cannot satisfy the production import contract; all 18 trees, their
-  cross-tree corrections, and exact parent-circuit wire identities are still
-  required.
+  and cannot satisfy the production import contract; the exact shared global
+  tail, cross-segment native rows, complete 18-tree assignment replay, and
+  parent-circuit wire identities are still required.
   \item The fork must never claim bit-exact Blind-UOV compatibility.  The
   reported 240 rows remain comparison data; the selected fork uses 336 rows.
   \item Production closure requires independent fork vectors and cryptanalysis,
@@ -2270,7 +2360,7 @@ machine-tested or enforced by type/API boundaries.
 
 The independent 336-row permutation, canonical sponge framing, 576-bit
 $H_{\RBBC}$ output, native hash rows, hidden-state adapter, direct CAP reference,
-canonical 5,378-byte commitment, strict byte ABI, incremental relation, and
+canonical 5,391-byte commitment, strict byte ABI, incremental relation, and
 fail-closed fork contract are complete.  The reduced CAP fixture and final
 $H_{\RBBC}$ join also have a zero-callback native row stream with zero external
 assertions.  Generic native multi-squeeze, a frozen 2,450-bit tape, an extended
@@ -2279,17 +2369,21 @@ hashing, and a two-coefficient symbolic-mask CAP integration are complete as
 well.  The full 2,048-bit witness has now been executed separately in both
 production tree shapes: a 2,048-leaf degree-12 tree and a 4,096-leaf degree-13
 tree.  Each has a frozen bounded-memory row-stream digest, a complete
-fixed-width assignment, whole-row verification, five stale-witness rejections,
-and zero external assertions.  The 240-row
+  fixed-width assignment, whole-row verification, five stale-witness rejections,
+  and zero external assertions.  Version 2.8 additionally executes the full
+  production reference and freezes its canonical 18-tree linked schedule,
+  corrections, commitment, and request transcript.  The 240-row
 artifact gap is no longer
 an engineering blocker because the fork intentionally gives up bit-exact
-compatibility.  The next component is multi-tree production composition:
+compatibility.  The next component is exact native multi-tree composition:
 
 \begin{quote}
-\emph{Compose all eighteen trees and their
-cross-tree corrections under one canonical transcript.  The final parent
-archive must reject changed $m$, $r$, $\rho$, $c_r$, or hash output and reach
-zero external assertions.  Then prove
+\emph{Lower the canonical eighteen-tree schedule into exact native segments
+with one shared global transcript tail, freeze every cross-segment wire, and
+replay the complete assignment with zero failures.  Then join the resulting
+CAP bytes to the parent archive, which must reject changed $m$, $r$, $\rho$,
+$c_r$, correction, serialization, or hash output and reach zero external
+assertions.  Then prove
 unique-mask and straightline extraction, revalidate blindness and one-more
 unforgeability, benchmark the actual signature, and qualify a post-quantum
 zero-knowledge and simulation-extractable backend.}
@@ -2297,9 +2391,9 @@ zero-knowledge and simulation-extractable backend.}
 
 \paragraph{Delivery roadmap.}
 The companion file
-\texttt{PQ\_RBBC\_CRYPTO\_CORE\_ROADMAP\_v2\_7.md} records the ordered gates:
-(R1) 18-tree canonical composition; (R2) parent exact wire join and zero
-external assertions; (R3) fork-specific CAP, request-binding, blindness,
+\texttt{PQ\_RBBC\_CRYPTO\_CORE\_ROADMAP\_v2\_8.md} records the ordered gates:
+(R1) exact 18-tree native global-tail lowering and segmented assignment replay;
+(R2) parent exact wire join and zero external assertions; (R3) fork-specific CAP, request-binding, blindness,
 one-more-unforgeability, SE-NIZK, and QROM reductions; (R4)
 signature-gated-decryption implementation and reduction; (R5) post-quantum
 backend qualification and fresh size/performance benchmarks; and (R6)
