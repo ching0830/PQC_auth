@@ -311,14 +311,29 @@ class BlindUOVVisibilityTests(unittest.TestCase):
         self.assertTrue(
             manifest["claim_boundary"]["canonical_18_tree_link_schedule_closed"]
         )
-        self.assertFalse(
+        self.assertTrue(
             manifest["claim_boundary"][
                 "production_cap_native_global_tail_materialized"
             ]
         )
         self.assertFalse(
+            manifest["claim_boundary"]["tree_producer_segments_materialized"]
+        )
+        self.assertFalse(
+            manifest["claim_boundary"]["cross_segment_wire_identity_closed"]
+        )
+        self.assertFalse(
+            manifest["claim_boundary"][
+                "complete_18_tree_assignment_replayed"
+            ]
+        )
+        self.assertFalse(
+            manifest["claim_boundary"]["parent_cap_to_h_rbbc_join_closed"]
+        )
+        self.assertFalse(
             manifest["claim_boundary"]["monolithic_18_tree_assignment_verified"]
         )
+        self.assertFalse(manifest["claim_boundary"]["production_closed"])
 
 
 if __name__ == "__main__":

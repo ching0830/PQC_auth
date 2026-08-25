@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fail-closed native import contract for the PQ-RBBC v2.8 fork.
+"""Fail-closed native import contract for the PQ-RBBC v2.9 fork.
 
 The selected profile is deliberately independent of the unreproduced
 Blind-UOV 240-row instance.  It accepts no claim of bit-exact compatibility.
@@ -20,13 +20,14 @@ import pq_rbbc_anemoi_f193 as permutation
 import pq_rbbc_anemoi_sponge as sponge
 import pq_rbbc_cap_commit as cap
 import pq_rbbc_cap_composer as composer
+import pq_rbbc_cap_global_tail as global_tail
 import pq_rbbc_cap_native as reduced_native
 import pq_rbbc_cap_shard_assignment as shard_assignment
 import pq_rbbc_cap_shard_stream as shard_stream
 import pq_rbbc_horner_native as horner_native
 
 
-IMPLEMENTATION_VERSION = "2.8"
+IMPLEMENTATION_VERSION = "2.9"
 RELATION_ID = "pq-rbbc-buov-iii-336/cap-hash/v1"
 TARGET_FIELD = "GF(2^193)"
 REQUIRED_TAMPER_CASES = frozenset(
@@ -164,7 +165,7 @@ def build_native_profile_manifest() -> dict[str, object]:
     parameters = permutation.derive_parameters()
     return {
         "implementation_version": IMPLEMENTATION_VERSION,
-        "status": "the full production CAP vector and canonical 18-tree linked schedule are frozen over two separately assignment-verified shard types; the native global-tail assignment and parent wire join remain external",
+        "status": "the full production CAP vector, canonical 18-tree schedule, and shared native global-tail assignment are frozen; tree-producer segmentation, exact cross-segment wire identity, and the parent join remain external",
         "fork_profile": {
             "name": sponge.PROFILE_NAME,
             "relation_id": RELATION_ID,
@@ -346,6 +347,12 @@ def build_native_profile_manifest() -> dict[str, object]:
             "production_cap_commitment_sha256": composer.FROZEN_COMMITMENT_SHA256,
             "production_cap_request_hash_hex": composer.FROZEN_REQUEST_HASH_HEX,
             "production_cap_xof_trace_sha256": composer.FROZEN_XOF_TRACE_SHA256,
+            "production_global_tail_relation_id": global_tail.RELATION_ID,
+            "production_global_tail_rows": global_tail.FROZEN_PRODUCTION_ROWS,
+            "production_global_tail_wires": global_tail.FROZEN_PRODUCTION_WIRES,
+            "production_global_tail_row_stream_sha256": global_tail.FROZEN_PRODUCTION_STREAM_SHA256,
+            "production_global_tail_assignment_sha256": global_tail.FROZEN_PRODUCTION_ASSIGNMENT_SHA256,
+            "production_global_tail_native_closed": True,
             "production_cap_native_rows_materialized": False,
             "production_cap_inter_call_wire_identity": False,
             "complete_message_commitment_hash_wiring": False,
@@ -375,6 +382,10 @@ def build_native_profile_manifest() -> dict[str, object]:
             "both_production_tree_shard_types_closed_separately": True,
             "full_18_tree_reference_composition_closed": True,
             "canonical_18_tree_link_schedule_closed": True,
+            "production_global_tail_native_closed": True,
+            "tree_producer_segments_materialized": False,
+            "cross_segment_wire_identity_closed": False,
+            "complete_18_tree_assignment_replayed": False,
             "full_18_tree_composition_closed": False,
             "fork_security_proof_revalidated": False,
             "signature_size_rebenchmarked": False,

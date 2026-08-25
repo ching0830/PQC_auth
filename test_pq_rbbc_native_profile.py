@@ -166,6 +166,17 @@ class ForkNativeProfileTests(unittest.TestCase):
                 "canonical_18_tree_link_schedule_closed"
             ]
         )
+        self.assertTrue(
+            manifest["claim_boundary"][
+                "production_global_tail_native_closed"
+            ]
+        )
+        self.assertFalse(
+            manifest["claim_boundary"]["tree_producer_segments_materialized"]
+        )
+        self.assertFalse(
+            manifest["claim_boundary"]["cross_segment_wire_identity_closed"]
+        )
         self.assertFalse(
             manifest["claim_boundary"]["full_18_tree_composition_closed"]
         )

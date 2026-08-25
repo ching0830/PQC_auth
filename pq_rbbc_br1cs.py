@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Binary F2-R1CS lowering for the executable PQ-RBBC v2.8 relation.
+"""Binary F2-R1CS lowering for the executable PQ-RBBC v2.9 relation.
 
 The format is intentionally small and auditable.  It serializes enough data to
 reconstruct ordinary rank-1 constraints over F2:
@@ -15,9 +15,9 @@ materializes affine definitions as R1CS rows.  A proof-system-specific compiler
 may later eliminate those rows, but it must prove that optimization separately.
 
 The linear PQ-RBBC-BUOV-336 mask equation is materialized.  The CAP reference
-algorithm and exact byte-level H_RBBC join exist separately, but their full
-18-tree native row stream and inter-call wire identities remain an external
-assertion and are not silently converted into R1CS rows here.
+algorithm and shared native global tail exist separately, but the tree-producer
+segments, their exact cross-segment wire identities, and the parent H_RBBC join
+remain an external assertion and are not silently converted into R1CS rows.
 """
 
 from __future__ import annotations
@@ -651,8 +651,8 @@ def build_backend_manifest(output_path: str | os.PathLike[str]) -> dict[str, obj
         honest.metadata.linear_definitions + honest.metadata.linear_assertions
     )
     return {
-        "implementation_version": "2.8",
-        "status": "the full 18-tree CAP reference and canonical linked schedule are frozen; the native global-tail assignment and exact parent join remain external",
+        "implementation_version": "2.9",
+        "status": "the full 18-tree CAP reference, canonical schedule, and native shared global tail are frozen; tree-producer segments, exact cross-segment identities, and the parent join remain external",
         "format": {
             "name": honest.metadata.format,
             "version": honest.metadata.format_version,
@@ -690,9 +690,10 @@ def build_backend_manifest(output_path: str | os.PathLike[str]) -> dict[str, obj
         "claim_boundary": {
             "external_assertions": honest.metadata.external_assertions,
             "external_failures_in_honest_vector": honest.metadata.external_failures,
-            "external_component": "native PQ-RBBC-CAP-v1 full 18-tree row stream and exact H_RBBC wire join",
+            "external_component": "native PQ-RBBC-CAP-v1 tree-producer segments, exact cross-segment identities, and H_RBBC parent join",
             "not_yet_done": [
-                "materialize the full 18-tree CAP row stream and exact H_RBBC wire join",
+                "materialize all tree-producer segments and exact cross-segment wire identities",
+                "join the complete native CAP archive to H_RBBC",
                 "lift the complete incremental relation into GF(2^193)",
                 "proof-system-specific affine elimination",
                 "post-quantum zero-knowledge and simulation-extractability qualification",
@@ -783,7 +784,16 @@ def build_backend_manifest(output_path: str | os.PathLike[str]) -> dict[str, obj
             "cap_production_accounting": native_profile.cap.production_accounting(),
             "production_cap_full_vector_executed": True,
             "canonical_18_tree_link_schedule_closed": True,
-            "production_cap_native_global_tail_materialized": False,
+            "production_cap_native_global_tail_materialized": True,
+            "production_global_tail_relation_id": native_profile.global_tail.RELATION_ID,
+            "production_global_tail_rows": native_profile.global_tail.FROZEN_PRODUCTION_ROWS,
+            "production_global_tail_wires": native_profile.global_tail.FROZEN_PRODUCTION_WIRES,
+            "production_global_tail_row_stream_sha256": native_profile.global_tail.FROZEN_PRODUCTION_STREAM_SHA256,
+            "production_global_tail_assignment_sha256": native_profile.global_tail.FROZEN_PRODUCTION_ASSIGNMENT_SHA256,
+            "production_global_tail_replay_failures": 0,
+            "production_global_tail_stale_witness_probes": 6,
+            "tree_producer_segments_materialized": False,
+            "cross_segment_wire_identity_closed": False,
             "monolithic_18_tree_assignment_verified": False,
             "production_cap_native_rows_materialized": False,
             "production_cap_inter_call_wire_identity": False,

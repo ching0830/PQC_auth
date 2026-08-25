@@ -1,0 +1,662 @@
+{
+  "assignment_archive": {
+    "archive_bytes": 1004865028,
+    "archive_sha256": "946c1feef78741f0b7e04cfffb237c08b4736d63d8214f8202f822da6e8ec8c1",
+    "body_bytes": 1004864900,
+    "body_sha256": "358266d106a1ac01cacb7c19c9bff1a7da2acceeb580a1d54462f31986cba925",
+    "field_degree": 193,
+    "format": "PQRBBC-F193-ASSIGNMENT-LE25-1",
+    "header_bytes": 128,
+    "row_stream_sha256": "c368d41de9e57910803e98284a4ec0a0f45862fa80f3d070a50477f82627c9df",
+    "value_bytes": 25,
+    "wires": 40194596
+  },
+  "claim_boundary": {
+    "complete_18_tree_assignment_replayed": false,
+    "cross_segment_wire_identity_closed": false,
+    "fork_security_proof_revalidated": false,
+    "global_tail_ports_are_native_bit_constrained": true,
+    "parent_cap_to_h_rbbc_join_closed": false,
+    "production_closed": false,
+    "production_global_tail_native_closed": true,
+    "tree_producer_segments_materialized": false
+  },
+  "implementation_version": "2.9",
+  "outputs": {
+    "commitment_bytes": 5391,
+    "commitment_sha256": "12123e95b1b64d87da7a575dbf803fc53ded9eb9a23b807eeab2cba51dfe5b62",
+    "request_hash_hex": "3f9ec0aeab100e4ebef8046068851874f08fcda6daa2e42178dd559f55e38a31da28af9ccd0653bb4ca574ec8264cce1f3c024c97e858e2c877bba7968c039dc61f516dfed995ba3"
+  },
+  "ports": [
+    {
+      "bit_length": 386,
+      "consumer_wire_start": 1,
+      "port_id": "shared.salt",
+      "producer_segment": "shared-inputs",
+      "value_sha256": "6ef79b48d3fcf5e6ca57b481db41e3f3c32eeb675e9aec26e5b4264f499bd52a"
+    },
+    {
+      "bit_length": 256,
+      "consumer_wire_start": 387,
+      "port_id": "shared.message",
+      "producer_segment": "shared-inputs",
+      "value_sha256": "66687aadf862bd776c8fc18b8e9f8e20089714856ee233b3902a591d0d5f2925"
+    },
+    {
+      "bit_length": 1581056,
+      "consumer_wire_start": 643,
+      "port_id": "tree[0].leaf-commitments",
+      "producer_segment": "tree-pre[0]",
+      "value_sha256": "8e0362ecfb4ea9193902cb77549662e302b29bad5478ae2aaf2a136da94662da"
+    },
+    {
+      "bit_length": 2048,
+      "consumer_wire_start": 1581699,
+      "port_id": "tree[0].p-plain",
+      "producer_segment": "tree-pre[0]",
+      "value_sha256": "925363dea05668666cf83f67445b6994cb1ca2d3bffc8bbca97e1789cee566ec"
+    },
+    {
+      "bit_length": 386,
+      "consumer_wire_start": 1583747,
+      "port_id": "tree[0].mhat-plain",
+      "producer_segment": "tree-pre[0]",
+      "value_sha256": "77ca0125f4889408a9124e20c607d9f96d9658e80e4f0e93f3d1c9f9ec2ee860"
+    },
+    {
+      "bit_length": 5018,
+      "consumer_wire_start": 1584133,
+      "port_id": "tree[0].xi-masks",
+      "producer_segment": "tree-post[0]",
+      "value_sha256": "8e0ac3450262066dcf55ebb9cadd136c774ac676674f1c7bb8926c866a06d8c6"
+    },
+    {
+      "bit_length": 1581056,
+      "consumer_wire_start": 1589151,
+      "port_id": "tree[1].leaf-commitments",
+      "producer_segment": "tree-pre[1]",
+      "value_sha256": "1c83e40fa8b2b264559419615eb5563e59f7629ffe67d940adbbd41ae5a8a6ec"
+    },
+    {
+      "bit_length": 2048,
+      "consumer_wire_start": 3170207,
+      "port_id": "tree[1].p-plain",
+      "producer_segment": "tree-pre[1]",
+      "value_sha256": "f907ac9ab870655e8ade54b497e2794281edd941e890096d9c4072ae69b54d1d"
+    },
+    {
+      "bit_length": 386,
+      "consumer_wire_start": 3172255,
+      "port_id": "tree[1].mhat-plain",
+      "producer_segment": "tree-pre[1]",
+      "value_sha256": "716b361e7b5cde36f9b63b5d61c0cf7cbe6b62de76d105430ced89184868ffae"
+    },
+    {
+      "bit_length": 5018,
+      "consumer_wire_start": 3172641,
+      "port_id": "tree[1].xi-masks",
+      "producer_segment": "tree-post[1]",
+      "value_sha256": "da36bc3c9282f03e6f0a80c2b6d969d9a6e0bfa5d3f9f8064720e5dc22334371"
+    },
+    {
+      "bit_length": 790528,
+      "consumer_wire_start": 3177659,
+      "port_id": "tree[2].leaf-commitments",
+      "producer_segment": "tree-pre[2]",
+      "value_sha256": "c27608c4139f15972d445d34015300618abbc953671a3b7ba9c6eefc22e053ac"
+    },
+    {
+      "bit_length": 2048,
+      "consumer_wire_start": 3968187,
+      "port_id": "tree[2].p-plain",
+      "producer_segment": "tree-pre[2]",
+      "value_sha256": "7388cdc799a2526ad7df179635d1d4dfda400669f58a50f686b3d9be9998d356"
+    },
+    {
+      "bit_length": 386,
+      "consumer_wire_start": 3970235,
+      "port_id": "tree[2].mhat-plain",
+      "producer_segment": "tree-pre[2]",
+      "value_sha256": "a32ffca5ef15845d5254b11dc446b7b44e1ac30c3d5c080f1d2dff25ffe42c29"
+    },
+    {
+      "bit_length": 4632,
+      "consumer_wire_start": 3970621,
+      "port_id": "tree[2].xi-masks",
+      "producer_segment": "tree-post[2]",
+      "value_sha256": "a3519ba430a2f7d8ff2599990972a4f28db7e9d1fc260d92527e814bde81a3e5"
+    },
+    {
+      "bit_length": 790528,
+      "consumer_wire_start": 3975253,
+      "port_id": "tree[3].leaf-commitments",
+      "producer_segment": "tree-pre[3]",
+      "value_sha256": "93a662a73b45580ba16bbbea80389766f6a31bcf8345e4996173fdccb5305eae"
+    },
+    {
+      "bit_length": 2048,
+      "consumer_wire_start": 4765781,
+      "port_id": "tree[3].p-plain",
+      "producer_segment": "tree-pre[3]",
+      "value_sha256": "cc7f4c1429792f7f87487b86cec0f555ea767bb1a8e1cf032e70380929a950ec"
+    },
+    {
+      "bit_length": 386,
+      "consumer_wire_start": 4767829,
+      "port_id": "tree[3].mhat-plain",
+      "producer_segment": "tree-pre[3]",
+      "value_sha256": "7ee0dfbd7d086b2f440f26a56d7c61557e36ccd81f2ccf28f18efa513399e5d1"
+    },
+    {
+      "bit_length": 4632,
+      "consumer_wire_start": 4768215,
+      "port_id": "tree[3].xi-masks",
+      "producer_segment": "tree-post[3]",
+      "value_sha256": "85d0889efc09b254eb1b876bfdd742657d99c947925deae837605ace283a3a1d"
+    },
+    {
+      "bit_length": 790528,
+      "consumer_wire_start": 4772847,
+      "port_id": "tree[4].leaf-commitments",
+      "producer_segment": "tree-pre[4]",
+      "value_sha256": "ebfb2d29a88e779907d113a7c0a770bf313fddb2d86abe71dfd5dd5a4238c3e4"
+    },
+    {
+      "bit_length": 2048,
+      "consumer_wire_start": 5563375,
+      "port_id": "tree[4].p-plain",
+      "producer_segment": "tree-pre[4]",
+      "value_sha256": "4ae2b882a7818d44b79220e04be32930141e0946dab02e29f4d779006e3223ae"
+    },
+    {
+      "bit_length": 386,
+      "consumer_wire_start": 5565423,
+      "port_id": "tree[4].mhat-plain",
+      "producer_segment": "tree-pre[4]",
+      "value_sha256": "34aeea8f60e740214ab2f0c9c58ea3abba7ed99216e66d30eebfd042a635abb9"
+    },
+    {
+      "bit_length": 4632,
+      "consumer_wire_start": 5565809,
+      "port_id": "tree[4].xi-masks",
+      "producer_segment": "tree-post[4]",
+      "value_sha256": "5ab24d123c37ffa9e8fdfa336540599033341a3b052a737186059aaa96261e67"
+    },
+    {
+      "bit_length": 790528,
+      "consumer_wire_start": 5570441,
+      "port_id": "tree[5].leaf-commitments",
+      "producer_segment": "tree-pre[5]",
+      "value_sha256": "1e86c4aec4589bec77ce02556d9cbc5f335c5d1c36eb9658f0c2a4bd42dcb290"
+    },
+    {
+      "bit_length": 2048,
+      "consumer_wire_start": 6360969,
+      "port_id": "tree[5].p-plain",
+      "producer_segment": "tree-pre[5]",
+      "value_sha256": "67919aced3e0ddb859e7fcbe481e2183e225c3fe5cd22b6af36693565763b771"
+    },
+    {
+      "bit_length": 386,
+      "consumer_wire_start": 6363017,
+      "port_id": "tree[5].mhat-plain",
+      "producer_segment": "tree-pre[5]",
+      "value_sha256": "d422424fe8ae282c4cafd970c256ed8aae3ef877db42e729d39019bcb25e4ddc"
+    },
+    {
+      "bit_length": 4632,
+      "consumer_wire_start": 6363403,
+      "port_id": "tree[5].xi-masks",
+      "producer_segment": "tree-post[5]",
+      "value_sha256": "4c6968af73877708ec1e183791668391dbd32cb1a7549235dd989c63e30a4a59"
+    },
+    {
+      "bit_length": 790528,
+      "consumer_wire_start": 6368035,
+      "port_id": "tree[6].leaf-commitments",
+      "producer_segment": "tree-pre[6]",
+      "value_sha256": "0e9498133b14ef04be0133f53b9fc0dff246a705a7fd6e70f886fd45823386cf"
+    },
+    {
+      "bit_length": 2048,
+      "consumer_wire_start": 7158563,
+      "port_id": "tree[6].p-plain",
+      "producer_segment": "tree-pre[6]",
+      "value_sha256": "3cd0e42090f76778d1b98f562e0ce51f3e3ed9a892ae2ef0cc67213d74445b03"
+    },
+    {
+      "bit_length": 386,
+      "consumer_wire_start": 7160611,
+      "port_id": "tree[6].mhat-plain",
+      "producer_segment": "tree-pre[6]",
+      "value_sha256": "67114bcf0d76f6b44bae46c34898d2a1cafeacb15928b27325708b81662adf2e"
+    },
+    {
+      "bit_length": 4632,
+      "consumer_wire_start": 7160997,
+      "port_id": "tree[6].xi-masks",
+      "producer_segment": "tree-post[6]",
+      "value_sha256": "46ba2ff98aa11174b5ed499095f6f601c705bce724acda97d874e9597e6d2d9d"
+    },
+    {
+      "bit_length": 790528,
+      "consumer_wire_start": 7165629,
+      "port_id": "tree[7].leaf-commitments",
+      "producer_segment": "tree-pre[7]",
+      "value_sha256": "77720ba089028948e69605e1b9d10ab61e5c0e6854983817d9a6968ddabc80aa"
+    },
+    {
+      "bit_length": 2048,
+      "consumer_wire_start": 7956157,
+      "port_id": "tree[7].p-plain",
+      "producer_segment": "tree-pre[7]",
+      "value_sha256": "5a353e5b882f4f8544299746197d79f86f55b5ced257bfe10cbfb17a3e595ee3"
+    },
+    {
+      "bit_length": 386,
+      "consumer_wire_start": 7958205,
+      "port_id": "tree[7].mhat-plain",
+      "producer_segment": "tree-pre[7]",
+      "value_sha256": "a6d2d65068f387847cee9568c8bc7f20ca5b0769bc1aad1e9eaebe25160dd1ec"
+    },
+    {
+      "bit_length": 4632,
+      "consumer_wire_start": 7958591,
+      "port_id": "tree[7].xi-masks",
+      "producer_segment": "tree-post[7]",
+      "value_sha256": "6a600cfde7ea6c75c96bd47f2d35dba8033f75f2317b3692edb942905db16bff"
+    },
+    {
+      "bit_length": 790528,
+      "consumer_wire_start": 7963223,
+      "port_id": "tree[8].leaf-commitments",
+      "producer_segment": "tree-pre[8]",
+      "value_sha256": "33a57690a88e27611667902e5c140e9356dd16a3872df084414e57ca9ce1de25"
+    },
+    {
+      "bit_length": 2048,
+      "consumer_wire_start": 8753751,
+      "port_id": "tree[8].p-plain",
+      "producer_segment": "tree-pre[8]",
+      "value_sha256": "5cfe3ff5a598bd46dad98e2e405adb202dadb4cf3f465a726ea016ff0351774c"
+    },
+    {
+      "bit_length": 386,
+      "consumer_wire_start": 8755799,
+      "port_id": "tree[8].mhat-plain",
+      "producer_segment": "tree-pre[8]",
+      "value_sha256": "169ba9959b9e18f8a6f15f91cc2e486b9cd45e07a9589401bd540c6a8be29ba9"
+    },
+    {
+      "bit_length": 4632,
+      "consumer_wire_start": 8756185,
+      "port_id": "tree[8].xi-masks",
+      "producer_segment": "tree-post[8]",
+      "value_sha256": "d55d7557a4f22f79cf12c7bcc662b8c7844c7165e4d0dcaba7ad953c1e312a45"
+    },
+    {
+      "bit_length": 790528,
+      "consumer_wire_start": 8760817,
+      "port_id": "tree[9].leaf-commitments",
+      "producer_segment": "tree-pre[9]",
+      "value_sha256": "8ba575a0481bc5b3bade2fa7d8c09cd54dcd0a870e26bd8feaa16f8e96fa9aff"
+    },
+    {
+      "bit_length": 2048,
+      "consumer_wire_start": 9551345,
+      "port_id": "tree[9].p-plain",
+      "producer_segment": "tree-pre[9]",
+      "value_sha256": "1e68f0aae15da67d30cdb44da4b3cf6f2e3be4cea8dda218abc20bb1cb539ad9"
+    },
+    {
+      "bit_length": 386,
+      "consumer_wire_start": 9553393,
+      "port_id": "tree[9].mhat-plain",
+      "producer_segment": "tree-pre[9]",
+      "value_sha256": "9dbe83c0e5aaecc686cdd787787867f6715408e9217fb2c7a21d084dcc802b95"
+    },
+    {
+      "bit_length": 4632,
+      "consumer_wire_start": 9553779,
+      "port_id": "tree[9].xi-masks",
+      "producer_segment": "tree-post[9]",
+      "value_sha256": "2b9a19a9703d60d3a4353ea8e0d1bd5f22fb7e9e2eecf72ae13b6f0b171abbf5"
+    },
+    {
+      "bit_length": 790528,
+      "consumer_wire_start": 9558411,
+      "port_id": "tree[10].leaf-commitments",
+      "producer_segment": "tree-pre[10]",
+      "value_sha256": "2a6d504ad1e6c2a7f9104ad126d4f17be2d427afd48e7b59a9df31700ca0034f"
+    },
+    {
+      "bit_length": 2048,
+      "consumer_wire_start": 10348939,
+      "port_id": "tree[10].p-plain",
+      "producer_segment": "tree-pre[10]",
+      "value_sha256": "5527132ec90f3d92907668da2e93492bd161758c54260a205e4fd0f0ea7bcef9"
+    },
+    {
+      "bit_length": 386,
+      "consumer_wire_start": 10350987,
+      "port_id": "tree[10].mhat-plain",
+      "producer_segment": "tree-pre[10]",
+      "value_sha256": "afa830248e53a82e5407c4fd1bce0a01a236defaf1e104c7b6d1f706562120c2"
+    },
+    {
+      "bit_length": 4632,
+      "consumer_wire_start": 10351373,
+      "port_id": "tree[10].xi-masks",
+      "producer_segment": "tree-post[10]",
+      "value_sha256": "add8a7f2afd973d268c4d660557c59a144ed40cca9575f6d8d8c9bb005579ec1"
+    },
+    {
+      "bit_length": 790528,
+      "consumer_wire_start": 10356005,
+      "port_id": "tree[11].leaf-commitments",
+      "producer_segment": "tree-pre[11]",
+      "value_sha256": "0f7c10afaeff27b7c321ad2f586b99691d2835420a949d66a3bd02d8dc9a66f5"
+    },
+    {
+      "bit_length": 2048,
+      "consumer_wire_start": 11146533,
+      "port_id": "tree[11].p-plain",
+      "producer_segment": "tree-pre[11]",
+      "value_sha256": "7203e4bdf32f0f40ed067399f2c355f0659e20b3c78ddb8799349bb2adfa6485"
+    },
+    {
+      "bit_length": 386,
+      "consumer_wire_start": 11148581,
+      "port_id": "tree[11].mhat-plain",
+      "producer_segment": "tree-pre[11]",
+      "value_sha256": "3609134d0dafbf0bbd7bfa1d6e48cb6bd2750111f9d836342128282e2cac5ed5"
+    },
+    {
+      "bit_length": 4632,
+      "consumer_wire_start": 11148967,
+      "port_id": "tree[11].xi-masks",
+      "producer_segment": "tree-post[11]",
+      "value_sha256": "d2fba062468a7ce8028e3a0c858722d896b320b572641a92c7d1eef902a520b3"
+    },
+    {
+      "bit_length": 790528,
+      "consumer_wire_start": 11153599,
+      "port_id": "tree[12].leaf-commitments",
+      "producer_segment": "tree-pre[12]",
+      "value_sha256": "b8be81d58e9385e87c71a4b83ef919d212d24ec7400e620c8d0317da232ea7cc"
+    },
+    {
+      "bit_length": 2048,
+      "consumer_wire_start": 11944127,
+      "port_id": "tree[12].p-plain",
+      "producer_segment": "tree-pre[12]",
+      "value_sha256": "0f9fc2dd337319c94aeab1507f41c630da889aa7d321d6b8d9429a8acead37ab"
+    },
+    {
+      "bit_length": 386,
+      "consumer_wire_start": 11946175,
+      "port_id": "tree[12].mhat-plain",
+      "producer_segment": "tree-pre[12]",
+      "value_sha256": "92489d4aea86eed49e04fadd69115003fcad494c5e9fbe717dcd21af164b243f"
+    },
+    {
+      "bit_length": 4632,
+      "consumer_wire_start": 11946561,
+      "port_id": "tree[12].xi-masks",
+      "producer_segment": "tree-post[12]",
+      "value_sha256": "fa90f4650952e38f3c02ea2eff0a6c2bf1ec577df7987b953a720c12c66f70c0"
+    },
+    {
+      "bit_length": 790528,
+      "consumer_wire_start": 11951193,
+      "port_id": "tree[13].leaf-commitments",
+      "producer_segment": "tree-pre[13]",
+      "value_sha256": "809d7fe49d55d4dcaf85da103c9c81934d980984caf9b8a365ef3f4cc7230c81"
+    },
+    {
+      "bit_length": 2048,
+      "consumer_wire_start": 12741721,
+      "port_id": "tree[13].p-plain",
+      "producer_segment": "tree-pre[13]",
+      "value_sha256": "9ec90f2751adb2330ac04593b50c75826a2f196204d55b4ca0f6f3dbec34b063"
+    },
+    {
+      "bit_length": 386,
+      "consumer_wire_start": 12743769,
+      "port_id": "tree[13].mhat-plain",
+      "producer_segment": "tree-pre[13]",
+      "value_sha256": "95f10b1e7adc4b8c3ee257be220863acf05a58513cad3c012866f346397276a0"
+    },
+    {
+      "bit_length": 4632,
+      "consumer_wire_start": 12744155,
+      "port_id": "tree[13].xi-masks",
+      "producer_segment": "tree-post[13]",
+      "value_sha256": "1b8b2d872f102ca9615b4d80b7034cd948aabf37c2f2b607ff9044ee2e9028fd"
+    },
+    {
+      "bit_length": 790528,
+      "consumer_wire_start": 12748787,
+      "port_id": "tree[14].leaf-commitments",
+      "producer_segment": "tree-pre[14]",
+      "value_sha256": "7226c59d605e210c6a17eda5e72e1e9ea6ef6e1f60bcd2bc2a888b8ab7d92d51"
+    },
+    {
+      "bit_length": 2048,
+      "consumer_wire_start": 13539315,
+      "port_id": "tree[14].p-plain",
+      "producer_segment": "tree-pre[14]",
+      "value_sha256": "582fd19a92a34ed8836776d484055d07060f1718213ff463d89820faa40623b5"
+    },
+    {
+      "bit_length": 386,
+      "consumer_wire_start": 13541363,
+      "port_id": "tree[14].mhat-plain",
+      "producer_segment": "tree-pre[14]",
+      "value_sha256": "67eaf5b487eef472f5e2f9b35aecfd00f9f2e23e55b5c776d7aee2ec8a774a1c"
+    },
+    {
+      "bit_length": 4632,
+      "consumer_wire_start": 13541749,
+      "port_id": "tree[14].xi-masks",
+      "producer_segment": "tree-post[14]",
+      "value_sha256": "ce0318feb4f2a28f775bb9008c836ab02389014fd91e34d5a701601395b61af6"
+    },
+    {
+      "bit_length": 790528,
+      "consumer_wire_start": 13546381,
+      "port_id": "tree[15].leaf-commitments",
+      "producer_segment": "tree-pre[15]",
+      "value_sha256": "df6ddd0533abb8ed8c863cf96f3c9a8a9a9bd0e007164c7465c85f4ff8847cc3"
+    },
+    {
+      "bit_length": 2048,
+      "consumer_wire_start": 14336909,
+      "port_id": "tree[15].p-plain",
+      "producer_segment": "tree-pre[15]",
+      "value_sha256": "2fa68189697ee89824d19be5c43b14705255e44469ed0c34a4ae548125745126"
+    },
+    {
+      "bit_length": 386,
+      "consumer_wire_start": 14338957,
+      "port_id": "tree[15].mhat-plain",
+      "producer_segment": "tree-pre[15]",
+      "value_sha256": "e99bd2cb8d541769547f96059bb3b45c949212fb2d5b1816d5d1d00a70cddcb6"
+    },
+    {
+      "bit_length": 4632,
+      "consumer_wire_start": 14339343,
+      "port_id": "tree[15].xi-masks",
+      "producer_segment": "tree-post[15]",
+      "value_sha256": "c328e5f161c1c938143930f2f832e634cd4489ca3aeb1a7781865880be436c7c"
+    },
+    {
+      "bit_length": 790528,
+      "consumer_wire_start": 14343975,
+      "port_id": "tree[16].leaf-commitments",
+      "producer_segment": "tree-pre[16]",
+      "value_sha256": "26d2a7cbcead6a4dcff71b41f250c103d9afc6b07d6ac8377c3209f08cf44b3b"
+    },
+    {
+      "bit_length": 2048,
+      "consumer_wire_start": 15134503,
+      "port_id": "tree[16].p-plain",
+      "producer_segment": "tree-pre[16]",
+      "value_sha256": "bcc9f14e8946f284a9ec514fb81c8c6db8e0ce0f8133759701ec4c2139d22baa"
+    },
+    {
+      "bit_length": 386,
+      "consumer_wire_start": 15136551,
+      "port_id": "tree[16].mhat-plain",
+      "producer_segment": "tree-pre[16]",
+      "value_sha256": "6cbc63d3895ef4773789956a7cdb8cad1b249271e18aaf3b305942081e10fed2"
+    },
+    {
+      "bit_length": 4632,
+      "consumer_wire_start": 15136937,
+      "port_id": "tree[16].xi-masks",
+      "producer_segment": "tree-post[16]",
+      "value_sha256": "f14bfb551e584241cba388aa5675d42cec144018d970125a037a69bd76ce2e7e"
+    },
+    {
+      "bit_length": 790528,
+      "consumer_wire_start": 15141569,
+      "port_id": "tree[17].leaf-commitments",
+      "producer_segment": "tree-pre[17]",
+      "value_sha256": "41f56f64b89154f8e14647fd40ed523df978d6ede994c195b5e7c0d8f58b8db8"
+    },
+    {
+      "bit_length": 2048,
+      "consumer_wire_start": 15932097,
+      "port_id": "tree[17].p-plain",
+      "producer_segment": "tree-pre[17]",
+      "value_sha256": "d5ab6c4d16f63bb82720b7b0ad9ec69be91e3e40a0f0329b165e6b5d2b27557b"
+    },
+    {
+      "bit_length": 386,
+      "consumer_wire_start": 15934145,
+      "port_id": "tree[17].mhat-plain",
+      "producer_segment": "tree-pre[17]",
+      "value_sha256": "391c2fcc9d091d1a4a9c33b48ec4fbb6b08e072c9c3c37af8f454cd8bb21c3bf"
+    },
+    {
+      "bit_length": 4632,
+      "consumer_wire_start": 15934531,
+      "port_id": "tree[17].xi-masks",
+      "producer_segment": "tree-post[17]",
+      "value_sha256": "3089188b5cbd1ac98b40076b0cf82618afbce771dc6d62c449ddc8a525b392c0"
+    }
+  ],
+  "profile": {
+    "assignment_format": "PQRBBC-F193-ASSIGNMENT-LE25-1",
+    "cap_profile_fingerprint": "2ac471f8d7c6cb4e6352bbc5a2eb7f9394b807ff132aec8cadebd696f7b1fa38",
+    "production_profile": true,
+    "relation_id": "pq-rbbc/cap/production-global-tail/v1",
+    "stream_format": "PQRBBC-F193-R1CS-BINARY-1",
+    "tree_count": 18
+  },
+  "stale_witness_probes": [
+    {
+      "honest_row_satisfied": true,
+      "label": "xof[0].h1.payload[624].source",
+      "original_value_hex": "00000000000000000000000000000000000000000000000000",
+      "rejected": true,
+      "stale_row_satisfied": false,
+      "stale_value_hex": "01000000000000000000000000000000000000000000000000",
+      "wire": 643
+    },
+    {
+      "honest_row_satisfied": true,
+      "label": "xof[0].h1.payload[16386944].source",
+      "original_value_hex": "01000000000000000000000000000000000000000000000000",
+      "rejected": true,
+      "stale_row_satisfied": false,
+      "stale_value_hex": "00000000000000000000000000000000000000000000000000",
+      "wire": 1581699
+    },
+    {
+      "honest_row_satisfied": true,
+      "label": "alpha.output[0].pack",
+      "original_value_hex": "01000000000000000000000000000000000000000000000000",
+      "rejected": true,
+      "stale_row_satisfied": false,
+      "stale_value_hex": "00000000000000000000000000000000000000000000000000",
+      "wire": 1581699
+    },
+    {
+      "honest_row_satisfied": true,
+      "label": "xof[2].h2.payload[1136].source",
+      "original_value_hex": "01000000000000000000000000000000000000000000000000",
+      "rejected": true,
+      "stale_row_satisfied": false,
+      "stale_value_hex": "00000000000000000000000000000000000000000000000000",
+      "wire": 1584133
+    },
+    {
+      "honest_row_satisfied": true,
+      "label": "output.commitment[0].link",
+      "original_value_hex": "00000000000000000000000000000000000000000000000000",
+      "rejected": true,
+      "stale_row_satisfied": false,
+      "stale_value_hex": "01000000000000000000000000000000000000000000000000",
+      "wire": 40084506
+    },
+    {
+      "honest_row_satisfied": true,
+      "label": "xof[3].request-binding.digest.lane[0].pack",
+      "original_value_hex": "3f9ec0aeab100e4ebef8046068851874f08fcda6daa2e42100",
+      "rejected": true,
+      "stale_row_satisfied": false,
+      "stale_value_hex": "3e9ec0aeab100e4ebef8046068851874f08fcda6daa2e42100",
+      "wire": 40194010
+    }
+  ],
+  "trace": {
+    "external_assertions": 0,
+    "generation_seconds": 2884.9129555679974,
+    "groups": [
+      {
+        "bytes": 3295368100,
+        "name": "global-input-ports",
+        "rows": 15939162,
+        "sha256": "9e2ab4d1fff6b33e05e0b55acdb2b413334b76442193d815908fd3dbbb79d452"
+      },
+      {
+        "bytes": 10790499358,
+        "name": "h1-corrections-and-points",
+        "rows": 40436279,
+        "sha256": "6df5d442acab8ff0d16bff2e42bc87dec2f88c9ba4c86e9c721334ac4ddb64c8"
+      },
+      {
+        "bytes": 352886,
+        "name": "shared-alpha",
+        "rows": 408,
+        "sha256": "3602054cdfc434629423632e3e0605b5e6c01e222f33edee0e57c446accdf5e1"
+      },
+      {
+        "bytes": 110569230,
+        "name": "h2-commitment-and-request",
+        "rows": 430862,
+        "sha256": "a636928bd069f724cab5b8c75097726cd9542a375e942fefe3a217f5f3874133"
+      }
+    ],
+    "linear_rows": 17041395,
+    "nonlinear_rows": 39765316,
+    "peak_rss_kib": 1565296,
+    "rows": 56806711,
+    "sponge_accounting": {
+      "calls": 4,
+      "linear_rows": 16996217,
+      "output_bitness_rows": 1737,
+      "payload_bitness_rows": 16566928,
+      "permutation_rows": 7211904,
+      "permutations": 21464,
+      "source_link_rows": 16566928
+    },
+    "stream_bytes": 14196790042,
+    "stream_sha256": "c368d41de9e57910803e98284a4ec0a0f45862fa80f3d070a50477f82627c9df",
+    "verification_failures": 0,
+    "verification_seconds": 963.0146206950012,
+    "wires": 40194596
+  }
+}

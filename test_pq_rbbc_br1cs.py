@@ -54,7 +54,7 @@ class BinaryR1CSBackendTests(unittest.TestCase):
         self.assertEqual(boundary["external_assertions"], 1)
         self.assertEqual(
             boundary["external_component"],
-            "native PQ-RBBC-CAP-v1 full 18-tree row stream and exact H_RBBC wire join",
+            "native PQ-RBBC-CAP-v1 tree-producer segments, exact cross-segment identities, and H_RBBC parent join",
         )
         self.assertEqual(
             self.manifest["round_trip"]["external_assertions_unchecked"], 1
@@ -122,7 +122,9 @@ class BinaryR1CSBackendTests(unittest.TestCase):
         )
         self.assertTrue(contract["production_cap_full_vector_executed"])
         self.assertTrue(contract["canonical_18_tree_link_schedule_closed"])
-        self.assertFalse(contract["production_cap_native_global_tail_materialized"])
+        self.assertTrue(contract["production_cap_native_global_tail_materialized"])
+        self.assertFalse(contract["tree_producer_segments_materialized"])
+        self.assertFalse(contract["cross_segment_wire_identity_closed"])
         self.assertFalse(contract["monolithic_18_tree_assignment_verified"])
         self.assertTrue(contract["canonical_cap_bytes_bound_to_h_rbbc"])
         self.assertFalse(contract["production_cap_native_rows_materialized"])
