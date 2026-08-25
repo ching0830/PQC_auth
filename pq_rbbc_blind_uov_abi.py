@@ -40,6 +40,10 @@ assignment archive, replays all 26,126,283 rows from that archive with zero
 failures, and rejects five stale-witness probes.  The shard remains a
 non-secure one-tree fixture; the 4,096-leaf shard, other 17 trees, and parent
 archive join remain outside the closed boundary.
+Version 2.7 repeats the same assignment-backed discipline for one real
+4,096-leaf degree-13 tree: 39,789,564 wires and 52,224,501 rows replay with
+zero failures, and five stale-witness probes reject.  Both production tree
+shapes are now closed separately; their 18-tree composition remains external.
 """
 
 from __future__ import annotations
@@ -315,7 +319,7 @@ def build_abi_manifest() -> dict[str, object]:
     hidden = adapter.hidden_state(message, mask, randomness)
     changed_message = bytes((message[0] ^ 1,)) + message[1:]
     return {
-        "implementation_version": "2.6",
+        "implementation_version": "2.7",
         "paper_anchor": "Blind-UOV ePrint 2025/895 is a framework and size comparator, not a bit-exact implementation claim",
         "profile": "PQ-RBBC-BUOV-III/Anemoi-193-336 experimental fork",
         "fork_profile": {
@@ -342,6 +346,8 @@ def build_abi_manifest() -> dict[str, object]:
             "horner_2450_native_row_stream_sha256": reduced_native_cap.FROZEN_HORNER_ROW_STREAM_SHA256,
             "production_2048_leaf_shard_relation_id": shard_stream.PROFILE_RELATION_ID,
             "production_2048_leaf_shard_row_stream_sha256": shard_stream.FROZEN_PRODUCTION_STREAM_SHA256,
+            "production_4096_leaf_shard_relation_id": shard_stream.PROFILE_RELATION_ID_4096,
+            "production_4096_leaf_shard_row_stream_sha256": shard_stream.FROZEN_PRODUCTION_4096_STREAM_SHA256,
         },
         "paper_parameters": {
             "security_level_bits": 192,
@@ -462,6 +468,21 @@ def build_abi_manifest() -> dict[str, object]:
             "production_2048_leaf_shard_stale_witness_probes": shard_assignment.FROZEN_PRODUCTION_STALE_WITNESS_PROBES,
             "production_2048_leaf_shard_stale_witness_rejected": True,
             "production_2048_leaf_shard_profile_is_secure": False,
+            "production_4096_leaf_shard_rows": shard_stream.FROZEN_PRODUCTION_4096_ROWS,
+            "production_4096_leaf_shard_wires": shard_stream.FROZEN_PRODUCTION_4096_WIRES,
+            "production_4096_leaf_shard_stream_bytes": shard_stream.FROZEN_PRODUCTION_4096_STREAM_BYTES,
+            "production_4096_leaf_shard_external_assertions": 0,
+            "production_4096_leaf_shard_executed": True,
+            "production_4096_leaf_shard_assignment_materialized": True,
+            "production_4096_leaf_shard_assignment_format": shard_assignment.ASSIGNMENT_FORMAT,
+            "production_4096_leaf_shard_assignment_archive_bytes": shard_assignment.FROZEN_PRODUCTION_4096_ASSIGNMENT_ARCHIVE_BYTES,
+            "production_4096_leaf_shard_assignment_archive_sha256": shard_assignment.FROZEN_PRODUCTION_4096_ASSIGNMENT_ARCHIVE_SHA256,
+            "production_4096_leaf_shard_whole_assignment_verified": True,
+            "production_4096_leaf_shard_verification_failures": 0,
+            "production_4096_leaf_shard_stale_witness_probes": shard_assignment.FROZEN_PRODUCTION_4096_STALE_WITNESS_PROBES,
+            "production_4096_leaf_shard_stale_witness_rejected": True,
+            "production_4096_leaf_shard_profile_is_secure": False,
+            "both_production_tree_shard_types_closed_separately": True,
             "full_production_cap_vector_executed": False,
             "full_production_cap_native_rows_materialized": False,
             "production_cap_inter_call_wire_identity_proved": False,

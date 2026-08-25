@@ -104,6 +104,25 @@ class RelationTests(unittest.TestCase):
             contract["production_2048_leaf_shard_stale_witness_rejected"]
         )
         self.assertFalse(contract["production_2048_leaf_shard_profile_is_secure"])
+        self.assertTrue(contract["production_4096_leaf_shard_executed"])
+        self.assertEqual(contract["production_4096_leaf_shard_rows"], 52_224_501)
+        self.assertEqual(contract["production_4096_leaf_shard_wires"], 39_789_564)
+        self.assertEqual(
+            contract["production_4096_leaf_shard_external_assertions"], 0
+        )
+        self.assertTrue(
+            contract["production_4096_leaf_shard_assignment_materialized"]
+        )
+        self.assertTrue(
+            contract["production_4096_leaf_shard_whole_assignment_verified"]
+        )
+        self.assertTrue(
+            contract["production_4096_leaf_shard_stale_witness_rejected"]
+        )
+        self.assertFalse(contract["production_4096_leaf_shard_profile_is_secure"])
+        self.assertTrue(
+            contract["both_production_tree_shard_types_closed_separately"]
+        )
         self.assertTrue(contract["canonical_cap_bytes_bound_to_h_rbbc"])
         self.assertFalse(contract["production_cap_native_rows_materialized"])
         self.assertEqual(

@@ -147,5 +147,80 @@ class ProductionAssignmentManifestTests(unittest.TestCase):
         self.assertFalse(manifest["claim_boundary"]["production_closed"])
 
 
+class Production4096AssignmentManifestTests(unittest.TestCase):
+    def test_frozen_production_4096_assignment_manifest(self) -> None:
+        path = Path(__file__).with_name(
+            "pq_rbbc_cap_shard_assignment_4096_manifest_v2_7.json"
+        )
+        manifest = json.loads(path.read_text(encoding="utf-8"))
+        profile = manifest["profile"]
+        trace = manifest["trace"]
+        archive = manifest["assignment_archive"]
+        verification = manifest["whole_shard_verification"]
+        self.assertEqual(profile["name"], shard.PROFILE_NAME_4096)
+        self.assertEqual(profile["relation_id"], shard.PROFILE_RELATION_ID_4096)
+        self.assertEqual(profile["leaves"], 4_096)
+        self.assertEqual(profile["extension_degree"], 13)
+        self.assertEqual(trace["wires"], shard.FROZEN_PRODUCTION_4096_WIRES)
+        self.assertEqual(trace["rows"], shard.FROZEN_PRODUCTION_4096_ROWS)
+        self.assertEqual(
+            trace["nonlinear_rows"],
+            shard.FROZEN_PRODUCTION_4096_NONLINEAR_ROWS,
+        )
+        self.assertEqual(
+            trace["linear_rows"], shard.FROZEN_PRODUCTION_4096_LINEAR_ROWS
+        )
+        self.assertEqual(
+            trace["stream_bytes"], shard.FROZEN_PRODUCTION_4096_STREAM_BYTES
+        )
+        self.assertEqual(
+            trace["stream_sha256"], shard.FROZEN_PRODUCTION_4096_STREAM_SHA256
+        )
+        self.assertEqual(
+            trace["spool_bytes"], shard.FROZEN_PRODUCTION_4096_SPOOL_BYTES
+        )
+        self.assertEqual(
+            trace["spool_sha256"], shard.FROZEN_PRODUCTION_4096_SPOOL_SHA256
+        )
+        self.assertEqual(
+            manifest["frozen_vector"]["commitment_sha256"],
+            shard.FROZEN_PRODUCTION_4096_COMMITMENT_SHA256,
+        )
+        self.assertEqual(
+            manifest["frozen_vector"]["request_hash_hex"],
+            shard.FROZEN_PRODUCTION_4096_REQUEST_HASH_HEX,
+        )
+        self.assertEqual(
+            archive["body_bytes"],
+            assignment.FROZEN_PRODUCTION_4096_ASSIGNMENT_BODY_BYTES,
+        )
+        self.assertEqual(
+            archive["body_sha256"],
+            assignment.FROZEN_PRODUCTION_4096_ASSIGNMENT_BODY_SHA256,
+        )
+        self.assertEqual(
+            archive["archive_bytes"],
+            assignment.FROZEN_PRODUCTION_4096_ASSIGNMENT_ARCHIVE_BYTES,
+        )
+        self.assertEqual(
+            archive["archive_sha256"],
+            assignment.FROZEN_PRODUCTION_4096_ASSIGNMENT_ARCHIVE_SHA256,
+        )
+        self.assertEqual(archive["row_stream_sha256"], trace["stream_sha256"])
+        self.assertEqual(verification["rows_checked"], trace["rows"])
+        self.assertEqual(verification["failures"], 0)
+        self.assertTrue(verification["topology_matches_generation"])
+        self.assertEqual(len(manifest["stale_witness_probes"]), 5)
+        self.assertTrue(
+            all(item["rejected"] for item in manifest["stale_witness_probes"])
+        )
+        self.assertTrue(
+            manifest["claim_boundary"][
+                "production_4096_degree_13_assignment_closed"
+            ]
+        )
+        self.assertFalse(manifest["claim_boundary"]["production_closed"])
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

@@ -145,6 +145,26 @@ class ProductionShardParameterTests(unittest.TestCase):
                 cap.deterministic_randomness(cap.REDUCED_TEST_PARAMETERS),
             )
 
+    def test_exact_4096_production_tree_shape_and_identity(self) -> None:
+        parameters = shard.PRODUCTION_TREE_SHARD_4096_PARAMETERS
+        self.assertFalse(parameters.secure_profile)
+        self.assertEqual(parameters.tree_count, 1)
+        self.assertEqual(parameters.leaf_count, 4_096)
+        self.assertEqual(parameters.expanded_extension_degrees(), (13,))
+        self.assertEqual(parameters.witness_bits, 2_048)
+        self.assertEqual(parameters.consistency_points, 2)
+        self.assertEqual(parameters.random_polynomial_bits, 2_450)
+        self.assertEqual(
+            shard.shard_profile(parameters),
+            (shard.PROFILE_NAME_4096, shard.PROFILE_RELATION_ID_4096),
+        )
+
+    def test_2048_profile_identity_is_backward_compatible(self) -> None:
+        self.assertEqual(
+            shard.shard_profile(shard.PRODUCTION_TREE_SHARD_PARAMETERS),
+            (shard.PROFILE_NAME, shard.PROFILE_RELATION_ID),
+        )
+
     def test_frozen_production_manifest(self) -> None:
         path = Path(__file__).with_name(
             "pq_rbbc_cap_shard_stream_manifest_v2_5.json"

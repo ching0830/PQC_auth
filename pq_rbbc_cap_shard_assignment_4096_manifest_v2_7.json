@@ -1,0 +1,194 @@
+{
+  "assignment_archive": {
+    "archive_bytes": 994739228,
+    "archive_sha256": "e4dea88f7f47849cd858d3ba2d5110bd1893efb1ac4544a8b2cb8a0e7fa87aa1",
+    "body_bytes": 994739100,
+    "body_sha256": "e61fc4fec72b302a0eaf83680044242c5cc87aedc79db23fec6d681e55f04947",
+    "field_degree": 193,
+    "format": "PQRBBC-F193-ASSIGNMENT-LE25-1",
+    "header_bytes": 128,
+    "row_stream_sha256": "0d921a379af0f8c7bd34bb9c3804cbbb32daea51ea827d753a8493758c892530",
+    "value_bytes": 25,
+    "wires": 39789564
+  },
+  "claim_boundary": {
+    "production_2048_degree_12_assignment_closed": false,
+    "production_4096_degree_13_assignment_closed": true,
+    "production_closed": false,
+    "production_tree_shard_assignment_closed": true,
+    "production_tree_shard_topology_closed": true,
+    "remaining": [
+      "compose all 18 production trees",
+      "replace the parent archive external assertion",
+      "complete fork-specific extraction and security proofs",
+      "qualify the post-quantum proof backend and benchmark signatures"
+    ]
+  },
+  "frozen_vector": {
+    "commitment_bytes": 206,
+    "commitment_sha256": "1eb53369c086e99ec55ddc90a49314924a42a61fee4d6b0ebf73d5ce75ad58e4",
+    "request_hash_hex": "5f890ae1688bf314ff2399401e8e1d17d78ad96124a2818f41609e0a94cf5b245ef365e3bdaa1c36d1e05aaff4799cef3f016a13e6234bee1f9c9b5f68db3cb5d561282b65766700"
+  },
+  "implementation_version": "2.7",
+  "implemented": {
+    "bounded_memory_wire_spool": true,
+    "callbacks_or_external_assertions": false,
+    "degree_12_extension_mask_slices": false,
+    "degree_13_extension_mask_slices": true,
+    "full_18_tree_relation": false,
+    "full_2048_bit_eleven_coefficient_witness": true,
+    "full_assignment_archive_materialized": true,
+    "production_width_2450_bit_tapes": true,
+    "real_2048_leaf_production_tree_shape": false,
+    "real_4096_leaf_production_tree_shape": true,
+    "stale_witness_probes_rejected": true,
+    "streamed_expanded_row_digest": true,
+    "two_consistency_points": true,
+    "whole_shard_assignment_verified": true
+  },
+  "profile": {
+    "assignment_format": "PQRBBC-F193-ASSIGNMENT-LE25-1",
+    "cap_profile_fingerprint": "79a522197f0ca6811ab489a45acb68af322ebc3f7de5f68ae901d2a33a6ef65d",
+    "coefficients": 11,
+    "consistency_points": 2,
+    "explicitly_non_secure_one_tree_shard": true,
+    "extension_degree": 13,
+    "field": "GF(2^193)",
+    "fixture_parameter_name": "PQ-RBBC-CAP-PRODUCTION-TREE-SHARD-4096-TEST-ONLY",
+    "leaves": 4096,
+    "name": "PQ-RBBC-CAP-PRODUCTION-TREE-SHARD-4096-v1",
+    "relation_id": "pq-rbbc/cap/production-tree-shard-4096/v1",
+    "spool_format": "PQRBBC-WIRE-SPOOL-U64LE-1",
+    "stream_format": "F193-R1CS-NDJSON-SHA256-1",
+    "tape_bits": 2450,
+    "witness_bits": 2048
+  },
+  "stale_witness_probes": [
+    {
+      "honest_row_satisfied": true,
+      "label": "xof[0].tree[0].derive[2,1].payload[240].source",
+      "original_value_hex": "01000000000000000000000000000000000000000000000000",
+      "rejected": true,
+      "stale_row_satisfied": false,
+      "stale_value_hex": "00000000000000000000000000000000000000000000000000",
+      "wire": 1
+    },
+    {
+      "honest_row_satisfied": true,
+      "label": "xof[4095].tree[0].leaf[1].tape.digest.lane[0].pack",
+      "original_value_hex": "6848a94eef9f6ccb3b2be16f0bf889b90abe80cc0ef42e6000",
+      "rejected": true,
+      "stale_row_satisfied": false,
+      "stale_value_hex": "6948a94eef9f6ccb3b2be16f0bf889b90abe80cc0ef42e6000",
+      "wire": 8691891
+    },
+    {
+      "honest_row_satisfied": true,
+      "label": "horner.leaf[1].point[0].mul[9]",
+      "original_value_hex": "c61c6f355f6af28805f37ff3df28f201fea74b2c219c52ae00",
+      "rejected": true,
+      "stale_row_satisfied": false,
+      "stale_value_hex": "c71c6f355f6af28805f37ff3df28f201fea74b2c219c52ae00",
+      "wire": 39623080
+    },
+    {
+      "honest_row_satisfied": true,
+      "label": "output.commitment[0].link",
+      "original_value_hex": "00000000000000000000000000000000000000000000000000",
+      "rejected": true,
+      "stale_row_satisfied": false,
+      "stale_value_hex": "01000000000000000000000000000000000000000000000000",
+      "wire": 39781658
+    },
+    {
+      "honest_row_satisfied": true,
+      "label": "xof[12289].request-binding.digest.lane[0].pack",
+      "original_value_hex": "5f890ae1688bf314ff2399401e8e1d17d78ad96124a2818f01",
+      "rejected": true,
+      "stale_row_satisfied": false,
+      "stale_value_hex": "5e890ae1688bf314ff2399401e8e1d17d78ad96124a2818f01",
+      "wire": 39788978
+    }
+  ],
+  "trace": {
+    "assignment_materialized": true,
+    "external_assertions": 0,
+    "generation_seconds": 1130.7655659230004,
+    "groups": [
+      {
+        "bytes": 430024,
+        "name": "inputs",
+        "rows": 1028,
+        "sha256": "a71a4d9258b0e249a43a3662c7bd06ace48bcdb569b536b2dfcd183d24c93c32"
+      },
+      {
+        "bytes": 7870198142,
+        "name": "ggm-derive",
+        "rows": 12887912,
+        "sha256": "6f7936bd3b09523112b77cf97c2d4dd2cd962c8718d9d55b23801ba675d4cdca"
+      },
+      {
+        "bytes": 23511025555,
+        "name": "leaf-commit-and-tape",
+        "rows": 35119104,
+        "sha256": "560975ec42528ccd2111e89235ab056baccb25c564ed724594dd126f3ae3f28b"
+      },
+      {
+        "bytes": 2348892375,
+        "name": "h1-and-points",
+        "rows": 4037875,
+        "sha256": "62287c5217431e6360d7a867b1c07a81c6ec4d5fd5a08945762a9303b354ce72"
+      },
+      {
+        "bytes": 2812373088,
+        "name": "leaf-horner-and-field-aggregation",
+        "rows": 148856,
+        "sha256": "013f5595846f713d922b9ecc1e5949a07cfb1653a04a5834d1f0d47872dedb11"
+      },
+      {
+        "bytes": 1413066272,
+        "name": "h2-commitment-and-request-binding",
+        "rows": 29726,
+        "sha256": "c67c8e66b0f53d7858d2a9c5d827fd8b8d0e43509175e45b0608aa1f4f1889b2"
+      }
+    ],
+    "horner_accounting": {
+      "aggregate_rows": 61504,
+      "leaf_calls": 4096,
+      "multiplication_rows": 81920,
+      "output_bitness_rows": 5404,
+      "output_pack_rows": 28,
+      "point_validation_rows": 3
+    },
+    "linear_rows": 13227269,
+    "nonlinear_rows": 38997232,
+    "peak_rss_kib": 254220,
+    "rows": 52224501,
+    "sponge_accounting": {
+      "calls": 12290,
+      "linear_rows": 13162041,
+      "output_bitness_rows": 13439941,
+      "payload_bitness_rows": 12361576,
+      "permutation_rows": 13103664,
+      "permutations": 38999,
+      "source_link_rows": 12361576
+    },
+    "spool_bytes": 79757312,
+    "spool_sha256": "9c74039df1f21c2273eed511c29523514b156dd712abda3db3aa64dac1e37169",
+    "stream_bytes": 37955986032,
+    "stream_sha256": "0d921a379af0f8c7bd34bb9c3804cbbb32daea51ea827d753a8493758c892530",
+    "verification_seconds": 1619.6625440999996,
+    "wall_seconds": 1129.7702815060002,
+    "wires": 39789564,
+    "xof_calls": 12290
+  },
+  "whole_shard_verification": {
+    "failures": 0,
+    "first_failure": null,
+    "mode": "mmap fixed-width assignment replay",
+    "row_stream_sha256": "0d921a379af0f8c7bd34bb9c3804cbbb32daea51ea827d753a8493758c892530",
+    "rows_checked": 52224501,
+    "topology_matches_generation": true,
+    "wires_loaded": 39789564
+  }
+}

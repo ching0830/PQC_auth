@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Tests for the fail-closed PQ-RBBC v2.6 fork import contract."""
+"""Tests for the fail-closed PQ-RBBC v2.7 fork import contract."""
 
 from __future__ import annotations
 
@@ -121,6 +121,38 @@ class ForkNativeProfileTests(unittest.TestCase):
         )
         self.assertTrue(
             manifest["claim_boundary"]["production_shard_full_assignment_closed"]
+        )
+        shard_4096 = manifest["fork_profile"][
+            "production_4096_leaf_shard_component"
+        ]
+        self.assertEqual(shard_4096["leaves"], 4_096)
+        self.assertEqual(shard_4096["extension_degree"], 13)
+        self.assertEqual(shard_4096["rows"], 52_224_501)
+        self.assertEqual(shard_4096["wires"], 39_789_564)
+        self.assertEqual(shard_4096["external_assertions"], 0)
+        self.assertTrue(shard_4096["assignment_materialized"])
+        self.assertEqual(shard_4096["assignment_archive_bytes"], 994_739_228)
+        self.assertEqual(shard_4096["whole_shard_rows_verified"], 52_224_501)
+        self.assertEqual(shard_4096["whole_shard_verification_failures"], 0)
+        self.assertEqual(shard_4096["stale_witness_probes"], 5)
+        self.assertTrue(shard_4096["stale_witness_probes_rejected"])
+        self.assertTrue(
+            manifest["claim_boundary"][
+                "production_4096_leaf_tree_shard_closed"
+            ]
+        )
+        self.assertFalse(
+            manifest["claim_boundary"][
+                "production_4096_leaf_tree_shard_security_profile"
+            ]
+        )
+        self.assertTrue(
+            manifest["claim_boundary"][
+                "both_production_tree_shard_types_closed_separately"
+            ]
+        )
+        self.assertFalse(
+            manifest["claim_boundary"]["full_18_tree_composition_closed"]
         )
 
     def test_missing_import_is_fail_closed(self) -> None:

@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Bounded-memory production-tree shard for the PQ-RBBC v2.5 checkpoint.
+"""Bounded-memory production-tree shards for the PQ-RBBC v2.7 checkpoint.
 
-This module materializes the topology of one real 2^11-leaf production CAP
-tree with the full 2,048-bit witness, two consistency points, degree-12 leaf
-extension field, and 2,450-bit tapes.  Rows are validated by frozen local
+This module materializes either real production CAP tree shape: 2^11 leaves
+over the degree-12 extension field or 2^12 leaves over the degree-13 extension
+field.  Both use the full 2,048-bit witness, two consistency points, and
+2,450-bit tapes.  Rows are validated by frozen local
 templates and serialized directly into a SHA-256 sink; the multi-gigabyte
 expanded JSON stream and its complete assignment are deliberately not kept.
 
@@ -41,9 +42,14 @@ import pq_rbbc_anemoi_sponge as sponge
 import pq_rbbc_cap_commit as cap
 
 
-IMPLEMENTATION_VERSION = "2.5"
-PROFILE_NAME = "PQ-RBBC-CAP-PRODUCTION-TREE-SHARD-2048-v1"
-PROFILE_RELATION_ID = "pq-rbbc/cap/production-tree-shard-2048/v1"
+IMPLEMENTATION_VERSION = "2.7"
+PROFILE_NAME_2048 = "PQ-RBBC-CAP-PRODUCTION-TREE-SHARD-2048-v1"
+PROFILE_RELATION_ID_2048 = "pq-rbbc/cap/production-tree-shard-2048/v1"
+PROFILE_NAME_4096 = "PQ-RBBC-CAP-PRODUCTION-TREE-SHARD-4096-v1"
+PROFILE_RELATION_ID_4096 = "pq-rbbc/cap/production-tree-shard-4096/v1"
+# Backward-compatible aliases preserve the frozen v2.5 2,048-leaf stream.
+PROFILE_NAME = PROFILE_NAME_2048
+PROFILE_RELATION_ID = PROFILE_RELATION_ID_2048
 STREAM_FORMAT = "F193-R1CS-NDJSON-SHA256-1"
 SPOOL_FORMAT = "PQRBBC-WIRE-SPOOL-U64LE-1"
 ASSIGNMENT_VALUE_BYTES = field.FIELD_ELEMENT_BYTES
@@ -69,6 +75,27 @@ FROZEN_PRODUCTION_REQUEST_HASH_HEX = (
     "b76b303ac2ee073a"
 )
 
+FROZEN_PRODUCTION_4096_WIRES = 39_789_564
+FROZEN_PRODUCTION_4096_ROWS = 52_224_501
+FROZEN_PRODUCTION_4096_NONLINEAR_ROWS = 38_997_232
+FROZEN_PRODUCTION_4096_LINEAR_ROWS = 13_227_269
+FROZEN_PRODUCTION_4096_STREAM_BYTES = 37_955_986_032
+FROZEN_PRODUCTION_4096_STREAM_SHA256 = (
+    "0d921a379af0f8c7bd34bb9c3804cbbb32daea51ea827d753a8493758c892530"
+)
+FROZEN_PRODUCTION_4096_SPOOL_BYTES = 79_757_312
+FROZEN_PRODUCTION_4096_SPOOL_SHA256 = (
+    "9c74039df1f21c2273eed511c29523514b156dd712abda3db3aa64dac1e37169"
+)
+FROZEN_PRODUCTION_4096_COMMITMENT_SHA256 = (
+    "1eb53369c086e99ec55ddc90a49314924a42a61fee4d6b0ebf73d5ce75ad58e4"
+)
+FROZEN_PRODUCTION_4096_REQUEST_HASH_HEX = (
+    "5f890ae1688bf314ff2399401e8e1d17d78ad96124a2818f41609e0a94cf5b24"
+    "5ef365e3bdaa1c36d1e05aaff4799cef3f016a13e6234bee1f9c9b5f68db3cb5"
+    "d561282b65766700"
+)
+
 
 PRODUCTION_TREE_SHARD_PARAMETERS = cap.CAPParameters(
     name="PQ-RBBC-CAP-PRODUCTION-TREE-SHARD-2048-TEST-ONLY",
@@ -79,6 +106,18 @@ PRODUCTION_TREE_SHARD_PARAMETERS = cap.CAPParameters(
     rho=16,
     consistency_points=2,
     tree_specs=(cap.TreeSpec(1, 1 << 11),),
+    secure_profile=False,
+)
+
+PRODUCTION_TREE_SHARD_4096_PARAMETERS = cap.CAPParameters(
+    name="PQ-RBBC-CAP-PRODUCTION-TREE-SHARD-4096-TEST-ONLY",
+    security_bits=0,
+    mask_bits=576,
+    appended_signature_bits=1_472,
+    degree=2,
+    rho=16,
+    consistency_points=2,
+    tree_specs=(cap.TreeSpec(1, 1 << 12),),
     secure_profile=False,
 )
 
@@ -96,6 +135,20 @@ PROBE_PARAMETERS = cap.CAPParameters(
 
 
 BitForm = field.LinearForm
+
+
+def shard_profile(parameters: cap.CAPParameters) -> tuple[str, str]:
+    """Return the canonical identity for a supported one-tree shape."""
+
+    shape = (
+        parameters.expanded_leaf_counts(),
+        parameters.expanded_extension_degrees(),
+    )
+    if shape == ((1 << 12,), (13,)):
+        return PROFILE_NAME_4096, PROFILE_RELATION_ID_4096
+    # Small probes intentionally retain the original v2.5 identity so their
+    # frozen row-stream digest remains a compatibility vector.
+    return PROFILE_NAME_2048, PROFILE_RELATION_ID_2048
 
 
 def _wire_id(form: BitForm) -> int:
@@ -1509,6 +1562,7 @@ def build_streaming_shard(
         raise ValueError("request message must be 32 bytes")
     leaves = parameters.expanded_leaf_counts()[0]
     extension_degree = parameters.expanded_extension_degrees()[0]
+    profile_name, relation_id = shard_profile(parameters)
     randomness = randomness or cap.deterministic_randomness(parameters)
     started = time.perf_counter()
     execution = execution or build_parallel_execution(
@@ -1548,8 +1602,8 @@ def build_streaming_shard(
         "cap_profile_fingerprint": cap.profile_fingerprint(parameters),
         "field": "GF(2^193)",
         "format": STREAM_FORMAT,
-        "profile_name": PROFILE_NAME,
-        "relation_id": PROFILE_RELATION_ID,
+        "profile_name": profile_name,
+        "relation_id": relation_id,
         "sponge_profile_fingerprint": sponge.profile_fingerprint(
             field.derive_parameters()
         ),
@@ -2022,11 +2076,20 @@ def build_streaming_shard(
 
 def build_manifest(summary: ShardTraceSummary) -> dict[str, object]:
     parameters = summary.parameters
+    profile_name, relation_id = shard_profile(parameters)
+    is_2048 = (
+        parameters.expanded_leaf_counts() == (1 << 11,)
+        and parameters.expanded_extension_degrees() == (12,)
+    )
+    is_4096 = (
+        parameters.expanded_leaf_counts() == (1 << 12,)
+        and parameters.expanded_extension_degrees() == (13,)
+    )
     return {
         "implementation_version": IMPLEMENTATION_VERSION,
         "profile": {
-            "name": PROFILE_NAME,
-            "relation_id": PROFILE_RELATION_ID,
+            "name": profile_name,
+            "relation_id": relation_id,
             "field": "GF(2^193)",
             "stream_format": STREAM_FORMAT,
             "spool_format": SPOOL_FORMAT,
@@ -2070,14 +2133,18 @@ def build_manifest(summary: ShardTraceSummary) -> dict[str, object]:
         },
         "implemented": {
             "real_2048_leaf_production_tree_shape": (
-                parameters.leaf_count == 1 << 11
+                is_2048
             ),
+            "real_4096_leaf_production_tree_shape": is_4096,
             "full_2048_bit_eleven_coefficient_witness": (
                 parameters.witness_bits == 2_048
             ),
             "two_consistency_points": parameters.consistency_points == 2,
             "degree_12_extension_mask_slices": (
                 parameters.expanded_extension_degrees() == (12,)
+            ),
+            "degree_13_extension_mask_slices": (
+                parameters.expanded_extension_degrees() == (13,)
             ),
             "production_width_2450_bit_tapes": (
                 parameters.random_polynomial_bits == 2_450
@@ -2090,13 +2157,12 @@ def build_manifest(summary: ShardTraceSummary) -> dict[str, object]:
         },
         "claim_boundary": {
             "production_tree_shard_topology_closed": (
-                parameters.leaf_count == 1 << 11
+                (is_2048 or is_4096)
                 and summary.external_assertions == 0
             ),
             "production_closed": False,
             "remaining": [
-                "materialize or backend-link a complete shard witness assignment",
-                "add the 4096-leaf degree-13 shard",
+                "materialize and verify the complete shard witness assignment",
                 "compose all 18 production trees",
                 "replace the parent archive external assertion",
                 "complete fork-specific extraction and security proofs",
@@ -2109,14 +2175,18 @@ def build_manifest(summary: ShardTraceSummary) -> dict[str, object]:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--manifest", type=Path)
-    parser.add_argument("--fixture", choices=("probe", "production"), default="probe")
+    parser.add_argument(
+        "--fixture",
+        choices=("probe", "production", "production4096"),
+        default="probe",
+    )
     parser.add_argument("--workers", type=int, default=max(1, min(8, os.cpu_count() or 1)))
     args = parser.parse_args()
-    parameters = (
-        PROBE_PARAMETERS
-        if args.fixture == "probe"
-        else PRODUCTION_TREE_SHARD_PARAMETERS
-    )
+    parameters = {
+        "probe": PROBE_PARAMETERS,
+        "production": PRODUCTION_TREE_SHARD_PARAMETERS,
+        "production4096": PRODUCTION_TREE_SHARD_4096_PARAMETERS,
+    }[args.fixture]
     summary = build_streaming_shard(
         parameters,
         workers=args.workers,

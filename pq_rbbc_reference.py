@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Executable v2.6 reference relation for the PQ-RBBC/SGTD research draft.
+"""Executable v2.7 reference relation for the PQ-RBBC/SGTD research draft.
 
 This module implements the *incremental* five-block issuance relation described
 in the accompanying proof document.  It emits a streaming characteristic-two
@@ -1155,11 +1155,11 @@ def build_manifest(full_negative_circuits: bool = False) -> dict[str, object]:
             ).items()
         }
     return {
-        "implementation_version": "2.6",
+        "implementation_version": "2.7",
         "status": "executable research relation; not a deployment implementation",
         "claim_boundary": {
             "implemented": "incremental relation plus the in-circuit y = r + hash_image mask equation",
-            "forked_issuance": "one 2048-leaf production-shape CAP shard is closed at the complete assignment and whole-shard verification boundary; the 4096-leaf shard, full 18-tree relation, and exact parent join remain one external assertion",
+            "forked_issuance": "both production CAP tree shapes are closed separately at the complete assignment and whole-shard verification boundary; full 18-tree composition and the exact parent join remain one external assertion",
             "r1cs_backend": "streaming IR events only; no flattened matrices or proof backend",
             "trace_key": "deterministic systematic test fixture; not a certified Goppa key",
         },
@@ -1246,6 +1246,25 @@ def build_manifest(full_negative_circuits: bool = False) -> dict[str, object]:
             "production_2048_leaf_shard_stale_witness_probes": native_profile.shard_assignment.FROZEN_PRODUCTION_STALE_WITNESS_PROBES,
             "production_2048_leaf_shard_stale_witness_rejected": True,
             "production_2048_leaf_shard_profile_is_secure": False,
+            "production_4096_leaf_shard_relation_id": native_profile.shard_stream.PROFILE_RELATION_ID_4096,
+            "production_4096_leaf_shard_rows": native_profile.shard_stream.FROZEN_PRODUCTION_4096_ROWS,
+            "production_4096_leaf_shard_wires": native_profile.shard_stream.FROZEN_PRODUCTION_4096_WIRES,
+            "production_4096_leaf_shard_stream_bytes": native_profile.shard_stream.FROZEN_PRODUCTION_4096_STREAM_BYTES,
+            "production_4096_leaf_shard_row_stream_sha256": native_profile.shard_stream.FROZEN_PRODUCTION_4096_STREAM_SHA256,
+            "production_4096_leaf_shard_spool_bytes": native_profile.shard_stream.FROZEN_PRODUCTION_4096_SPOOL_BYTES,
+            "production_4096_leaf_shard_spool_sha256": native_profile.shard_stream.FROZEN_PRODUCTION_4096_SPOOL_SHA256,
+            "production_4096_leaf_shard_external_assertions": 0,
+            "production_4096_leaf_shard_executed": True,
+            "production_4096_leaf_shard_assignment_materialized": True,
+            "production_4096_leaf_shard_assignment_format": native_profile.shard_assignment.ASSIGNMENT_FORMAT,
+            "production_4096_leaf_shard_assignment_archive_bytes": native_profile.shard_assignment.FROZEN_PRODUCTION_4096_ASSIGNMENT_ARCHIVE_BYTES,
+            "production_4096_leaf_shard_assignment_archive_sha256": native_profile.shard_assignment.FROZEN_PRODUCTION_4096_ASSIGNMENT_ARCHIVE_SHA256,
+            "production_4096_leaf_shard_whole_assignment_verified": True,
+            "production_4096_leaf_shard_verification_failures": 0,
+            "production_4096_leaf_shard_stale_witness_probes": native_profile.shard_assignment.FROZEN_PRODUCTION_4096_STALE_WITNESS_PROBES,
+            "production_4096_leaf_shard_stale_witness_rejected": True,
+            "production_4096_leaf_shard_profile_is_secure": False,
+            "both_production_tree_shard_types_closed_separately": True,
             "canonical_cap_serialization_implemented": True,
             "canonical_cap_bytes_bound_to_h_rbbc": True,
             "cap_production_accounting": native_profile.cap.production_accounting(),

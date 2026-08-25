@@ -261,6 +261,50 @@ class BlindUOVVisibilityTests(unittest.TestCase):
                 "production_2048_leaf_shard_profile_is_secure"
             ]
         )
+        self.assertTrue(
+            manifest["claim_boundary"][
+                "production_4096_leaf_shard_executed"
+            ]
+        )
+        self.assertEqual(
+            manifest["claim_boundary"]["production_4096_leaf_shard_rows"],
+            52_224_501,
+        )
+        self.assertEqual(
+            manifest["claim_boundary"]["production_4096_leaf_shard_wires"],
+            39_789_564,
+        )
+        self.assertEqual(
+            manifest["claim_boundary"][
+                "production_4096_leaf_shard_external_assertions"
+            ],
+            0,
+        )
+        self.assertTrue(
+            manifest["claim_boundary"][
+                "production_4096_leaf_shard_assignment_materialized"
+            ]
+        )
+        self.assertTrue(
+            manifest["claim_boundary"][
+                "production_4096_leaf_shard_whole_assignment_verified"
+            ]
+        )
+        self.assertTrue(
+            manifest["claim_boundary"][
+                "production_4096_leaf_shard_stale_witness_rejected"
+            ]
+        )
+        self.assertFalse(
+            manifest["claim_boundary"][
+                "production_4096_leaf_shard_profile_is_secure"
+            ]
+        )
+        self.assertTrue(
+            manifest["claim_boundary"][
+                "both_production_tree_shard_types_closed_separately"
+            ]
+        )
 
 
 if __name__ == "__main__":

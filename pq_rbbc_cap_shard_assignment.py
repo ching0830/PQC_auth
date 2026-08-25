@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Assignment-backed verifier for the PQ-RBBC production-tree shard.
+"""Assignment-backed verifier for the PQ-RBBC production-tree shards.
 
 The v2.5 shard froze the complete row topology without retaining roughly
 twenty million Python integers.  This module closes the next engineering
@@ -31,7 +31,7 @@ import pq_rbbc_cap_commit as cap
 import pq_rbbc_cap_shard_stream as shard
 
 
-IMPLEMENTATION_VERSION = "2.6"
+IMPLEMENTATION_VERSION = "2.7"
 ASSIGNMENT_FORMAT = "PQRBBC-F193-ASSIGNMENT-LE25-1"
 ASSIGNMENT_MAGIC = b"PQRBBC-F193-ASSIGNMENT-V1"
 ASSIGNMENT_HEADER = struct.Struct("<32sHHIQQ32s32s8s")
@@ -50,6 +50,18 @@ FROZEN_PRODUCTION_ASSIGNMENT_ARCHIVE_SHA256 = (
 FROZEN_PRODUCTION_VERIFIED_ROWS = shard.FROZEN_PRODUCTION_ROWS
 FROZEN_PRODUCTION_VERIFICATION_FAILURES = 0
 FROZEN_PRODUCTION_STALE_WITNESS_PROBES = 5
+
+FROZEN_PRODUCTION_4096_ASSIGNMENT_BODY_BYTES = 994_739_100
+FROZEN_PRODUCTION_4096_ASSIGNMENT_BODY_SHA256 = (
+    "e61fc4fec72b302a0eaf83680044242c5cc87aedc79db23fec6d681e55f04947"
+)
+FROZEN_PRODUCTION_4096_ASSIGNMENT_ARCHIVE_BYTES = 994_739_228
+FROZEN_PRODUCTION_4096_ASSIGNMENT_ARCHIVE_SHA256 = (
+    "e4dea88f7f47849cd858d3ba2d5110bd1893efb1ac4544a8b2cb8a0e7fa87aa1"
+)
+FROZEN_PRODUCTION_4096_VERIFIED_ROWS = shard.FROZEN_PRODUCTION_4096_ROWS
+FROZEN_PRODUCTION_4096_VERIFICATION_FAILURES = 0
+FROZEN_PRODUCTION_4096_STALE_WITNESS_PROBES = 5
 
 
 @dataclass(frozen=True)
@@ -504,13 +516,31 @@ def build_manifest(result: AssignmentBackedShardResult) -> dict[str, object]:
         }
     )
     base["claim_boundary"]["production_tree_shard_assignment_closed"] = (
-        parameters.leaf_count == 1 << 11
+        (
+            (
+                parameters.expanded_leaf_counts() == (1 << 11,)
+                and parameters.expanded_extension_degrees() == (12,)
+            )
+            or (
+                parameters.expanded_leaf_counts() == (1 << 12,)
+                and parameters.expanded_extension_degrees() == (13,)
+            )
+        )
         and generated.assignment_materialized
         and verified.verification_failures == 0
         and all(probe.rejected for probe in result.tamper_probes)
     )
+    base["claim_boundary"]["production_2048_degree_12_assignment_closed"] = (
+        parameters.expanded_leaf_counts() == (1 << 11,)
+        and parameters.expanded_extension_degrees() == (12,)
+        and base["claim_boundary"]["production_tree_shard_assignment_closed"]
+    )
+    base["claim_boundary"]["production_4096_degree_13_assignment_closed"] = (
+        parameters.expanded_leaf_counts() == (1 << 12,)
+        and parameters.expanded_extension_degrees() == (13,)
+        and base["claim_boundary"]["production_tree_shard_assignment_closed"]
+    )
     base["claim_boundary"]["remaining"] = [
-        "add the 4096-leaf degree-13 shard",
         "compose all 18 production trees",
         "replace the parent archive external assertion",
         "complete fork-specific extraction and security proofs",
@@ -524,18 +554,20 @@ def main() -> None:
     parser.add_argument("--archive", type=Path, required=True)
     parser.add_argument("--manifest", type=Path)
     parser.add_argument(
-        "--fixture", choices=("probe", "production"), default="probe"
+        "--fixture",
+        choices=("probe", "production", "production4096"),
+        default="probe",
     )
     parser.add_argument(
         "--workers", type=int, default=max(1, min(8, os.cpu_count() or 1))
     )
     parser.add_argument("--replace", action="store_true")
     args = parser.parse_args()
-    parameters = (
-        shard.PROBE_PARAMETERS
-        if args.fixture == "probe"
-        else shard.PRODUCTION_TREE_SHARD_PARAMETERS
-    )
+    parameters = {
+        "probe": shard.PROBE_PARAMETERS,
+        "production": shard.PRODUCTION_TREE_SHARD_PARAMETERS,
+        "production4096": shard.PRODUCTION_TREE_SHARD_4096_PARAMETERS,
+    }[args.fixture]
     result = build_assignment_backed_shard(
         args.archive,
         parameters,

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fail-closed native import contract for the PQ-RBBC v2.6 fork.
+"""Fail-closed native import contract for the PQ-RBBC v2.7 fork.
 
 The selected profile is deliberately independent of the unreproduced
 Blind-UOV 240-row instance.  It accepts no claim of bit-exact compatibility.
@@ -25,7 +25,7 @@ import pq_rbbc_cap_shard_stream as shard_stream
 import pq_rbbc_horner_native as horner_native
 
 
-IMPLEMENTATION_VERSION = "2.6"
+IMPLEMENTATION_VERSION = "2.7"
 RELATION_ID = "pq-rbbc-buov-iii-336/cap-hash/v1"
 TARGET_FIELD = "GF(2^193)"
 REQUIRED_TAMPER_CASES = frozenset(
@@ -163,7 +163,7 @@ def build_native_profile_manifest() -> dict[str, object]:
     parameters = permutation.derive_parameters()
     return {
         "implementation_version": IMPLEMENTATION_VERSION,
-        "status": "one 2048-leaf production-shape CAP shard is closed at the complete assignment and whole-shard verification boundary; the 4096-leaf shard, full 18-tree relation, and parent wire join remain external",
+        "status": "both production CAP tree shapes are closed separately at the complete assignment and whole-shard verification boundary; full 18-tree composition and the parent wire join remain external",
         "fork_profile": {
             "name": sponge.PROFILE_NAME,
             "relation_id": RELATION_ID,
@@ -258,6 +258,36 @@ def build_native_profile_manifest() -> dict[str, object]:
                 "wire_spool_sha256": shard_stream.FROZEN_PRODUCTION_SPOOL_SHA256,
                 "commitment_sha256": shard_stream.FROZEN_PRODUCTION_COMMITMENT_SHA256,
             },
+            "production_4096_leaf_shard_component": {
+                "relation_id": shard_stream.PROFILE_RELATION_ID_4096,
+                "explicitly_non_secure": True,
+                "leaves": 4_096,
+                "extension_degree": 13,
+                "witness_bits": 2_048,
+                "coefficients": 11,
+                "consistency_points": 2,
+                "tape_bits": 2_450,
+                "rows": shard_stream.FROZEN_PRODUCTION_4096_ROWS,
+                "wires": shard_stream.FROZEN_PRODUCTION_4096_WIRES,
+                "nonlinear_rows": shard_stream.FROZEN_PRODUCTION_4096_NONLINEAR_ROWS,
+                "linear_rows": shard_stream.FROZEN_PRODUCTION_4096_LINEAR_ROWS,
+                "external_assertions": 0,
+                "assignment_materialized": True,
+                "assignment_format": shard_assignment.ASSIGNMENT_FORMAT,
+                "assignment_body_bytes": shard_assignment.FROZEN_PRODUCTION_4096_ASSIGNMENT_BODY_BYTES,
+                "assignment_body_sha256": shard_assignment.FROZEN_PRODUCTION_4096_ASSIGNMENT_BODY_SHA256,
+                "assignment_archive_bytes": shard_assignment.FROZEN_PRODUCTION_4096_ASSIGNMENT_ARCHIVE_BYTES,
+                "assignment_archive_sha256": shard_assignment.FROZEN_PRODUCTION_4096_ASSIGNMENT_ARCHIVE_SHA256,
+                "whole_shard_rows_verified": shard_assignment.FROZEN_PRODUCTION_4096_VERIFIED_ROWS,
+                "whole_shard_verification_failures": shard_assignment.FROZEN_PRODUCTION_4096_VERIFICATION_FAILURES,
+                "stale_witness_probes": shard_assignment.FROZEN_PRODUCTION_4096_STALE_WITNESS_PROBES,
+                "stale_witness_probes_rejected": True,
+                "stream_bytes": shard_stream.FROZEN_PRODUCTION_4096_STREAM_BYTES,
+                "row_stream_sha256": shard_stream.FROZEN_PRODUCTION_4096_STREAM_SHA256,
+                "wire_spool_bytes": shard_stream.FROZEN_PRODUCTION_4096_SPOOL_BYTES,
+                "wire_spool_sha256": shard_stream.FROZEN_PRODUCTION_4096_SPOOL_SHA256,
+                "commitment_sha256": shard_stream.FROZEN_PRODUCTION_4096_COMMITMENT_SHA256,
+            },
         },
         "compatibility": {
             "blind_uov_framework_used_as_design_source": True,
@@ -300,6 +330,14 @@ def build_native_profile_manifest() -> dict[str, object]:
             "production_2048_leaf_tree_shard_assignment_materialized": True,
             "production_2048_leaf_tree_shard_whole_assignment_verified": True,
             "production_2048_leaf_tree_shard_stale_witness_rejected": True,
+            "production_4096_leaf_tree_shard_executed": True,
+            "production_4096_leaf_tree_shard_stream_digest_frozen": True,
+            "production_4096_leaf_tree_shard_wire_topology_closed": True,
+            "production_4096_leaf_tree_shard_external_assertions": 0,
+            "production_4096_leaf_tree_shard_assignment_materialized": True,
+            "production_4096_leaf_tree_shard_whole_assignment_verified": True,
+            "production_4096_leaf_tree_shard_stale_witness_rejected": True,
+            "both_production_tree_shard_types_closed_separately": True,
             "production_cap_full_vector_executed": False,
             "production_cap_native_rows_materialized": False,
             "production_cap_inter_call_wire_identity": False,
@@ -325,6 +363,10 @@ def build_native_profile_manifest() -> dict[str, object]:
             "production_2048_leaf_tree_shard_closed": True,
             "production_2048_leaf_tree_shard_security_profile": False,
             "production_shard_full_assignment_closed": True,
+            "production_4096_leaf_tree_shard_closed": True,
+            "production_4096_leaf_tree_shard_security_profile": False,
+            "both_production_tree_shard_types_closed_separately": True,
+            "full_18_tree_composition_closed": False,
             "fork_security_proof_revalidated": False,
             "signature_size_rebenchmarked": False,
             "production_closed": False,
