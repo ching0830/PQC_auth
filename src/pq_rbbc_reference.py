@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Executable v2.19 reference relation for the PQ-RBBC/SGTD research draft.
+"""Executable v2.20 reference relation for the PQ-RBBC/SGTD research draft.
 
 This module implements the *incremental* five-block issuance relation described
 in the accompanying proof document.  It emits a streaming characteristic-two
@@ -1156,11 +1156,11 @@ def build_manifest(full_negative_circuits: bool = False) -> dict[str, object]:
             ).items()
         }
     return {
-        "implementation_version": "2.19",
+        "implementation_version": "2.20",
         "status": "executable research relation; not a deployment implementation",
         "claim_boundary": {
             "implemented": "incremental relation plus the in-circuit y = r + hash_image mask equation",
-            "forked_issuance": "the production reference, namespace, tree-2 planned-offset gate, and checkpointable recovery path are frozen; the v2.8 execution cache has been regenerated and revalidated, while the v2.9 archive, rebased archive, remaining producers, complete replay, and parent join remain open",
+            "forked_issuance": "the production reference, namespace, tree-2 planned-offset gate, and checkpointable recovery path are frozen; the v2.8 execution cache and v2.9 global-tail archive have been regenerated and revalidated, while the rebased archive, remaining producers, complete replay, and parent join remain open",
             "r1cs_backend": "streaming IR events only; no flattened matrices or proof backend",
             "trace_key": "deterministic systematic test fixture; not a certified Goppa key",
         },
@@ -1283,6 +1283,9 @@ def build_manifest(full_negative_circuits: bool = False) -> dict[str, object]:
             "production_global_tail_row_stream_sha256": native_profile.global_tail.FROZEN_PRODUCTION_STREAM_SHA256,
             "production_global_tail_assignment_sha256": native_profile.global_tail.FROZEN_PRODUCTION_ASSIGNMENT_SHA256,
             "production_global_tail_replay_failures": 0,
+            "production_global_tail_recovery_evidence_relation_id": native_profile.global_tail_recovery_evidence.RELATION_ID,
+            "production_global_tail_recovery_evidence_sha256": native_profile.global_tail_recovery_evidence.FROZEN_EVIDENCE_SHA256,
+            "production_global_tail_recovered_manifest_sha256": native_profile.global_tail_recovery_evidence.FROZEN_RECOVERED_MANIFEST_SHA256,
             "production_global_tail_stale_witness_probes": 6,
             "reduced_split_tail_contract_id": native_profile.split_tail.CONTRACT_ID,
             "reduced_split_tail_rows": native_profile.split_tail.FROZEN_REDUCED_ROWS,
@@ -1373,7 +1376,7 @@ def build_manifest(full_negative_circuits: bool = False) -> dict[str, object]:
             "reduced_checkpoint_resume_bit_exact": True,
             "production_execution_cache_regenerated": True,
             "production_composition_document_revalidated": True,
-            "production_global_tail_archive_regenerated": False,
+            "production_global_tail_archive_regenerated": True,
             "representative_producers_rebased_replayed": False,
             "all_72_output_relocations_closed": False,
             "reduced_tree_producer_relation_id": native_profile.tree_producer.RELATION_ID,

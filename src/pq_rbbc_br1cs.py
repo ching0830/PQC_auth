@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Binary F2-R1CS lowering for the executable PQ-RBBC v2.19 relation.
+"""Binary F2-R1CS lowering for the executable PQ-RBBC v2.20 relation.
 
 The format is intentionally small and auditable.  It serializes enough data to
 reconstruct ordinary rank-1 constraints over F2:
@@ -651,8 +651,8 @@ def build_backend_manifest(output_path: str | os.PathLike[str]) -> dict[str, obj
         honest.metadata.linear_definitions + honest.metadata.linear_assertions
     )
     return {
-        "implementation_version": "2.19",
-        "status": "the checkpointable recovery path has regenerated and revalidated the frozen v2.8 execution cache; the v2.9 global-tail archive, tree-2 rebased archive, remaining producers, complete replay, cross-segment identity, and parent join remain external",
+        "implementation_version": "2.20",
+        "status": "the checkpointable recovery path has regenerated and revalidated the frozen v2.8 execution cache and v2.9 global-tail archive; the tree-2 rebased archive, remaining producers, complete replay, cross-segment identity, and parent join remain external",
         "format": {
             "name": honest.metadata.format,
             "version": honest.metadata.format_version,
@@ -791,6 +791,9 @@ def build_backend_manifest(output_path: str | os.PathLike[str]) -> dict[str, obj
             "production_global_tail_row_stream_sha256": native_profile.global_tail.FROZEN_PRODUCTION_STREAM_SHA256,
             "production_global_tail_assignment_sha256": native_profile.global_tail.FROZEN_PRODUCTION_ASSIGNMENT_SHA256,
             "production_global_tail_replay_failures": 0,
+            "production_global_tail_recovery_evidence_relation_id": native_profile.global_tail_recovery_evidence.RELATION_ID,
+            "production_global_tail_recovery_evidence_sha256": native_profile.global_tail_recovery_evidence.FROZEN_EVIDENCE_SHA256,
+            "production_global_tail_recovered_manifest_sha256": native_profile.global_tail_recovery_evidence.FROZEN_RECOVERED_MANIFEST_SHA256,
             "production_global_tail_stale_witness_probes": 6,
             "reduced_split_tail_contract_id": native_profile.split_tail.CONTRACT_ID,
             "reduced_split_tail_rows": native_profile.split_tail.FROZEN_REDUCED_ROWS,
@@ -879,7 +882,7 @@ def build_backend_manifest(output_path: str | os.PathLike[str]) -> dict[str, obj
             "reduced_checkpoint_resume_bit_exact": True,
             "production_execution_cache_regenerated": True,
             "production_composition_document_revalidated": True,
-            "production_global_tail_archive_regenerated": False,
+            "production_global_tail_archive_regenerated": True,
             "representative_producers_rebased_replayed": False,
             "all_72_output_relocations_closed": False,
             "production_h1_and_two_consistency_point_ports_native_closed": True,

@@ -17,15 +17,15 @@ PQ-RBBC / Blind-UOV → signature-gated decryption research track.
 
 ## Current checkpoint
 
-Version 2.19 completes the checkpointed recovery of the missing v2.8
-production composer cache.  The resumed 18-tree run finishes all 40,960 leaves
-and reproduces the frozen commitment, ordered XOF trace, and canonical linked
-document exactly.  Git contains only portable sealed evidence; the trusted
-35.5 MB execution cache and 19.5 MB checkpoint remain external.  The v2.9
-global-tail archive has not yet been regenerated, and the v2.17 tree-index-2
-rebased archive, remaining sixteen position-sensitive producers, complete
-assignment, parent join, and formal security reductions remain open.  See the
-v2.19 release note and roadmap before interpreting the claim boundary.
+Version 2.20 completes R0-b by regenerating and independently replaying the
+frozen v2.9 production global-tail archive from the v2.19 recovered execution
+cache.  All 56,806,711 rows pass, the 1,004,865,028-byte archive matches its
+frozen digest, and all six stale-witness probes reject.  Git contains only
+portable sealed evidence; the checkpoint, pickle cache, and global-tail
+archive remain external.  The v2.17 tree-index-2 rebased archive, remaining
+sixteen position-sensitive producers, complete assignment, parent join, and
+formal security reductions remain open.  Start with
+`docs/roadmaps/PQ_RBBC_CURRENT_HANDOFF.md` in a new work session.
 
 ## Running tests
 
