@@ -17,14 +17,15 @@ PQ-RBBC / Blind-UOV → signature-gated decryption research track.
 
 ## Current checkpoint
 
-Version 2.16 freezes a fail-closed, non-overlapping wire namespace for all 18
-production tree positions after the v2.15 representative output relocations.
-The plan preserves the exact global consistency-point ranges and fixes all 72
-future producer/tail output maps.  The tree-2 representative has not yet been
-fully replayed at its planned rebased offset; the remaining sixteen
-position-sensitive producers, complete 18-tree assignment, parent join, and
-formal security reductions also remain open.  See the v2.16 release note and
-roadmap before interpreting the claim boundary.
+Version 2.17 closes the executable preflight gate for replaying production tree
+index 2 at its v2.16 planned offset.  The contract is bound to the frozen
+namespace and v2.14 standalone evidence, eight configuration mutations reject,
+and the real reduced producer generator replays identically at two local wire
+starts.  The production rebased archive is still unmaterialized because the
+required external v2.9 global-tail assignment is not stored in Git.  The other
+sixteen position-sensitive producers, complete 18-tree assignment, parent
+join, and formal security reductions also remain open.  See the v2.17 release
+note and roadmap before interpreting the claim boundary.
 
 ## Running tests
 

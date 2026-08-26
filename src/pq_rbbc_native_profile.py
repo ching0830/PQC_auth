@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fail-closed native import contract for the PQ-RBBC v2.16 fork.
+"""Fail-closed native import contract for the PQ-RBBC v2.17 fork.
 
 The selected profile is deliberately independent of the unreproduced
 Blind-UOV 240-row instance.  It accepts no claim of bit-exact compatibility.
@@ -23,6 +23,7 @@ import pq_rbbc_cap_composer as composer
 import pq_rbbc_cap_global_tail as global_tail
 import pq_rbbc_cap_output_relocation as output_relocation
 import pq_rbbc_cap_production_namespace as production_namespace
+import pq_rbbc_cap_production_tree2_rebased as production_tree2_rebased
 import pq_rbbc_cap_production_split_tail as production_split_tail
 import pq_rbbc_cap_production_tree0_producer as production_tree0
 import pq_rbbc_cap_production_tree2_producer as production_tree2
@@ -34,7 +35,7 @@ import pq_rbbc_cap_shard_stream as shard_stream
 import pq_rbbc_horner_native as horner_native
 
 
-IMPLEMENTATION_VERSION = "2.16"
+IMPLEMENTATION_VERSION = "2.17"
 RELATION_ID = "pq-rbbc-buov-iii-336/cap-hash/v1"
 TARGET_FIELD = "GF(2^193)"
 REQUIRED_TAMPER_CASES = frozenset(
@@ -172,7 +173,7 @@ def build_native_profile_manifest() -> dict[str, object]:
     parameters = permutation.derive_parameters()
     return {
         "implementation_version": IMPLEMENTATION_VERSION,
-        "status": "the fail-closed 18-tree production wire namespace is frozen after the v2.15 representative output relocations; representative rebased replay, the remaining sixteen producer instances, complete 18-tree replay, global cross-segment identity, parent join, and security reductions remain external",
+        "status": "the tree-2 planned-offset execution gate and real reduced rebase fixture are closed over the v2.16 namespace; the production rebased archive, remaining sixteen producer instances, complete 18-tree replay, global cross-segment identity, parent join, and security reductions remain external",
         "fork_profile": {
             "name": sponge.PROFILE_NAME,
             "relation_id": RELATION_ID,
@@ -451,6 +452,23 @@ def build_native_profile_manifest() -> dict[str, object]:
                 "configuration_mutation_probes": 8,
                 "representative_production_rows_replayed_at_planned_offsets": 0,
             },
+            "production_tree2_planned_offset_component": {
+                "relation_id": production_tree2_rebased.RELATION_ID,
+                "contract_sha256": production_tree2_rebased.FROZEN_CONTRACT_SHA256,
+                "namespace_plan_sha256": production_namespace.FROZEN_PLAN_SHA256,
+                "tree_index": production_tree2_rebased.PLANNED_TREE_INDEX,
+                "planned_local_wire_start": production_tree2_rebased.PLANNED_LOCAL_WIRE_START,
+                "planned_max_wire_id": production_tree2_rebased.PLANNED_MAX_WIRE_ID,
+                "planned_rebase_delta": production_tree2_rebased.PLANNED_REBASE_DELTA,
+                "planned_output_wire_starts": production_tree2_rebased.PLANNED_OUTPUT_WIRE_STARTS,
+                "reduced_fixture_assignment_sha256": production_tree2_rebased.FROZEN_REDUCED_FIXTURE_ASSIGNMENT_SHA256,
+                "reduced_fixture_rows": 33_954,
+                "reduced_fixture_wires": 23_135,
+                "configuration_mutation_probes": 8,
+                "stale_witness_probes": 6,
+                "production_rows_replayed_at_planned_offset": 0,
+                "production_assignment_materialized": False,
+            },
             "reduced_tree_producer_component": {
                 "relation_id": tree_producer.RELATION_ID,
                 "tree_count": 2,
@@ -514,6 +532,10 @@ def build_native_profile_manifest() -> dict[str, object]:
             "production_namespace_intervals_nonoverlapping": True,
             "production_global_point_imports_preserved": True,
             "representative_rebase_rule_fixture_verified": True,
+            "production_tree2_planned_offset_execution_gate_closed": True,
+            "planned_offset_reduced_fixture_replayed": True,
+            "production_tree2_rebased_assignment_materialized": False,
+            "production_tree2_rebased_full_replay_closed": False,
             "representative_producers_rebased_replayed": False,
             "all_72_output_relocations_closed": False,
             "reduced_tree_producer_segments_native_closed": True,

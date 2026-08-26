@@ -2,7 +2,7 @@
 """Checkpointable production tree-index-2 producer for PQ-RBBC v2.14.
 
 This module materializes the first actual mixed-profile producer: tree index 2,
-4,096 leaves, and extension degree 13.  It imports the two already-constrained
+2,048 leaves, and extension degree 12.  It imports the two already-constrained
 production consistency-point ranges by their exact global-tail wire IDs.  No
 local point copy, H1, H2, commitment serializer, or request tail is emitted.
 
@@ -65,6 +65,7 @@ FROZEN_POINT_VALUE_SHA256 = (
 FROZEN_OUTPUT_WIRE_STARTS = (58_805_397, 59_595_925, 59_597_973, 59_668_401)
 EXECUTION_CACHE_FORMAT = "PQRBBC-PRODUCTION-TREE-CACHE-2"
 CHECKPOINT_BATCH_LEAVES = 128
+MAX_WIRE_ID = (1 << 64) - 1
 
 
 @dataclass(frozen=True)
@@ -485,8 +486,14 @@ def validate_point_imports(
         and point_starts[1] != point_starts[0] + field.FIELD_DEGREE
     ):
         failures.append("noncontiguous_point_ranges")
-    if any(start >= local_wire_start for start in point_starts):
+    if local_wire_start <= 0:
+        failures.append("invalid_local_wire_start")
+    if any(
+        start + field.FIELD_DEGREE > local_wire_start for start in point_starts
+    ):
         failures.append("point_import_overlaps_local_wires")
+    if local_wire_start + FROZEN_LOCAL_WIRES - 1 > MAX_WIRE_ID:
+        failures.append("wire_integer_overflow")
     return tuple(failures)
 
 
@@ -573,21 +580,38 @@ def build_production_tree2(
     global_archive_path: Path,
     global_manifest_path: Path,
     *,
+    local_wire_start: int = LOCAL_WIRE_START,
+    artifact_tag: str = "v2_14",
+    execution_cache_path: Path | None = None,
     workers: int = 1,
     replace: bool = False,
     progress: Callable[[str], None] | None = None,
 ) -> ProductionTree2Result:
+    if not artifact_tag or any(
+        character not in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-"
+        for character in artifact_tag
+    ):
+        raise ValueError("artifact tag must be a non-empty filesystem-safe token")
+    point_failures = validate_point_imports(GLOBAL_POINT_STARTS, local_wire_start)
+    if point_failures:
+        raise ValueError(
+            "tree-2 point import contract rejected planned offset: "
+            + ",".join(point_failures)
+        )
     output_directory.mkdir(parents=True, exist_ok=True)
-    archive_path = output_directory / "pq_rbbc_production_tree_2_producer_v2_14.f193assign"
-    execution_cache_path = output_directory / "tree_2_execution_checkpoint_v2_14.pkl"
-    stage_path = output_directory / "tree_2_resume_state_v2_14.json"
+    archive_path = (
+        output_directory
+        / f"pq_rbbc_production_tree_2_producer_{artifact_tag}.f193assign"
+    )
+    if execution_cache_path is None:
+        execution_cache_path = (
+            output_directory / f"tree_2_execution_checkpoint_{artifact_tag}.pkl"
+        )
+    stage_path = output_directory / f"tree_2_resume_state_{artifact_tag}.json"
     source_manifest = json.loads(global_manifest_path.read_text(encoding="utf-8"))
     expected_global = _archive_metadata(source_manifest)
     if expected_global.archive_sha256 != tail.FROZEN_PRODUCTION_ASSIGNMENT_SHA256:
         raise ValueError("global-tail assignment identity is not frozen v2.9")
-    if validate_point_imports(GLOBAL_POINT_STARTS):
-        raise AssertionError("frozen point import contract is invalid")
-
     with assignment.AssignmentArchiveReader(
         global_archive_path, expected=expected_global, verify_body=True
     ) as global_values:
@@ -620,7 +644,7 @@ def build_production_tree2(
                     TREE_INDEX,
                     producer_material=material,
                     external_point_starts=GLOBAL_POINT_STARTS,
-                    local_wire_start=LOCAL_WIRE_START,
+                    local_wire_start=local_wire_start,
                     workers=workers,
                     assignment_writer=writer,
                     progress=progress,
@@ -636,6 +660,8 @@ def build_production_tree2(
                         "archive_path": str(archive_path),
                         "prefix_bytes": archive_path.stat().st_size,
                         "execution_cache": str(execution_cache_path),
+                        "local_wire_start": local_wire_start,
+                        "artifact_tag": artifact_tag,
                     },
                 )
                 raise
@@ -648,6 +674,8 @@ def build_production_tree2(
                     "archive_sha256": archive.archive_sha256,
                     "archive_wires": archive.wires,
                     "execution_cache": str(execution_cache_path),
+                    "local_wire_start": local_wire_start,
+                    "artifact_tag": artifact_tag,
                 },
             )
         if archive is None:
@@ -659,7 +687,7 @@ def build_production_tree2(
             archive_path, expected=archive, verify_body=True
         ) as local_reader:
             local_values = OffsetAssignment(
-                local_reader, LOCAL_WIRE_START, archive.wires
+                local_reader, local_wire_start, archive.wires
             )
             composed = CompositeAssignment(global_values, local_values)
             verified = producer.build_tree_producer(
@@ -669,7 +697,7 @@ def build_production_tree2(
                 TREE_INDEX,
                 producer_material=material,
                 external_point_starts=GLOBAL_POINT_STARTS,
-                local_wire_start=LOCAL_WIRE_START,
+                local_wire_start=local_wire_start,
                 verification_assignment=composed,
                 capture_rows=labels + point_labels,
                 captured_rows_output=captured,
@@ -702,6 +730,8 @@ def build_production_tree2(
             "archive_sha256": archive.archive_sha256,
             "row_stream_sha256": archive.row_stream_sha256,
             "verification_failures": verified.verification_failures,
+            "local_wire_start": local_wire_start,
+            "artifact_tag": artifact_tag,
         },
     )
     return ProductionTree2Result(
@@ -876,6 +906,9 @@ def main() -> None:
     parser.add_argument("--global-archive", type=Path, required=True)
     parser.add_argument("--global-manifest", type=Path, required=True)
     parser.add_argument("--manifest", type=Path, required=True)
+    parser.add_argument("--local-wire-start", type=int, default=LOCAL_WIRE_START)
+    parser.add_argument("--artifact-tag", default="v2_14")
+    parser.add_argument("--execution-cache", type=Path)
     parser.add_argument("--workers", type=int, default=max(1, min(8, os.cpu_count() or 1)))
     parser.add_argument("--replace", action="store_true")
     args = parser.parse_args()
@@ -883,6 +916,9 @@ def main() -> None:
         args.output_directory,
         args.global_archive,
         args.global_manifest,
+        local_wire_start=args.local_wire_start,
+        artifact_tag=args.artifact_tag,
+        execution_cache_path=args.execution_cache,
         workers=args.workers,
         replace=args.replace,
         progress=lambda message: print(message, flush=True),
@@ -894,7 +930,7 @@ def main() -> None:
             {
                 "archive": str(
                     args.output_directory
-                    / "pq_rbbc_production_tree_2_producer_v2_14.f193assign"
+                    / f"pq_rbbc_production_tree_2_producer_{args.artifact_tag}.f193assign"
                 ),
                 "manifest": str(args.manifest),
                 "rows": result.summary.rows,
