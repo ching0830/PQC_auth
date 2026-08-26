@@ -312,9 +312,16 @@ class ForkNativeProfileTests(unittest.TestCase):
         recovery = manifest["implemented_primitives"][
             "production_composer_recovery_component"
         ]
-        self.assertEqual(recovery["production_derivation_levels_checkpointed"], 0)
-        self.assertEqual(recovery["production_leaf_outputs_checkpointed"], 0)
-        self.assertFalse(recovery["production_execution_cache_regenerated"])
+        self.assertEqual(recovery["production_derivation_levels_checkpointed"], 182)
+        self.assertEqual(recovery["production_derivations_checkpointed"], 40_924)
+        self.assertEqual(recovery["production_seed_nodes_checkpointed"], 40_960)
+        self.assertEqual(recovery["production_leaf_outputs_checkpointed"], 40_960)
+        self.assertEqual(
+            recovery["evidence_sha256"],
+            native.recovery_evidence.FROZEN_EVIDENCE_SHA256,
+        )
+        self.assertTrue(recovery["production_execution_cache_regenerated"])
+        self.assertTrue(recovery["production_composition_document_revalidated"])
         self.assertTrue(
             manifest["claim_boundary"][
                 "production_composer_checkpoint_recovery_gate_closed"
@@ -323,8 +330,13 @@ class ForkNativeProfileTests(unittest.TestCase):
         self.assertTrue(
             manifest["claim_boundary"]["reduced_checkpoint_resume_bit_exact"]
         )
-        self.assertFalse(
+        self.assertTrue(
             manifest["claim_boundary"]["production_execution_cache_regenerated"]
+        )
+        self.assertTrue(
+            manifest["claim_boundary"][
+                "production_composition_document_revalidated"
+            ]
         )
         self.assertFalse(
             manifest["claim_boundary"][

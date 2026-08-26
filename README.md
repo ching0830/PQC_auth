@@ -17,15 +17,15 @@ PQ-RBBC / Blind-UOV → signature-gated decryption research track.
 
 ## Current checkpoint
 
-Version 2.18 closes the recovery gate needed to reconstruct the missing v2.8
-production composer cache without risking an all-or-nothing 18-tree run.  The
-new runner atomically checkpoints every derivation level and leaf batch, binds
-the checkpoint to the frozen profile and deterministic randomness, and proves
-bit-exact interruption/resume on the real reduced composer.  No production
-recovery run has started: the v2.8 cache, v2.9 global-tail archive, v2.17
-tree-index-2 rebased archive, remaining sixteen position-sensitive producers,
-complete assignment, parent join, and formal security reductions remain open.
-See the v2.18 release note and roadmap before interpreting the claim boundary.
+Version 2.19 completes the checkpointed recovery of the missing v2.8
+production composer cache.  The resumed 18-tree run finishes all 40,960 leaves
+and reproduces the frozen commitment, ordered XOF trace, and canonical linked
+document exactly.  Git contains only portable sealed evidence; the trusted
+35.5 MB execution cache and 19.5 MB checkpoint remain external.  The v2.9
+global-tail archive has not yet been regenerated, and the v2.17 tree-index-2
+rebased archive, remaining sixteen position-sensitive producers, complete
+assignment, parent join, and formal security reductions remain open.  See the
+v2.19 release note and roadmap before interpreting the claim boundary.
 
 ## Running tests
 
