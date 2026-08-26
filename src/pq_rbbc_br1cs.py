@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Binary F2-R1CS lowering for the executable PQ-RBBC v2.15 relation.
+"""Binary F2-R1CS lowering for the executable PQ-RBBC v2.16 relation.
 
 The format is intentionally small and auditable.  It serializes enough data to
 reconstruct ordinary rank-1 constraints over F2:
@@ -651,8 +651,8 @@ def build_backend_manifest(output_path: str | os.PathLike[str]) -> dict[str, obj
         honest.metadata.linear_definitions + honest.metadata.linear_assertions
     )
     return {
-        "implementation_version": "2.15",
-        "status": "production tree indices 0 and 2 now have an archive-replayed eight-port output-relocation contract; the remaining sixteen producer instances, complete 18-tree replay, global cross-segment identity, and the parent join remain external",
+        "implementation_version": "2.16",
+        "status": "the 18-tree production wire namespace is frozen after the representative output-relocation contract; representative rebased replay, the remaining sixteen producer instances, complete 18-tree replay, global cross-segment identity, and the parent join remain external",
         "format": {
             "name": honest.metadata.format,
             "version": honest.metadata.format_version,
@@ -836,6 +836,21 @@ def build_backend_manifest(output_path: str | os.PathLike[str]) -> dict[str, obj
             "production_index2_all_four_output_relocations_closed": True,
             "all_four_output_relocations_closed": True,
             "representative_cross_segment_wire_relation_closed": True,
+            "production_namespace_relation_id": native_profile.production_namespace.RELATION_ID,
+            "production_namespace_plan_sha256": native_profile.production_namespace.FROZEN_PLAN_SHA256,
+            "production_namespace_tree_order": native_profile.production_namespace.TREE_ORDER,
+            "production_namespace_point_wire_starts": native_profile.production_namespace.POINT_WIRE_STARTS,
+            "production_namespace_total_producer_wires": native_profile.production_namespace.FROZEN_TOTAL_PRODUCER_WIRES,
+            "production_namespace_total_producer_rows": native_profile.production_namespace.FROZEN_TOTAL_PRODUCER_ROWS,
+            "production_namespace_total_output_relocation_rows": native_profile.production_namespace.FROZEN_TOTAL_OUTPUT_RELOCATION_ROWS,
+            "production_namespace_planned_composition_rows": native_profile.production_namespace.FROZEN_PLANNED_COMPOSITION_ROWS,
+            "production_namespace_max_wire_id": native_profile.production_namespace.FROZEN_MAX_PLANNED_WIRE_ID,
+            "production_18_tree_namespace_plan_closed": True,
+            "production_namespace_intervals_nonoverlapping": True,
+            "production_global_point_imports_preserved": True,
+            "representative_rebase_rule_fixture_verified": True,
+            "representative_producers_rebased_replayed": False,
+            "all_72_output_relocations_closed": False,
             "production_h1_and_two_consistency_point_ports_native_closed": True,
             "production_tail_phase_a_to_phase_b_wire_identity_closed": True,
             "reduced_tree_producer_relation_id": native_profile.tree_producer.RELATION_ID,

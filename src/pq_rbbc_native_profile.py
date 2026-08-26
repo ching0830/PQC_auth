@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fail-closed native import contract for the PQ-RBBC v2.15 fork.
+"""Fail-closed native import contract for the PQ-RBBC v2.16 fork.
 
 The selected profile is deliberately independent of the unreproduced
 Blind-UOV 240-row instance.  It accepts no claim of bit-exact compatibility.
@@ -22,6 +22,7 @@ import pq_rbbc_cap_commit as cap
 import pq_rbbc_cap_composer as composer
 import pq_rbbc_cap_global_tail as global_tail
 import pq_rbbc_cap_output_relocation as output_relocation
+import pq_rbbc_cap_production_namespace as production_namespace
 import pq_rbbc_cap_production_split_tail as production_split_tail
 import pq_rbbc_cap_production_tree0_producer as production_tree0
 import pq_rbbc_cap_production_tree2_producer as production_tree2
@@ -33,7 +34,7 @@ import pq_rbbc_cap_shard_stream as shard_stream
 import pq_rbbc_horner_native as horner_native
 
 
-IMPLEMENTATION_VERSION = "2.15"
+IMPLEMENTATION_VERSION = "2.16"
 RELATION_ID = "pq-rbbc-buov-iii-336/cap-hash/v1"
 TARGET_FIELD = "GF(2^193)"
 REQUIRED_TAMPER_CASES = frozenset(
@@ -171,7 +172,7 @@ def build_native_profile_manifest() -> dict[str, object]:
     parameters = permutation.derive_parameters()
     return {
         "implementation_version": IMPLEMENTATION_VERSION,
-        "status": "the two representative production producer shapes now have an archive-replayed eight-port output-relocation contract; the remaining sixteen producer instances, complete 18-tree replay, global cross-segment identity, parent join, and security reductions remain external",
+        "status": "the fail-closed 18-tree production wire namespace is frozen after the v2.15 representative output relocations; representative rebased replay, the remaining sixteen producer instances, complete 18-tree replay, global cross-segment identity, parent join, and security reductions remain external",
         "fork_profile": {
             "name": sponge.PROFILE_NAME,
             "relation_id": RELATION_ID,
@@ -436,6 +437,20 @@ def build_native_profile_manifest() -> dict[str, object]:
                 "verification_failures": 0,
                 "remaining_tree_instances_not_materialized": 16,
             },
+            "production_namespace_component": {
+                "relation_id": production_namespace.RELATION_ID,
+                "plan_sha256": production_namespace.FROZEN_PLAN_SHA256,
+                "tree_order": production_namespace.TREE_ORDER,
+                "tree_count": production_namespace.FROZEN_TREE_COUNT,
+                "point_wire_starts": production_namespace.POINT_WIRE_STARTS,
+                "total_producer_wires": production_namespace.FROZEN_TOTAL_PRODUCER_WIRES,
+                "total_producer_rows": production_namespace.FROZEN_TOTAL_PRODUCER_ROWS,
+                "total_output_relocation_rows": production_namespace.FROZEN_TOTAL_OUTPUT_RELOCATION_ROWS,
+                "planned_composition_rows": production_namespace.FROZEN_PLANNED_COMPOSITION_ROWS,
+                "max_wire_id": production_namespace.FROZEN_MAX_PLANNED_WIRE_ID,
+                "configuration_mutation_probes": 8,
+                "representative_production_rows_replayed_at_planned_offsets": 0,
+            },
             "reduced_tree_producer_component": {
                 "relation_id": tree_producer.RELATION_ID,
                 "tree_count": 2,
@@ -495,6 +510,12 @@ def build_native_profile_manifest() -> dict[str, object]:
             "production_index2_all_four_output_relocations_closed": True,
             "all_four_output_relocations_closed": True,
             "representative_cross_segment_wire_relation_closed": True,
+            "production_18_tree_namespace_plan_closed": True,
+            "production_namespace_intervals_nonoverlapping": True,
+            "production_global_point_imports_preserved": True,
+            "representative_rebase_rule_fixture_verified": True,
+            "representative_producers_rebased_replayed": False,
+            "all_72_output_relocations_closed": False,
             "reduced_tree_producer_segments_native_closed": True,
             "reduced_producer_to_tail_port_values_match": True,
             "reduced_producer_point_wire_identity_closed": False,

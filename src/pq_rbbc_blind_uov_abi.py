@@ -69,6 +69,10 @@ mutations.  Output relocations, the remaining sixteen producers, the complete
 Version 2.15 freezes and replays the eight output relocations for the two
 representative producer shapes.  Each producer/tail bit pair has one native
 linear equality row; the other sixteen producer instances remain external.
+Version 2.16 freezes a fail-closed, non-overlapping wire namespace for all 18
+tree positions while keeping the two global consistency-point ranges exact.
+The representative producers have not yet been fully replayed at those new
+planned offsets.
 Version 2.9 also materializes and replays the shared production global tail
 that consumes all 18 tree outputs: 17 correction pairs, H1, consistency
 points, alpha, xi, H2, one 5,391-byte commitment, and the request hash.  The
@@ -93,6 +97,7 @@ import pq_rbbc_cap_commit as fork_cap
 import pq_rbbc_cap_composer as cap_composer
 import pq_rbbc_cap_global_tail as cap_global_tail
 import pq_rbbc_cap_output_relocation as cap_output_relocation
+import pq_rbbc_cap_production_namespace as cap_production_namespace
 import pq_rbbc_cap_production_split_tail as cap_production_split_tail
 import pq_rbbc_cap_production_tree0_producer as cap_production_tree0
 import pq_rbbc_cap_production_tree2_producer as cap_production_tree2
@@ -360,7 +365,7 @@ def build_abi_manifest() -> dict[str, object]:
     hidden = adapter.hidden_state(message, mask, randomness)
     changed_message = bytes((message[0] ^ 1,)) + message[1:]
     return {
-        "implementation_version": "2.15",
+        "implementation_version": "2.16",
         "paper_anchor": "Blind-UOV ePrint 2025/895 is a framework and size comparator, not a bit-exact implementation claim",
         "profile": "PQ-RBBC-BUOV-III/Anemoi-193-336 experimental fork",
         "fork_profile": {
@@ -421,6 +426,15 @@ def build_abi_manifest() -> dict[str, object]:
             "production_output_relocation_row_stream_sha256": cap_output_relocation.FROZEN_STREAM_SHA256,
             "production_output_relocation_assignment_sha256": cap_output_relocation.FROZEN_ASSIGNMENT_SHA256,
             "production_output_relocation_representative_tree_indices": cap_output_relocation.TREE_ORDER,
+            "production_namespace_relation_id": cap_production_namespace.RELATION_ID,
+            "production_namespace_plan_sha256": cap_production_namespace.FROZEN_PLAN_SHA256,
+            "production_namespace_tree_order": cap_production_namespace.TREE_ORDER,
+            "production_namespace_point_wire_starts": cap_production_namespace.POINT_WIRE_STARTS,
+            "production_namespace_total_producer_wires": cap_production_namespace.FROZEN_TOTAL_PRODUCER_WIRES,
+            "production_namespace_total_producer_rows": cap_production_namespace.FROZEN_TOTAL_PRODUCER_ROWS,
+            "production_namespace_total_output_relocation_rows": cap_production_namespace.FROZEN_TOTAL_OUTPUT_RELOCATION_ROWS,
+            "production_namespace_planned_composition_rows": cap_production_namespace.FROZEN_PLANNED_COMPOSITION_ROWS,
+            "production_namespace_max_wire_id": cap_production_namespace.FROZEN_MAX_PLANNED_WIRE_ID,
             "tree_producer_relation_id": cap_tree_producer.RELATION_ID,
             "reduced_tree_producer_row_stream_sha256": cap_tree_producer.FROZEN_REDUCED_STREAM_SHA256,
             "reduced_tree_producer_assignment_sha256": cap_tree_producer.FROZEN_REDUCED_ASSIGNMENT_SHA256,
@@ -587,6 +601,12 @@ def build_abi_manifest() -> dict[str, object]:
             "production_index2_all_four_output_relocations_closed": True,
             "all_four_output_relocations_closed": True,
             "representative_cross_segment_wire_relation_closed": True,
+            "production_18_tree_namespace_plan_closed": True,
+            "production_namespace_intervals_nonoverlapping": True,
+            "production_global_point_imports_preserved": True,
+            "representative_rebase_rule_fixture_verified": True,
+            "representative_producers_rebased_replayed": False,
+            "all_72_output_relocations_closed": False,
             "reduced_tree_producer_segments_native_closed": True,
             "reduced_producer_to_tail_port_values_match": True,
             "reduced_producer_point_wire_identity_closed": False,

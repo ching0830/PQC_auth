@@ -17,11 +17,14 @@ PQ-RBBC / Blind-UOV → signature-gated decryption research track.
 
 ## Current checkpoint
 
-Version 2.15 closes the eight output relocations for the representative tree-0
-and tree-2 production producers with 2,386,102 independently replayed equality
-rows.  The remaining sixteen position-sensitive producers, complete 18-tree
-assignment, parent join, and formal security reductions remain open.  See the
-v2.15 release note and roadmap before interpreting the claim boundary.
+Version 2.16 freezes a fail-closed, non-overlapping wire namespace for all 18
+production tree positions after the v2.15 representative output relocations.
+The plan preserves the exact global consistency-point ranges and fixes all 72
+future producer/tail output maps.  The tree-2 representative has not yet been
+fully replayed at its planned rebased offset; the remaining sixteen
+position-sensitive producers, complete 18-tree assignment, parent join, and
+formal security reductions also remain open.  See the v2.16 release note and
+roadmap before interpreting the claim boundary.
 
 ## Running tests
 

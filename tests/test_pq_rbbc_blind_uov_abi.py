@@ -410,6 +410,27 @@ class BlindUOVVisibilityTests(unittest.TestCase):
             "representative_cross_segment_wire_relation_closed",
         ):
             self.assertTrue(manifest["claim_boundary"][name], name)
+        self.assertEqual(
+            tuple(interface["production_namespace_tree_order"]), tuple(range(18))
+        )
+        self.assertEqual(
+            tuple(interface["production_namespace_point_wire_starts"]),
+            (39_945_673, 39_945_866),
+        )
+        self.assertEqual(interface["production_namespace_total_producer_wires"], 389_562_636)
+        self.assertEqual(interface["production_namespace_total_producer_rows"], 513_312_336)
+        self.assertEqual(interface["production_namespace_total_output_relocation_rows"], 15_938_520)
+        self.assertEqual(interface["production_namespace_planned_composition_rows"], 586_057_567)
+        self.assertEqual(interface["production_namespace_max_wire_id"], 429_757_232)
+        self.assertTrue(
+            manifest["claim_boundary"]["production_18_tree_namespace_plan_closed"]
+        )
+        self.assertFalse(
+            manifest["claim_boundary"]["representative_producers_rebased_replayed"]
+        )
+        self.assertFalse(
+            manifest["claim_boundary"]["all_72_output_relocations_closed"]
+        )
         self.assertFalse(
             manifest["claim_boundary"]["tree_producer_segments_materialized"]
         )

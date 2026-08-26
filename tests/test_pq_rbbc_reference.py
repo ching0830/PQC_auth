@@ -188,6 +188,17 @@ class RelationTests(unittest.TestCase):
             "representative_cross_segment_wire_relation_closed",
         ):
             self.assertTrue(contract[name], name)
+        self.assertEqual(
+            tuple(contract["production_namespace_tree_order"]), tuple(range(18))
+        )
+        self.assertEqual(contract["production_namespace_total_producer_wires"], 389_562_636)
+        self.assertEqual(contract["production_namespace_total_producer_rows"], 513_312_336)
+        self.assertEqual(contract["production_namespace_total_output_relocation_rows"], 15_938_520)
+        self.assertEqual(contract["production_namespace_planned_composition_rows"], 586_057_567)
+        self.assertEqual(contract["production_namespace_max_wire_id"], 429_757_232)
+        self.assertTrue(contract["production_18_tree_namespace_plan_closed"])
+        self.assertFalse(contract["representative_producers_rebased_replayed"])
+        self.assertFalse(contract["all_72_output_relocations_closed"])
         self.assertTrue(contract["reduced_tree_producer_segments_native_closed"])
         self.assertTrue(contract["reduced_producer_to_tail_port_values_match"])
         self.assertFalse(contract["reduced_producer_point_wire_identity_closed"])

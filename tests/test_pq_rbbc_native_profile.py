@@ -275,6 +275,29 @@ class ForkNativeProfileTests(unittest.TestCase):
             "representative_cross_segment_wire_relation_closed",
         ):
             self.assertTrue(manifest["claim_boundary"][name], name)
+        namespace = manifest["implemented_primitives"][
+            "production_namespace_component"
+        ]
+        self.assertEqual(namespace["tree_order"], tuple(range(18)))
+        self.assertEqual(namespace["point_wire_starts"], (39_945_673, 39_945_866))
+        self.assertEqual(namespace["total_producer_wires"], 389_562_636)
+        self.assertEqual(namespace["total_producer_rows"], 513_312_336)
+        self.assertEqual(namespace["total_output_relocation_rows"], 15_938_520)
+        self.assertEqual(namespace["planned_composition_rows"], 586_057_567)
+        self.assertEqual(namespace["max_wire_id"], 429_757_232)
+        for name in (
+            "production_18_tree_namespace_plan_closed",
+            "production_namespace_intervals_nonoverlapping",
+            "production_global_point_imports_preserved",
+            "representative_rebase_rule_fixture_verified",
+        ):
+            self.assertTrue(manifest["claim_boundary"][name], name)
+        self.assertFalse(
+            manifest["claim_boundary"]["representative_producers_rebased_replayed"]
+        )
+        self.assertFalse(
+            manifest["claim_boundary"]["all_72_output_relocations_closed"]
+        )
         self.assertTrue(
             manifest["claim_boundary"][
                 "reduced_tree_producer_segments_native_closed"
