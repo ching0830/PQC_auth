@@ -396,6 +396,20 @@ class BlindUOVVisibilityTests(unittest.TestCase):
                 "production_index2_output_values_match_tail"
             ]
         )
+        self.assertEqual(interface["production_output_relocation_rows"], 2_386_102)
+        self.assertEqual(interface["production_output_relocation_wires"], 4_772_204)
+        self.assertEqual(
+            tuple(interface["production_output_relocation_representative_tree_indices"]),
+            (0, 2),
+        )
+        for name in (
+            "production_representative_output_relocation_contract_closed",
+            "production_index0_all_four_output_relocations_closed",
+            "production_index2_all_four_output_relocations_closed",
+            "all_four_output_relocations_closed",
+            "representative_cross_segment_wire_relation_closed",
+        ):
+            self.assertTrue(manifest["claim_boundary"][name], name)
         self.assertFalse(
             manifest["claim_boundary"]["tree_producer_segments_materialized"]
         )

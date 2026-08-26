@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Binary F2-R1CS lowering for the executable PQ-RBBC v2.14 relation.
+"""Binary F2-R1CS lowering for the executable PQ-RBBC v2.15 relation.
 
 The format is intentionally small and auditable.  It serializes enough data to
 reconstruct ordinary rank-1 constraints over F2:
@@ -651,8 +651,8 @@ def build_backend_manifest(output_path: str | os.PathLike[str]) -> dict[str, obj
         honest.metadata.linear_definitions + honest.metadata.linear_assertions
     )
     return {
-        "implementation_version": "2.14",
-        "status": "production tree indices 0 and 2 are archive-replayed checkpoints with exact point-wire imports and tail-value matches; output relocations, the remaining sixteen producers, exact cross-segment identities, and the parent join remain external",
+        "implementation_version": "2.15",
+        "status": "production tree indices 0 and 2 now have an archive-replayed eight-port output-relocation contract; the remaining sixteen producer instances, complete 18-tree replay, global cross-segment identity, and the parent join remain external",
         "format": {
             "name": honest.metadata.format,
             "version": honest.metadata.format_version,
@@ -825,6 +825,17 @@ def build_backend_manifest(output_path: str | os.PathLike[str]) -> dict[str, obj
             "production_index2_2048_degree12_producer_native_closed": True,
             "production_index2_point_wire_identity_closed": True,
             "production_index2_output_values_match_tail": True,
+            "production_output_relocation_relation_id": native_profile.output_relocation.RELATION_ID,
+            "production_output_relocation_rows": native_profile.output_relocation.FROZEN_ROWS,
+            "production_output_relocation_wires": native_profile.output_relocation.FROZEN_WIRES,
+            "production_output_relocation_row_stream_sha256": native_profile.output_relocation.FROZEN_STREAM_SHA256,
+            "production_output_relocation_assignment_sha256": native_profile.output_relocation.FROZEN_ASSIGNMENT_SHA256,
+            "production_output_relocation_representative_tree_indices": native_profile.output_relocation.TREE_ORDER,
+            "production_representative_output_relocation_contract_closed": True,
+            "production_index0_all_four_output_relocations_closed": True,
+            "production_index2_all_four_output_relocations_closed": True,
+            "all_four_output_relocations_closed": True,
+            "representative_cross_segment_wire_relation_closed": True,
             "production_h1_and_two_consistency_point_ports_native_closed": True,
             "production_tail_phase_a_to_phase_b_wire_identity_closed": True,
             "reduced_tree_producer_relation_id": native_profile.tree_producer.RELATION_ID,

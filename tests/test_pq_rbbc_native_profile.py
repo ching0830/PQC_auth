@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Tests for the fail-closed PQ-RBBC v2.14 fork import contract."""
+"""Tests for the fail-closed PQ-RBBC v2.15 fork import contract."""
 
 from __future__ import annotations
 
@@ -258,6 +258,23 @@ class ForkNativeProfileTests(unittest.TestCase):
                 "production_index2_output_values_match_tail"
             ]
         )
+        relocation = manifest["implemented_primitives"][
+            "production_output_relocation_component"
+        ]
+        self.assertEqual(relocation["representative_tree_indices"], (0, 2))
+        self.assertEqual(relocation["relocations"], 8)
+        self.assertEqual(relocation["rows"], 2_386_102)
+        self.assertEqual(relocation["wires"], 4_772_204)
+        self.assertEqual(relocation["external_assertions"], 0)
+        self.assertEqual(relocation["verification_failures"], 0)
+        for name in (
+            "production_representative_output_relocation_contract_closed",
+            "production_index0_all_four_output_relocations_closed",
+            "production_index2_all_four_output_relocations_closed",
+            "all_four_output_relocations_closed",
+            "representative_cross_segment_wire_relation_closed",
+        ):
+            self.assertTrue(manifest["claim_boundary"][name], name)
         self.assertTrue(
             manifest["claim_boundary"][
                 "reduced_tree_producer_segments_native_closed"

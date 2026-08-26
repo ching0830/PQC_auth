@@ -172,6 +172,20 @@ class BinaryR1CSBackendTests(unittest.TestCase):
         )
         self.assertTrue(contract["production_index2_point_wire_identity_closed"])
         self.assertTrue(contract["production_index2_output_values_match_tail"])
+        self.assertEqual(contract["production_output_relocation_rows"], 2_386_102)
+        self.assertEqual(contract["production_output_relocation_wires"], 4_772_204)
+        self.assertEqual(
+            tuple(contract["production_output_relocation_representative_tree_indices"]),
+            (0, 2),
+        )
+        for name in (
+            "production_representative_output_relocation_contract_closed",
+            "production_index0_all_four_output_relocations_closed",
+            "production_index2_all_four_output_relocations_closed",
+            "all_four_output_relocations_closed",
+            "representative_cross_segment_wire_relation_closed",
+        ):
+            self.assertTrue(contract[name], name)
         self.assertTrue(contract["reduced_tree_producer_segments_native_closed"])
         self.assertTrue(contract["reduced_producer_to_tail_port_values_match"])
         self.assertFalse(contract["reduced_producer_point_wire_identity_closed"])

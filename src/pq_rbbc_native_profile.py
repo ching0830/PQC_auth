@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fail-closed native import contract for the PQ-RBBC v2.14 fork.
+"""Fail-closed native import contract for the PQ-RBBC v2.15 fork.
 
 The selected profile is deliberately independent of the unreproduced
 Blind-UOV 240-row instance.  It accepts no claim of bit-exact compatibility.
@@ -21,6 +21,7 @@ import pq_rbbc_anemoi_sponge as sponge
 import pq_rbbc_cap_commit as cap
 import pq_rbbc_cap_composer as composer
 import pq_rbbc_cap_global_tail as global_tail
+import pq_rbbc_cap_output_relocation as output_relocation
 import pq_rbbc_cap_production_split_tail as production_split_tail
 import pq_rbbc_cap_production_tree0_producer as production_tree0
 import pq_rbbc_cap_production_tree2_producer as production_tree2
@@ -32,7 +33,7 @@ import pq_rbbc_cap_shard_stream as shard_stream
 import pq_rbbc_horner_native as horner_native
 
 
-IMPLEMENTATION_VERSION = "2.14"
+IMPLEMENTATION_VERSION = "2.15"
 RELATION_ID = "pq-rbbc-buov-iii-336/cap-hash/v1"
 TARGET_FIELD = "GF(2^193)"
 REQUIRED_TAMPER_CASES = frozenset(
@@ -170,7 +171,7 @@ def build_native_profile_manifest() -> dict[str, object]:
     parameters = permutation.derive_parameters()
     return {
         "implementation_version": IMPLEMENTATION_VERSION,
-        "status": "production tree indices 0 and 2 now have archive-replayed producer checkpoints with exact global point-wire imports and output-value matches; output relocation, the remaining sixteen producers, the 18-tree join, and the parent join remain external",
+        "status": "the two representative production producer shapes now have an archive-replayed eight-port output-relocation contract; the remaining sixteen producer instances, complete 18-tree replay, global cross-segment identity, parent join, and security reductions remain external",
         "fork_profile": {
             "name": sponge.PROFILE_NAME,
             "relation_id": RELATION_ID,
@@ -419,6 +420,22 @@ def build_native_profile_manifest() -> dict[str, object]:
                 "point_mutation_probes": 3,
                 "stale_witness_probes": 6,
             },
+            "production_output_relocation_component": {
+                "relation_id": output_relocation.RELATION_ID,
+                "representative_tree_indices": output_relocation.TREE_ORDER,
+                "relocations": 8,
+                "rows": output_relocation.FROZEN_ROWS,
+                "wires": output_relocation.FROZEN_WIRES,
+                "row_stream_bytes": output_relocation.FROZEN_STREAM_BYTES,
+                "row_stream_sha256": output_relocation.FROZEN_STREAM_SHA256,
+                "assignment_archive_bytes": output_relocation.FROZEN_ASSIGNMENT_BYTES,
+                "assignment_archive_sha256": output_relocation.FROZEN_ASSIGNMENT_SHA256,
+                "witness_mutation_probes": 16,
+                "configuration_mutation_probes": 6,
+                "external_assertions": 0,
+                "verification_failures": 0,
+                "remaining_tree_instances_not_materialized": 16,
+            },
             "reduced_tree_producer_component": {
                 "relation_id": tree_producer.RELATION_ID,
                 "tree_count": 2,
@@ -473,6 +490,11 @@ def build_native_profile_manifest() -> dict[str, object]:
             "production_index2_2048_degree12_producer_native_closed": True,
             "production_index2_point_wire_identity_closed": True,
             "production_index2_output_values_match_tail": True,
+            "production_representative_output_relocation_contract_closed": True,
+            "production_index0_all_four_output_relocations_closed": True,
+            "production_index2_all_four_output_relocations_closed": True,
+            "all_four_output_relocations_closed": True,
+            "representative_cross_segment_wire_relation_closed": True,
             "reduced_tree_producer_segments_native_closed": True,
             "reduced_producer_to_tail_port_values_match": True,
             "reduced_producer_point_wire_identity_closed": False,

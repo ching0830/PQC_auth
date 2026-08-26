@@ -15,6 +15,14 @@ PQ-RBBC / Blind-UOV → signature-gated decryption research track.
 - `docs/proof/` — formal-proof source and rendered release PDFs.
 - `checksums/` — original release checksum inventories.
 
+## Current checkpoint
+
+Version 2.15 closes the eight output relocations for the representative tree-0
+and tree-2 production producers with 2,386,102 independently replayed equality
+rows.  The remaining sixteen position-sensitive producers, complete 18-tree
+assignment, parent join, and formal security reductions remain open.  See the
+v2.15 release note and roadmap before interpreting the claim boundary.
+
 ## Running tests
 
 The implementation uses flat module imports inside `src/`:
@@ -25,7 +33,8 @@ PYTHONPATH=src python -m unittest discover -s tests -v
 
 Some production replay tests require large external assignment archives.  The
 required identities and reconstruction procedure are recorded in manifests,
-release notes, and `docs/ARTIFACT_POLICY.md`.
+release notes, and `docs/ARTIFACT_POLICY.md`.  Tests that require an optional
+large archive report `skipped` when that artifact has not been restored.
 
 ## Security status
 

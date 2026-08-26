@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Executable v2.14 reference relation for the PQ-RBBC/SGTD research draft.
+"""Executable v2.15 reference relation for the PQ-RBBC/SGTD research draft.
 
 This module implements the *incremental* five-block issuance relation described
 in the accompanying proof document.  It emits a streaming characteristic-two
@@ -1156,11 +1156,11 @@ def build_manifest(full_negative_circuits: bool = False) -> dict[str, object]:
             ).items()
         }
     return {
-        "implementation_version": "2.14",
+        "implementation_version": "2.15",
         "status": "executable research relation; not a deployment implementation",
         "claim_boundary": {
             "implemented": "incremental relation plus the in-circuit y = r + hash_image mask equation",
-            "forked_issuance": "the production reference and native shared global tail are frozen; production tree indices 0 and 2 are replayed producer checkpoints with exact point-wire imports, while the remaining sixteen producers, output relocations, and the parent join remain open",
+            "forked_issuance": "the production reference and native shared global tail are frozen; production tree indices 0 and 2 have replayed producer checkpoints and an eight-port output-relocation contract, while the remaining sixteen producer instances, complete 18-tree replay, and parent join remain open",
             "r1cs_backend": "streaming IR events only; no flattened matrices or proof backend",
             "trace_key": "deterministic systematic test fixture; not a certified Goppa key",
         },
@@ -1319,6 +1319,17 @@ def build_manifest(full_negative_circuits: bool = False) -> dict[str, object]:
             "production_index2_2048_degree12_producer_native_closed": True,
             "production_index2_point_wire_identity_closed": True,
             "production_index2_output_values_match_tail": True,
+            "production_output_relocation_relation_id": native_profile.output_relocation.RELATION_ID,
+            "production_output_relocation_rows": native_profile.output_relocation.FROZEN_ROWS,
+            "production_output_relocation_wires": native_profile.output_relocation.FROZEN_WIRES,
+            "production_output_relocation_row_stream_sha256": native_profile.output_relocation.FROZEN_STREAM_SHA256,
+            "production_output_relocation_assignment_sha256": native_profile.output_relocation.FROZEN_ASSIGNMENT_SHA256,
+            "production_output_relocation_representative_tree_indices": native_profile.output_relocation.TREE_ORDER,
+            "production_representative_output_relocation_contract_closed": True,
+            "production_index0_all_four_output_relocations_closed": True,
+            "production_index2_all_four_output_relocations_closed": True,
+            "all_four_output_relocations_closed": True,
+            "representative_cross_segment_wire_relation_closed": True,
             "reduced_tree_producer_relation_id": native_profile.tree_producer.RELATION_ID,
             "reduced_tree_producer_rows_per_tree": native_profile.tree_producer.FROZEN_REDUCED_ROWS_PER_TREE,
             "reduced_tree_producer_wires_per_tree": native_profile.tree_producer.FROZEN_REDUCED_WIRES_PER_TREE,

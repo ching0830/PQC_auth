@@ -1,0 +1,379 @@
+{
+  "assignment_archive": {
+    "archive_bytes": 119305228,
+    "archive_sha256": "2f30c4d3d39e86e017dc9f8f78d20dfaf0a1fa40b99da56593d55297a7aa0b5c",
+    "body_bytes": 119305100,
+    "body_sha256": "f0c8e744676c985740fc988e3a9dff7d0dfaad0672a8d47f833183a83e80c63b",
+    "field_degree": 193,
+    "format": "PQRBBC-F193-ASSIGNMENT-LE25-1",
+    "header_bytes": 128,
+    "row_stream_sha256": "e81c1ce1aa07aae32ea166adea7c35a3b19f949c471fc17bdd5434dffe1dbeb0",
+    "value_bytes": 25,
+    "wires": 4772204
+  },
+  "claim_boundary": {
+    "all_four_output_relocations_closed": true,
+    "cap_straightline_extraction_reviewed": false,
+    "cap_unique_witness_reviewed": false,
+    "complete_18_tree_assignment_replayed": false,
+    "cross_segment_wire_identity_closed": false,
+    "fork_blindness_proved": false,
+    "fork_security_proof_revalidated": false,
+    "one_more_unforgeability_proved": false,
+    "parent_cap_to_h_rbbc_join_closed": false,
+    "production_closed": false,
+    "production_index0_all_four_output_relocations_closed": true,
+    "production_index2_all_four_output_relocations_closed": true,
+    "production_representative_output_relocation_contract_closed": true,
+    "representative_cross_segment_wire_relation_closed": true,
+    "se_nizk_qrom_reduction_complete": false,
+    "signature_size_rebenchmarked": false,
+    "tree_producer_segments_materialized": false
+  },
+  "configuration_mutation_probes": [
+    {
+      "failures": [
+        "not_canonical:tree[0].leaf-commitments",
+        "overlapping_source_ranges"
+      ],
+      "mutation": "wrong-source-range",
+      "rejected": true
+    },
+    {
+      "failures": [
+        "not_canonical:tree[0].leaf-commitments",
+        "overlapping_destination_ranges"
+      ],
+      "mutation": "wrong-destination-range",
+      "rejected": true
+    },
+    {
+      "failures": [
+        "not_canonical:tree[0].leaf-commitments"
+      ],
+      "mutation": "wrong-bit-length",
+      "rejected": true
+    },
+    {
+      "failures": [
+        "not_canonical:tree[0].leaf-commitments"
+      ],
+      "mutation": "wrong-value-digest",
+      "rejected": true
+    },
+    {
+      "failures": [
+        "not_canonical:tree[0].leaf-commitments"
+      ],
+      "mutation": "wrong-producer-archive",
+      "rejected": true
+    },
+    {
+      "failures": [
+        "wrong_port_order",
+        "not_canonical:tree[0].p-plain",
+        "not_canonical:tree[0].leaf-commitments"
+      ],
+      "mutation": "wrong-port-order",
+      "rejected": true
+    }
+  ],
+  "execution": {
+    "generation_seconds": 0.0,
+    "peak_rss_kib": 1616176,
+    "verification_seconds": 18.295439500000157
+  },
+  "implementation_version": "2.15",
+  "mutation_probes": [
+    {
+      "honest_row_satisfied": true,
+      "mutation": "flip-producer-source",
+      "port_id": "tree[0].leaf-commitments",
+      "rejected": true,
+      "stale_row_satisfied": false,
+      "wire": 1
+    },
+    {
+      "honest_row_satisfied": true,
+      "mutation": "flip-tail-destination",
+      "port_id": "tree[0].leaf-commitments",
+      "rejected": true,
+      "stale_row_satisfied": false,
+      "wire": 1581057
+    },
+    {
+      "honest_row_satisfied": true,
+      "mutation": "flip-producer-source",
+      "port_id": "tree[0].p-plain",
+      "rejected": true,
+      "stale_row_satisfied": false,
+      "wire": 3162113
+    },
+    {
+      "honest_row_satisfied": true,
+      "mutation": "flip-tail-destination",
+      "port_id": "tree[0].p-plain",
+      "rejected": true,
+      "stale_row_satisfied": false,
+      "wire": 3164161
+    },
+    {
+      "honest_row_satisfied": true,
+      "mutation": "flip-producer-source",
+      "port_id": "tree[0].mhat-plain",
+      "rejected": true,
+      "stale_row_satisfied": false,
+      "wire": 3166209
+    },
+    {
+      "honest_row_satisfied": true,
+      "mutation": "flip-tail-destination",
+      "port_id": "tree[0].mhat-plain",
+      "rejected": true,
+      "stale_row_satisfied": false,
+      "wire": 3166595
+    },
+    {
+      "honest_row_satisfied": true,
+      "mutation": "flip-producer-source",
+      "port_id": "tree[0].xi-masks",
+      "rejected": true,
+      "stale_row_satisfied": false,
+      "wire": 3166981
+    },
+    {
+      "honest_row_satisfied": true,
+      "mutation": "flip-tail-destination",
+      "port_id": "tree[0].xi-masks",
+      "rejected": true,
+      "stale_row_satisfied": false,
+      "wire": 3171999
+    },
+    {
+      "honest_row_satisfied": true,
+      "mutation": "flip-producer-source",
+      "port_id": "tree[2].leaf-commitments",
+      "rejected": true,
+      "stale_row_satisfied": false,
+      "wire": 3177017
+    },
+    {
+      "honest_row_satisfied": true,
+      "mutation": "flip-tail-destination",
+      "port_id": "tree[2].leaf-commitments",
+      "rejected": true,
+      "stale_row_satisfied": false,
+      "wire": 3967545
+    },
+    {
+      "honest_row_satisfied": true,
+      "mutation": "flip-producer-source",
+      "port_id": "tree[2].p-plain",
+      "rejected": true,
+      "stale_row_satisfied": false,
+      "wire": 4758073
+    },
+    {
+      "honest_row_satisfied": true,
+      "mutation": "flip-tail-destination",
+      "port_id": "tree[2].p-plain",
+      "rejected": true,
+      "stale_row_satisfied": false,
+      "wire": 4760121
+    },
+    {
+      "honest_row_satisfied": true,
+      "mutation": "flip-producer-source",
+      "port_id": "tree[2].mhat-plain",
+      "rejected": true,
+      "stale_row_satisfied": false,
+      "wire": 4762169
+    },
+    {
+      "honest_row_satisfied": true,
+      "mutation": "flip-tail-destination",
+      "port_id": "tree[2].mhat-plain",
+      "rejected": true,
+      "stale_row_satisfied": false,
+      "wire": 4762555
+    },
+    {
+      "honest_row_satisfied": true,
+      "mutation": "flip-producer-source",
+      "port_id": "tree[2].xi-masks",
+      "rejected": true,
+      "stale_row_satisfied": false,
+      "wire": 4762941
+    },
+    {
+      "honest_row_satisfied": true,
+      "mutation": "flip-tail-destination",
+      "port_id": "tree[2].xi-masks",
+      "rejected": true,
+      "stale_row_satisfied": false,
+      "wire": 4767573
+    }
+  ],
+  "profile": {
+    "assignment_format": "PQRBBC-F193-ASSIGNMENT-LE25-1",
+    "field": "GF(2^193)",
+    "full_tree0_assignment_restored_for_v2_15": false,
+    "relation_id": "pq-rbbc/cap/representative-output-relocation/v1",
+    "remaining_tree_instances_not_materialized": 16,
+    "representative_tree_indices": [
+      0,
+      2
+    ],
+    "tree0_source_import": "sealed v2.13 producer output digest plus independently replayed tail value",
+    "tree2_source_import": "direct v2.14 producer archive slice"
+  },
+  "relocations": [
+    {
+      "bit_length": 1581056,
+      "canonical_destination_wire_start": 1581057,
+      "canonical_source_wire_start": 1,
+      "consumer_wire_start": 643,
+      "equality_row_stream_bytes": 329329594,
+      "equality_row_stream_sha256": "119827ecf5f523294a5ca561ea05735abefff1355a4ccb03d01f94f06edd690a",
+      "equality_rows": 1581056,
+      "port_id": "tree[0].leaf-commitments",
+      "producer_assignment_sha256": "213fa3c90b62db64436ec8e7dd7ee5a6e0ec6b546ae4fa02b3cbfb50fdf502db",
+      "producer_relation_id": "pq-rbbc/cap/production-tree-producer-index-0/v1",
+      "producer_row_stream_sha256": "496f5279f914d72b15864414f1a548089236de1e14cdde3a8d360c28a21ca43e",
+      "producer_wire_start": 77419669,
+      "source_slice_mode": "sealed-producer-output-digest",
+      "tree_index": 0,
+      "value_sha256": "8e0362ecfb4ea9193902cb77549662e302b29bad5478ae2aaf2a136da94662da"
+    },
+    {
+      "bit_length": 2048,
+      "canonical_destination_wire_start": 3164161,
+      "canonical_source_wire_start": 3162113,
+      "consumer_wire_start": 1581699,
+      "equality_row_stream_bytes": 402346,
+      "equality_row_stream_sha256": "e7c1dcd62264848164d6feabf085d245625d81bad7c563707dbe26f120b2358f",
+      "equality_rows": 2048,
+      "port_id": "tree[0].p-plain",
+      "producer_assignment_sha256": "213fa3c90b62db64436ec8e7dd7ee5a6e0ec6b546ae4fa02b3cbfb50fdf502db",
+      "producer_relation_id": "pq-rbbc/cap/production-tree-producer-index-0/v1",
+      "producer_row_stream_sha256": "496f5279f914d72b15864414f1a548089236de1e14cdde3a8d360c28a21ca43e",
+      "producer_wire_start": 79000725,
+      "source_slice_mode": "sealed-producer-output-digest",
+      "tree_index": 0,
+      "value_sha256": "925363dea05668666cf83f67445b6994cb1ca2d3bffc8bbca97e1789cee566ec"
+    },
+    {
+      "bit_length": 386,
+      "canonical_destination_wire_start": 3166595,
+      "canonical_source_wire_start": 3166209,
+      "consumer_wire_start": 1583747,
+      "equality_row_stream_bytes": 76704,
+      "equality_row_stream_sha256": "5e84e94d19848fc0b94044e92759137ec9959f538af89b7d7bc9d834a88976ed",
+      "equality_rows": 386,
+      "port_id": "tree[0].mhat-plain",
+      "producer_assignment_sha256": "213fa3c90b62db64436ec8e7dd7ee5a6e0ec6b546ae4fa02b3cbfb50fdf502db",
+      "producer_relation_id": "pq-rbbc/cap/production-tree-producer-index-0/v1",
+      "producer_row_stream_sha256": "496f5279f914d72b15864414f1a548089236de1e14cdde3a8d360c28a21ca43e",
+      "producer_wire_start": 79002773,
+      "source_slice_mode": "sealed-producer-output-digest",
+      "tree_index": 0,
+      "value_sha256": "77ca0125f4889408a9124e20c607d9f96d9658e80e4f0e93f3d1c9f9ec2ee860"
+    },
+    {
+      "bit_length": 5018,
+      "canonical_destination_wire_start": 3171999,
+      "canonical_source_wire_start": 3166981,
+      "consumer_wire_start": 1584133,
+      "equality_row_stream_bytes": 992454,
+      "equality_row_stream_sha256": "2b2bd07b3d876208c78ad8cf224efbfca159ca3e18705a529e04b7a2ecd2de14",
+      "equality_rows": 5018,
+      "port_id": "tree[0].xi-masks",
+      "producer_assignment_sha256": "213fa3c90b62db64436ec8e7dd7ee5a6e0ec6b546ae4fa02b3cbfb50fdf502db",
+      "producer_relation_id": "pq-rbbc/cap/production-tree-producer-index-0/v1",
+      "producer_row_stream_sha256": "496f5279f914d72b15864414f1a548089236de1e14cdde3a8d360c28a21ca43e",
+      "producer_wire_start": 79143409,
+      "source_slice_mode": "sealed-producer-output-digest",
+      "tree_index": 0,
+      "value_sha256": "8e0ac3450262066dcf55ebb9cadd136c774ac676674f1c7bb8926c866a06d8c6"
+    },
+    {
+      "bit_length": 790528,
+      "canonical_destination_wire_start": 3967545,
+      "canonical_source_wire_start": 3177017,
+      "consumer_wire_start": 3177659,
+      "equality_row_stream_bytes": 164318714,
+      "equality_row_stream_sha256": "27eeef9167432d02d55831aa6d62ee8dbe4a9e5436208f886f2e896706595025",
+      "equality_rows": 790528,
+      "port_id": "tree[2].leaf-commitments",
+      "producer_assignment_sha256": "63ee82b2421cbb9b4c5346c72dbdb15e26f0ef8e0d2938357fb75228ef8c9a8b",
+      "producer_relation_id": "pq-rbbc/cap/production-tree-producer-index-2/v1",
+      "producer_row_stream_sha256": "ad31a74cdf00ee96c646a9142da459069655e528aca3cb58cad07dc2b3b26fb8",
+      "producer_wire_start": 58805397,
+      "source_slice_mode": "direct-producer-archive-slice",
+      "tree_index": 2,
+      "value_sha256": "c27608c4139f15972d445d34015300618abbc953671a3b7ba9c6eefc22e053ac"
+    },
+    {
+      "bit_length": 2048,
+      "canonical_destination_wire_start": 4760121,
+      "canonical_source_wire_start": 4758073,
+      "consumer_wire_start": 3968187,
+      "equality_row_stream_bytes": 402346,
+      "equality_row_stream_sha256": "5f9392605a242893b218ed5df3aca8cb9ef2f35e0332c9521eaa40d9e37b7f55",
+      "equality_rows": 2048,
+      "port_id": "tree[2].p-plain",
+      "producer_assignment_sha256": "63ee82b2421cbb9b4c5346c72dbdb15e26f0ef8e0d2938357fb75228ef8c9a8b",
+      "producer_relation_id": "pq-rbbc/cap/production-tree-producer-index-2/v1",
+      "producer_row_stream_sha256": "ad31a74cdf00ee96c646a9142da459069655e528aca3cb58cad07dc2b3b26fb8",
+      "producer_wire_start": 59595925,
+      "source_slice_mode": "direct-producer-archive-slice",
+      "tree_index": 2,
+      "value_sha256": "7388cdc799a2526ad7df179635d1d4dfda400669f58a50f686b3d9be9998d356"
+    },
+    {
+      "bit_length": 386,
+      "canonical_destination_wire_start": 4762555,
+      "canonical_source_wire_start": 4762169,
+      "consumer_wire_start": 3970235,
+      "equality_row_stream_bytes": 76704,
+      "equality_row_stream_sha256": "7ed606f305f2e7672eeeb19e7a0378d98adb2d87d981067f0518ee11a39e11b6",
+      "equality_rows": 386,
+      "port_id": "tree[2].mhat-plain",
+      "producer_assignment_sha256": "63ee82b2421cbb9b4c5346c72dbdb15e26f0ef8e0d2938357fb75228ef8c9a8b",
+      "producer_relation_id": "pq-rbbc/cap/production-tree-producer-index-2/v1",
+      "producer_row_stream_sha256": "ad31a74cdf00ee96c646a9142da459069655e528aca3cb58cad07dc2b3b26fb8",
+      "producer_wire_start": 59597973,
+      "source_slice_mode": "direct-producer-archive-slice",
+      "tree_index": 2,
+      "value_sha256": "a32ffca5ef15845d5254b11dc446b7b44e1ac30c3d5c080f1d2dff25ffe42c29"
+    },
+    {
+      "bit_length": 4632,
+      "canonical_destination_wire_start": 4767573,
+      "canonical_source_wire_start": 4762941,
+      "consumer_wire_start": 3970621,
+      "equality_row_stream_bytes": 916026,
+      "equality_row_stream_sha256": "f7ce0f304c162d27ae88efc85725d2461fa9c75e3a27b8971bdf176c315d9b02",
+      "equality_rows": 4632,
+      "port_id": "tree[2].xi-masks",
+      "producer_assignment_sha256": "63ee82b2421cbb9b4c5346c72dbdb15e26f0ef8e0d2938357fb75228ef8c9a8b",
+      "producer_relation_id": "pq-rbbc/cap/production-tree-producer-index-2/v1",
+      "producer_row_stream_sha256": "ad31a74cdf00ee96c646a9142da459069655e528aca3cb58cad07dc2b3b26fb8",
+      "producer_wire_start": 59668401,
+      "source_slice_mode": "direct-producer-archive-slice",
+      "tree_index": 2,
+      "value_sha256": "a3519ba430a2f7d8ff2599990972a4f28db7e9d1fc260d92527e814bde81a3e5"
+    }
+  ],
+  "trace": {
+    "external_assertions": 0,
+    "first_verification_failure": null,
+    "linear_rows": 2386102,
+    "nonlinear_rows": 0,
+    "rows": 2386102,
+    "stream_bytes": 496519444,
+    "stream_sha256": "e81c1ce1aa07aae32ea166adea7c35a3b19f949c471fc17bdd5434dffe1dbeb0",
+    "verification_failures": 0,
+    "wires": 4772204
+  }
+}
