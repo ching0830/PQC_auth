@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fail-closed native import contract for the PQ-RBBC v2.17 fork.
+"""Fail-closed native import contract for the PQ-RBBC v2.18 fork.
 
 The selected profile is deliberately independent of the unreproduced
 Blind-UOV 240-row instance.  It accepts no claim of bit-exact compatibility.
@@ -20,6 +20,7 @@ import pq_rbbc_anemoi_f193 as permutation
 import pq_rbbc_anemoi_sponge as sponge
 import pq_rbbc_cap_commit as cap
 import pq_rbbc_cap_composer as composer
+import pq_rbbc_cap_composer_recovery as composer_recovery
 import pq_rbbc_cap_global_tail as global_tail
 import pq_rbbc_cap_output_relocation as output_relocation
 import pq_rbbc_cap_production_namespace as production_namespace
@@ -35,7 +36,7 @@ import pq_rbbc_cap_shard_stream as shard_stream
 import pq_rbbc_horner_native as horner_native
 
 
-IMPLEMENTATION_VERSION = "2.17"
+IMPLEMENTATION_VERSION = "2.18"
 RELATION_ID = "pq-rbbc-buov-iii-336/cap-hash/v1"
 TARGET_FIELD = "GF(2^193)"
 REQUIRED_TAMPER_CASES = frozenset(
@@ -173,7 +174,7 @@ def build_native_profile_manifest() -> dict[str, object]:
     parameters = permutation.derive_parameters()
     return {
         "implementation_version": IMPLEMENTATION_VERSION,
-        "status": "the tree-2 planned-offset execution gate and real reduced rebase fixture are closed over the v2.16 namespace; the production rebased archive, remaining sixteen producer instances, complete 18-tree replay, global cross-segment identity, parent join, and security reductions remain external",
+        "status": "the checkpoint/resume recovery gate for reconstructing the missing v2.8 production execution cache is closed with bit-exact reduced evidence; no production recovery checkpoint or regenerated artifact exists yet, and the tree-2 rebased archive, remaining producers, complete replay, parent join, and security reductions remain external",
         "fork_profile": {
             "name": sponge.PROFILE_NAME,
             "relation_id": RELATION_ID,
@@ -452,6 +453,17 @@ def build_native_profile_manifest() -> dict[str, object]:
                 "configuration_mutation_probes": 8,
                 "representative_production_rows_replayed_at_planned_offsets": 0,
             },
+            "production_composer_recovery_component": {
+                "relation_id": composer_recovery.RELATION_ID,
+                "checkpoint_format": composer_recovery.CHECKPOINT_FORMAT,
+                "contract_sha256": composer_recovery.FROZEN_CONTRACT_SHA256,
+                "reduced_execution_sha256": composer_recovery.FROZEN_REDUCED_EXECUTION_SHA256,
+                "reduced_final_checkpoint_sha256": composer_recovery.FROZEN_REDUCED_FINAL_CHECKPOINT_SHA256,
+                "checkpoint_mutation_probes": 8,
+                "production_derivation_levels_checkpointed": 0,
+                "production_leaf_outputs_checkpointed": 0,
+                "production_execution_cache_regenerated": False,
+            },
             "production_tree2_planned_offset_component": {
                 "relation_id": production_tree2_rebased.RELATION_ID,
                 "contract_sha256": production_tree2_rebased.FROZEN_CONTRACT_SHA256,
@@ -536,6 +548,10 @@ def build_native_profile_manifest() -> dict[str, object]:
             "planned_offset_reduced_fixture_replayed": True,
             "production_tree2_rebased_assignment_materialized": False,
             "production_tree2_rebased_full_replay_closed": False,
+            "production_composer_checkpoint_recovery_gate_closed": True,
+            "reduced_checkpoint_resume_bit_exact": True,
+            "production_execution_cache_regenerated": False,
+            "production_global_tail_archive_regenerated": False,
             "representative_producers_rebased_replayed": False,
             "all_72_output_relocations_closed": False,
             "reduced_tree_producer_segments_native_closed": True,

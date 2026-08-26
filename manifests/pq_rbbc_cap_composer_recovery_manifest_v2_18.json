@@ -1,0 +1,203 @@
+{
+  "checkpoint_mutation_probes": [
+    {
+      "failures": [
+        "wrong_format"
+      ],
+      "mutation": "wrong-format",
+      "rejected": true
+    },
+    {
+      "failures": [
+        "wrong_relation_id"
+      ],
+      "mutation": "wrong-relation",
+      "rejected": true
+    },
+    {
+      "failures": [
+        "wrong_profile"
+      ],
+      "mutation": "wrong-profile",
+      "rejected": true
+    },
+    {
+      "failures": [
+        "wrong_randomness"
+      ],
+      "mutation": "wrong-randomness",
+      "rejected": true
+    },
+    {
+      "failures": [
+        "wrong_tree_shapes"
+      ],
+      "mutation": "wrong-tree-shape",
+      "rejected": true
+    },
+    {
+      "failures": [
+        "tree_0_node_count",
+        "tree_0_derivation_count",
+        "leaf_phase_seed_state"
+      ],
+      "mutation": "wrong-node-count",
+      "rejected": true
+    },
+    {
+      "failures": [
+        "tree_0_leaf_overflow",
+        "complete_phase_incomplete"
+      ],
+      "mutation": "leaf-overflow",
+      "rejected": true
+    },
+    {
+      "failures": [
+        "checkpoint_state_digest"
+      ],
+      "mutation": "wrong-state-digest",
+      "rejected": true
+    }
+  ],
+  "claim_boundary": {
+    "complete_18_tree_assignment_replayed": false,
+    "fork_security_proof_revalidated": false,
+    "parent_cap_to_h_rbbc_join_closed": false,
+    "production_closed": false,
+    "production_composer_checkpoint_recovery_gate_closed": true,
+    "production_execution_cache_regenerated": false,
+    "production_global_tail_archive_regenerated": false,
+    "production_tree2_rebased_assignment_materialized": false,
+    "production_tree2_rebased_full_replay_closed": false,
+    "reduced_checkpoint_resume_bit_exact": true,
+    "representative_producers_rebased_replayed": false
+  },
+  "contract": {
+    "canonical_tree_and_leaf_order": true,
+    "checkpoint_bound_to_profile": true,
+    "checkpoint_bound_to_randomness": true,
+    "checkpoint_format": "PQRBBC-CAP-COMPOSER-CHECKPOINT-1",
+    "checkpoint_state_integrity_digest": true,
+    "derivation_level_atomicity": true,
+    "leaf_batch_atomicity": true,
+    "production_profile_sha256": "2ac471f8d7c6cb4e6352bbc5a2eb7f9394b807ff132aec8cadebd696f7b1fa38",
+    "production_tree_count": 18,
+    "production_tree_shapes": [
+      [
+        4096,
+        13
+      ],
+      [
+        4096,
+        13
+      ],
+      [
+        2048,
+        12
+      ],
+      [
+        2048,
+        12
+      ],
+      [
+        2048,
+        12
+      ],
+      [
+        2048,
+        12
+      ],
+      [
+        2048,
+        12
+      ],
+      [
+        2048,
+        12
+      ],
+      [
+        2048,
+        12
+      ],
+      [
+        2048,
+        12
+      ],
+      [
+        2048,
+        12
+      ],
+      [
+        2048,
+        12
+      ],
+      [
+        2048,
+        12
+      ],
+      [
+        2048,
+        12
+      ],
+      [
+        2048,
+        12
+      ],
+      [
+        2048,
+        12
+      ],
+      [
+        2048,
+        12
+      ],
+      [
+        2048,
+        12
+      ]
+    ],
+    "relation_id": "pq-rbbc/cap/production-composer-recovery/v1",
+    "source_commitment_sha256": "12123e95b1b64d87da7a575dbf803fc53ded9eb9a23b807eeab2cba51dfe5b62",
+    "source_document_sha256": "a7ef7eb4689d84c686074308d0d167e1567ab84578d66b5ad004970940ea0163",
+    "source_relation_id": "pq-rbbc/cap/linked-production-18/v1",
+    "source_xof_trace_sha256": "ccfa51ec2aee9501483c65023c4a877316eb6dd0557ccd6c42dfdf5f20f2c4e6"
+  },
+  "contract_sha256": "e5b0f0d188f4540f58c328d2c40296971bb5f1cb81cec35ef512df2aaaa61578",
+  "implementation_version": "2.18",
+  "production_recovery": {
+    "production_composition_document_revalidated": false,
+    "production_derivation_levels_checkpointed": 0,
+    "production_execution_cache_regenerated": false,
+    "production_global_tail_archive_regenerated": false,
+    "production_leaf_outputs_checkpointed": 0,
+    "production_tree2_rebased_archive_regenerated": false,
+    "status": "not_started"
+  },
+  "reduced_recovery_fixture": {
+    "checkpoint_mutation_probes": 8,
+    "checkpoint_mutation_probes_rejected": true,
+    "checkpoints_written_after_resume": 4,
+    "direct_execution_sha256": "c29f87dcf144a2a3d303daf26ac3665eb09d5e241f8941123d2052a5c18d21a1",
+    "execution_bit_exact": true,
+    "execution_cache_validation_failures": 0,
+    "final_checkpoint_phase": "complete",
+    "final_checkpoint_sha256": "926614ffc0862fab816c410314a6ec8769b8ac0bc97848210585a715829ce544",
+    "fixture_is_not_production_execution_evidence": true,
+    "interruption_after_checkpoints": 1,
+    "leaf_batch": 2,
+    "resume_observed": true,
+    "resumed_execution_sha256": "c29f87dcf144a2a3d303daf26ac3665eb09d5e241f8941123d2052a5c18d21a1",
+    "tree_count": 2,
+    "tree_shapes": [
+      [
+        4,
+        3
+      ],
+      [
+        4,
+        3
+      ]
+    ]
+  }
+}

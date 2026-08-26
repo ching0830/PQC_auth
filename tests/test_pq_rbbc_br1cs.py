@@ -204,6 +204,22 @@ class BinaryR1CSBackendTests(unittest.TestCase):
         self.assertTrue(contract["planned_offset_reduced_fixture_replayed"])
         self.assertFalse(contract["production_tree2_rebased_assignment_materialized"])
         self.assertFalse(contract["production_tree2_rebased_full_replay_closed"])
+        self.assertEqual(
+            contract["production_composer_recovery_production_levels_checkpointed"],
+            0,
+        )
+        self.assertEqual(
+            contract[
+                "production_composer_recovery_production_leaf_outputs_checkpointed"
+            ],
+            0,
+        )
+        self.assertTrue(
+            contract["production_composer_checkpoint_recovery_gate_closed"]
+        )
+        self.assertTrue(contract["reduced_checkpoint_resume_bit_exact"])
+        self.assertFalse(contract["production_execution_cache_regenerated"])
+        self.assertFalse(contract["production_global_tail_archive_regenerated"])
         self.assertFalse(contract["representative_producers_rebased_replayed"])
         self.assertFalse(contract["all_72_output_relocations_closed"])
         self.assertTrue(contract["reduced_tree_producer_segments_native_closed"])

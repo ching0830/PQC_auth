@@ -77,6 +77,9 @@ Version 2.17 freezes the tree-2 planned-offset execution contract and replays
 the real reduced producer generator at two offsets.  The production rebased
 archive remains unmaterialized because its external assignment/cache inputs
 are not repository artifacts.
+Version 2.18 adds atomic derivation-level and leaf-batch checkpoints for safely
+reconstructing the missing v2.8 execution cache.  Interrupted/resumed reduced
+execution is bit-exact; no production recovery artifact is claimed yet.
 Version 2.9 also materializes and replays the shared production global tail
 that consumes all 18 tree outputs: 17 correction pairs, H1, consistency
 points, alpha, xi, H2, one 5,391-byte commitment, and the request hash.  The
@@ -99,6 +102,7 @@ from typing import Protocol
 import pq_rbbc_anemoi_sponge as fork_sponge
 import pq_rbbc_cap_commit as fork_cap
 import pq_rbbc_cap_composer as cap_composer
+import pq_rbbc_cap_composer_recovery as cap_composer_recovery
 import pq_rbbc_cap_global_tail as cap_global_tail
 import pq_rbbc_cap_output_relocation as cap_output_relocation
 import pq_rbbc_cap_production_namespace as cap_production_namespace
@@ -370,7 +374,7 @@ def build_abi_manifest() -> dict[str, object]:
     hidden = adapter.hidden_state(message, mask, randomness)
     changed_message = bytes((message[0] ^ 1,)) + message[1:]
     return {
-        "implementation_version": "2.17",
+        "implementation_version": "2.18",
         "paper_anchor": "Blind-UOV ePrint 2025/895 is a framework and size comparator, not a bit-exact implementation claim",
         "profile": "PQ-RBBC-BUOV-III/Anemoi-193-336 experimental fork",
         "fork_profile": {
@@ -440,6 +444,13 @@ def build_abi_manifest() -> dict[str, object]:
             "production_namespace_total_output_relocation_rows": cap_production_namespace.FROZEN_TOTAL_OUTPUT_RELOCATION_ROWS,
             "production_namespace_planned_composition_rows": cap_production_namespace.FROZEN_PLANNED_COMPOSITION_ROWS,
             "production_namespace_max_wire_id": cap_production_namespace.FROZEN_MAX_PLANNED_WIRE_ID,
+            "production_composer_recovery_relation_id": cap_composer_recovery.RELATION_ID,
+            "production_composer_recovery_checkpoint_format": cap_composer_recovery.CHECKPOINT_FORMAT,
+            "production_composer_recovery_contract_sha256": cap_composer_recovery.FROZEN_CONTRACT_SHA256,
+            "production_composer_reduced_execution_sha256": cap_composer_recovery.FROZEN_REDUCED_EXECUTION_SHA256,
+            "production_composer_reduced_final_checkpoint_sha256": cap_composer_recovery.FROZEN_REDUCED_FINAL_CHECKPOINT_SHA256,
+            "production_composer_recovery_production_levels_checkpointed": 0,
+            "production_composer_recovery_production_leaf_outputs_checkpointed": 0,
             "production_tree2_planned_offset_relation_id": cap_production_tree2_rebased.RELATION_ID,
             "production_tree2_planned_offset_contract_sha256": cap_production_tree2_rebased.FROZEN_CONTRACT_SHA256,
             "production_tree2_planned_local_wire_start": cap_production_tree2_rebased.PLANNED_LOCAL_WIRE_START,
@@ -621,6 +632,10 @@ def build_abi_manifest() -> dict[str, object]:
             "planned_offset_reduced_fixture_replayed": True,
             "production_tree2_rebased_assignment_materialized": False,
             "production_tree2_rebased_full_replay_closed": False,
+            "production_composer_checkpoint_recovery_gate_closed": True,
+            "reduced_checkpoint_resume_bit_exact": True,
+            "production_execution_cache_regenerated": False,
+            "production_global_tail_archive_regenerated": False,
             "representative_producers_rebased_replayed": False,
             "all_72_output_relocations_closed": False,
             "reduced_tree_producer_segments_native_closed": True,

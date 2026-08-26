@@ -23,3 +23,8 @@ Production artifacts should be distributed through release storage or another
 large-file channel, then verified against the tracked checksum/manifest before
 use.  Do not weaken a claim boundary merely because an external binary is
 unavailable.
+
+Checkpoint and execution-cache `*.pkl` files are a narrower local-only trust
+boundary.  Identity validation after loading does not make Python pickle safe
+for hostile input.  Never resume from a downloaded or otherwise untrusted
+pickle; rebuild it locally from the tracked source and deterministic inputs.
