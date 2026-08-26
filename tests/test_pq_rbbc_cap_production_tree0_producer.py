@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import os
 import tempfile
 import unittest
 from pathlib import Path
@@ -15,19 +16,22 @@ import pq_rbbc_cap_shard_assignment as assignment
 import pq_rbbc_cap_tree_producer as producer
 
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parents[1]
+ARTIFACT_ROOT = Path(os.environ.get("PQRBBC_ARTIFACT_ROOT", ROOT))
 MANIFEST_PATH = (
     ROOT
+    / "artifacts"
+    / "metadata"
     / "production_tree0_v2_13"
     / "pq_rbbc_cap_production_tree0_manifest_v2_13.json"
 )
 ARCHIVE_PATH = (
-    ROOT
+    ARTIFACT_ROOT
     / "production_tree0_v2_13"
     / "pq_rbbc_production_tree_0_producer_v2_13.f193assign"
 )
 CACHE_PATH = (
-    ROOT
+    ARTIFACT_ROOT
     / "production_tree0_v2_13"
     / "tree_0_execution_checkpoint_v2_13.pkl"
 )
@@ -39,6 +43,8 @@ class ProductionTree0ProducerTests(unittest.TestCase):
         cls.manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
 
     def test_frozen_production_vector_is_exact(self) -> None:
+        if not ARCHIVE_PATH.exists():
+            self.skipTest("external v2.13 tree-0 assignment is not installed")
         trace = self.manifest["trace"]
         archive = self.manifest["assignment_archive"]
         self.assertEqual(trace["rows"], production.FROZEN_ROWS)
@@ -50,8 +56,6 @@ class ProductionTree0ProducerTests(unittest.TestCase):
         self.assertEqual(
             archive["archive_sha256"], production.FROZEN_ASSIGNMENT_SHA256
         )
-        if not ARCHIVE_PATH.exists():
-            self.skipTest("973 MB tree-0 archive is an optional release artifact")
         self.assertEqual(ARCHIVE_PATH.stat().st_size, production.FROZEN_ASSIGNMENT_BYTES)
         with assignment.AssignmentArchiveReader(
             ARCHIVE_PATH, verify_body=False
@@ -106,6 +110,8 @@ class ProductionTree0ProducerTests(unittest.TestCase):
             self.assertFalse(claims[name], name)
 
     def test_resume_evidence_and_execution_cache_are_sealed(self) -> None:
+        if not CACHE_PATH.exists():
+            self.skipTest("external v2.13 tree-0 execution cache is not installed")
         evidence = self.manifest["resume_evidence"]
         self.assertTrue(evidence["execution_cache_checkpointed_per_ggm_level"])
         self.assertEqual(
@@ -113,8 +119,6 @@ class ProductionTree0ProducerTests(unittest.TestCase):
         )
         self.assertTrue(evidence["assignment_prefix_preserved_on_interruption"])
         self.assertTrue(evidence["generation_and_replay_separate_stages"])
-        if not CACHE_PATH.exists():
-            self.skipTest("tree-0 execution cache is an optional release artifact")
         randomness = cap.deterministic_randomness(
             cap.PRODUCTION_PARAMETERS, production.composer.FROZEN_RANDOMNESS_LABEL
         )
