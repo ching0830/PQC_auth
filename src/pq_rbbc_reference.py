@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Executable v2.17 reference relation for the PQ-RBBC/SGTD research draft.
+"""Executable v2.18 reference relation for the PQ-RBBC/SGTD research draft.
 
 This module implements the *incremental* five-block issuance relation described
 in the accompanying proof document.  It emits a streaming characteristic-two
@@ -1156,11 +1156,11 @@ def build_manifest(full_negative_circuits: bool = False) -> dict[str, object]:
             ).items()
         }
     return {
-        "implementation_version": "2.17",
+        "implementation_version": "2.18",
         "status": "executable research relation; not a deployment implementation",
         "claim_boundary": {
             "implemented": "incremental relation plus the in-circuit y = r + hash_image mask equation",
-            "forked_issuance": "the production reference, native shared global tail, representative output relocations, fail-closed 18-tree namespace plan, and tree-2 planned-offset execution gate are frozen; the production rebased archive, remaining sixteen producer instances, complete 18-tree replay, and parent join remain open",
+            "forked_issuance": "the production reference, namespace, tree-2 planned-offset gate, and checkpointable recovery path for the missing v2.8 execution cache are frozen; no production recovery artifact exists yet, and the rebased archive, remaining producers, complete replay, and parent join remain open",
             "r1cs_backend": "streaming IR events only; no flattened matrices or proof backend",
             "trace_key": "deterministic systematic test fixture; not a certified Goppa key",
         },
@@ -1339,6 +1339,13 @@ def build_manifest(full_negative_circuits: bool = False) -> dict[str, object]:
             "production_namespace_total_output_relocation_rows": native_profile.production_namespace.FROZEN_TOTAL_OUTPUT_RELOCATION_ROWS,
             "production_namespace_planned_composition_rows": native_profile.production_namespace.FROZEN_PLANNED_COMPOSITION_ROWS,
             "production_namespace_max_wire_id": native_profile.production_namespace.FROZEN_MAX_PLANNED_WIRE_ID,
+            "production_composer_recovery_relation_id": native_profile.composer_recovery.RELATION_ID,
+            "production_composer_recovery_checkpoint_format": native_profile.composer_recovery.CHECKPOINT_FORMAT,
+            "production_composer_recovery_contract_sha256": native_profile.composer_recovery.FROZEN_CONTRACT_SHA256,
+            "production_composer_reduced_execution_sha256": native_profile.composer_recovery.FROZEN_REDUCED_EXECUTION_SHA256,
+            "production_composer_reduced_final_checkpoint_sha256": native_profile.composer_recovery.FROZEN_REDUCED_FINAL_CHECKPOINT_SHA256,
+            "production_composer_recovery_production_levels_checkpointed": 0,
+            "production_composer_recovery_production_leaf_outputs_checkpointed": 0,
             "production_tree2_planned_offset_relation_id": native_profile.production_tree2_rebased.RELATION_ID,
             "production_tree2_planned_offset_contract_sha256": native_profile.production_tree2_rebased.FROZEN_CONTRACT_SHA256,
             "production_tree2_planned_local_wire_start": native_profile.production_tree2_rebased.PLANNED_LOCAL_WIRE_START,
@@ -1354,6 +1361,10 @@ def build_manifest(full_negative_circuits: bool = False) -> dict[str, object]:
             "planned_offset_reduced_fixture_replayed": True,
             "production_tree2_rebased_assignment_materialized": False,
             "production_tree2_rebased_full_replay_closed": False,
+            "production_composer_checkpoint_recovery_gate_closed": True,
+            "reduced_checkpoint_resume_bit_exact": True,
+            "production_execution_cache_regenerated": False,
+            "production_global_tail_archive_regenerated": False,
             "representative_producers_rebased_replayed": False,
             "all_72_output_relocations_closed": False,
             "reduced_tree_producer_relation_id": native_profile.tree_producer.RELATION_ID,

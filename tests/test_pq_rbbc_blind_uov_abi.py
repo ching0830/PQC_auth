@@ -448,6 +448,32 @@ class BlindUOVVisibilityTests(unittest.TestCase):
         self.assertFalse(
             manifest["claim_boundary"]["production_tree2_rebased_full_replay_closed"]
         )
+        self.assertEqual(
+            interface["production_composer_recovery_production_levels_checkpointed"],
+            0,
+        )
+        self.assertEqual(
+            interface[
+                "production_composer_recovery_production_leaf_outputs_checkpointed"
+            ],
+            0,
+        )
+        self.assertTrue(
+            manifest["claim_boundary"][
+                "production_composer_checkpoint_recovery_gate_closed"
+            ]
+        )
+        self.assertTrue(
+            manifest["claim_boundary"]["reduced_checkpoint_resume_bit_exact"]
+        )
+        self.assertFalse(
+            manifest["claim_boundary"]["production_execution_cache_regenerated"]
+        )
+        self.assertFalse(
+            manifest["claim_boundary"][
+                "production_global_tail_archive_regenerated"
+            ]
+        )
         self.assertFalse(
             manifest["claim_boundary"]["representative_producers_rebased_replayed"]
         )
