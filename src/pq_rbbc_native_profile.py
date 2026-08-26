@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fail-closed native import contract for the PQ-RBBC v2.18 fork.
+"""Fail-closed native import contract for the PQ-RBBC v2.19 fork.
 
 The selected profile is deliberately independent of the unreproduced
 Blind-UOV 240-row instance.  It accepts no claim of bit-exact compatibility.
@@ -21,6 +21,7 @@ import pq_rbbc_anemoi_sponge as sponge
 import pq_rbbc_cap_commit as cap
 import pq_rbbc_cap_composer as composer
 import pq_rbbc_cap_composer_recovery as composer_recovery
+import pq_rbbc_cap_composer_recovery_evidence as recovery_evidence
 import pq_rbbc_cap_global_tail as global_tail
 import pq_rbbc_cap_output_relocation as output_relocation
 import pq_rbbc_cap_production_namespace as production_namespace
@@ -36,7 +37,7 @@ import pq_rbbc_cap_shard_stream as shard_stream
 import pq_rbbc_horner_native as horner_native
 
 
-IMPLEMENTATION_VERSION = "2.18"
+IMPLEMENTATION_VERSION = "2.19"
 RELATION_ID = "pq-rbbc-buov-iii-336/cap-hash/v1"
 TARGET_FIELD = "GF(2^193)"
 REQUIRED_TAMPER_CASES = frozenset(
@@ -174,7 +175,7 @@ def build_native_profile_manifest() -> dict[str, object]:
     parameters = permutation.derive_parameters()
     return {
         "implementation_version": IMPLEMENTATION_VERSION,
-        "status": "the checkpoint/resume recovery gate for reconstructing the missing v2.8 production execution cache is closed with bit-exact reduced evidence; no production recovery checkpoint or regenerated artifact exists yet, and the tree-2 rebased archive, remaining producers, complete replay, parent join, and security reductions remain external",
+        "status": "the frozen v2.8 production execution cache has been regenerated through the v2.18 checkpoint/resume path and its canonical document identity independently revalidated; the v2.9 global-tail archive, tree-2 rebased archive, remaining producers, complete replay, parent join, and security reductions remain external",
         "fork_profile": {
             "name": sponge.PROFILE_NAME,
             "relation_id": RELATION_ID,
@@ -460,9 +461,21 @@ def build_native_profile_manifest() -> dict[str, object]:
                 "reduced_execution_sha256": composer_recovery.FROZEN_REDUCED_EXECUTION_SHA256,
                 "reduced_final_checkpoint_sha256": composer_recovery.FROZEN_REDUCED_FINAL_CHECKPOINT_SHA256,
                 "checkpoint_mutation_probes": 8,
-                "production_derivation_levels_checkpointed": 0,
-                "production_leaf_outputs_checkpointed": 0,
-                "production_execution_cache_regenerated": False,
+                "evidence_relation_id": recovery_evidence.RELATION_ID,
+                "evidence_sha256": recovery_evidence.FROZEN_EVIDENCE_SHA256,
+                "production_derivation_levels_checkpointed": recovery_evidence.FROZEN_DERIVATION_LEVELS_CHECKPOINTED,
+                "production_derivations_checkpointed": recovery_evidence.FROZEN_DERIVATIONS_CHECKPOINTED,
+                "production_seed_nodes_checkpointed": recovery_evidence.FROZEN_SEED_NODES_CHECKPOINTED,
+                "production_leaf_outputs_checkpointed": recovery_evidence.FROZEN_LEAF_OUTPUTS_CHECKPOINTED,
+                "production_checkpoint_sha256": recovery_evidence.FROZEN_CHECKPOINT_SHA256,
+                "production_checkpoint_state_sha256": recovery_evidence.FROZEN_CHECKPOINT_STATE_SHA256,
+                "production_execution_cache_bytes": recovery_evidence.FROZEN_EXECUTION_CACHE_BYTES,
+                "production_execution_cache_sha256": recovery_evidence.FROZEN_EXECUTION_CACHE_SHA256,
+                "production_execution_sha256": recovery_evidence.FROZEN_EXECUTION_SHA256,
+                "production_composition_document_sha256": composer.FROZEN_DOCUMENT_SHA256,
+                "production_execution_cache_regenerated": True,
+                "production_composition_document_revalidated": True,
+                "large_artifacts_tracked_in_git": False,
             },
             "production_tree2_planned_offset_component": {
                 "relation_id": production_tree2_rebased.RELATION_ID,
@@ -550,7 +563,8 @@ def build_native_profile_manifest() -> dict[str, object]:
             "production_tree2_rebased_full_replay_closed": False,
             "production_composer_checkpoint_recovery_gate_closed": True,
             "reduced_checkpoint_resume_bit_exact": True,
-            "production_execution_cache_regenerated": False,
+            "production_execution_cache_regenerated": True,
+            "production_composition_document_revalidated": True,
             "production_global_tail_archive_regenerated": False,
             "representative_producers_rebased_replayed": False,
             "all_72_output_relocations_closed": False,

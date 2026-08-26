@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Executable v2.18 reference relation for the PQ-RBBC/SGTD research draft.
+"""Executable v2.19 reference relation for the PQ-RBBC/SGTD research draft.
 
 This module implements the *incremental* five-block issuance relation described
 in the accompanying proof document.  It emits a streaming characteristic-two
@@ -1156,11 +1156,11 @@ def build_manifest(full_negative_circuits: bool = False) -> dict[str, object]:
             ).items()
         }
     return {
-        "implementation_version": "2.18",
+        "implementation_version": "2.19",
         "status": "executable research relation; not a deployment implementation",
         "claim_boundary": {
             "implemented": "incremental relation plus the in-circuit y = r + hash_image mask equation",
-            "forked_issuance": "the production reference, namespace, tree-2 planned-offset gate, and checkpointable recovery path for the missing v2.8 execution cache are frozen; no production recovery artifact exists yet, and the rebased archive, remaining producers, complete replay, and parent join remain open",
+            "forked_issuance": "the production reference, namespace, tree-2 planned-offset gate, and checkpointable recovery path are frozen; the v2.8 execution cache has been regenerated and revalidated, while the v2.9 archive, rebased archive, remaining producers, complete replay, and parent join remain open",
             "r1cs_backend": "streaming IR events only; no flattened matrices or proof backend",
             "trace_key": "deterministic systematic test fixture; not a certified Goppa key",
         },
@@ -1344,8 +1344,16 @@ def build_manifest(full_negative_circuits: bool = False) -> dict[str, object]:
             "production_composer_recovery_contract_sha256": native_profile.composer_recovery.FROZEN_CONTRACT_SHA256,
             "production_composer_reduced_execution_sha256": native_profile.composer_recovery.FROZEN_REDUCED_EXECUTION_SHA256,
             "production_composer_reduced_final_checkpoint_sha256": native_profile.composer_recovery.FROZEN_REDUCED_FINAL_CHECKPOINT_SHA256,
-            "production_composer_recovery_production_levels_checkpointed": 0,
-            "production_composer_recovery_production_leaf_outputs_checkpointed": 0,
+            "production_composer_recovery_evidence_relation_id": native_profile.recovery_evidence.RELATION_ID,
+            "production_composer_recovery_evidence_sha256": native_profile.recovery_evidence.FROZEN_EVIDENCE_SHA256,
+            "production_composer_recovery_production_levels_checkpointed": native_profile.recovery_evidence.FROZEN_DERIVATION_LEVELS_CHECKPOINTED,
+            "production_composer_recovery_production_derivations_checkpointed": native_profile.recovery_evidence.FROZEN_DERIVATIONS_CHECKPOINTED,
+            "production_composer_recovery_production_seed_nodes_checkpointed": native_profile.recovery_evidence.FROZEN_SEED_NODES_CHECKPOINTED,
+            "production_composer_recovery_production_leaf_outputs_checkpointed": native_profile.recovery_evidence.FROZEN_LEAF_OUTPUTS_CHECKPOINTED,
+            "production_composer_checkpoint_sha256": native_profile.recovery_evidence.FROZEN_CHECKPOINT_SHA256,
+            "production_composer_checkpoint_state_sha256": native_profile.recovery_evidence.FROZEN_CHECKPOINT_STATE_SHA256,
+            "production_composer_execution_cache_sha256": native_profile.recovery_evidence.FROZEN_EXECUTION_CACHE_SHA256,
+            "production_composer_execution_sha256": native_profile.recovery_evidence.FROZEN_EXECUTION_SHA256,
             "production_tree2_planned_offset_relation_id": native_profile.production_tree2_rebased.RELATION_ID,
             "production_tree2_planned_offset_contract_sha256": native_profile.production_tree2_rebased.FROZEN_CONTRACT_SHA256,
             "production_tree2_planned_local_wire_start": native_profile.production_tree2_rebased.PLANNED_LOCAL_WIRE_START,
@@ -1363,7 +1371,8 @@ def build_manifest(full_negative_circuits: bool = False) -> dict[str, object]:
             "production_tree2_rebased_full_replay_closed": False,
             "production_composer_checkpoint_recovery_gate_closed": True,
             "reduced_checkpoint_resume_bit_exact": True,
-            "production_execution_cache_regenerated": False,
+            "production_execution_cache_regenerated": True,
+            "production_composition_document_revalidated": True,
             "production_global_tail_archive_regenerated": False,
             "representative_producers_rebased_replayed": False,
             "all_72_output_relocations_closed": False,

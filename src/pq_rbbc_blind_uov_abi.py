@@ -80,6 +80,10 @@ are not repository artifacts.
 Version 2.18 adds atomic derivation-level and leaf-batch checkpoints for safely
 reconstructing the missing v2.8 execution cache.  Interrupted/resumed reduced
 execution is bit-exact; no production recovery artifact is claimed yet.
+Version 2.19 records the completed checkpointed production recovery.  The
+trusted local execution cache reproduces the frozen v2.8 commitment, XOF trace,
+and canonical document exactly; the v2.9 archive and later replay gates remain
+open.
 Version 2.9 also materializes and replays the shared production global tail
 that consumes all 18 tree outputs: 17 correction pairs, H1, consistency
 points, alpha, xi, H2, one 5,391-byte commitment, and the request hash.  The
@@ -103,6 +107,7 @@ import pq_rbbc_anemoi_sponge as fork_sponge
 import pq_rbbc_cap_commit as fork_cap
 import pq_rbbc_cap_composer as cap_composer
 import pq_rbbc_cap_composer_recovery as cap_composer_recovery
+import pq_rbbc_cap_composer_recovery_evidence as cap_recovery_evidence
 import pq_rbbc_cap_global_tail as cap_global_tail
 import pq_rbbc_cap_output_relocation as cap_output_relocation
 import pq_rbbc_cap_production_namespace as cap_production_namespace
@@ -374,7 +379,7 @@ def build_abi_manifest() -> dict[str, object]:
     hidden = adapter.hidden_state(message, mask, randomness)
     changed_message = bytes((message[0] ^ 1,)) + message[1:]
     return {
-        "implementation_version": "2.18",
+        "implementation_version": "2.19",
         "paper_anchor": "Blind-UOV ePrint 2025/895 is a framework and size comparator, not a bit-exact implementation claim",
         "profile": "PQ-RBBC-BUOV-III/Anemoi-193-336 experimental fork",
         "fork_profile": {
@@ -449,8 +454,16 @@ def build_abi_manifest() -> dict[str, object]:
             "production_composer_recovery_contract_sha256": cap_composer_recovery.FROZEN_CONTRACT_SHA256,
             "production_composer_reduced_execution_sha256": cap_composer_recovery.FROZEN_REDUCED_EXECUTION_SHA256,
             "production_composer_reduced_final_checkpoint_sha256": cap_composer_recovery.FROZEN_REDUCED_FINAL_CHECKPOINT_SHA256,
-            "production_composer_recovery_production_levels_checkpointed": 0,
-            "production_composer_recovery_production_leaf_outputs_checkpointed": 0,
+            "production_composer_recovery_evidence_relation_id": cap_recovery_evidence.RELATION_ID,
+            "production_composer_recovery_evidence_sha256": cap_recovery_evidence.FROZEN_EVIDENCE_SHA256,
+            "production_composer_recovery_production_levels_checkpointed": cap_recovery_evidence.FROZEN_DERIVATION_LEVELS_CHECKPOINTED,
+            "production_composer_recovery_production_derivations_checkpointed": cap_recovery_evidence.FROZEN_DERIVATIONS_CHECKPOINTED,
+            "production_composer_recovery_production_seed_nodes_checkpointed": cap_recovery_evidence.FROZEN_SEED_NODES_CHECKPOINTED,
+            "production_composer_recovery_production_leaf_outputs_checkpointed": cap_recovery_evidence.FROZEN_LEAF_OUTPUTS_CHECKPOINTED,
+            "production_composer_checkpoint_sha256": cap_recovery_evidence.FROZEN_CHECKPOINT_SHA256,
+            "production_composer_checkpoint_state_sha256": cap_recovery_evidence.FROZEN_CHECKPOINT_STATE_SHA256,
+            "production_composer_execution_cache_sha256": cap_recovery_evidence.FROZEN_EXECUTION_CACHE_SHA256,
+            "production_composer_execution_sha256": cap_recovery_evidence.FROZEN_EXECUTION_SHA256,
             "production_tree2_planned_offset_relation_id": cap_production_tree2_rebased.RELATION_ID,
             "production_tree2_planned_offset_contract_sha256": cap_production_tree2_rebased.FROZEN_CONTRACT_SHA256,
             "production_tree2_planned_local_wire_start": cap_production_tree2_rebased.PLANNED_LOCAL_WIRE_START,
@@ -634,7 +647,8 @@ def build_abi_manifest() -> dict[str, object]:
             "production_tree2_rebased_full_replay_closed": False,
             "production_composer_checkpoint_recovery_gate_closed": True,
             "reduced_checkpoint_resume_bit_exact": True,
-            "production_execution_cache_regenerated": False,
+            "production_execution_cache_regenerated": True,
+            "production_composition_document_revalidated": True,
             "production_global_tail_archive_regenerated": False,
             "representative_producers_rebased_replayed": False,
             "all_72_output_relocations_closed": False,

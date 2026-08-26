@@ -28,3 +28,8 @@ Checkpoint and execution-cache `*.pkl` files are a narrower local-only trust
 boundary.  Identity validation after loading does not make Python pickle safe
 for hostile input.  Never resume from a downloaded or otherwise untrusted
 pickle; rebuild it locally from the tracked source and deterministic inputs.
+
+The v2.19 production-composer recovery follows this rule.  Its 19.5 MB
+checkpoint and 35.5 MB trusted execution-cache pickle remain external; Git
+stores only the path-free sealed evidence under
+`artifacts/metadata/production_recovery_v2_19/`.

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Binary F2-R1CS lowering for the executable PQ-RBBC v2.18 relation.
+"""Binary F2-R1CS lowering for the executable PQ-RBBC v2.19 relation.
 
 The format is intentionally small and auditable.  It serializes enough data to
 reconstruct ordinary rank-1 constraints over F2:
@@ -651,8 +651,8 @@ def build_backend_manifest(output_path: str | os.PathLike[str]) -> dict[str, obj
         honest.metadata.linear_definitions + honest.metadata.linear_assertions
     )
     return {
-        "implementation_version": "2.18",
-        "status": "the checkpointable recovery path for reconstructing the missing v2.8 execution cache is frozen; no production recovery artifact exists yet, and the tree-2 rebased archive, remaining producers, complete replay, cross-segment identity, and parent join remain external",
+        "implementation_version": "2.19",
+        "status": "the checkpointable recovery path has regenerated and revalidated the frozen v2.8 execution cache; the v2.9 global-tail archive, tree-2 rebased archive, remaining producers, complete replay, cross-segment identity, and parent join remain external",
         "format": {
             "name": honest.metadata.format,
             "version": honest.metadata.format_version,
@@ -850,8 +850,16 @@ def build_backend_manifest(output_path: str | os.PathLike[str]) -> dict[str, obj
             "production_composer_recovery_contract_sha256": native_profile.composer_recovery.FROZEN_CONTRACT_SHA256,
             "production_composer_reduced_execution_sha256": native_profile.composer_recovery.FROZEN_REDUCED_EXECUTION_SHA256,
             "production_composer_reduced_final_checkpoint_sha256": native_profile.composer_recovery.FROZEN_REDUCED_FINAL_CHECKPOINT_SHA256,
-            "production_composer_recovery_production_levels_checkpointed": 0,
-            "production_composer_recovery_production_leaf_outputs_checkpointed": 0,
+            "production_composer_recovery_evidence_relation_id": native_profile.recovery_evidence.RELATION_ID,
+            "production_composer_recovery_evidence_sha256": native_profile.recovery_evidence.FROZEN_EVIDENCE_SHA256,
+            "production_composer_recovery_production_levels_checkpointed": native_profile.recovery_evidence.FROZEN_DERIVATION_LEVELS_CHECKPOINTED,
+            "production_composer_recovery_production_derivations_checkpointed": native_profile.recovery_evidence.FROZEN_DERIVATIONS_CHECKPOINTED,
+            "production_composer_recovery_production_seed_nodes_checkpointed": native_profile.recovery_evidence.FROZEN_SEED_NODES_CHECKPOINTED,
+            "production_composer_recovery_production_leaf_outputs_checkpointed": native_profile.recovery_evidence.FROZEN_LEAF_OUTPUTS_CHECKPOINTED,
+            "production_composer_checkpoint_sha256": native_profile.recovery_evidence.FROZEN_CHECKPOINT_SHA256,
+            "production_composer_checkpoint_state_sha256": native_profile.recovery_evidence.FROZEN_CHECKPOINT_STATE_SHA256,
+            "production_composer_execution_cache_sha256": native_profile.recovery_evidence.FROZEN_EXECUTION_CACHE_SHA256,
+            "production_composer_execution_sha256": native_profile.recovery_evidence.FROZEN_EXECUTION_SHA256,
             "production_tree2_planned_offset_relation_id": native_profile.production_tree2_rebased.RELATION_ID,
             "production_tree2_planned_offset_contract_sha256": native_profile.production_tree2_rebased.FROZEN_CONTRACT_SHA256,
             "production_tree2_planned_local_wire_start": native_profile.production_tree2_rebased.PLANNED_LOCAL_WIRE_START,
@@ -869,7 +877,8 @@ def build_backend_manifest(output_path: str | os.PathLike[str]) -> dict[str, obj
             "production_tree2_rebased_full_replay_closed": False,
             "production_composer_checkpoint_recovery_gate_closed": True,
             "reduced_checkpoint_resume_bit_exact": True,
-            "production_execution_cache_regenerated": False,
+            "production_execution_cache_regenerated": True,
+            "production_composition_document_revalidated": True,
             "production_global_tail_archive_regenerated": False,
             "representative_producers_rebased_replayed": False,
             "all_72_output_relocations_closed": False,
