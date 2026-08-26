@@ -84,6 +84,9 @@ Version 2.19 records the completed checkpointed production recovery.  The
 trusted local execution cache reproduces the frozen v2.8 commitment, XOF trace,
 and canonical document exactly; the v2.9 archive and later replay gates remain
 open.
+Version 2.20 regenerates and independently replays the frozen v2.9 production
+global-tail archive.  The tree-2 planned-offset archive, remaining producers,
+complete 18-tree replay, parent join, and fork security proof remain open.
 Version 2.9 also materializes and replays the shared production global tail
 that consumes all 18 tree outputs: 17 correction pairs, H1, consistency
 points, alpha, xi, H2, one 5,391-byte commitment, and the request hash.  The
@@ -109,6 +112,7 @@ import pq_rbbc_cap_composer as cap_composer
 import pq_rbbc_cap_composer_recovery as cap_composer_recovery
 import pq_rbbc_cap_composer_recovery_evidence as cap_recovery_evidence
 import pq_rbbc_cap_global_tail as cap_global_tail
+import pq_rbbc_cap_global_tail_recovery_evidence as cap_global_tail_recovery_evidence
 import pq_rbbc_cap_output_relocation as cap_output_relocation
 import pq_rbbc_cap_production_namespace as cap_production_namespace
 import pq_rbbc_cap_production_tree2_rebased as cap_production_tree2_rebased
@@ -379,7 +383,7 @@ def build_abi_manifest() -> dict[str, object]:
     hidden = adapter.hidden_state(message, mask, randomness)
     changed_message = bytes((message[0] ^ 1,)) + message[1:]
     return {
-        "implementation_version": "2.19",
+        "implementation_version": "2.20",
         "paper_anchor": "Blind-UOV ePrint 2025/895 is a framework and size comparator, not a bit-exact implementation claim",
         "profile": "PQ-RBBC-BUOV-III/Anemoi-193-336 experimental fork",
         "fork_profile": {
@@ -619,6 +623,9 @@ def build_abi_manifest() -> dict[str, object]:
             "production_global_tail_wires": cap_global_tail.FROZEN_PRODUCTION_WIRES,
             "production_global_tail_replay_failures": 0,
             "production_global_tail_stale_witness_probes": 6,
+            "production_global_tail_recovery_evidence_relation_id": cap_global_tail_recovery_evidence.RELATION_ID,
+            "production_global_tail_recovery_evidence_sha256": cap_global_tail_recovery_evidence.FROZEN_EVIDENCE_SHA256,
+            "production_global_tail_recovered_manifest_sha256": cap_global_tail_recovery_evidence.FROZEN_RECOVERED_MANIFEST_SHA256,
             "reduced_split_tail_phase_contract_closed": True,
             "canonical_tail_stream_and_assignment_equivalent": True,
             "h1_and_consistency_point_ports_native_closed": True,
@@ -649,7 +656,7 @@ def build_abi_manifest() -> dict[str, object]:
             "reduced_checkpoint_resume_bit_exact": True,
             "production_execution_cache_regenerated": True,
             "production_composition_document_revalidated": True,
-            "production_global_tail_archive_regenerated": False,
+            "production_global_tail_archive_regenerated": True,
             "representative_producers_rebased_replayed": False,
             "all_72_output_relocations_closed": False,
             "reduced_tree_producer_segments_native_closed": True,

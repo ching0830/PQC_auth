@@ -338,7 +338,7 @@ class ForkNativeProfileTests(unittest.TestCase):
                 "production_composition_document_revalidated"
             ]
         )
-        self.assertFalse(
+        self.assertTrue(
             manifest["claim_boundary"][
                 "production_global_tail_archive_regenerated"
             ]

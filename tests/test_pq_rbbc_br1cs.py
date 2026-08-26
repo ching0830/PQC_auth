@@ -220,7 +220,7 @@ class BinaryR1CSBackendTests(unittest.TestCase):
         self.assertTrue(contract["reduced_checkpoint_resume_bit_exact"])
         self.assertTrue(contract["production_execution_cache_regenerated"])
         self.assertTrue(contract["production_composition_document_revalidated"])
-        self.assertFalse(contract["production_global_tail_archive_regenerated"])
+        self.assertTrue(contract["production_global_tail_archive_regenerated"])
         self.assertFalse(contract["representative_producers_rebased_replayed"])
         self.assertFalse(contract["all_72_output_relocations_closed"])
         self.assertTrue(contract["reduced_tree_producer_segments_native_closed"])

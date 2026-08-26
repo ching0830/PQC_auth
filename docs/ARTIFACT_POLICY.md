@@ -33,3 +33,10 @@ The v2.19 production-composer recovery follows this rule.  Its 19.5 MB
 checkpoint and 35.5 MB trusted execution-cache pickle remain external; Git
 stores only the path-free sealed evidence under
 `artifacts/metadata/production_recovery_v2_19/`.
+
+The v2.20 global-tail recovery also remains external.  Its fixed-width binary
+assignment is 1,004,865,028 bytes and is non-executable, but still exceeds the
+repository artifact limit.  Git stores only the path-free sealed evidence
+under `artifacts/metadata/global_tail_recovery_v2_20/`.  Preserve the archive
+by exact SHA-256 identity; do not substitute the old incomplete workspace copy
+or commit split archive parts.
