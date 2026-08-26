@@ -1,0 +1,166 @@
+{
+  "claim_boundary": {
+    "all_72_output_relocations_closed": false,
+    "complete_18_tree_assignment_replayed": false,
+    "cross_segment_wire_identity_closed": false,
+    "fork_security_proof_revalidated": false,
+    "parent_cap_to_h_rbbc_join_closed": false,
+    "planned_offset_reduced_fixture_replayed": true,
+    "production_closed": false,
+    "production_tree2_planned_offset_execution_gate_closed": true,
+    "production_tree2_rebased_assignment_materialized": false,
+    "production_tree2_rebased_full_replay_closed": false,
+    "representative_producers_rebased_replayed": false,
+    "tree_producer_segments_materialized": false
+  },
+  "configuration_mutation_probes": [
+    {
+      "failures": [
+        "wrong_namespace_plan_sha256"
+      ],
+      "mutation": "wrong-namespace-digest",
+      "rejected": true
+    },
+    {
+      "failures": [
+        "wrong_planned_local_wire_start",
+        "inconsistent_rebase_delta",
+        "inconsistent_planned_interval"
+      ],
+      "mutation": "wrong-local-start",
+      "rejected": true
+    },
+    {
+      "failures": [
+        "wrong_planned_max_wire_id",
+        "inconsistent_planned_interval"
+      ],
+      "mutation": "wrong-max-wire",
+      "rejected": true
+    },
+    {
+      "failures": [
+        "wrong_planned_output_wire_starts",
+        "inconsistent_output_rebase"
+      ],
+      "mutation": "wrong-output-start",
+      "rejected": true
+    },
+    {
+      "failures": [
+        "wrong_global_point_wire_starts",
+        "invalid_point_imports"
+      ],
+      "mutation": "wrong-point-range",
+      "rejected": true
+    },
+    {
+      "failures": [
+        "wrong_rows",
+        "inconsistent_row_accounting"
+      ],
+      "mutation": "wrong-row-count",
+      "rejected": true
+    },
+    {
+      "failures": [
+        "wrong_local_wires",
+        "inconsistent_planned_interval",
+        "inconsistent_standalone_interval"
+      ],
+      "mutation": "wrong-wire-count",
+      "rejected": true
+    },
+    {
+      "failures": [
+        "wrong_standalone_assignment_sha256"
+      ],
+      "mutation": "wrong-standalone-assignment",
+      "rejected": true
+    }
+  ],
+  "contract": {
+    "assignment_bytes": 486961028,
+    "extension_degree": 12,
+    "global_point_wire_starts": [
+      39945673,
+      39945866
+    ],
+    "leaves": 2048,
+    "linear_rows": 6556384,
+    "local_wires": 19478436,
+    "namespace_plan_sha256": "810f9feb69df61dd9672d90fe74fcec54c3b28bd126013981aeceb1e9e156c4f",
+    "namespace_relation_id": "pq-rbbc/cap/production-namespace-plan/v1",
+    "nonlinear_rows": 19110002,
+    "planned_local_wire_start": 118102257,
+    "planned_max_wire_id": 137580692,
+    "planned_output_wire_starts": [
+      136713057,
+      137503585,
+      137505633,
+      137576061
+    ],
+    "planned_rebase_delta": 77907660,
+    "relation_id": "pq-rbbc/cap/production-tree2-planned-offset/v1",
+    "rows": 25666386,
+    "standalone_assignment_body_sha256": "632db9813ef41bb3af1d769189132d072208ca0a58e2810c76b844a39da3b501",
+    "standalone_assignment_sha256": "63ee82b2421cbb9b4c5346c72dbdb15e26f0ef8e0d2938357fb75228ef8c9a8b",
+    "standalone_local_wire_start": 40194597,
+    "standalone_max_wire_id": 59673032,
+    "standalone_output_wire_starts": [
+      58805397,
+      59595925,
+      59597973,
+      59668401
+    ],
+    "standalone_relation_id": "pq-rbbc/cap/production-tree-producer-index-2/v1",
+    "standalone_row_stream_sha256": "ad31a74cdf00ee96c646a9142da459069655e528aca3cb58cad07dc2b3b26fb8",
+    "tree_index": 2
+  },
+  "contract_sha256": "4d89e4dafc771801cf53db398f63e125b509d243bafd911882279ac7a9a8a3ea",
+  "contract_validation_failures": [],
+  "implementation_version": "2.17",
+  "production_replay": {
+    "external_artifacts_tracked_in_git": false,
+    "planned_assignment_body_sha256": null,
+    "planned_assignment_sha256": null,
+    "planned_row_stream_sha256": null,
+    "production_rows_replayed_at_planned_offset": 0,
+    "required_global_tail_assignment_sha256": "946c1feef78741f0b7e04cfffb237c08b4736d63d8214f8202f822da6e8ec8c1",
+    "required_standalone_tree2_assignment_sha256": "63ee82b2421cbb9b4c5346c72dbdb15e26f0ef8e0d2938357fb75228ef8c9a8b",
+    "required_standalone_tree2_row_stream_sha256": "ad31a74cdf00ee96c646a9142da459069655e528aca3cb58cad07dc2b3b26fb8",
+    "status": "not_materialized"
+  },
+  "profile": {
+    "archive_name": "pq_rbbc_production_tree_2_producer_v2_17_rebased.f193assign",
+    "artifact_tag": "v2_17_rebased",
+    "checkpoint_name": "tree_2_execution_checkpoint_v2_17_rebased.pkl",
+    "relation_id": "pq-rbbc/cap/production-tree2-planned-offset/v1",
+    "stage_name": "tree_2_resume_state_v2_17_rebased.json",
+    "tree_index": 2
+  },
+  "reduced_offset_fixture": {
+    "assignment_value_sha256": "693f553098bbcef948ad384902a594fcf517d607e7354d140ea4307c1b85e017",
+    "assignment_values_identical": true,
+    "canonical_local_wire_start": 1000,
+    "captured_rows_rebase_exact": true,
+    "fixture_is_not_production_replay_evidence": true,
+    "imported_point_wire_starts": [
+      1
+    ],
+    "linear_rows": 11227,
+    "local_port_ids_shifted_exactly": true,
+    "nonlinear_rows": 22727,
+    "planned_local_wire_start": 100000,
+    "planned_replay_failures": 0,
+    "point_wire_ids_preserved": true,
+    "port_values_identical": true,
+    "rebase_delta": 99000,
+    "row_count_and_accounting_identical": true,
+    "rows": 33954,
+    "stale_witness_probes": 6,
+    "stale_witness_probes_rejected": true,
+    "tree_index": 1,
+    "wires": 23135
+  }
+}

@@ -290,8 +290,25 @@ class ForkNativeProfileTests(unittest.TestCase):
             "production_namespace_intervals_nonoverlapping",
             "production_global_point_imports_preserved",
             "representative_rebase_rule_fixture_verified",
+            "production_tree2_planned_offset_execution_gate_closed",
+            "planned_offset_reduced_fixture_replayed",
         ):
             self.assertTrue(manifest["claim_boundary"][name], name)
+        rebase = manifest["implemented_primitives"][
+            "production_tree2_planned_offset_component"
+        ]
+        self.assertEqual(rebase["planned_local_wire_start"], 118_102_257)
+        self.assertEqual(rebase["planned_max_wire_id"], 137_580_692)
+        self.assertEqual(rebase["production_rows_replayed_at_planned_offset"], 0)
+        self.assertFalse(rebase["production_assignment_materialized"])
+        self.assertFalse(
+            manifest["claim_boundary"][
+                "production_tree2_rebased_assignment_materialized"
+            ]
+        )
+        self.assertFalse(
+            manifest["claim_boundary"]["production_tree2_rebased_full_replay_closed"]
+        )
         self.assertFalse(
             manifest["claim_boundary"]["representative_producers_rebased_replayed"]
         )

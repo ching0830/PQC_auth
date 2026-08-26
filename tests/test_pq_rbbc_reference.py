@@ -197,6 +197,15 @@ class RelationTests(unittest.TestCase):
         self.assertEqual(contract["production_namespace_planned_composition_rows"], 586_057_567)
         self.assertEqual(contract["production_namespace_max_wire_id"], 429_757_232)
         self.assertTrue(contract["production_18_tree_namespace_plan_closed"])
+        self.assertEqual(
+            contract["production_tree2_planned_local_wire_start"], 118_102_257
+        )
+        self.assertEqual(contract["production_tree2_planned_max_wire_id"], 137_580_692)
+        self.assertEqual(contract["production_tree2_rebased_production_rows_replayed"], 0)
+        self.assertTrue(contract["production_tree2_planned_offset_execution_gate_closed"])
+        self.assertTrue(contract["planned_offset_reduced_fixture_replayed"])
+        self.assertFalse(contract["production_tree2_rebased_assignment_materialized"])
+        self.assertFalse(contract["production_tree2_rebased_full_replay_closed"])
         self.assertFalse(contract["representative_producers_rebased_replayed"])
         self.assertFalse(contract["all_72_output_relocations_closed"])
         self.assertTrue(contract["reduced_tree_producer_segments_native_closed"])

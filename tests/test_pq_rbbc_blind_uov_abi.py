@@ -422,8 +422,31 @@ class BlindUOVVisibilityTests(unittest.TestCase):
         self.assertEqual(interface["production_namespace_total_output_relocation_rows"], 15_938_520)
         self.assertEqual(interface["production_namespace_planned_composition_rows"], 586_057_567)
         self.assertEqual(interface["production_namespace_max_wire_id"], 429_757_232)
+        self.assertEqual(
+            interface["production_tree2_planned_local_wire_start"], 118_102_257
+        )
+        self.assertEqual(
+            interface["production_tree2_planned_max_wire_id"], 137_580_692
+        )
+        self.assertEqual(interface["production_tree2_rebased_production_rows_replayed"], 0)
         self.assertTrue(
             manifest["claim_boundary"]["production_18_tree_namespace_plan_closed"]
+        )
+        self.assertTrue(
+            manifest["claim_boundary"][
+                "production_tree2_planned_offset_execution_gate_closed"
+            ]
+        )
+        self.assertTrue(
+            manifest["claim_boundary"]["planned_offset_reduced_fixture_replayed"]
+        )
+        self.assertFalse(
+            manifest["claim_boundary"][
+                "production_tree2_rebased_assignment_materialized"
+            ]
+        )
+        self.assertFalse(
+            manifest["claim_boundary"]["production_tree2_rebased_full_replay_closed"]
         )
         self.assertFalse(
             manifest["claim_boundary"]["representative_producers_rebased_replayed"]
