@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Regression tests for PQ-RBBC v2.23 tree-3 planned evidence."""
+"""Regression tests for PQ-RBBC v2.24 tree-4 planned evidence."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ import os
 import unittest
 from pathlib import Path
 
-import pq_rbbc_cap_tree3_planned_recovery_evidence as evidence
+import pq_rbbc_cap_tree4_planned_recovery_evidence as evidence
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -18,13 +18,13 @@ MANIFEST_PATH = (
     ROOT
     / "artifacts"
     / "metadata"
-    / "tree3_planned_recovery_v2_23"
+    / "tree4_planned_recovery_v2_24"
     / evidence.MANIFEST_NAME
 )
 GLOBAL_MANIFEST_PATH = ROOT / "manifests" / "pq_rbbc_cap_global_tail_manifest_v2_9.json"
 
 
-class Tree3PlannedRecoveryEvidenceTests(unittest.TestCase):
+class Tree4PlannedRecoveryEvidenceTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.frozen_bytes = MANIFEST_PATH.read_bytes()
@@ -41,7 +41,7 @@ class Tree3PlannedRecoveryEvidenceTests(unittest.TestCase):
         )
 
     def test_archive_and_replay_identities_are_exact(self) -> None:
-        replay = self.frozen["production_tree3_planned"]
+        replay = self.frozen["production_tree4_planned"]
         self.assertEqual(
             replay["runner_implementation_version"],
             evidence.FROZEN_RUNNER_IMPLEMENTATION_VERSION,
@@ -60,14 +60,14 @@ class Tree3PlannedRecoveryEvidenceTests(unittest.TestCase):
             all(item["exact_value_match"] for item in replay["output_matches"])
         )
 
-    def test_claim_boundary_advances_only_tree3_replay(self) -> None:
+    def test_claim_boundary_advances_only_tree4_replay(self) -> None:
         claims = self.frozen["claim_boundary"]
-        self.assertTrue(claims["production_tree3_planned_assignment_materialized"])
-        self.assertTrue(claims["production_tree3_planned_full_replay_closed"])
+        self.assertTrue(claims["production_tree4_planned_assignment_materialized"])
+        self.assertTrue(claims["production_tree4_planned_full_replay_closed"])
         self.assertTrue(claims["production_tree1_planned_assignment_materialized"])
         self.assertTrue(claims["production_tree1_planned_full_replay_closed"])
-        self.assertEqual(claims["materialized_planned_tree_indices"], [0, 1, 2, 3])
-        self.assertEqual(claims["materialized_planned_tree_count"], 4)
+        self.assertEqual(claims["materialized_planned_tree_indices"], [0, 1, 2, 3, 4])
+        self.assertEqual(claims["materialized_planned_tree_count"], 5)
         for name in (
             "remaining_planned_tree_producers_materialized",
             "all_72_output_relocations_closed",
@@ -91,13 +91,13 @@ class Tree3PlannedRecoveryEvidenceTests(unittest.TestCase):
     def test_identity_and_overclaim_mutations_fail_closed(self) -> None:
         mutations = []
         wrong_archive = copy.deepcopy(self.frozen)
-        wrong_archive["production_tree3_planned"]["archive_sha256"] = "00" * 32
+        wrong_archive["production_tree4_planned"]["archive_sha256"] = "00" * 32
         mutations.append(wrong_archive)
         wrong_stream = copy.deepcopy(self.frozen)
-        wrong_stream["production_tree3_planned"]["row_stream_sha256"] = "11" * 32
+        wrong_stream["production_tree4_planned"]["row_stream_sha256"] = "11" * 32
         mutations.append(wrong_stream)
         wrong_output = copy.deepcopy(self.frozen)
-        wrong_output["production_tree3_planned"]["output_matches"][0][
+        wrong_output["production_tree4_planned"]["output_matches"][0][
             "exact_value_match"
         ] = False
         mutations.append(wrong_output)
@@ -108,13 +108,13 @@ class Tree3PlannedRecoveryEvidenceTests(unittest.TestCase):
             self.assertTrue(evidence.validate_evidence_document(changed))
 
     def test_optional_external_artifacts_reseal_exactly(self) -> None:
-        root_value = os.environ.get("PQRBBC_V2_23_TREE3_ROOT")
+        root_value = os.environ.get("PQRBBC_V2_24_TREE4_ROOT")
         if not root_value:
-            self.skipTest("external v2.23 tree-3 artifacts are not installed")
+            self.skipTest("external v2.24 tree-4 artifacts are not installed")
         root = Path(root_value)
         generated = evidence.build_evidence_from_artifacts(
-            root / "pq_rbbc_production_tree_3_producer_v2_23_planned.f193assign",
-            root / "pq_rbbc_cap_planned_tree3_replayed_manifest_v2_23.json",
+            root / "pq_rbbc_production_tree_4_producer_v2_24_planned.f193assign",
+            root / "pq_rbbc_cap_planned_tree4_replayed_manifest_v2_24.json",
             GLOBAL_MANIFEST_PATH,
         )
         self.assertEqual(generated, self.frozen)

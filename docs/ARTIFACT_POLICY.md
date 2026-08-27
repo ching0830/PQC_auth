@@ -66,3 +66,13 @@ are local-only.  Git stores only path-free sealed evidence under
 identity was established by a first complete replay and then revalidated by a
 second complete replay under the frozen contract; neither the archive nor any
 pickle may be committed.
+
+The v2.24 tree-index-4 planned-offset replay also remains external.  Its
+486,961,028-byte assignment has SHA-256
+`cd2430637f8ca07356727cb4349ca02368f2268f865092c71f3049140bacf52d`;
+trusted identity-bound pre-freeze and frozen pickle caches plus resume state
+are local-only.  Git stores only path-free sealed evidence under
+`artifacts/metadata/tree4_planned_recovery_v2_24/`.  The row-stream size was
+observed by a first complete replay and accepted only after a fresh-cache
+second replay under the final frozen contract.  The archive, BR1CS, resume
+state, and every pickle remain prohibited from Git.
