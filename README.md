@@ -17,15 +17,15 @@ PQ-RBBC / Blind-UOV → signature-gated decryption research track.
 
 ## Current checkpoint
 
-Version 2.22 completes R1d-b1 by adding a generic checkpointable planned-offset
-runner and materializing tree index 1 at planned local wire start 79,148,427.
-All 51,325,080 rows pass, all four outputs match the recovered global tail, and
-six standard plus three point mutations reject.  Planned producer indices 0,
-1, and 2 are now materialized; trees 1 and 2 have complete planned-offset
-replays.  Git contains only portable sealed evidence; the 973,845,878-byte
-tree-1 assignment, pickle caches, global tail, and BR1CS remain external.  The
-remaining fifteen position-sensitive producers, complete assignment, parent
-join, and formal security reductions remain open.
+Version 2.23 continues R1d-b2 by materializing tree index 3 at planned local
+wire start 137,580,693 through the generic checkpointable planned-offset
+runner.  All 25,666,386 rows pass, all four outputs match the recovered global
+tail, and six stale-witness plus three point mutations reject.  Planned
+producer indices 0 through 3 are now materialized; trees 1, 2, and 3 have
+complete planned-offset replays.  Git contains only portable sealed evidence;
+the 486,961,028-byte tree-3 assignment, pickle caches, global tail, and BR1CS
+remain external.  The remaining fourteen position-sensitive producers,
+complete assignment, parent join, and formal security reductions remain open.
 Start with
 `docs/roadmaps/PQ_RBBC_CURRENT_HANDOFF.md` in a new work session.
 

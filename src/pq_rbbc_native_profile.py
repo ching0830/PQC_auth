@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fail-closed native import contract for the PQ-RBBC v2.22 fork.
+"""Fail-closed native import contract for the PQ-RBBC v2.23 fork.
 
 The selected profile is deliberately independent of the unreproduced
 Blind-UOV 240-row instance.  It accepts no claim of bit-exact compatibility.
@@ -30,6 +30,7 @@ import pq_rbbc_cap_production_namespace as production_namespace
 import pq_rbbc_cap_production_tree2_rebased as production_tree2_rebased
 import pq_rbbc_cap_tree2_rebased_recovery_evidence as tree2_rebased_recovery_evidence
 import pq_rbbc_cap_tree1_planned_recovery_evidence as tree1_planned_recovery_evidence
+import pq_rbbc_cap_tree3_planned_recovery_evidence as tree3_planned_recovery_evidence
 import pq_rbbc_cap_production_split_tail as production_split_tail
 import pq_rbbc_cap_production_tree0_producer as production_tree0
 import pq_rbbc_cap_production_tree2_producer as production_tree2
@@ -41,11 +42,14 @@ import pq_rbbc_cap_shard_stream as shard_stream
 import pq_rbbc_horner_native as horner_native
 
 
-IMPLEMENTATION_VERSION = "2.22"
+IMPLEMENTATION_VERSION = "2.23"
 RELATION_ID = "pq-rbbc-buov-iii-336/cap-hash/v1"
 TARGET_FIELD = "GF(2^193)"
 TREE1_PLANNED_CONTRACT = planned_tree_producer.load_contract(
     planned_tree_producer.TREE1_INDEX
+)
+TREE3_PLANNED_CONTRACT = planned_tree_producer.load_contract(
+    planned_tree_producer.TREE3_INDEX
 )
 REQUIRED_TAMPER_CASES = frozenset(
     {"message", "mask", "cap_randomness", "hash_image"}
@@ -182,7 +186,7 @@ def build_native_profile_manifest() -> dict[str, object]:
     parameters = permutation.derive_parameters()
     return {
         "implementation_version": IMPLEMENTATION_VERSION,
-        "status": "the frozen v2.8 execution cache and v2.9 global-tail archive have been regenerated and revalidated; planned trees 0, 1, and 2 are materialized, and trees 1 and 2 have been fully replayed at their planned offsets; the remaining producers, complete replay, parent join, and security reductions remain external",
+        "status": "the frozen v2.8 execution cache and v2.9 global-tail archive have been regenerated and revalidated; planned trees 0 through 3 are materialized, and trees 1, 2, and 3 have been fully replayed at their planned offsets; the remaining producers, complete replay, parent join, and security reductions remain external",
         "fork_profile": {
             "name": sponge.PROFILE_NAME,
             "relation_id": RELATION_ID,
@@ -542,6 +546,32 @@ def build_native_profile_manifest() -> dict[str, object]:
                 "production_full_replay_closed": True,
                 "large_artifacts_tracked_in_git": False,
             },
+            "production_tree3_planned_offset_component": {
+                "runner_relation_id": planned_tree_producer.RELATION_ID,
+                "contract_sha256": planned_tree_producer.FROZEN_TREE3_CONTRACT_SHA256,
+                "namespace_plan_sha256": production_namespace.FROZEN_PLAN_SHA256,
+                "tree_index": TREE3_PLANNED_CONTRACT.tree_index,
+                "planned_local_wire_start": TREE3_PLANNED_CONTRACT.planned_local_wire_start,
+                "planned_max_wire_id": TREE3_PLANNED_CONTRACT.planned_max_wire_id,
+                "planned_rebase_delta": TREE3_PLANNED_CONTRACT.rebase_delta,
+                "planned_output_wire_starts": TREE3_PLANNED_CONTRACT.planned_output_wire_starts,
+                "evidence_relation_id": tree3_planned_recovery_evidence.RELATION_ID,
+                "evidence_sha256": tree3_planned_recovery_evidence.FROZEN_EVIDENCE_SHA256,
+                "replayed_manifest_sha256": tree3_planned_recovery_evidence.FROZEN_REPLAY_MANIFEST_SHA256,
+                "production_rows_replayed_at_planned_offset": tree3_planned_recovery_evidence.FROZEN_ROWS,
+                "production_local_wires": tree3_planned_recovery_evidence.FROZEN_WIRES,
+                "production_row_stream_bytes": tree3_planned_recovery_evidence.FROZEN_STREAM_BYTES,
+                "production_row_stream_sha256": tree3_planned_recovery_evidence.FROZEN_STREAM_SHA256,
+                "production_assignment_bytes": tree3_planned_recovery_evidence.FROZEN_ARCHIVE_BYTES,
+                "production_assignment_sha256": tree3_planned_recovery_evidence.FROZEN_ARCHIVE_SHA256,
+                "production_assignment_body_sha256": tree3_planned_recovery_evidence.FROZEN_BODY_SHA256,
+                "tree_component_sha256": tree3_planned_recovery_evidence.FROZEN_TREE_COMPONENT_SHA256,
+                "stale_witness_probes": tree3_planned_recovery_evidence.FROZEN_STANDARD_PROBES,
+                "point_mutation_probes": tree3_planned_recovery_evidence.FROZEN_POINT_PROBES,
+                "production_assignment_materialized": True,
+                "production_full_replay_closed": True,
+                "large_artifacts_tracked_in_git": False,
+            },
             "reduced_tree_producer_component": {
                 "relation_id": tree_producer.RELATION_ID,
                 "tree_count": 2,
@@ -611,8 +641,10 @@ def build_native_profile_manifest() -> dict[str, object]:
             "production_tree2_rebased_full_replay_closed": True,
             "production_tree1_planned_assignment_materialized": True,
             "production_tree1_planned_full_replay_closed": True,
-            "materialized_planned_tree_indices": [0, 1, 2],
-            "materialized_planned_tree_count": 3,
+            "production_tree3_planned_assignment_materialized": True,
+            "production_tree3_planned_full_replay_closed": True,
+            "materialized_planned_tree_indices": [0, 1, 2, 3],
+            "materialized_planned_tree_count": 4,
             "remaining_planned_tree_producers_materialized": False,
             "production_composer_checkpoint_recovery_gate_closed": True,
             "reduced_checkpoint_resume_bit_exact": True,

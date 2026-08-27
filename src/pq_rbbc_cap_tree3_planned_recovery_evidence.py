@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Seal the completed PQ-RBBC tree-1 planned-offset replay, v2.22.
+"""Seal the completed PQ-RBBC tree-3 planned-offset replay, v2.23.
 
-The generic planned-offset runner materialized and replayed tree index 1 at
+The generic planned-offset runner materialized and replayed tree index 3 at
 the frozen v2.16 namespace position.  This module records path-free portable
-evidence while keeping the 973 MB assignment and trusted pickle caches outside
+evidence while keeping the 486 MB assignment and trusted pickle caches outside
 Git.
 """
 
@@ -18,6 +18,7 @@ from typing import Mapping
 
 import pq_rbbc_cap_global_tail_recovery_evidence as global_tail_recovery
 import pq_rbbc_cap_planned_tree_producer as planned
+import pq_rbbc_cap_tree1_planned_recovery_evidence as tree1_evidence
 import pq_rbbc_cap_tree2_rebased_recovery_evidence as tree2_evidence
 from pq_rbbc_anemoi_f193 import FIELD_DEGREE, FIELD_ELEMENT_BYTES
 from pq_rbbc_cap_shard_assignment import (
@@ -28,32 +29,31 @@ from pq_rbbc_cap_shard_assignment import (
 )
 
 
-IMPLEMENTATION_VERSION = "2.22"
-FROZEN_RUNNER_IMPLEMENTATION_VERSION = "2.22"
-EVIDENCE_FORMAT = "PQRBBC-CAP-TREE1-PLANNED-RECOVERY-EVIDENCE-1"
-RELATION_ID = "pq-rbbc/cap/production-tree1-planned-recovery-evidence/v1"
-MANIFEST_NAME = "pq_rbbc_cap_tree1_planned_recovery_evidence_v2_22.json"
+IMPLEMENTATION_VERSION = "2.23"
+EVIDENCE_FORMAT = "PQRBBC-CAP-TREE3-PLANNED-RECOVERY-EVIDENCE-1"
+RELATION_ID = "pq-rbbc/cap/production-tree3-planned-recovery-evidence/v1"
+MANIFEST_NAME = "pq_rbbc_cap_tree3_planned_recovery_evidence_v2_23.json"
 
-FROZEN_EVIDENCE_SHA256 = "895c7d47209eb4f1bb3c56f5655ecc89b33b0cc7f1ce0d6e238ab5d9afa34712"
+FROZEN_EVIDENCE_SHA256 = "7369957afbcb4b5091ee06b914a2ef807392c857af941c06f412d80366c8aa93"
 FROZEN_REPLAY_MANIFEST_SHA256 = (
-    "1777000ae991d384ee540e32b0d98a42645f494049ff96a20f365ecb08e3d9ce"
+    "1054dd12e7144ba0e66cca98f57d697163c5b0bcd72292aecc486edff9918b15"
 )
-FROZEN_ARCHIVE_BYTES = 973_845_878
+FROZEN_ARCHIVE_BYTES = 486_961_028
 FROZEN_ARCHIVE_SHA256 = (
-    "ab75aca6037e47fe38a1364d2c66f90d1a3856da901423b398fa2d8812fa609f"
+    "315e83340d10331188d27a99a82de6f1262e36468f1b6f8c6ef97283d83fc02b"
 )
-FROZEN_BODY_BYTES = 973_845_750
+FROZEN_BODY_BYTES = 486_960_900
 FROZEN_BODY_SHA256 = (
-    "00b175ebf9414e9d7a4bae49de4e0bf7ff568631dc8865f898a3ed084ab6061f"
+    "b9c244e8fea051e6119a72733b845ab5dae4c247f5da618037d1864e9f51f2b1"
 )
-FROZEN_ROWS = 51_325_080
-FROZEN_WIRES = 38_953_830
-FROZEN_STREAM_BYTES = 18_008_277_115
+FROZEN_ROWS = 25_666_386
+FROZEN_WIRES = 19_478_436
+FROZEN_STREAM_BYTES = 8_961_160_824
 FROZEN_STREAM_SHA256 = (
-    "1a9c11a716cb491517277c6e18c805683d85a75cb2c5306f13db7b7f13d1f516"
+    "0ad71fd26237442e2f2e4b8b73324a98761341a405f362397f841d61e860439a"
 )
 FROZEN_TREE_COMPONENT_SHA256 = (
-    "0db861243dbc72fffb09799ea50c4b770c3cb2a847d4dd66fffc968b91790d81"
+    "404d5eeccdf53e7656d3df2a5e584c8cfa0ac2e2b3c916c1e4dee61fd8659b43"
 )
 FROZEN_FIRST_WIRE = 0
 FROZEN_LAST_WIRE = 0
@@ -62,35 +62,35 @@ FROZEN_POINT_PROBES = 3
 
 FROZEN_OUTPUT_MATCHES = (
     {
-        "port_id": "tree[1].leaf-commitments",
-        "planned_producer_wire_start": 116_373_499,
-        "consumer_wire_start": 1_589_151,
-        "bit_length": 1_581_056,
-        "value_sha256": "1c83e40fa8b2b264559419615eb5563e59f7629ffe67d940adbbd41ae5a8a6ec",
+        "port_id": "tree[3].leaf-commitments",
+        "planned_producer_wire_start": 156_191_493,
+        "consumer_wire_start": 3_975_253,
+        "bit_length": 790_528,
+        "value_sha256": "93a662a73b45580ba16bbbea80389766f6a31bcf8345e4996173fdccb5305eae",
         "exact_value_match": True,
     },
     {
-        "port_id": "tree[1].p-plain",
-        "planned_producer_wire_start": 117_954_555,
-        "consumer_wire_start": 3_170_207,
+        "port_id": "tree[3].p-plain",
+        "planned_producer_wire_start": 156_982_021,
+        "consumer_wire_start": 4_765_781,
         "bit_length": 2_048,
-        "value_sha256": "f907ac9ab870655e8ade54b497e2794281edd941e890096d9c4072ae69b54d1d",
+        "value_sha256": "cc7f4c1429792f7f87487b86cec0f555ea767bb1a8e1cf032e70380929a950ec",
         "exact_value_match": True,
     },
     {
-        "port_id": "tree[1].mhat-plain",
-        "planned_producer_wire_start": 117_956_603,
-        "consumer_wire_start": 3_172_255,
+        "port_id": "tree[3].mhat-plain",
+        "planned_producer_wire_start": 156_984_069,
+        "consumer_wire_start": 4_767_829,
         "bit_length": 386,
-        "value_sha256": "716b361e7b5cde36f9b63b5d61c0cf7cbe6b62de76d105430ced89184868ffae",
+        "value_sha256": "7ee0dfbd7d086b2f440f26a56d7c61557e36ccd81f2ccf28f18efa513399e5d1",
         "exact_value_match": True,
     },
     {
-        "port_id": "tree[1].xi-masks",
-        "planned_producer_wire_start": 118_097_239,
-        "consumer_wire_start": 3_172_641,
-        "bit_length": 5_018,
-        "value_sha256": "da36bc3c9282f03e6f0a80c2b6d969d9a6e0bfa5d3f9f8064720e5dc22334371",
+        "port_id": "tree[3].xi-masks",
+        "planned_producer_wire_start": 157_054_497,
+        "consumer_wire_start": 4_768_215,
+        "bit_length": 4_632,
+        "value_sha256": "85d0889efc09b254eb1b876bfdd742657d99c947925deae837605ace283a3a1d",
         "exact_value_match": True,
     },
 )
@@ -112,7 +112,7 @@ def canonical_json(document: Mapping[str, object]) -> bytes:
 
 
 def _json_contract() -> dict[str, object]:
-    return json.loads(json.dumps(asdict(planned.load_contract(planned.TREE1_INDEX))))
+    return json.loads(json.dumps(asdict(planned.load_contract(planned.TREE3_INDEX))))
 
 
 def _expected_replay_values() -> dict[str, object]:
@@ -133,12 +133,15 @@ def _expected_replay_values() -> dict[str, object]:
     }
 
 
-def _expected_runner_claims() -> dict[str, bool]:
+def _expected_runner_claims() -> dict[str, object]:
     return {
         "planned_tree_runner_preflight_closed": True,
         "planned_offset_reduced_fixture_replayed": True,
-        "production_tree1_planned_assignment_materialized": True,
-        "production_tree1_planned_full_replay_closed": True,
+        "target_tree_index": 3,
+        "production_tree1_planned_assignment_materialized": False,
+        "production_tree1_planned_full_replay_closed": False,
+        "production_tree3_planned_assignment_materialized": True,
+        "production_tree3_planned_full_replay_closed": True,
         "remaining_planned_tree_producers_materialized": False,
         "all_72_output_relocations_closed": False,
         "complete_18_tree_assignment_replayed": False,
@@ -167,13 +170,19 @@ def build_frozen_evidence_document() -> dict[str, object]:
             "evidence_sha256": tree2_evidence.FROZEN_EVIDENCE_SHA256,
             "archive_sha256": tree2_evidence.FROZEN_ARCHIVE_SHA256,
         },
-        "production_tree1_planned": {
-            "runner_implementation_version": FROZEN_RUNNER_IMPLEMENTATION_VERSION,
+        "prior_tree1_recovery": {
+            "implementation_version": tree1_evidence.IMPLEMENTATION_VERSION,
+            "relation_id": tree1_evidence.RELATION_ID,
+            "evidence_sha256": tree1_evidence.FROZEN_EVIDENCE_SHA256,
+            "archive_sha256": tree1_evidence.FROZEN_ARCHIVE_SHA256,
+        },
+        "production_tree3_planned": {
+            "runner_implementation_version": planned.IMPLEMENTATION_VERSION,
             "runner_relation_id": planned.RELATION_ID,
             "producer_relation_id": contract["producer_relation_id"],
-            "contract_sha256": planned.FROZEN_TREE1_CONTRACT_SHA256,
+            "contract_sha256": planned.FROZEN_TREE3_CONTRACT_SHA256,
             "namespace_plan_sha256": contract["namespace_plan_sha256"],
-            "tree_index": planned.TREE1_INDEX,
+            "tree_index": planned.TREE3_INDEX,
             "planned_local_wire_start": contract["planned_local_wire_start"],
             "planned_max_wire_id": contract["planned_max_wire_id"],
             "planned_output_wire_starts": contract["planned_output_wire_starts"],
@@ -218,8 +227,10 @@ def build_frozen_evidence_document() -> dict[str, object]:
             "production_tree2_rebased_full_replay_closed": True,
             "production_tree1_planned_assignment_materialized": True,
             "production_tree1_planned_full_replay_closed": True,
-            "materialized_planned_tree_indices": [0, 1, 2],
-            "materialized_planned_tree_count": 3,
+            "production_tree3_planned_assignment_materialized": True,
+            "production_tree3_planned_full_replay_closed": True,
+            "materialized_planned_tree_indices": [0, 1, 2, 3],
+            "materialized_planned_tree_count": 4,
             "remaining_planned_tree_producers_materialized": False,
             "all_72_output_relocations_closed": False,
             "complete_18_tree_assignment_replayed": False,
@@ -240,7 +251,8 @@ def validate_evidence_document(document: Mapping[str, object]) -> tuple[str, ...
         ("relation_id", "wrong_relation_id"),
         ("source_global_tail_recovery", "source_global_tail_recovery_identity"),
         ("prior_tree2_recovery", "prior_tree2_recovery_identity"),
-        ("production_tree1_planned", "production_tree1_planned_identity"),
+        ("prior_tree1_recovery", "prior_tree1_recovery_identity"),
+        ("production_tree3_planned", "production_tree3_planned_identity"),
         ("replayed_manifest", "replayed_manifest_identity"),
         ("artifact_policy", "artifact_policy"),
         ("claim_boundary", "claim_boundary"),
@@ -274,7 +286,7 @@ def build_evidence_from_artifacts(
     replayed = json.loads(replayed_manifest_path.read_text(encoding="utf-8"))
     global_document = json.loads(global_manifest_path.read_text(encoding="utf-8"))
     if not isinstance(replayed, dict) or not isinstance(global_document, dict):
-        raise ValueError("tree-1 replay inputs must be JSON objects")
+        raise ValueError("tree-3 replay inputs must be JSON objects")
 
     contract = _json_contract()
     probes = replayed.get("configuration_mutation_probes")
@@ -284,10 +296,10 @@ def build_evidence_from_artifacts(
         "replayed_manifest_sha256": _sha256_file(replayed_manifest_path)
         == FROZEN_REPLAY_MANIFEST_SHA256,
         "implementation_version": replayed.get("implementation_version")
-        == FROZEN_RUNNER_IMPLEMENTATION_VERSION,
+        == planned.IMPLEMENTATION_VERSION,
         "contract": replayed.get("contract") == contract,
         "contract_sha256": replayed.get("contract_sha256")
-        == planned.FROZEN_TREE1_CONTRACT_SHA256,
+        == planned.FROZEN_TREE3_CONTRACT_SHA256,
         "contract_validation_failures": replayed.get("contract_validation_failures")
         == [],
         "configuration_mutations": isinstance(probes, list)
@@ -351,7 +363,7 @@ def build_evidence_from_artifacts(
     failed = [name for name, accepted in exact_checks.items() if not accepted]
     if failed:
         raise ValueError(
-            "tree-1 planned recovery evidence rejected: " + ",".join(failed)
+            "tree-3 planned recovery evidence rejected: " + ",".join(failed)
         )
     return build_frozen_evidence_document()
 
@@ -367,8 +379,8 @@ def main() -> None:
     if args.verify_frozen is not None:
         failures = verify_frozen_evidence(args.verify_frozen)
         if failures:
-            raise SystemExit("frozen tree-1 evidence rejected: " + ",".join(failures))
-        print("frozen production tree-1 planned recovery evidence accepted")
+            raise SystemExit("frozen tree-3 evidence rejected: " + ",".join(failures))
+        print("frozen production tree-3 planned recovery evidence accepted")
         return
     required = (
         args.manifest,

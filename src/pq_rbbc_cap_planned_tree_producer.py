@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Checkpointable planned-offset production tree runner for PQ-RBBC v2.22.
+"""Checkpointable planned-offset production tree runner for PQ-RBBC v2.23.
 
 The v2.13 tree-0 and v2.14/v2.17 tree-2 programs remain frozen.  This module
 generalizes their execution pattern without modifying either historical
@@ -39,22 +39,32 @@ import pq_rbbc_cap_shard_assignment as assignment
 import pq_rbbc_cap_tree_producer as producer
 
 
-IMPLEMENTATION_VERSION = "2.22"
+IMPLEMENTATION_VERSION = "2.23"
 RELATION_ID = "pq-rbbc/cap/planned-offset-tree-runner/v1"
 EXECUTION_CACHE_FORMAT = "PQRBBC-PLANNED-TREE-CACHE-1"
 RESUME_FORMAT = "PQRBBC-PLANNED-TREE-RESUME-1"
-ARTIFACT_TAG = "v2_22_planned"
-MANIFEST_NAME = "pq_rbbc_cap_planned_tree1_manifest_v2_22.json"
+ARTIFACT_TAG = "v2_23_planned"
+MANIFEST_NAME = "pq_rbbc_cap_planned_tree3_manifest_v2_23.json"
 CHECKPOINT_BATCH_LEAVES = 128
 MAX_WIRE_ID = (1 << 64) - 1
 TREE1_INDEX = 1
+TREE3_INDEX = 3
+DEFAULT_TREE_INDEX = TREE3_INDEX
 FROZEN_TREE1_CONTRACT_SHA256 = (
     "69aeb8e5deda83a2ff4f2e58a87990564b8aa42bcb3b65719749ebc54958f723"
 )
+FROZEN_TREE3_CONTRACT_SHA256 = (
+    "680a89d31e2f566b0f08f68f095643ca7642c600c124ba98b860b40e3e01481a"
+)
+FROZEN_CONTRACT_SHA256_BY_TREE = {
+    TREE1_INDEX: FROZEN_TREE1_CONTRACT_SHA256,
+    TREE3_INDEX: FROZEN_TREE3_CONTRACT_SHA256,
+}
 FROZEN_STREAM_BYTES_BY_TREE = {
     0: tree0.FROZEN_STREAM_BYTES,
     1: 18_008_277_115,
     2: tree2.FROZEN_STREAM_BYTES,
+    3: 8_961_160_824,
 }
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -588,9 +598,15 @@ def build_production_tree(
     contract = load_contract(tree_index, namespace_manifest_path)
     if contract_failures(contract, contract):
         raise ValueError("planned tree contract is invalid")
-    if tree_index == TREE1_INDEX and not FROZEN_TREE1_CONTRACT_SHA256.startswith("SET_AFTER_"):
-        if contract_sha256(contract) != FROZEN_TREE1_CONTRACT_SHA256:
-            raise ValueError("tree-1 planned contract is not frozen v2.22")
+    frozen_contract_sha256 = FROZEN_CONTRACT_SHA256_BY_TREE.get(tree_index)
+    if (
+        frozen_contract_sha256 is not None
+        and contract_sha256(contract) != frozen_contract_sha256
+    ):
+        raise ValueError(
+            f"tree-{tree_index} planned contract is not frozen "
+            f"v{IMPLEMENTATION_VERSION}"
+        )
     point_failures = validate_point_imports(contract)
     if point_failures:
         raise ValueError("planned point import contract rejected: " + ",".join(point_failures))
@@ -757,7 +773,7 @@ def _tail_ports(document: Mapping[str, object]) -> dict[str, Mapping[str, object
 
 
 def build_preflight_manifest(
-    tree_index: int = TREE1_INDEX,
+    tree_index: int = DEFAULT_TREE_INDEX,
     namespace_manifest_path: Path = DEFAULT_NAMESPACE_MANIFEST,
 ) -> dict[str, object]:
     contract = load_contract(tree_index, namespace_manifest_path)
@@ -777,10 +793,9 @@ def build_preflight_manifest(
         )
     )
     digest = contract_sha256(contract)
+    expected_contract_sha256 = FROZEN_CONTRACT_SHA256_BY_TREE.get(tree_index)
     frozen_contract = (
-        tree_index != TREE1_INDEX
-        or FROZEN_TREE1_CONTRACT_SHA256.startswith("SET_AFTER_")
-        or digest == FROZEN_TREE1_CONTRACT_SHA256
+        expected_contract_sha256 is None or digest == expected_contract_sha256
     )
     preflight_closed = (
         not failures
@@ -816,8 +831,11 @@ def build_preflight_manifest(
         "claim_boundary": {
             "planned_tree_runner_preflight_closed": preflight_closed,
             "planned_offset_reduced_fixture_replayed": fixture_closed,
+            "target_tree_index": tree_index,
             "production_tree1_planned_assignment_materialized": False,
             "production_tree1_planned_full_replay_closed": False,
+            "production_tree3_planned_assignment_materialized": False,
+            "production_tree3_planned_full_replay_closed": False,
             "remaining_planned_tree_producers_materialized": False,
             "all_72_output_relocations_closed": False,
             "complete_18_tree_assignment_replayed": False,
@@ -914,6 +932,13 @@ def build_replayed_manifest(
             {
                 "production_tree1_planned_assignment_materialized": replay_closed,
                 "production_tree1_planned_full_replay_closed": replay_closed,
+            }
+        )
+    if tree_index == TREE3_INDEX:
+        document["claim_boundary"].update(
+            {
+                "production_tree3_planned_assignment_materialized": replay_closed,
+                "production_tree3_planned_full_replay_closed": replay_closed,
             }
         )
     return document

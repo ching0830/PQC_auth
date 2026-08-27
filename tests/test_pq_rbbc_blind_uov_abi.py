@@ -464,6 +464,26 @@ class BlindUOVVisibilityTests(unittest.TestCase):
             interface["production_tree1_planned_recovery_evidence_sha256"],
             abi.cap_tree1_planned_recovery_evidence.FROZEN_EVIDENCE_SHA256,
         )
+        self.assertEqual(
+            interface["production_tree3_planned_local_wire_start"], 137_580_693
+        )
+        self.assertEqual(
+            interface["production_tree3_planned_max_wire_id"], 157_059_128
+        )
+        self.assertEqual(
+            tuple(interface["production_tree3_planned_output_wire_starts"]),
+            (156_191_493, 156_982_021, 156_984_069, 157_054_497),
+        )
+        self.assertEqual(
+            interface["production_tree3_planned_rows_replayed"], 25_666_386
+        )
+        self.assertEqual(
+            interface["production_tree3_planned_row_stream_bytes"], 8_961_160_824
+        )
+        self.assertEqual(
+            interface["production_tree3_planned_recovery_evidence_sha256"],
+            abi.cap_tree3_planned_recovery_evidence.FROZEN_EVIDENCE_SHA256,
+        )
         self.assertTrue(
             manifest["claim_boundary"]["production_18_tree_namespace_plan_closed"]
         )
@@ -493,12 +513,20 @@ class BlindUOVVisibilityTests(unittest.TestCase):
                 "production_tree1_planned_full_replay_closed"
             ]
         )
-        self.assertEqual(
-            manifest["claim_boundary"]["materialized_planned_tree_indices"],
-            [0, 1, 2],
+        self.assertTrue(
+            manifest["claim_boundary"][
+                "production_tree3_planned_assignment_materialized"
+            ]
+        )
+        self.assertTrue(
+            manifest["claim_boundary"]["production_tree3_planned_full_replay_closed"]
         )
         self.assertEqual(
-            manifest["claim_boundary"]["materialized_planned_tree_count"], 3
+            manifest["claim_boundary"]["materialized_planned_tree_indices"],
+            [0, 1, 2, 3],
+        )
+        self.assertEqual(
+            manifest["claim_boundary"]["materialized_planned_tree_count"], 4
         )
         self.assertFalse(
             manifest["claim_boundary"][
