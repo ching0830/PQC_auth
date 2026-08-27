@@ -436,6 +436,34 @@ class BlindUOVVisibilityTests(unittest.TestCase):
             interface["production_tree2_rebased_recovery_evidence_sha256"],
             abi.cap_tree2_rebased_recovery_evidence.FROZEN_EVIDENCE_SHA256,
         )
+        self.assertEqual(
+            interface["planned_tree_runner_relation_id"],
+            abi.cap_planned_tree_producer.RELATION_ID,
+        )
+        self.assertEqual(
+            interface["production_tree1_planned_local_wire_start"], 79_148_427
+        )
+        self.assertEqual(
+            interface["production_tree1_planned_max_wire_id"], 118_102_256
+        )
+        self.assertEqual(
+            tuple(interface["production_tree1_planned_output_wire_starts"]),
+            (116_373_499, 117_954_555, 117_956_603, 118_097_239),
+        )
+        self.assertEqual(
+            interface["production_tree1_planned_rows_replayed"], 51_325_080
+        )
+        self.assertEqual(
+            interface["production_tree1_planned_local_wires"], 38_953_830
+        )
+        self.assertEqual(
+            interface["production_tree1_planned_row_stream_bytes"],
+            18_008_277_115,
+        )
+        self.assertEqual(
+            interface["production_tree1_planned_recovery_evidence_sha256"],
+            abi.cap_tree1_planned_recovery_evidence.FROZEN_EVIDENCE_SHA256,
+        )
         self.assertTrue(
             manifest["claim_boundary"]["production_18_tree_namespace_plan_closed"]
         )
@@ -454,6 +482,28 @@ class BlindUOVVisibilityTests(unittest.TestCase):
         )
         self.assertTrue(
             manifest["claim_boundary"]["production_tree2_rebased_full_replay_closed"]
+        )
+        self.assertTrue(
+            manifest["claim_boundary"][
+                "production_tree1_planned_assignment_materialized"
+            ]
+        )
+        self.assertTrue(
+            manifest["claim_boundary"][
+                "production_tree1_planned_full_replay_closed"
+            ]
+        )
+        self.assertEqual(
+            manifest["claim_boundary"]["materialized_planned_tree_indices"],
+            [0, 1, 2],
+        )
+        self.assertEqual(
+            manifest["claim_boundary"]["materialized_planned_tree_count"], 3
+        )
+        self.assertFalse(
+            manifest["claim_boundary"][
+                "remaining_planned_tree_producers_materialized"
+            ]
         )
         self.assertEqual(
             interface["production_composer_recovery_production_levels_checkpointed"],

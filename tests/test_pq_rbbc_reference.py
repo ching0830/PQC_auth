@@ -214,6 +214,34 @@ class RelationTests(unittest.TestCase):
         self.assertTrue(contract["production_tree2_rebased_assignment_materialized"])
         self.assertTrue(contract["production_tree2_rebased_full_replay_closed"])
         self.assertEqual(
+            contract["planned_tree_runner_relation_id"],
+            core.native_profile.planned_tree_producer.RELATION_ID,
+        )
+        self.assertEqual(
+            contract["production_tree1_planned_local_wire_start"], 79_148_427
+        )
+        self.assertEqual(
+            contract["production_tree1_planned_max_wire_id"], 118_102_256
+        )
+        self.assertEqual(
+            tuple(contract["production_tree1_planned_output_wire_starts"]),
+            (116_373_499, 117_954_555, 117_956_603, 118_097_239),
+        )
+        self.assertEqual(contract["production_tree1_planned_rows_replayed"], 51_325_080)
+        self.assertEqual(contract["production_tree1_planned_local_wires"], 38_953_830)
+        self.assertEqual(
+            contract["production_tree1_planned_row_stream_bytes"], 18_008_277_115
+        )
+        self.assertEqual(
+            contract["production_tree1_planned_recovery_evidence_sha256"],
+            core.native_profile.tree1_planned_recovery_evidence.FROZEN_EVIDENCE_SHA256,
+        )
+        self.assertTrue(contract["production_tree1_planned_assignment_materialized"])
+        self.assertTrue(contract["production_tree1_planned_full_replay_closed"])
+        self.assertEqual(contract["materialized_planned_tree_indices"], [0, 1, 2])
+        self.assertEqual(contract["materialized_planned_tree_count"], 3)
+        self.assertFalse(contract["remaining_planned_tree_producers_materialized"])
+        self.assertEqual(
             contract["production_composer_recovery_production_levels_checkpointed"],
             182,
         )
