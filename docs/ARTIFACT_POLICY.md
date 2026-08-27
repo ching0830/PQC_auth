@@ -40,3 +40,10 @@ repository artifact limit.  Git stores only the path-free sealed evidence
 under `artifacts/metadata/global_tail_recovery_v2_20/`.  Preserve the archive
 by exact SHA-256 identity; do not substitute the old incomplete workspace copy
 or commit split archive parts.
+
+The v2.21 tree-index-2 planned-offset replay follows the same rule.  Its
+486,961,028-byte assignment and trusted local pickle cache remain external;
+Git stores only path-free sealed evidence under
+`artifacts/metadata/tree2_rebased_recovery_v2_21/`.  The old standalone v2.14
+assignment is not a substitute: only a full replay at planned local wire start
+118,102,257 closes the tree-index-2 planned-offset gate.

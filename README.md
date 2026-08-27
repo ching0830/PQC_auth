@@ -17,14 +17,14 @@ PQ-RBBC / Blind-UOV → signature-gated decryption research track.
 
 ## Current checkpoint
 
-Version 2.20 completes R0-b by regenerating and independently replaying the
-frozen v2.9 production global-tail archive from the v2.19 recovered execution
-cache.  All 56,806,711 rows pass, the 1,004,865,028-byte archive matches its
-frozen digest, and all six stale-witness probes reject.  Git contains only
-portable sealed evidence; the checkpoint, pickle cache, and global-tail
-archive remain external.  The v2.17 tree-index-2 rebased archive, remaining
-sixteen position-sensitive producers, complete assignment, parent join, and
-formal security reductions remain open.  Start with
+Version 2.21 completes R1d-a by materializing and independently replaying the
+tree-index-2 producer at planned local wire start 118,102,257.  All 25,666,386
+rows pass, the four outputs match the recovered global tail, and six standard
+plus three point mutations reject.  Git contains only portable sealed
+evidence; the 486,961,028-byte assignment, pickle cache, global tail, and
+BR1CS remain external.  The remaining sixteen position-sensitive producers,
+complete assignment, parent join, and formal security reductions remain open.
+Start with
 `docs/roadmaps/PQ_RBBC_CURRENT_HANDOFF.md` in a new work session.
 
 ## Running tests

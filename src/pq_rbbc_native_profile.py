@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fail-closed native import contract for the PQ-RBBC v2.20 fork.
+"""Fail-closed native import contract for the PQ-RBBC v2.21 fork.
 
 The selected profile is deliberately independent of the unreproduced
 Blind-UOV 240-row instance.  It accepts no claim of bit-exact compatibility.
@@ -27,6 +27,7 @@ import pq_rbbc_cap_global_tail_recovery_evidence as global_tail_recovery_evidenc
 import pq_rbbc_cap_output_relocation as output_relocation
 import pq_rbbc_cap_production_namespace as production_namespace
 import pq_rbbc_cap_production_tree2_rebased as production_tree2_rebased
+import pq_rbbc_cap_tree2_rebased_recovery_evidence as tree2_rebased_recovery_evidence
 import pq_rbbc_cap_production_split_tail as production_split_tail
 import pq_rbbc_cap_production_tree0_producer as production_tree0
 import pq_rbbc_cap_production_tree2_producer as production_tree2
@@ -38,7 +39,7 @@ import pq_rbbc_cap_shard_stream as shard_stream
 import pq_rbbc_horner_native as horner_native
 
 
-IMPLEMENTATION_VERSION = "2.20"
+IMPLEMENTATION_VERSION = "2.21"
 RELATION_ID = "pq-rbbc-buov-iii-336/cap-hash/v1"
 TARGET_FIELD = "GF(2^193)"
 REQUIRED_TAMPER_CASES = frozenset(
@@ -176,7 +177,7 @@ def build_native_profile_manifest() -> dict[str, object]:
     parameters = permutation.derive_parameters()
     return {
         "implementation_version": IMPLEMENTATION_VERSION,
-        "status": "the frozen v2.8 production execution cache and v2.9 global-tail archive have been regenerated and independently revalidated; the tree-2 rebased archive, remaining producers, complete replay, parent join, and security reductions remain external",
+        "status": "the frozen v2.8 execution cache and v2.9 global-tail archive have been regenerated and revalidated, and tree 2 has been fully replayed at its planned offset; the remaining producers, complete replay, parent join, and security reductions remain external",
         "fork_profile": {
             "name": sponge.PROFILE_NAME,
             "relation_id": RELATION_ID,
@@ -457,7 +458,7 @@ def build_native_profile_manifest() -> dict[str, object]:
                 "planned_composition_rows": production_namespace.FROZEN_PLANNED_COMPOSITION_ROWS,
                 "max_wire_id": production_namespace.FROZEN_MAX_PLANNED_WIRE_ID,
                 "configuration_mutation_probes": 8,
-                "representative_production_rows_replayed_at_planned_offsets": 0,
+                "representative_production_rows_replayed_at_planned_offsets": tree2_rebased_recovery_evidence.FROZEN_ROWS,
             },
             "production_composer_recovery_component": {
                 "relation_id": composer_recovery.RELATION_ID,
@@ -495,9 +496,20 @@ def build_native_profile_manifest() -> dict[str, object]:
                 "reduced_fixture_rows": 33_954,
                 "reduced_fixture_wires": 23_135,
                 "configuration_mutation_probes": 8,
-                "stale_witness_probes": 6,
-                "production_rows_replayed_at_planned_offset": 0,
-                "production_assignment_materialized": False,
+                "evidence_relation_id": tree2_rebased_recovery_evidence.RELATION_ID,
+                "evidence_sha256": tree2_rebased_recovery_evidence.FROZEN_EVIDENCE_SHA256,
+                "replayed_manifest_sha256": tree2_rebased_recovery_evidence.FROZEN_REPLAY_MANIFEST_SHA256,
+                "production_rows_replayed_at_planned_offset": tree2_rebased_recovery_evidence.FROZEN_ROWS,
+                "production_local_wires": tree2_rebased_recovery_evidence.FROZEN_WIRES,
+                "production_row_stream_sha256": tree2_rebased_recovery_evidence.FROZEN_STREAM_SHA256,
+                "production_assignment_bytes": tree2_rebased_recovery_evidence.FROZEN_ARCHIVE_BYTES,
+                "production_assignment_sha256": tree2_rebased_recovery_evidence.FROZEN_ARCHIVE_SHA256,
+                "production_assignment_body_sha256": tree2_rebased_recovery_evidence.FROZEN_BODY_SHA256,
+                "stale_witness_probes": tree2_rebased_recovery_evidence.FROZEN_STANDARD_PROBES,
+                "point_mutation_probes": tree2_rebased_recovery_evidence.FROZEN_POINT_PROBES,
+                "production_assignment_materialized": True,
+                "production_full_replay_closed": True,
+                "large_artifacts_tracked_in_git": False,
             },
             "reduced_tree_producer_component": {
                 "relation_id": tree_producer.RELATION_ID,
@@ -564,14 +576,14 @@ def build_native_profile_manifest() -> dict[str, object]:
             "representative_rebase_rule_fixture_verified": True,
             "production_tree2_planned_offset_execution_gate_closed": True,
             "planned_offset_reduced_fixture_replayed": True,
-            "production_tree2_rebased_assignment_materialized": False,
-            "production_tree2_rebased_full_replay_closed": False,
+            "production_tree2_rebased_assignment_materialized": True,
+            "production_tree2_rebased_full_replay_closed": True,
             "production_composer_checkpoint_recovery_gate_closed": True,
             "reduced_checkpoint_resume_bit_exact": True,
             "production_execution_cache_regenerated": True,
             "production_composition_document_revalidated": True,
             "production_global_tail_archive_regenerated": True,
-            "representative_producers_rebased_replayed": False,
+            "representative_producers_rebased_replayed": True,
             "all_72_output_relocations_closed": False,
             "reduced_tree_producer_segments_native_closed": True,
             "reduced_producer_to_tail_port_values_match": True,
