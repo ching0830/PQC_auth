@@ -428,7 +428,14 @@ class BlindUOVVisibilityTests(unittest.TestCase):
         self.assertEqual(
             interface["production_tree2_planned_max_wire_id"], 137_580_692
         )
-        self.assertEqual(interface["production_tree2_rebased_production_rows_replayed"], 0)
+        self.assertEqual(
+            interface["production_tree2_rebased_production_rows_replayed"],
+            25_666_386,
+        )
+        self.assertEqual(
+            interface["production_tree2_rebased_recovery_evidence_sha256"],
+            abi.cap_tree2_rebased_recovery_evidence.FROZEN_EVIDENCE_SHA256,
+        )
         self.assertTrue(
             manifest["claim_boundary"]["production_18_tree_namespace_plan_closed"]
         )
@@ -440,12 +447,12 @@ class BlindUOVVisibilityTests(unittest.TestCase):
         self.assertTrue(
             manifest["claim_boundary"]["planned_offset_reduced_fixture_replayed"]
         )
-        self.assertFalse(
+        self.assertTrue(
             manifest["claim_boundary"][
                 "production_tree2_rebased_assignment_materialized"
             ]
         )
-        self.assertFalse(
+        self.assertTrue(
             manifest["claim_boundary"]["production_tree2_rebased_full_replay_closed"]
         )
         self.assertEqual(
@@ -479,7 +486,7 @@ class BlindUOVVisibilityTests(unittest.TestCase):
                 "production_global_tail_archive_regenerated"
             ]
         )
-        self.assertFalse(
+        self.assertTrue(
             manifest["claim_boundary"]["representative_producers_rebased_replayed"]
         )
         self.assertFalse(

@@ -299,14 +299,20 @@ class ForkNativeProfileTests(unittest.TestCase):
         ]
         self.assertEqual(rebase["planned_local_wire_start"], 118_102_257)
         self.assertEqual(rebase["planned_max_wire_id"], 137_580_692)
-        self.assertEqual(rebase["production_rows_replayed_at_planned_offset"], 0)
-        self.assertFalse(rebase["production_assignment_materialized"])
-        self.assertFalse(
+        self.assertEqual(
+            rebase["production_rows_replayed_at_planned_offset"], 25_666_386
+        )
+        self.assertEqual(
+            rebase["evidence_sha256"],
+            native.tree2_rebased_recovery_evidence.FROZEN_EVIDENCE_SHA256,
+        )
+        self.assertTrue(rebase["production_assignment_materialized"])
+        self.assertTrue(
             manifest["claim_boundary"][
                 "production_tree2_rebased_assignment_materialized"
             ]
         )
-        self.assertFalse(
+        self.assertTrue(
             manifest["claim_boundary"]["production_tree2_rebased_full_replay_closed"]
         )
         recovery = manifest["implemented_primitives"][
@@ -343,7 +349,7 @@ class ForkNativeProfileTests(unittest.TestCase):
                 "production_global_tail_archive_regenerated"
             ]
         )
-        self.assertFalse(
+        self.assertTrue(
             manifest["claim_boundary"]["representative_producers_rebased_replayed"]
         )
         self.assertFalse(
