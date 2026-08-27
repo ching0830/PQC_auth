@@ -484,6 +484,26 @@ class BlindUOVVisibilityTests(unittest.TestCase):
             interface["production_tree3_planned_recovery_evidence_sha256"],
             abi.cap_tree3_planned_recovery_evidence.FROZEN_EVIDENCE_SHA256,
         )
+        self.assertEqual(
+            interface["production_tree4_planned_local_wire_start"], 157_059_129
+        )
+        self.assertEqual(
+            interface["production_tree4_planned_max_wire_id"], 176_537_564
+        )
+        self.assertEqual(
+            tuple(interface["production_tree4_planned_output_wire_starts"]),
+            (175_669_929, 176_460_457, 176_462_505, 176_532_933),
+        )
+        self.assertEqual(
+            interface["production_tree4_planned_rows_replayed"], 25_666_386
+        )
+        self.assertEqual(
+            interface["production_tree4_planned_row_stream_bytes"], 8_961_160_824
+        )
+        self.assertEqual(
+            interface["production_tree4_planned_recovery_evidence_sha256"],
+            abi.cap_tree4_planned_recovery_evidence.FROZEN_EVIDENCE_SHA256,
+        )
         self.assertTrue(
             manifest["claim_boundary"]["production_18_tree_namespace_plan_closed"]
         )
@@ -521,12 +541,20 @@ class BlindUOVVisibilityTests(unittest.TestCase):
         self.assertTrue(
             manifest["claim_boundary"]["production_tree3_planned_full_replay_closed"]
         )
-        self.assertEqual(
-            manifest["claim_boundary"]["materialized_planned_tree_indices"],
-            [0, 1, 2, 3],
+        self.assertTrue(
+            manifest["claim_boundary"][
+                "production_tree4_planned_assignment_materialized"
+            ]
+        )
+        self.assertTrue(
+            manifest["claim_boundary"]["production_tree4_planned_full_replay_closed"]
         )
         self.assertEqual(
-            manifest["claim_boundary"]["materialized_planned_tree_count"], 4
+            manifest["claim_boundary"]["materialized_planned_tree_indices"],
+            [0, 1, 2, 3, 4],
+        )
+        self.assertEqual(
+            manifest["claim_boundary"]["materialized_planned_tree_count"], 5
         )
         self.assertFalse(
             manifest["claim_boundary"][

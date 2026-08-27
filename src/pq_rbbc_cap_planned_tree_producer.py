@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Checkpointable planned-offset production tree runner for PQ-RBBC v2.23.
+"""Checkpointable planned-offset production tree runner for PQ-RBBC v2.24.
 
 The v2.13 tree-0 and v2.14/v2.17 tree-2 programs remain frozen.  This module
 generalizes their execution pattern without modifying either historical
@@ -39,32 +39,41 @@ import pq_rbbc_cap_shard_assignment as assignment
 import pq_rbbc_cap_tree_producer as producer
 
 
-IMPLEMENTATION_VERSION = "2.23"
+IMPLEMENTATION_VERSION = "2.24"
 RELATION_ID = "pq-rbbc/cap/planned-offset-tree-runner/v1"
 EXECUTION_CACHE_FORMAT = "PQRBBC-PLANNED-TREE-CACHE-1"
 RESUME_FORMAT = "PQRBBC-PLANNED-TREE-RESUME-1"
-ARTIFACT_TAG = "v2_23_planned"
-MANIFEST_NAME = "pq_rbbc_cap_planned_tree3_manifest_v2_23.json"
+ARTIFACT_TAG = "v2_24_planned"
+MANIFEST_NAME = "pq_rbbc_cap_planned_tree4_manifest_v2_24.json"
 CHECKPOINT_BATCH_LEAVES = 128
 MAX_WIRE_ID = (1 << 64) - 1
 TREE1_INDEX = 1
 TREE3_INDEX = 3
-DEFAULT_TREE_INDEX = TREE3_INDEX
+TREE4_INDEX = 4
+DEFAULT_TREE_INDEX = TREE4_INDEX
 FROZEN_TREE1_CONTRACT_SHA256 = (
     "69aeb8e5deda83a2ff4f2e58a87990564b8aa42bcb3b65719749ebc54958f723"
 )
 FROZEN_TREE3_CONTRACT_SHA256 = (
     "680a89d31e2f566b0f08f68f095643ca7642c600c124ba98b860b40e3e01481a"
 )
+PREFREEZE_TREE4_CONTRACT_SHA256 = (
+    "2dec6831c7c80274dc40c299fe0ed4c6eb5188dc0438562f84f19ffb1fb8f3da"
+)
+FROZEN_TREE4_CONTRACT_SHA256 = (
+    "746e8af3bc2f1fdb17acb5e77bf1bf24be19b4e56dbcb86dc959df1e8bbf0e6d"
+)
 FROZEN_CONTRACT_SHA256_BY_TREE = {
     TREE1_INDEX: FROZEN_TREE1_CONTRACT_SHA256,
     TREE3_INDEX: FROZEN_TREE3_CONTRACT_SHA256,
+    TREE4_INDEX: FROZEN_TREE4_CONTRACT_SHA256,
 }
 FROZEN_STREAM_BYTES_BY_TREE = {
     0: tree0.FROZEN_STREAM_BYTES,
     1: 18_008_277_115,
     2: tree2.FROZEN_STREAM_BYTES,
     3: 8_961_160_824,
+    4: 8_961_160_824,
 }
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -836,6 +845,8 @@ def build_preflight_manifest(
             "production_tree1_planned_full_replay_closed": False,
             "production_tree3_planned_assignment_materialized": False,
             "production_tree3_planned_full_replay_closed": False,
+            "production_tree4_planned_assignment_materialized": False,
+            "production_tree4_planned_full_replay_closed": False,
             "remaining_planned_tree_producers_materialized": False,
             "all_72_output_relocations_closed": False,
             "complete_18_tree_assignment_replayed": False,
@@ -907,8 +918,15 @@ def build_replayed_manifest(
             all(item.rejected for item in result.point_probes),
         )
     )
+    formal_replay_closed = replay_closed and contract.stream_bytes is not None
     document["production_replay"] = {
-        "status": "complete" if replay_closed else "rejected",
+        "status": (
+            "complete"
+            if formal_replay_closed
+            else "prefreeze_complete"
+            if replay_closed
+            else "rejected"
+        ),
         "production_rows_replayed_at_planned_offset": result.summary.rows,
         "planned_row_stream_bytes": result.summary.stream_bytes,
         "planned_row_stream_sha256": result.summary.stream_sha256,
@@ -939,6 +957,13 @@ def build_replayed_manifest(
             {
                 "production_tree3_planned_assignment_materialized": replay_closed,
                 "production_tree3_planned_full_replay_closed": replay_closed,
+            }
+        )
+    if tree_index == TREE4_INDEX:
+        document["claim_boundary"].update(
+            {
+                "production_tree4_planned_assignment_materialized": formal_replay_closed,
+                "production_tree4_planned_full_replay_closed": formal_replay_closed,
             }
         )
     return document

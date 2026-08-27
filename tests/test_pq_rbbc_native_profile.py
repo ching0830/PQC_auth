@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Tests for the fail-closed PQ-RBBC v2.23 fork import contract."""
+"""Tests for the fail-closed PQ-RBBC v2.24 fork import contract."""
 
 from __future__ import annotations
 
@@ -357,13 +357,36 @@ class ForkNativeProfileTests(unittest.TestCase):
         )
         self.assertTrue(tree3["production_assignment_materialized"])
         self.assertTrue(tree3["production_full_replay_closed"])
+        tree4 = manifest["implemented_primitives"][
+            "production_tree4_planned_offset_component"
+        ]
+        self.assertEqual(tree4["tree_index"], 4)
+        self.assertEqual(tree4["planned_local_wire_start"], 157_059_129)
+        self.assertEqual(tree4["planned_max_wire_id"], 176_537_564)
+        self.assertEqual(
+            tuple(tree4["planned_output_wire_starts"]),
+            (175_669_929, 176_460_457, 176_462_505, 176_532_933),
+        )
+        self.assertEqual(
+            tree4["production_rows_replayed_at_planned_offset"], 25_666_386
+        )
+        self.assertEqual(tree4["production_local_wires"], 19_478_436)
+        self.assertEqual(tree4["production_row_stream_bytes"], 8_961_160_824)
+        self.assertEqual(
+            tree4["evidence_sha256"],
+            native.tree4_planned_recovery_evidence.FROZEN_EVIDENCE_SHA256,
+        )
+        self.assertTrue(tree4["production_assignment_materialized"])
+        self.assertTrue(tree4["production_full_replay_closed"])
         claims = manifest["claim_boundary"]
         self.assertTrue(claims["production_tree1_planned_assignment_materialized"])
         self.assertTrue(claims["production_tree1_planned_full_replay_closed"])
         self.assertTrue(claims["production_tree3_planned_assignment_materialized"])
         self.assertTrue(claims["production_tree3_planned_full_replay_closed"])
-        self.assertEqual(claims["materialized_planned_tree_indices"], [0, 1, 2, 3])
-        self.assertEqual(claims["materialized_planned_tree_count"], 4)
+        self.assertTrue(claims["production_tree4_planned_assignment_materialized"])
+        self.assertTrue(claims["production_tree4_planned_full_replay_closed"])
+        self.assertEqual(claims["materialized_planned_tree_indices"], [0, 1, 2, 3, 4])
+        self.assertEqual(claims["materialized_planned_tree_count"], 5)
         self.assertFalse(claims["remaining_planned_tree_producers_materialized"])
         recovery = manifest["implemented_primitives"][
             "production_composer_recovery_component"

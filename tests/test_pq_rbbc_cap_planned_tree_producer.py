@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Regression tests for the v2.23 planned-offset tree runner."""
+"""Regression tests for the v2.24 planned-offset tree runner."""
 
 from __future__ import annotations
 
@@ -27,7 +27,8 @@ class PlannedTreeProducerTests(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.contract = planned.load_contract(1)
         cls.tree3_contract = planned.load_contract(3)
-        cls.generated = planned.build_preflight_manifest(3)
+        cls.tree4_contract = planned.load_contract(4)
+        cls.generated = planned.build_preflight_manifest(4)
         cls.randomness = cap.deterministic_randomness(
             cap.PRODUCTION_PARAMETERS, composer.FROZEN_RANDOMNESS_LABEL
         )
@@ -79,6 +80,7 @@ class PlannedTreeProducerTests(unittest.TestCase):
             ),
         )
         self.assertEqual(planned.load_contract(3).stream_bytes, 8_961_160_824)
+        self.assertEqual(planned.load_contract(4).stream_bytes, 8_961_160_824)
 
     def test_tree3_contract_is_exact_and_frozen_after_replay(self) -> None:
         contract = self.tree3_contract
@@ -98,6 +100,26 @@ class PlannedTreeProducerTests(unittest.TestCase):
         self.assertEqual(
             contract.planned_output_wire_starts,
             (156_191_493, 156_982_021, 156_984_069, 157_054_497),
+        )
+
+    def test_tree4_contract_is_exact_and_frozen_after_replay(self) -> None:
+        contract = self.tree4_contract
+        self.assertEqual(
+            planned.contract_sha256(contract),
+            planned.FROZEN_TREE4_CONTRACT_SHA256,
+        )
+        self.assertEqual(contract.tree_index, 4)
+        self.assertEqual((contract.leaves, contract.extension_degree), (2048, 12))
+        self.assertEqual(contract.planned_local_wire_start, 157_059_129)
+        self.assertEqual(contract.planned_max_wire_id, 176_537_564)
+        self.assertEqual(contract.rebase_delta, 116_864_532)
+        self.assertEqual(contract.local_wires, 19_478_436)
+        self.assertEqual(contract.rows, 25_666_386)
+        self.assertEqual(contract.stream_bytes, 8_961_160_824)
+        self.assertEqual(contract.assignment_bytes, 486_961_028)
+        self.assertEqual(
+            contract.planned_output_wire_starts,
+            (175_669_929, 176_460_457, 176_462_505, 176_532_933),
         )
 
     def test_configuration_mutations_fail_closed(self) -> None:
@@ -190,12 +212,14 @@ class PlannedTreeProducerTests(unittest.TestCase):
         self.assertEqual(
             self.generated["production_replay"]["status"], "not_materialized"
         )
-        self.assertEqual(self.generated["claim_boundary"]["target_tree_index"], 3)
+        self.assertEqual(self.generated["claim_boundary"]["target_tree_index"], 4)
         for name in (
             "production_tree1_planned_assignment_materialized",
             "production_tree1_planned_full_replay_closed",
             "production_tree3_planned_assignment_materialized",
             "production_tree3_planned_full_replay_closed",
+            "production_tree4_planned_assignment_materialized",
+            "production_tree4_planned_full_replay_closed",
             "remaining_planned_tree_producers_materialized",
             "all_72_output_relocations_closed",
             "complete_18_tree_assignment_replayed",

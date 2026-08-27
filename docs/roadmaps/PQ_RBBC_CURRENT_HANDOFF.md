@@ -15,18 +15,17 @@ Read, in order:
 
 1. this file;
 2. `README.md`;
-3. `docs/roadmaps/PQ_RBBC_CRYPTO_CORE_ROADMAP_v2_23.md`;
-4. `docs/releases/PQ_RBBC_v2_23_TREE3_PLANNED_RECOVERY.md`;
-5. `docs/artifacts/PQ_RBBC_v2_23_TREE3_PLANNED_RECOVERY_EVIDENCE.md`; and
+3. `docs/roadmaps/PQ_RBBC_CRYPTO_CORE_ROADMAP_v2_24.md`;
+4. `docs/releases/PQ_RBBC_v2_24_TREE4_PLANNED_RECOVERY.md`;
+5. `docs/artifacts/PQ_RBBC_v2_24_TREE4_PLANNED_RECOVERY_EVIDENCE.md`; and
 6. `docs/ARTIFACT_POLICY.md`.
 
 Do not infer progress from old manifests.  Confirm the newest parent claim
 boundary and external files before launching a large job.
 
-The v2.23 checkpoint branch is based on merged `main` commit
-`30f8e1f44a6218797e73687a865d73f3820d15f4` (the v2.22 merge).  A new session
-must still read the current remote `main` rather than assuming this SHA remains
-the branch tip.
+The v2.24 checkpoint work is based on merged `main` commit
+`08e5a0cbaa060abb424da543277261c0ba23d240`.  A new session must still read the
+current remote `main` rather than assuming this SHA remains the branch tip.
 
 ## Closed gates
 
@@ -34,9 +33,11 @@ the branch tip.
 - R0-b: v2.9 global-tail archive regenerated and independently replayed;
 - R1d-a: tree-index-2 producer replayed at its planned offset and sealed;
 - R1d-b1: generic checkpointable runner implemented and tree index 1 replayed
-  at its planned offset and sealed; and
-- R1d-b2 tree-index-3 iteration: tree index 3 replayed at its planned offset
-  under its frozen stream identity and sealed.
+  at its planned offset and sealed;
+- R1d-b2 tree-index-3 iteration: tree index 3 replayed under its frozen stream
+  identity and sealed; and
+- R1d-b2 tree-index-4 iteration: tree index 4 replayed under its frozen stream
+  identity and sealed.
 
 Portable evidence SHA-256 values:
 
@@ -49,7 +50,9 @@ Portable evidence SHA-256 values:
 - tree-index-1 planned replay v2.22:
   `895c7d47209eb4f1bb3c56f5655ecc89b33b0cc7f1ce0d6e238ab5d9afa34712`;
 - tree-index-3 planned replay v2.23:
-  `7369957afbcb4b5091ee06b914a2ef807392c857af941c06f412d80366c8aa93`.
+  `7369957afbcb4b5091ee06b914a2ef807392c857af941c06f412d80366c8aa93`;
+- tree-index-4 planned replay v2.24:
+  `bb80e09bc0383444ac428a84912c828db096bd2ccd6165990bbe6464e4a7233e`.
 
 ## Required external artifact identities
 
@@ -62,12 +65,13 @@ Portable evidence SHA-256 values:
 | `pq_rbbc_cap_planned_tree1_replayed_manifest_v2_22.json` | 6,963 | `1777000ae991d384ee540e32b0d98a42645f494049ff96a20f365ecb08e3d9ce` |
 | `pq_rbbc_production_tree_3_producer_v2_23_planned.f193assign` | 486,961,028 | `315e83340d10331188d27a99a82de6f1262e36468f1b6f8c6ef97283d83fc02b` |
 | `pq_rbbc_cap_planned_tree3_replayed_manifest_v2_23.json` | 7,073 | `1054dd12e7144ba0e66cca98f57d697163c5b0bcd72292aecc486edff9918b15` |
-| `pq_rbbc_incremental_v2_23.br1cs` | 49,227,687 | `77577df2e8284284c5501b1a68f3009399cebef85512a4dfb094dd0cc32bc799` |
+| `pq_rbbc_production_tree_4_producer_v2_24_planned.f193assign` | 486,961,028 | `cd2430637f8ca07356727cb4349ca02368f2268f865092c71f3049140bacf52d` |
+| `pq_rbbc_cap_planned_tree4_replayed_manifest_v2_24.json` | 7,195 | `69c46b27a2d61248ac817c308c3a0f85d0344492912d854f6055cc8c2dbdf8b8` |
+| `pq_rbbc_incremental_v2_24.br1cs` | 49,227,687 | `77577df2e8284284c5501b1a68f3009399cebef85512a4dfb094dd0cc32bc799` |
 
 The optional producer caches are trusted local inputs only.  Never deserialize
-a downloaded or otherwise untrusted pickle.  The tree-3 result directory used
-for v2.23 is
-`/workspace/pq_rbbc_external_artifacts_v2_23/production_tree3_v2_23_planned/`;
+a downloaded or otherwise untrusted pickle.  The v2.24 tree-4 result directory
+is `/workspace/pq_rbbc_external_artifacts_v2_24/production_tree4_v2_24_planned/`;
 verify the non-pickle files by the identities above before use.
 
 If a closed artifact is missing, stop and ask for restoration.  Do not
@@ -76,46 +80,46 @@ known incomplete 302,596,096-byte global-tail copy.
 
 The invariant parent BR1CS remains 49,227,687 bytes with SHA-256
 `77577df2e8284284c5501b1a68f3009399cebef85512a4dfb094dd0cc32bc799`.
-Latest complete validation: 236 repository tests passed in 788.495 seconds
-with ten optional external-artifact tests skipped.  The affected v2.23 suite
-passed 48 tests in 199.262 seconds with no skips.
+The affected v2.24 runner/evidence/parent suite passed 55 tests in 199.537
+seconds with no skips.  The complete repository suite passed 243 tests in
+864.903 seconds with eleven optional external-artifact tests skipped.
 
 ## Next single implementation point
 
-Continue R1d-b2 with tree index 4 alone through the v2.23 generic
+Continue R1d-b2 with tree index 5 alone through the v2.24 generic
 planned-offset runner.  Do not launch all remaining producers as one job.
 
-Frozen tree-index-4 target:
+Frozen tree-index-5 target:
 
 - 2,048 leaves, degree 12;
-- planned local wires 157,059,129 through 176,537,564;
+- planned local wires 176,537,565 through 196,016,000;
 - 19,478,436 local wires and 25,666,386 constraint rows;
-- output starts 175,669,929, 176,460,457, 176,462,505, and 176,532,933;
-- relation `pq-rbbc/cap/production-tree-producer-index-4/v1`;
-- rebase delta 116,864,532;
-- expected assignment size 486,961,028 bytes; and
-- row-stream bytes deliberately unfrozen until the first complete replay;
+- output starts 195,148,365, 195,938,893, 195,940,941, and 196,011,369;
+- relation `pq-rbbc/cap/production-tree-producer-index-5/v1`;
+- rebase delta 136,342,968;
+- expected assignment size 486,961,028 bytes;
+- row-stream bytes deliberately unfrozen until the first complete replay; and
 - initial `stream_bytes = null` contract SHA-256
-  `2dec6831c7c80274dc40c299fe0ed4c6eb5188dc0438562f84f19ffb1fb8f3da`
+  `5e06e6194e3b08d204f0922d99a39e05bcd16516877dc639d1ddfdcfaaf65527`
   (pre-freeze only, not the final contract identity).
 
 Implementation requirements:
 
-- verify the v2.20 global-tail archive and v2.23 tree-3 evidence first;
+- verify the v2.20 global-tail archive and v2.24 tree-4 evidence first;
 - verify the frozen namespace and checkpoint/resume fixtures;
 - build a deterministic identity-bound trusted local cache and resume state;
 - independently replay the completed archive from first to last row;
 - compare all four outputs with the recovered global tail;
 - run stale-witness, point, identity, offset, and archive mutations;
 - freeze the observed stream byte count and repeat under a fresh cache if it
-  was not already part of the tree-4 contract;
+  was not already part of the tree-5 contract;
 - seal only path-free portable evidence; and
 - propagate only the exact newly closed claim.
 
-Historical evidence rule: a versioned evidence builder must use its own
-frozen runner implementation identity.  Do not source that field from the
-latest generic runner; v2.23 added this regression guard for the v2.22 tree-1
-seal.
+Historical evidence rule: every versioned evidence builder must use its own
+frozen runner implementation identity.  Never source that field from the
+latest generic runner.  The fact that trees 3 and 4 have equal row-stream
+sizes is not evidence for tree 5.
 
 ## Claims that must remain false
 
