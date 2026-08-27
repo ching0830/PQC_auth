@@ -86,8 +86,9 @@ and canonical document exactly; the v2.9 archive and later replay gates remain
 open.
 Version 2.20 regenerates and independently replays the frozen v2.9 production
 global-tail archive.  Version 2.21 materializes and fully replays tree 2 at its
-planned offset.  The remaining producers, complete 18-tree replay, parent join,
-and fork security proof remain open.
+planned offset.  Version 2.22 adds a checkpointable generic planned-offset
+runner and fully replays tree 1.  The remaining producers, complete 18-tree
+replay, parent join, and fork security proof remain open.
 Version 2.9 also materializes and replays the shared production global tail
 that consumes all 18 tree outputs: 17 correction pairs, H1, consistency
 points, alpha, xi, H2, one 5,391-byte commitment, and the request hash.  The
@@ -115,9 +116,11 @@ import pq_rbbc_cap_composer_recovery_evidence as cap_recovery_evidence
 import pq_rbbc_cap_global_tail as cap_global_tail
 import pq_rbbc_cap_global_tail_recovery_evidence as cap_global_tail_recovery_evidence
 import pq_rbbc_cap_output_relocation as cap_output_relocation
+import pq_rbbc_cap_planned_tree_producer as cap_planned_tree_producer
 import pq_rbbc_cap_production_namespace as cap_production_namespace
 import pq_rbbc_cap_production_tree2_rebased as cap_production_tree2_rebased
 import pq_rbbc_cap_tree2_rebased_recovery_evidence as cap_tree2_rebased_recovery_evidence
+import pq_rbbc_cap_tree1_planned_recovery_evidence as cap_tree1_planned_recovery_evidence
 import pq_rbbc_cap_production_split_tail as cap_production_split_tail
 import pq_rbbc_cap_production_tree0_producer as cap_production_tree0
 import pq_rbbc_cap_production_tree2_producer as cap_production_tree2
@@ -385,7 +388,7 @@ def build_abi_manifest() -> dict[str, object]:
     hidden = adapter.hidden_state(message, mask, randomness)
     changed_message = bytes((message[0] ^ 1,)) + message[1:]
     return {
-        "implementation_version": "2.21",
+        "implementation_version": "2.22",
         "paper_anchor": "Blind-UOV ePrint 2025/895 is a framework and size comparator, not a bit-exact implementation claim",
         "profile": "PQ-RBBC-BUOV-III/Anemoi-193-336 experimental fork",
         "fork_profile": {
@@ -482,6 +485,21 @@ def build_abi_manifest() -> dict[str, object]:
             "production_tree2_rebased_production_rows_replayed": cap_tree2_rebased_recovery_evidence.FROZEN_ROWS,
             "production_tree2_rebased_assignment_sha256": cap_tree2_rebased_recovery_evidence.FROZEN_ARCHIVE_SHA256,
             "production_tree2_rebased_row_stream_sha256": cap_tree2_rebased_recovery_evidence.FROZEN_STREAM_SHA256,
+            "planned_tree_runner_relation_id": cap_planned_tree_producer.RELATION_ID,
+            "production_tree1_planned_contract_sha256": cap_planned_tree_producer.FROZEN_TREE1_CONTRACT_SHA256,
+            "production_tree1_planned_local_wire_start": cap_planned_tree_producer.load_contract(1).planned_local_wire_start,
+            "production_tree1_planned_max_wire_id": cap_planned_tree_producer.load_contract(1).planned_max_wire_id,
+            "production_tree1_planned_output_wire_starts": cap_planned_tree_producer.load_contract(1).planned_output_wire_starts,
+            "production_tree1_planned_recovery_evidence_relation_id": cap_tree1_planned_recovery_evidence.RELATION_ID,
+            "production_tree1_planned_recovery_evidence_sha256": cap_tree1_planned_recovery_evidence.FROZEN_EVIDENCE_SHA256,
+            "production_tree1_planned_replayed_manifest_sha256": cap_tree1_planned_recovery_evidence.FROZEN_REPLAY_MANIFEST_SHA256,
+            "production_tree1_planned_rows_replayed": cap_tree1_planned_recovery_evidence.FROZEN_ROWS,
+            "production_tree1_planned_local_wires": cap_tree1_planned_recovery_evidence.FROZEN_WIRES,
+            "production_tree1_planned_assignment_sha256": cap_tree1_planned_recovery_evidence.FROZEN_ARCHIVE_SHA256,
+            "production_tree1_planned_assignment_body_sha256": cap_tree1_planned_recovery_evidence.FROZEN_BODY_SHA256,
+            "production_tree1_planned_row_stream_bytes": cap_tree1_planned_recovery_evidence.FROZEN_STREAM_BYTES,
+            "production_tree1_planned_row_stream_sha256": cap_tree1_planned_recovery_evidence.FROZEN_STREAM_SHA256,
+            "production_tree1_planned_tree_component_sha256": cap_tree1_planned_recovery_evidence.FROZEN_TREE_COMPONENT_SHA256,
             "tree_producer_relation_id": cap_tree_producer.RELATION_ID,
             "reduced_tree_producer_row_stream_sha256": cap_tree_producer.FROZEN_REDUCED_STREAM_SHA256,
             "reduced_tree_producer_assignment_sha256": cap_tree_producer.FROZEN_REDUCED_ASSIGNMENT_SHA256,
@@ -659,6 +677,11 @@ def build_abi_manifest() -> dict[str, object]:
             "planned_offset_reduced_fixture_replayed": True,
             "production_tree2_rebased_assignment_materialized": True,
             "production_tree2_rebased_full_replay_closed": True,
+            "production_tree1_planned_assignment_materialized": True,
+            "production_tree1_planned_full_replay_closed": True,
+            "materialized_planned_tree_indices": [0, 1, 2],
+            "materialized_planned_tree_count": 3,
+            "remaining_planned_tree_producers_materialized": False,
             "production_composer_checkpoint_recovery_gate_closed": True,
             "reduced_checkpoint_resume_bit_exact": True,
             "production_execution_cache_regenerated": True,

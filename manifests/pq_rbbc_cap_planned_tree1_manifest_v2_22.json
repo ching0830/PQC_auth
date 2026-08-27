@@ -1,0 +1,173 @@
+{
+  "claim_boundary": {
+    "all_72_output_relocations_closed": false,
+    "complete_18_tree_assignment_replayed": false,
+    "cross_segment_wire_identity_closed": false,
+    "fork_security_proof_revalidated": false,
+    "parent_cap_to_h_rbbc_join_closed": false,
+    "planned_offset_reduced_fixture_replayed": true,
+    "planned_tree_runner_preflight_closed": true,
+    "production_closed": false,
+    "production_tree1_planned_assignment_materialized": false,
+    "production_tree1_planned_full_replay_closed": false,
+    "remaining_planned_tree_producers_materialized": false
+  },
+  "configuration_mutation_probes": [
+    {
+      "failures": [
+        "wrong_tree_index",
+        "inconsistent_producer_relation",
+        "inconsistent_tree_shape"
+      ],
+      "mutation": "wrong-tree-index",
+      "rejected": true
+    },
+    {
+      "failures": [
+        "wrong_namespace_plan_sha256"
+      ],
+      "mutation": "wrong-namespace-digest",
+      "rejected": true
+    },
+    {
+      "failures": [
+        "wrong_producer_relation_id",
+        "inconsistent_producer_relation"
+      ],
+      "mutation": "wrong-relation",
+      "rejected": true
+    },
+    {
+      "failures": [
+        "wrong_planned_local_wire_start",
+        "inconsistent_rebase_delta",
+        "inconsistent_planned_interval"
+      ],
+      "mutation": "wrong-local-start",
+      "rejected": true
+    },
+    {
+      "failures": [
+        "wrong_planned_max_wire_id",
+        "inconsistent_planned_interval"
+      ],
+      "mutation": "wrong-max-wire",
+      "rejected": true
+    },
+    {
+      "failures": [
+        "wrong_planned_output_wire_starts",
+        "inconsistent_output_rebase"
+      ],
+      "mutation": "wrong-output-start",
+      "rejected": true
+    },
+    {
+      "failures": [
+        "wrong_global_point_wire_starts",
+        "wrong_global_point_ranges"
+      ],
+      "mutation": "wrong-point-range",
+      "rejected": true
+    },
+    {
+      "failures": [
+        "wrong_rows",
+        "inconsistent_row_accounting"
+      ],
+      "mutation": "wrong-row-count",
+      "rejected": true
+    },
+    {
+      "failures": [
+        "wrong_local_wires",
+        "inconsistent_planned_interval",
+        "inconsistent_assignment_size"
+      ],
+      "mutation": "wrong-wire-count",
+      "rejected": true
+    },
+    {
+      "failures": [
+        "wrong_source_global_assignment_sha256"
+      ],
+      "mutation": "wrong-global-assignment",
+      "rejected": true
+    }
+  ],
+  "contract": {
+    "assignment_bytes": 973845878,
+    "extension_degree": 13,
+    "global_point_wire_starts": [
+      39945673,
+      39945866
+    ],
+    "leaves": 4096,
+    "linear_rows": 13112610,
+    "local_wires": 38953830,
+    "namespace_plan_sha256": "810f9feb69df61dd9672d90fe74fcec54c3b28bd126013981aeceb1e9e156c4f",
+    "namespace_relation_id": "pq-rbbc/cap/production-namespace-plan/v1",
+    "nonlinear_rows": 38212470,
+    "planned_local_wire_start": 79148427,
+    "planned_max_wire_id": 118102256,
+    "planned_output_wire_starts": [
+      116373499,
+      117954555,
+      117956603,
+      118097239
+    ],
+    "producer_relation_id": "pq-rbbc/cap/production-tree-producer-index-1/v1",
+    "rebase_delta": 38953830,
+    "rows": 51325080,
+    "runner_relation_id": "pq-rbbc/cap/planned-offset-tree-runner/v1",
+    "source_global_assignment_sha256": "946c1feef78741f0b7e04cfffb237c08b4736d63d8214f8202f822da6e8ec8c1",
+    "standalone_local_wire_start": 40194597,
+    "stream_bytes": 18008277115,
+    "tree_index": 1
+  },
+  "contract_sha256": "69aeb8e5deda83a2ff4f2e58a87990564b8aa42bcb3b65719749ebc54958f723",
+  "contract_validation_failures": [],
+  "implementation_version": "2.22",
+  "production_replay": {
+    "external_artifacts_tracked_in_git": false,
+    "planned_assignment_body_sha256": null,
+    "planned_assignment_sha256": null,
+    "planned_row_stream_sha256": null,
+    "production_rows_replayed_at_planned_offset": 0,
+    "required_global_tail_assignment_sha256": "946c1feef78741f0b7e04cfffb237c08b4736d63d8214f8202f822da6e8ec8c1",
+    "status": "not_materialized",
+    "tree_component_sha256": null
+  },
+  "profile": {
+    "artifact_tag": "v2_22_planned",
+    "assignment_format": "PQRBBC-F193-ASSIGNMENT-LE25-1",
+    "execution_cache_format": "PQRBBC-PLANNED-TREE-CACHE-1",
+    "relation_id": "pq-rbbc/cap/planned-offset-tree-runner/v1",
+    "resume_format": "PQRBBC-PLANNED-TREE-RESUME-1",
+    "tree_index": 1
+  },
+  "reduced_offset_fixture": {
+    "assignment_value_sha256": "693f553098bbcef948ad384902a594fcf517d607e7354d140ea4307c1b85e017",
+    "assignment_values_identical": true,
+    "canonical_local_wire_start": 1000,
+    "captured_rows_rebase_exact": true,
+    "fixture_is_not_production_replay_evidence": true,
+    "imported_point_wire_starts": [
+      1
+    ],
+    "linear_rows": 11227,
+    "local_port_ids_shifted_exactly": true,
+    "nonlinear_rows": 22727,
+    "planned_local_wire_start": 100000,
+    "planned_replay_failures": 0,
+    "point_wire_ids_preserved": true,
+    "port_values_identical": true,
+    "rebase_delta": 99000,
+    "row_count_and_accounting_identical": true,
+    "rows": 33954,
+    "stale_witness_probes": 6,
+    "stale_witness_probes_rejected": true,
+    "tree_index": 1,
+    "wires": 23135
+  }
+}

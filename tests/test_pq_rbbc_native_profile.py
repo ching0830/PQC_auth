@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Tests for the fail-closed PQ-RBBC v2.15 fork import contract."""
+"""Tests for the fail-closed PQ-RBBC v2.22 fork import contract."""
 
 from __future__ import annotations
 
@@ -315,6 +315,33 @@ class ForkNativeProfileTests(unittest.TestCase):
         self.assertTrue(
             manifest["claim_boundary"]["production_tree2_rebased_full_replay_closed"]
         )
+        tree1 = manifest["implemented_primitives"][
+            "production_tree1_planned_offset_component"
+        ]
+        self.assertEqual(tree1["tree_index"], 1)
+        self.assertEqual(tree1["planned_local_wire_start"], 79_148_427)
+        self.assertEqual(tree1["planned_max_wire_id"], 118_102_256)
+        self.assertEqual(
+            tuple(tree1["planned_output_wire_starts"]),
+            (116_373_499, 117_954_555, 117_956_603, 118_097_239),
+        )
+        self.assertEqual(
+            tree1["production_rows_replayed_at_planned_offset"], 51_325_080
+        )
+        self.assertEqual(tree1["production_local_wires"], 38_953_830)
+        self.assertEqual(tree1["production_row_stream_bytes"], 18_008_277_115)
+        self.assertEqual(
+            tree1["evidence_sha256"],
+            native.tree1_planned_recovery_evidence.FROZEN_EVIDENCE_SHA256,
+        )
+        self.assertTrue(tree1["production_assignment_materialized"])
+        self.assertTrue(tree1["production_full_replay_closed"])
+        claims = manifest["claim_boundary"]
+        self.assertTrue(claims["production_tree1_planned_assignment_materialized"])
+        self.assertTrue(claims["production_tree1_planned_full_replay_closed"])
+        self.assertEqual(claims["materialized_planned_tree_indices"], [0, 1, 2])
+        self.assertEqual(claims["materialized_planned_tree_count"], 3)
+        self.assertFalse(claims["remaining_planned_tree_producers_materialized"])
         recovery = manifest["implemented_primitives"][
             "production_composer_recovery_component"
         ]

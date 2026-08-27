@@ -47,3 +47,12 @@ Git stores only path-free sealed evidence under
 `artifacts/metadata/tree2_rebased_recovery_v2_21/`.  The old standalone v2.14
 assignment is not a substitute: only a full replay at planned local wire start
 118,102,257 closes the tree-index-2 planned-offset gate.
+
+The v2.22 tree-index-1 planned-offset replay also remains external.  Its
+973,845,878-byte assignment has SHA-256
+`ab75aca6037e47fe38a1364d2c66f90d1a3856da901423b398fa2d8812fa609f`;
+trusted identity-bound pickle caches and resume state are local-only.  Git
+stores only path-free sealed evidence under
+`artifacts/metadata/tree1_planned_recovery_v2_22/`.  An archive with the right
+shape is not a substitute: accept only the exact identity after a full
+51,325,080-row replay at planned local wire start 79,148,427.
