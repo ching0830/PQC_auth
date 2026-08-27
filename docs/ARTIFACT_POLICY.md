@@ -76,3 +76,13 @@ are local-only.  Git stores only path-free sealed evidence under
 observed by a first complete replay and accepted only after a fresh-cache
 second replay under the final frozen contract.  The archive, BR1CS, resume
 state, and every pickle remain prohibited from Git.
+
+The v2.25 tree-index-5-through-7 batch follows the same rule independently for
+each tree.  Each 486,961,028-byte `.f193assign` archive, its pre-freeze and
+frozen identity-bound pickle caches, and all resume state remain external.
+Git stores only the path-free batch seal under
+`artifacts/metadata/tree5_7_batch_recovery_v2_25/`.  A batch directory is not
+a trust boundary: verify all three archive, body, row-stream, replay-manifest,
+contract, output, and tree-component identities before use.  None of the
+three assignments, any checkpoint or pickle, or the v2.25 BR1CS may be
+committed.

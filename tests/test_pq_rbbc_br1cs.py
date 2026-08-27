@@ -262,8 +262,16 @@ class BinaryR1CSBackendTests(unittest.TestCase):
         self.assertTrue(contract["production_tree3_planned_full_replay_closed"])
         self.assertTrue(contract["production_tree4_planned_assignment_materialized"])
         self.assertTrue(contract["production_tree4_planned_full_replay_closed"])
-        self.assertEqual(contract["materialized_planned_tree_indices"], [0, 1, 2, 3, 4])
-        self.assertEqual(contract["materialized_planned_tree_count"], 5)
+        self.assertEqual(
+            contract["production_tree5_7_batch_recovery_evidence_sha256"],
+            backend.native_profile.tree5_7_batch_recovery_evidence.FROZEN_EVIDENCE_SHA256,
+        )
+        self.assertEqual([item["tree_index"] for item in contract["production_tree5_7_batch_contracts"]], [5, 6, 7])
+        for tree_index in (5, 6, 7):
+            self.assertTrue(contract[f"production_tree{tree_index}_planned_assignment_materialized"])
+            self.assertTrue(contract[f"production_tree{tree_index}_planned_full_replay_closed"])
+        self.assertEqual(contract["materialized_planned_tree_indices"], list(range(8)))
+        self.assertEqual(contract["materialized_planned_tree_count"], 8)
         self.assertFalse(contract["remaining_planned_tree_producers_materialized"])
         self.assertEqual(
             contract["production_composer_recovery_production_levels_checkpointed"],

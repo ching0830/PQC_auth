@@ -651,7 +651,7 @@ def build_backend_manifest(output_path: str | os.PathLike[str]) -> dict[str, obj
         honest.metadata.linear_definitions + honest.metadata.linear_assertions
     )
     return {
-        "implementation_version": "2.24",
+        "implementation_version": "2.25",
         "status": "the checkpointable recovery path has regenerated and revalidated the frozen v2.8 execution cache and v2.9 global-tail archive; planned trees 0 through 3 are materialized, and trees 1, 2, and 3 have been fully replayed at their planned offsets; the remaining producers, complete replay, cross-segment identity, and parent join remain external",
         "format": {
             "name": honest.metadata.format,
@@ -918,6 +918,22 @@ def build_backend_manifest(output_path: str | os.PathLike[str]) -> dict[str, obj
             "production_tree4_planned_row_stream_bytes": native_profile.tree4_planned_recovery_evidence.FROZEN_STREAM_BYTES,
             "production_tree4_planned_row_stream_sha256": native_profile.tree4_planned_recovery_evidence.FROZEN_STREAM_SHA256,
             "production_tree4_planned_tree_component_sha256": native_profile.tree4_planned_recovery_evidence.FROZEN_TREE_COMPONENT_SHA256,
+            "production_tree5_7_batch_recovery_evidence_relation_id": native_profile.tree5_7_batch_recovery_evidence.RELATION_ID,
+            "production_tree5_7_batch_recovery_evidence_sha256": native_profile.tree5_7_batch_recovery_evidence.FROZEN_EVIDENCE_SHA256,
+            "production_tree5_7_batch_contracts": [
+                {
+                    "tree_index": contract.tree_index,
+                    "contract_sha256": native_profile.tree5_7_batch_recovery_evidence.FROZEN_TREES[contract.tree_index]["contract_sha256"],
+                    "planned_local_wire_start": contract.planned_local_wire_start,
+                    "planned_max_wire_id": contract.planned_max_wire_id,
+                    "planned_output_wire_starts": contract.planned_output_wire_starts,
+                    "replayed_manifest_sha256": native_profile.tree5_7_batch_recovery_evidence.FROZEN_TREES[contract.tree_index]["replayed_manifest_sha256"],
+                    "assignment_sha256": native_profile.tree5_7_batch_recovery_evidence.FROZEN_TREES[contract.tree_index]["archive_sha256"],
+                    "row_stream_sha256": native_profile.tree5_7_batch_recovery_evidence.FROZEN_TREES[contract.tree_index]["stream_sha256"],
+                    "tree_component_sha256": native_profile.tree5_7_batch_recovery_evidence.FROZEN_TREES[contract.tree_index]["tree_component_sha256"],
+                }
+                for contract in native_profile.TREE5_7_PLANNED_CONTRACTS
+            ],
             "production_18_tree_namespace_plan_closed": True,
             "production_namespace_intervals_nonoverlapping": True,
             "production_global_point_imports_preserved": True,
@@ -932,8 +948,14 @@ def build_backend_manifest(output_path: str | os.PathLike[str]) -> dict[str, obj
             "production_tree3_planned_full_replay_closed": True,
             "production_tree4_planned_assignment_materialized": True,
             "production_tree4_planned_full_replay_closed": True,
-            "materialized_planned_tree_indices": [0, 1, 2, 3, 4],
-            "materialized_planned_tree_count": 5,
+            "production_tree5_planned_assignment_materialized": True,
+            "production_tree5_planned_full_replay_closed": True,
+            "production_tree6_planned_assignment_materialized": True,
+            "production_tree6_planned_full_replay_closed": True,
+            "production_tree7_planned_assignment_materialized": True,
+            "production_tree7_planned_full_replay_closed": True,
+            "materialized_planned_tree_indices": list(range(8)),
+            "materialized_planned_tree_count": 8,
             "remaining_planned_tree_producers_materialized": False,
             "production_composer_checkpoint_recovery_gate_closed": True,
             "reduced_checkpoint_resume_bit_exact": True,

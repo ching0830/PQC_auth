@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Checkpointable planned-offset production tree runner for PQ-RBBC v2.24.
+"""Checkpointable planned-offset production tree runner for PQ-RBBC v2.25.
 
 The v2.13 tree-0 and v2.14/v2.17 tree-2 programs remain frozen.  This module
 generalizes their execution pattern without modifying either historical
@@ -39,18 +39,21 @@ import pq_rbbc_cap_shard_assignment as assignment
 import pq_rbbc_cap_tree_producer as producer
 
 
-IMPLEMENTATION_VERSION = "2.24"
+IMPLEMENTATION_VERSION = "2.25"
 RELATION_ID = "pq-rbbc/cap/planned-offset-tree-runner/v1"
 EXECUTION_CACHE_FORMAT = "PQRBBC-PLANNED-TREE-CACHE-1"
 RESUME_FORMAT = "PQRBBC-PLANNED-TREE-RESUME-1"
-ARTIFACT_TAG = "v2_24_planned"
-MANIFEST_NAME = "pq_rbbc_cap_planned_tree4_manifest_v2_24.json"
+ARTIFACT_TAG = "v2_25_batch_planned"
+MANIFEST_NAME = "pq_rbbc_cap_planned_tree7_manifest_v2_25.json"
 CHECKPOINT_BATCH_LEAVES = 128
 MAX_WIRE_ID = (1 << 64) - 1
 TREE1_INDEX = 1
 TREE3_INDEX = 3
 TREE4_INDEX = 4
-DEFAULT_TREE_INDEX = TREE4_INDEX
+TREE5_INDEX = 5
+TREE6_INDEX = 6
+TREE7_INDEX = 7
+DEFAULT_TREE_INDEX = TREE7_INDEX
 FROZEN_TREE1_CONTRACT_SHA256 = (
     "69aeb8e5deda83a2ff4f2e58a87990564b8aa42bcb3b65719749ebc54958f723"
 )
@@ -63,10 +66,31 @@ PREFREEZE_TREE4_CONTRACT_SHA256 = (
 FROZEN_TREE4_CONTRACT_SHA256 = (
     "746e8af3bc2f1fdb17acb5e77bf1bf24be19b4e56dbcb86dc959df1e8bbf0e6d"
 )
+PREFREEZE_TREE5_CONTRACT_SHA256 = (
+    "5e06e6194e3b08d204f0922d99a39e05bcd16516877dc639d1ddfdcfaaf65527"
+)
+PREFREEZE_TREE6_CONTRACT_SHA256 = (
+    "00fe55509916ba6b0a20af59d76169cf68f9f88b46c520e6f47a02416a76e660"
+)
+PREFREEZE_TREE7_CONTRACT_SHA256 = (
+    "773d1af71e68afce8fa5185552f2c6735cd91531832f5feac74c4e331e1c6dab"
+)
+FROZEN_TREE5_CONTRACT_SHA256 = (
+    "49694ee2229c0a99731510b3b9242c7863e2663a0684061fa821132266d27e58"
+)
+FROZEN_TREE6_CONTRACT_SHA256 = (
+    "119d4e6dbe9d6003eac74df3299bfd5e52f6c764c8b3d9bb6cee59b983698028"
+)
+FROZEN_TREE7_CONTRACT_SHA256 = (
+    "71e8faf784f9c489ea82b09e53799dc7ff205a035baac7e71ec9f0068154b396"
+)
 FROZEN_CONTRACT_SHA256_BY_TREE = {
     TREE1_INDEX: FROZEN_TREE1_CONTRACT_SHA256,
     TREE3_INDEX: FROZEN_TREE3_CONTRACT_SHA256,
     TREE4_INDEX: FROZEN_TREE4_CONTRACT_SHA256,
+    TREE5_INDEX: FROZEN_TREE5_CONTRACT_SHA256,
+    TREE6_INDEX: FROZEN_TREE6_CONTRACT_SHA256,
+    TREE7_INDEX: FROZEN_TREE7_CONTRACT_SHA256,
 }
 FROZEN_STREAM_BYTES_BY_TREE = {
     0: tree0.FROZEN_STREAM_BYTES,
@@ -74,6 +98,9 @@ FROZEN_STREAM_BYTES_BY_TREE = {
     2: tree2.FROZEN_STREAM_BYTES,
     3: 8_961_160_824,
     4: 8_961_160_824,
+    5: 8_961_160_824,
+    6: 8_961_160_824,
+    7: 8_961_160_824,
 }
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -847,6 +874,12 @@ def build_preflight_manifest(
             "production_tree3_planned_full_replay_closed": False,
             "production_tree4_planned_assignment_materialized": False,
             "production_tree4_planned_full_replay_closed": False,
+            "production_tree5_planned_assignment_materialized": False,
+            "production_tree5_planned_full_replay_closed": False,
+            "production_tree6_planned_assignment_materialized": False,
+            "production_tree6_planned_full_replay_closed": False,
+            "production_tree7_planned_assignment_materialized": False,
+            "production_tree7_planned_full_replay_closed": False,
             "remaining_planned_tree_producers_materialized": False,
             "all_72_output_relocations_closed": False,
             "complete_18_tree_assignment_replayed": False,
@@ -964,6 +997,27 @@ def build_replayed_manifest(
             {
                 "production_tree4_planned_assignment_materialized": formal_replay_closed,
                 "production_tree4_planned_full_replay_closed": formal_replay_closed,
+            }
+        )
+    if tree_index == TREE5_INDEX:
+        document["claim_boundary"].update(
+            {
+                "production_tree5_planned_assignment_materialized": formal_replay_closed,
+                "production_tree5_planned_full_replay_closed": formal_replay_closed,
+            }
+        )
+    if tree_index == TREE6_INDEX:
+        document["claim_boundary"].update(
+            {
+                "production_tree6_planned_assignment_materialized": formal_replay_closed,
+                "production_tree6_planned_full_replay_closed": formal_replay_closed,
+            }
+        )
+    if tree_index == TREE7_INDEX:
+        document["claim_boundary"].update(
+            {
+                "production_tree7_planned_assignment_materialized": formal_replay_closed,
+                "production_tree7_planned_full_replay_closed": formal_replay_closed,
             }
         )
     return document
