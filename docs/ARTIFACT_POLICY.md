@@ -56,3 +56,13 @@ stores only path-free sealed evidence under
 `artifacts/metadata/tree1_planned_recovery_v2_22/`.  An archive with the right
 shape is not a substitute: accept only the exact identity after a full
 51,325,080-row replay at planned local wire start 79,148,427.
+
+The v2.23 tree-index-3 planned-offset replay follows the same rule.  Its
+486,961,028-byte assignment has SHA-256
+`315e83340d10331188d27a99a82de6f1262e36468f1b6f8c6ef97283d83fc02b`;
+trusted identity-bound pre-freeze and frozen pickle caches plus resume state
+are local-only.  Git stores only path-free sealed evidence under
+`artifacts/metadata/tree3_planned_recovery_v2_23/`.  The frozen row-stream
+identity was established by a first complete replay and then revalidated by a
+second complete replay under the frozen contract; neither the archive nor any
+pickle may be committed.
