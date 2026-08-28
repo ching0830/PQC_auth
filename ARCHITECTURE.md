@@ -1,3 +1,5 @@
+[繁體中文版](ARCHITECTURE_zh-TW.md)
+
 # Thesis architecture
 
 ## Scope

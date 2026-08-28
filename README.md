@@ -1,3 +1,5 @@
+[繁體中文版](README_zh-TW.md)
+
 # Post-quantum accountable satellite authentication
 
 This repository is the research and implementation workspace for a complete
@@ -25,14 +27,14 @@ satellite-path evaluation.
 
 ## Architecture at a glance
 
-\`\`\`mermaid
+```mermaid
 flowchart TD
     A["FAC governance"] --> B["HNCC authorization"]
     B --> C["PQ-RBBC offline issuance"]
     C --> D["UE–FGS satellite access"]
     D --> E["PQ session and handover"]
     C --> F["Authorized OA opening"]
-\`\`\`
+```
 
 - FAC and OA may use the same federation-member organizations, but use
   independent threshold keys, ceremonies, and thresholds \(t_F\) and \(t_O\).
@@ -47,19 +49,19 @@ flowchart TD
 
 | Path | Purpose |
 | --- | --- |
-| \`ARCHITECTURE.md\` | canonical whole-system definition |
-| \`ROADMAP.md\` | project-level implementation and proof roadmap |
-| \`RESEARCH_STATUS.md\` | conservative whole-project claim boundary |
-| \`modules/\` | module registry and migration-safe module entry points |
-| \`src/\` | current RBBC Python reference and circuit implementation |
-| \`tests/\` | current RBBC regression, mutation, and replay tests |
-| \`manifests/\` | frozen RBBC machine-readable evidence and claims |
-| \`artifacts/metadata/\` | portable metadata for external RBBC artifacts |
-| \`docs/proof/\` | RBBC formal-proof source and rendered releases |
-| \`docs/roadmaps/\` | versioned RBBC roadmaps and operational handoff |
-| \`docs/releases/\` | RBBC checkpoint release notes |
-| \`docs/artifacts/\` | RBBC artifact reconstruction and evidence notes |
-| \`checksums/\` | release checksum inventories |
+| `ARCHITECTURE.md` | canonical whole-system definition |
+| `ROADMAP.md` | project-level implementation and proof roadmap |
+| `RESEARCH_STATUS.md` | conservative whole-project claim boundary |
+| `modules/` | module registry and migration-safe module entry points |
+| `src/` | current RBBC Python reference and circuit implementation |
+| `tests/` | current RBBC regression, mutation, and replay tests |
+| `manifests/` | frozen RBBC machine-readable evidence and claims |
+| `artifacts/metadata/` | portable metadata for external RBBC artifacts |
+| `docs/proof/` | RBBC formal-proof source and rendered releases |
+| `docs/roadmaps/` | versioned RBBC roadmaps and operational handoff |
+| `docs/releases/` | RBBC checkpoint release notes |
+| `docs/artifacts/` | RBBC artifact reconstruction and evidence notes |
+| `checksums/` | release checksum inventories |
 
 The current paths are intentionally preserved during architecture migration so
 ongoing RBBC tree-producer work and sealed artifact identities are not
@@ -72,13 +74,13 @@ tree positions 0 through 7 (8 of 18). Positions 8 through 17, all 72
 relocations, complete 18-tree replay, cross-segment identity, parent join,
 fork-specific reductions, qualified PQ proof backend, robust threshold
 opening, satellite AKE, replay/revocation, and handover remain open.
-\`production_closed = false\`.
+`production_closed = false`.
 
 ## Running current RBBC tests
 
-\`\`\`bash
+```bash
 PYTHONPATH=src python -m unittest discover -s tests -v
-\`\`\`
+```
 
 Optional production replay tests require external assignments whose exact
 identities and handling rules are recorded in the RBBC handoff and

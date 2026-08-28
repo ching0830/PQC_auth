@@ -1,3 +1,5 @@
+[繁體中文版](README_zh-TW.md)
+
 # PQ-RBBC module
 
 PQ-RBBC is the relation-bound blind-ticket and signature-gated trace-opening
