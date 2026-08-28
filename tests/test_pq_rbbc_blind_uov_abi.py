@@ -550,11 +550,22 @@ class BlindUOVVisibilityTests(unittest.TestCase):
             manifest["claim_boundary"]["production_tree4_planned_full_replay_closed"]
         )
         self.assertEqual(
-            manifest["claim_boundary"]["materialized_planned_tree_indices"],
-            [0, 1, 2, 3, 4],
+            interface["production_tree5_7_batch_recovery_evidence_sha256"],
+            abi.cap_tree5_7_batch_recovery_evidence.FROZEN_EVIDENCE_SHA256,
         )
         self.assertEqual(
-            manifest["claim_boundary"]["materialized_planned_tree_count"], 5
+            [item["tree_index"] for item in interface["production_tree5_7_batch_contracts"]],
+            [5, 6, 7],
+        )
+        for tree_index in (5, 6, 7):
+            self.assertTrue(manifest["claim_boundary"][f"production_tree{tree_index}_planned_assignment_materialized"])
+            self.assertTrue(manifest["claim_boundary"][f"production_tree{tree_index}_planned_full_replay_closed"])
+        self.assertEqual(
+            manifest["claim_boundary"]["materialized_planned_tree_indices"],
+            list(range(8)),
+        )
+        self.assertEqual(
+            manifest["claim_boundary"]["materialized_planned_tree_count"], 8
         )
         self.assertFalse(
             manifest["claim_boundary"][

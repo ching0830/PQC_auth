@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Tests for the fail-closed PQ-RBBC v2.24 fork import contract."""
+"""Tests for the fail-closed PQ-RBBC v2.25 fork import contract."""
 
 from __future__ import annotations
 
@@ -385,8 +385,23 @@ class ForkNativeProfileTests(unittest.TestCase):
         self.assertTrue(claims["production_tree3_planned_full_replay_closed"])
         self.assertTrue(claims["production_tree4_planned_assignment_materialized"])
         self.assertTrue(claims["production_tree4_planned_full_replay_closed"])
-        self.assertEqual(claims["materialized_planned_tree_indices"], [0, 1, 2, 3, 4])
-        self.assertEqual(claims["materialized_planned_tree_count"], 5)
+        batch = manifest["implemented_primitives"][
+            "production_tree5_7_batch_planned_offset_component"
+        ]
+        self.assertEqual(batch["tree_indices"], [5, 6, 7])
+        self.assertEqual(
+            batch["evidence_sha256"],
+            native.tree5_7_batch_recovery_evidence.FROZEN_EVIDENCE_SHA256,
+        )
+        self.assertEqual([item["tree_index"] for item in batch["trees"]], [5, 6, 7])
+        for item in batch["trees"]:
+            self.assertTrue(item["production_assignment_materialized"])
+            self.assertTrue(item["production_full_replay_closed"])
+        for tree_index in (5, 6, 7):
+            self.assertTrue(claims[f"production_tree{tree_index}_planned_assignment_materialized"])
+            self.assertTrue(claims[f"production_tree{tree_index}_planned_full_replay_closed"])
+        self.assertEqual(claims["materialized_planned_tree_indices"], list(range(8)))
+        self.assertEqual(claims["materialized_planned_tree_count"], 8)
         self.assertFalse(claims["remaining_planned_tree_producers_materialized"])
         recovery = manifest["implemented_primitives"][
             "production_composer_recovery_component"

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Regression tests for the v2.24 planned-offset tree runner."""
+"""Regression tests for the v2.25 planned-offset tree runner."""
 
 from __future__ import annotations
 
@@ -28,7 +28,8 @@ class PlannedTreeProducerTests(unittest.TestCase):
         cls.contract = planned.load_contract(1)
         cls.tree3_contract = planned.load_contract(3)
         cls.tree4_contract = planned.load_contract(4)
-        cls.generated = planned.build_preflight_manifest(4)
+        cls.batch_contracts = tuple(planned.load_contract(index) for index in (5, 6, 7))
+        cls.generated = planned.build_preflight_manifest(7)
         cls.randomness = cap.deterministic_randomness(
             cap.PRODUCTION_PARAMETERS, composer.FROZEN_RANDOMNESS_LABEL
         )
@@ -122,6 +123,41 @@ class PlannedTreeProducerTests(unittest.TestCase):
             (175_669_929, 176_460_457, 176_462_505, 176_532_933),
         )
 
+    def test_tree5_to_tree7_final_contracts_are_exact(self) -> None:
+        expected = (
+            (5, 176_537_565, 196_016_000, 136_342_968,
+             (195_148_365, 195_938_893, 195_940_941, 196_011_369),
+             planned.FROZEN_TREE5_CONTRACT_SHA256,
+             planned.PREFREEZE_TREE5_CONTRACT_SHA256),
+            (6, 196_016_001, 215_494_436, 155_821_404,
+             (214_626_801, 215_417_329, 215_419_377, 215_489_805),
+             planned.FROZEN_TREE6_CONTRACT_SHA256,
+             planned.PREFREEZE_TREE6_CONTRACT_SHA256),
+            (7, 215_494_437, 234_972_872, 175_299_840,
+             (234_105_237, 234_895_765, 234_897_813, 234_968_241),
+             planned.FROZEN_TREE7_CONTRACT_SHA256,
+             planned.PREFREEZE_TREE7_CONTRACT_SHA256),
+        )
+        for contract, item in zip(self.batch_contracts, expected, strict=True):
+            tree_index, start, end, delta, outputs, digest, prefreeze_digest = item
+            with self.subTest(tree_index=tree_index):
+                self.assertEqual(contract.tree_index, tree_index)
+                self.assertEqual((contract.leaves, contract.extension_degree), (2048, 12))
+                self.assertEqual(contract.planned_local_wire_start, start)
+                self.assertEqual(contract.planned_max_wire_id, end)
+                self.assertEqual(contract.rebase_delta, delta)
+                self.assertEqual(contract.local_wires, 19_478_436)
+                self.assertEqual(contract.rows, 25_666_386)
+                self.assertEqual(contract.stream_bytes, 8_961_160_824)
+                self.assertEqual(contract.assignment_bytes, 486_961_028)
+                self.assertEqual(contract.planned_output_wire_starts, outputs)
+                self.assertEqual(planned.contract_sha256(contract), digest)
+                self.assertEqual(
+                    planned.contract_sha256(replace(contract, stream_bytes=None)),
+                    prefreeze_digest,
+                )
+                self.assertEqual(planned.contract_failures(contract, contract), ())
+
     def test_configuration_mutations_fail_closed(self) -> None:
         probes = self.generated["configuration_mutation_probes"]
         self.assertEqual(len(probes), 10)
@@ -212,7 +248,7 @@ class PlannedTreeProducerTests(unittest.TestCase):
         self.assertEqual(
             self.generated["production_replay"]["status"], "not_materialized"
         )
-        self.assertEqual(self.generated["claim_boundary"]["target_tree_index"], 4)
+        self.assertEqual(self.generated["claim_boundary"]["target_tree_index"], 7)
         for name in (
             "production_tree1_planned_assignment_materialized",
             "production_tree1_planned_full_replay_closed",
@@ -220,6 +256,12 @@ class PlannedTreeProducerTests(unittest.TestCase):
             "production_tree3_planned_full_replay_closed",
             "production_tree4_planned_assignment_materialized",
             "production_tree4_planned_full_replay_closed",
+            "production_tree5_planned_assignment_materialized",
+            "production_tree5_planned_full_replay_closed",
+            "production_tree6_planned_assignment_materialized",
+            "production_tree6_planned_full_replay_closed",
+            "production_tree7_planned_assignment_materialized",
+            "production_tree7_planned_full_replay_closed",
             "remaining_planned_tree_producers_materialized",
             "all_72_output_relocations_closed",
             "complete_18_tree_assignment_replayed",
