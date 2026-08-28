@@ -1,3 +1,5 @@
+[繁體中文版](README_zh-TW.md)
+
 # Module registry
 
 This directory records thesis-level module ownership. During migration phase 1,

@@ -1,3 +1,5 @@
+[繁體中文版](PQ_RBBC_CURRENT_HANDOFF_zh-TW.md)
+
 # PQ-RBBC current handoff — v2.25 tree-5 through tree-7 batch
 
 > **Module scope:** this is the operational handoff for PQ-RBBC, not the

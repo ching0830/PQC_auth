@@ -1,6 +1,8 @@
+[繁體中文版](RESEARCH_STATUS_zh-TW.md)
+
 # Research status
 
-Updated from merged \`main\` checkpoint v2.25.
+Updated from merged `main` checkpoint v2.25.
 
 ## Whole-thesis status
 
