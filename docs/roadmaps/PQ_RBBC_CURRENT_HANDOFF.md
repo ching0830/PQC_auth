@@ -1,5 +1,10 @@
 # PQ-RBBC current handoff — v2.25 tree-5 through tree-7 batch
 
+> **Module scope:** this is the operational handoff for PQ-RBBC, not the
+> whole-thesis roadmap. Start with [../../ARCHITECTURE.md](../../ARCHITECTURE.md),
+> [../../RESEARCH_STATUS.md](../../RESEARCH_STATUS.md), and
+> [../../ROADMAP.md](../../ROADMAP.md) for project-level context.
+
 Date: 27 August 2026
 
 Read this file first in a new work session.  Then read the v2.25 release note,
@@ -9,8 +14,9 @@ merged.
 
 ## Base and closed boundary
 
-The v2.25 work was based on merged `main` commit
-`aad5bed719af1db266377cb654ecc7824f34d04b`.  Planned producer indices 0
+The v2.25 work started from `aad5bed719af1db266377cb654ecc7824f34d04b`
+and is merged on `main` at
+`e823117269cde2b2428e2d71024d362a3dbc0401`.  Planned producer indices 0
 through 7 are materialized and independently replayed: 8 of 18.  Trees 5, 6,
 and 7 were executed as a bounded batch but have separate contracts, archives,
 row streams, output checks, mutation probes, and replay-manifest identities.
