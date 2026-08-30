@@ -41,8 +41,8 @@ flowchart TD
 | `ROADMAP.md`／`ROADMAP_zh-TW.md` | 專案級實作與證明 roadmap |
 | `RESEARCH_STATUS.md`／`RESEARCH_STATUS_zh-TW.md` | 保守的全專案 claim boundary |
 | `modules/` | 模組 registry 與 migration-safe 入口 |
-| `src/` | 目前 RBBC Python reference 與 circuit implementation |
-| `tests/` | RBBC regression、mutation 與 replay tests |
+| `src/` | RBBC Python reference／circuit implementation，以及 satellite access test-only primitives |
+| `tests/` | RBBC regression／mutation／replay tests 與 system reference tests |
 | `manifests/` | 凍結的 RBBC machine-readable evidence 與 claims |
 | `artifacts/metadata/` | 外部 RBBC artifacts 的 portable metadata |
 | `docs/proof/` | RBBC 形式化證明原始檔與 release PDF |

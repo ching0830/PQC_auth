@@ -61,7 +61,7 @@
 - **必要條件：**canonical digest、transactional store、並行請求互斥、驗證失敗不消耗、成功後不得 rollback 重用，以及明確的 timeout／crash recovery。
 - **代價：**UE 需要預先取得足夠的短效 ticket，FGS 需要維護 consumption state；離線或 partition 情境的 availability 必須單獨評估。
 - **未來擴充：**若後續加入 unlinkable `Show`，必須建立新的 presentation relation、security game、encoding、proof backend 與 benchmark，不能只移除 consumption check。
-- **實作規格：**`docs/specs/ONE_TIME_TICKET_STATE_v0_1_zh-TW.md` 定義 draft state machine、atomic commit、retry／crash、handover boundary、framing 與 machine-test invariants；目前仍未宣稱 implemented。
+- **實作規格：**`docs/specs/ONE_TIME_TICKET_STATE_v0_1_zh-TW.md` 定義 draft state machine、atomic commit、retry／crash、handover boundary、framing 與 machine-test invariants。Canonical framing／parser、use identity 與 test-only process-local replay model 已實作／測試；durable／distributed production store 與完整 access protocol 仍未實作。
 
 ## 驗證與評估方法
 

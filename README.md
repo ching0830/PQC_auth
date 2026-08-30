@@ -53,8 +53,8 @@ flowchart TD
 | `ROADMAP.md` | project-level implementation and proof roadmap |
 | `RESEARCH_STATUS.md` | conservative whole-project claim boundary |
 | `modules/` | module registry and migration-safe module entry points |
-| `src/` | current RBBC Python reference and circuit implementation |
-| `tests/` | current RBBC regression, mutation, and replay tests |
+| `src/` | current RBBC Python reference/circuit implementation and satellite-access test-only primitives |
+| `tests/` | current RBBC regression/mutation/replay tests and system reference tests |
 | `manifests/` | frozen RBBC machine-readable evidence and claims |
 | `artifacts/metadata/` | portable metadata for external RBBC artifacts |
 | `docs/proof/` | RBBC formal-proof source and rendered releases |

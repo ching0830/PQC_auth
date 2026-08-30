@@ -72,6 +72,21 @@ PYTHONPATH=src python -m unittest discover -s tests -v
 - Reader 驗證：archive magic／profile／size、19,903,324 wires、497,583,100-byte body、body SHA-256 `e16ca6a9228f9f13901d0e0228751010fa25889ed02a7291aaceebe69590843a` 與 row-stream SHA-256 `2cfc3641a94635af35dfa5494c61e74a416ef2fb446975cd417891d244943dfc` 全部通過。
 - 結論：canonical archive identity 與格式已驗證；本次未重跑歷史上的 26,126,283-row relation replay，因此不擴張 production claim boundary。
 
+### EXP-20260830-03 — One-time ticket reference state model
+
+- 研究問題／假設：v0.1 的 canonical framing、ticket-use identity 與 `UNSEEN → RESERVED → CONSUMED` semantics，能否以最小 process-local reference model 表達並接受 deterministic、mutation、retry、collision 與 concurrency tests。
+- 日期與時區：2026-08-30，Asia/Taipei。
+- Git branch／基線：`codex/system-vertical-slice`，基線 `853a239`；測試時含尚未 commit 的 `src/pq_sat_auth/`、`tests/system/` 與本次文件更新。
+- 環境：Linux 6.8.0-138-generic x86_64；AMD Ryzen 5 7600X（6 cores／12 logical CPUs）；30 GiB RAM；Python 3.12.9。
+- 實作：strict frame／opaque parser、`use_key` derivation、immutable identity，以及加鎖的 `InMemoryLinearizableReplayStore`。Store 明確標記 `production_ready = False`，沒有 durability 或跨程序／跨 FGS consistency。
+- focused command：`PYTHONPATH=src python -m unittest discover -s tests/system -v`
+- focused 結果：`Ran 16 tests in 0.004s`；`OK`，exit code 0。
+- full regression command：`PYTHONPATH=src python -m unittest discover -s tests -v`
+- full regression 結果：`Ran 266 tests in 586.769s`；`OK (skipped=12)`，exit code 0。
+- concurrency coverage：24 個不同 attempt 並行 reserve 僅一個新 winner；24 個相同 attempt retry 產生一個新 reservation 與 23 個 idempotent results。
+- skipped 原因：與基線相同，為 repository 外部的 v2.13–v2.25 assignments、execution caches 或 recovery artifacts 未安裝；無 failure 或 error。
+- 結論：支持局部 framing、identity 與 process-local state semantics 已 Implemented／Tested；不支持 durable／distributed replay、holder authentication、PQ AKE、完整 Access object、proof closure 或 production closure 宣稱。
+
 ## 實驗模板
 
 ```markdown

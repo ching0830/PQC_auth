@@ -14,7 +14,7 @@
 | Opening authorization | abstract verifier interface 已定義 | 未開始 | 假設 authorization unforgeability |
 | Threshold trace opening | abstract construction 已定義 | 具體完整 protocol 未封閉 | robust transcript 與 real key 未完成 |
 | Satellite access 與 PQ AKE | 只有 requirements | 未開始 | 未宣稱 |
-| Anti-replay 與 revocation | v0.1 one-time state、原子消耗、retry／crash semantics 與 framing 已有 draft；G1 尚未 freeze | 未開始 | 未宣稱 |
+| Anti-replay 與 revocation | v0.1 one-time state、原子消耗、retry／crash semantics 與 framing 已有 draft；G1 尚未 freeze | canonical frame／opaque parser、use identity 與 test-only process-local linearizable replay model 已實作 | 16 項 focused tests 已納入 266 項 regression；尚非 durable／distributed store，未宣稱 production closure |
 | Handover | 只有 requirements | 未開始 | 未宣稱 |
 | End-to-end evaluation | 已辨識 metrics | 未開始 | 無 system benchmark |
 

@@ -1,6 +1,6 @@
 # One-Time Ticket 狀態與 Access 邊界規格 v0.1
 
-> 狀態：Draft for implementation
+> 狀態：Draft；canonical framing、use identity 與 process-local replay model 已實作／測試
 > 日期：2026-08-30
 > 所屬模組：M5 Satellite authentication、M6 Anti-replay／revocation／handover
 > Canonical architecture：`ARCHITECTURE_zh-TW.md`
@@ -14,7 +14,8 @@
 - `VerifyTicket(T)` 仍是 stateless cryptographic verification；
 - fresh serial、issuance-side `sid` replay control、opening-authorization replay control、one-more unforgeability，以及 trace DEM 的 one-time privacy，都不等於 access ticket one-use；
 - one-use 性質只在本規格的 FGS state transition、holder authentication 與儲存假設下成立；
-- 本文件目前是 Defined，尚未代表 Implemented、Tested、Proof-closed 或 Production-closed。
+- 整體 protocol 目前是 Defined；canonical framing／parser、use identity 與 test-only process-local replay model 已達 Implemented／Tested。
+- Access object serializers、holder authenticator、PQ AKE、durable／distributed replay store、revocation 與 handover 尚未實作；上述局部測試不代表整個模組、proof 或 production closure。
 
 ## 2. v0.1 系統假設
 
