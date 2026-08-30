@@ -33,7 +33,7 @@ PQ-RBBC 是目前最成熟的密碼學核心，但不是整篇論文。完整系
 1. 如何將離線發行的匿名可追責票券，安全地接入衛星在線認證與 PQ AKE？
 2. 如何把重型 issuance proof 與 opening 流程留在地面端，同時讓衛星在線路徑保持精簡？
 3. 如何阻止 HNCC 或 operator 透過可見 metadata 對使用者加入個人化 watermark？
-4. 在目前沒有可 rerandomize／zero-knowledge `Show` protocol 的情況下，票券應採 strictly one-use、bounded-use，還是新增 unlinkable presentation？
+4. 在 system profile v0.1 採 short-lived、strictly one-use ticket 後，如何配置預發行數量、效期與 failure recovery，兼顧 unlinkability、availability 與衛星路徑成本？
 5. 如何讓 conditional opening 同時滿足 authorization gating、threshold privacy、trace soundness、non-frameability、purpose limitation 與公開稽核？
 6. 如何在 serving context 改變時完成 fresh、抗 replay 且不暴露註冊身分的 handover？
 7. 如何組合各模組的安全 games，使端到端 theorem 的假設、實作與 evidence 一致？
@@ -51,7 +51,7 @@ PQ-RBBC 是目前最成熟的密碼學核心，但不是整篇論文。完整系
 ### 系統與治理
 
 - 如何具體化 FAC authorization 與 OA opening，同時維持獨立金鑰、門檻與 compromise domains？
-- ticket-use semantics 如何影響 unlinkability、replay state、revocation 與 handover？
+- one-time ticket 的預發行、原子消耗與 crash recovery 如何影響 unlinkability、availability、revocation 與 handover？
 - UE–FGS PQ AKE 如何在 satellite-path 成本、freshness 與 channel binding 之間取捨？
 - 如何建立可比較、可重現的端到端 benchmark 與 security-composition proof？
 

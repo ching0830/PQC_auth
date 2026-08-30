@@ -14,7 +14,7 @@ for their internal checkpoints.
 | T2 — federation authorization | specify FAC threshold issuer/configuration authorization and its evidence format | T0 | yes |
 | T3 — opening governance | specify case authorization, OA gate, robust shares, combine, and public audit evidence | T0; stable RBBC ticket digest | yes |
 | T4 — satellite access and PQ AKE | define UE–FGS transcript, LEO/FLEO role, freshness, channel binding, and session keys | T0; stable VerifyTicket interface | yes |
-| T5 — replay and lifecycle | define ticket-use semantics, nullifier/serial state, revocation, expiry, and recovery | T0; T4 interfaces | yes |
+| T5 — replay and lifecycle | one-time policy selected; define atomic consumption, serial state, revocation, expiry, and recovery | T0; T4 interfaces | yes |
 | T6 — handover | define serving-context transition and continuous authentication | T4; T5 | specification can start |
 | T7 — security proof composition | compose module games into end-to-end theorems | stable T1–T6 semantics | later |
 | T8 — evaluation | communication, computation, storage, latency, throughput, jitter, and baselines | executable modules | instrumentation can start |
@@ -31,8 +31,9 @@ architecture reorganization.
 
 ### Lane B — system specification
 
-1. Decide whether tickets are strictly one-use, bounded-use, or support a new
-   unlinkable presentation protocol.
+1. Freeze the selected short-lived, strictly one-use ticket policy as an exact
+   state-transition specification; retain unlinkable presentation as a future
+   extension.
 2. Freeze the exact UE, HNCC, FAC, OA, FGS, FLEO/LEO, and Operator APIs.
 3. Freeze the access and opening transcripts.
 4. Write the end-to-end threat model and security games.

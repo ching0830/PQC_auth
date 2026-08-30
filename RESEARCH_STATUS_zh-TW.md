@@ -14,7 +14,7 @@
 | Opening authorization | abstract verifier interface 已定義 | 未開始 | 假設 authorization unforgeability |
 | Threshold trace opening | abstract construction 已定義 | 具體完整 protocol 未封閉 | robust transcript 與 real key 未完成 |
 | Satellite access 與 PQ AKE | 只有 requirements | 未開始 | 未宣稱 |
-| Anti-replay 與 revocation | 只有 requirements | 未開始 | 未宣稱 |
+| Anti-replay 與 revocation | v0.1 採 short-lived、strictly one-use ticket；原子消耗與 failure semantics 待定稿 | 未開始 | 未宣稱 |
 | Handover | 只有 requirements | 未開始 | 未宣稱 |
 | End-to-end evaluation | 已辨識 metrics | 未開始 | 無 system benchmark |
 

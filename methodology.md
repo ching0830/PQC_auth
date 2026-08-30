@@ -46,11 +46,21 @@
 
 | ID | 問題 | 選項 | 狀態 | 阻擋項目 |
 | --- | --- | --- | --- | --- |
-| D-001 | ticket-use semantics | strictly one-use／bounded-use／unlinkable Show | 待決定 | replay、revocation、access protocol |
+| D-001 | ticket-use semantics | **short-lived、strictly one-use**；unlinkable Show 為未來擴充 | 已決定（2026-08-30） | 原子消耗與 failure semantics 待規格化 |
 | D-002 | PQ AKE composition | 待比較候選 KEM／signature／transcript | 待研究 | access 與 handover |
 | D-003 | FAC threshold primitive | 待比較 PQ threshold signature 與 DKG | 待研究 | issuer authorization |
 | D-004 | OA threshold encryption | robust、auditable PQ construction | 待研究 | production opening |
 | D-005 | SE-NIZK backend | 合格 PQ backend 候選 | 待研究 | RBBC proof closure |
+
+### D-001 — System profile v0.1 採 strictly one-use ticket
+
+- **決定日期：**2026-08-30。
+- **選擇：**每張 ticket 具有短效期，且最多只能成功建立一個 access session。FGS 以 canonical ticket digest 與 visible serial 執行原子 check-and-consume。
+- **核心邊界：**RBBC core 的 `VerifyTicket` 是 stateless；核心 proof 中 fresh serial、issuance-side `sid` replay control、opening-authorization replay control、one-more unforgeability，以及 trace DEM 的 one-time privacy，都不等於 access ticket one-use。此決策是 system lifecycle policy，不回溯擴張 RBBC theorem。
+- **理由：**目前沒有 rerandomizable／zero-knowledge `Show` protocol。允許同一 ticket 多次出示會產生明確 linkability，並使 replay、quota、revocation 與 handover semantics 更複雜。
+- **必要條件：**canonical digest、transactional store、並行請求互斥、驗證失敗不消耗、成功後不得 rollback 重用，以及明確的 timeout／crash recovery。
+- **代價：**UE 需要預先取得足夠的短效 ticket，FGS 需要維護 consumption state；離線或 partition 情境的 availability 必須單獨評估。
+- **未來擴充：**若後續加入 unlinkable `Show`，必須建立新的 presentation relation、security game、encoding、proof backend 與 benchmark，不能只移除 consumption check。
 
 ## 驗證與評估方法
 

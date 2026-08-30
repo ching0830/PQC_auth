@@ -83,9 +83,16 @@ fixed-format ticket and compact blind signature, not the issuance proof.
 The present implementation defines $\mathsf{Setup}$, relation-bound blind
 issuance, $\mathsf{VerifyTicket}$, $\mathsf{OpenShare}$, and threshold
 combination. It does not yet define a separate rerandomizable or zero-knowledge
-$\mathsf{Show}$ protocol. Reuse of the same ticket is therefore linkable; the
-intended one-time or short-lived ticket lifecycle must be fixed at the system
-layer.
+$\mathsf{Show}$ protocol. RBBC-core $\mathsf{VerifyTicket}$ is stateless and
+does not itself guarantee that a ticket is accepted only once. Reuse of the
+same ticket is therefore linkable.
+
+System profile v0.1 consequently adopts **short-lived, strictly one-use
+tickets**. After validating the ticket, context, expiry, and access transcript,
+FGS must atomically consume the canonical ticket digest and serial; subsequent
+access with a consumed ticket is rejected. This is an M6 lifecycle policy, not
+an existing RBBC-core proof claim. An unlinkable multi-show protocol remains a
+future extension.
 
 See [modules/rbbc/README.md](modules/rbbc/README.md).
 
@@ -119,9 +126,13 @@ games remain open. This module must keep FLEO/LEO work and traffic small.
 
 ### M6. Anti-replay, revocation, and handover
 
-Defines one-time ticket consumption or nullifier state, revocation
-distribution, context transitions, handover authorization, failure recovery,
-and availability behavior. These functions are not provided by the RBBC core.
+System profile v0.1 uses short-lived, strictly one-use tickets. FGS maintains
+epoch/expiry-bounded consumption state and performs an atomic check-and-consume
+over the ticket digest, serial, serving context, and access transcript.
+Concurrent duplicates, retries after failure, and cross-context replay require
+explicit state-transition semantics. This module also defines revocation
+distribution, handover authorization, failure recovery, and availability;
+these functions are not provided by the RBBC core.
 
 ## Protocol phases
 
@@ -134,7 +145,9 @@ and availability behavior. These functions are not provided by the RBBC core.
    and trace ciphertext.
 4. **Access authentication:** UE submits a ticket plus freshness/session data;
    the designated verifier checks policy, context, signature, replay state, and
-   the PQ AKE transcript.
+   the PQ AKE transcript, then atomically consumes the one-time ticket as part
+   of the successful state transition. Failed validation does not consume the
+   ticket; the same ticket cannot establish another session after success.
 5. **Handover / continuous authentication:** the session is rebound to a new
    serving context without exposing the registered identity or invoking HNCC
    online.
