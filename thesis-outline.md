@@ -1,6 +1,6 @@
 # 論文大綱與進度（Thesis Outline）
 
-> 最後更新：2026-08-30
+> 最後更新：2026-08-31
 > 用途：追蹤論文章節、所需證據、完成度與下一個可交付成果。章名可依學校格式調整。文件權責見 `docs/DOCUMENTATION_POLICY_zh-TW.md`。
 
 ## 論文暫定主題
@@ -14,9 +14,9 @@
 | 第 1 章 緒論 | 背景、動機、問題、研究目標、貢獻與範圍 | 骨架待寫 | 問題與貢獻不超出 evidence |
 | 第 2 章 背景與相關研究 | 衛星認證、PQC、blind credentials、threshold opening、AKE、handover | 文獻待整理 | 完成可核對引用與比較表 |
 | 第 3 章 系統與威脅模型 | 角色、信任假設、系統階段、攻擊者能力與安全目標 | 初版架構已定義 | G0 architecture freeze |
-| 第 4 章 提出之機制 | FAC、PQ-RBBC、opening、satellite access、lifecycle、handover | PQ-RBBC 深入；其餘多為 requirements | G1 interface freeze 與完整 protocol |
+| 第 4 章 提出之機制 | FAC、PQ-RBBC、opening、satellite access、lifecycle、handover | PQ-RBBC 深入；one-time lifecycle 與 access wire objects 已有 draft／test-only reference，其餘多為 requirements | G1 interface freeze 與完整 protocol |
 | 第 5 章 安全性分析 | games、reductions、trace／privacy／AKE／replay／composition | RBBC 有 conditional reductions；整體未開始 | G4 end-to-end security |
-| 第 6 章 實作與實驗設計 | reference implementation、環境、baselines、metrics | RBBC implementation 已存在 | 可重現實驗 protocol |
+| 第 6 章 實作與實驗設計 | reference implementation、環境、baselines、metrics | RBBC implementation 與局部 system codecs／replay model 已存在 | 可重現實驗 protocol |
 | 第 7 章 結果與討論 | communication、computation、storage、latency、限制與 trade-offs | 未開始 | G5 satellite evaluation |
 | 第 8 章 結論與未來工作 | 貢獻總結、限制、後續研究 | 未開始 | claims 與全篇一致 |
 
@@ -34,8 +34,8 @@
 
 1. 由現有 `ARCHITECTURE_zh-TW.md` 整理第 3 章初稿。
 2. 建立第 2 章的 systematic literature matrix，優先支撐 ticket-use、PQ AKE、threshold opening 三項設計決策。
-3. 決定 D-001 ticket-use semantics，解除 access、replay 與 revocation 的介面阻塞。
-4. 為第 4 章固定 canonical protocol transcripts 與 schemas。
+3. 以已決定的 D-001 ticket-use semantics 完成 access、replay 與 revocation interfaces review。
+4. 將第 4 章現有 draft canonical transcripts／schemas 推進至 G1 freeze。
 5. 在實作進行時同步撰寫第 5 章 game definitions 與第 6 章實驗 protocol，避免最後才補證據。
 
 ## 進度里程碑

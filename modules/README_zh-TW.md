@@ -10,7 +10,7 @@
 | M2 | PQ-RBBC relation-bound blind ticket | `src/pq_rbbc_*.py`、`tests/test_pq_rbbc_*.py`、`manifests/`、`docs/proof/` | 進行中 |
 | M3 | Opening authorization | core proof abstract interface | 未完成 |
 | M4 | Signature-gated threshold opening | core proof 與 reference relation boundaries | 部分定義 |
-| M5 | Satellite authentication 與 PQ AKE | 僅架構 | 未完成 |
+| M5 | Satellite authentication 與 PQ AKE | `docs/specs/ONE_TIME_TICKET_STATE_v0_1_zh-TW.md`、`src/pq_sat_auth/access.py`、`tests/system/` | Defined；test-only codecs／transcript identities 已實作／測試，holder auth 與 AKE 未實作 |
 | M6 | Anti-replay、revocation 與 handover | `docs/specs/ONE_TIME_TICKET_STATE_v0_1_zh-TW.md`、`src/pq_sat_auth/`、`tests/system/` | Defined；test-only reference 部分實作／測試，模組未封閉 |
 | M7 | Evaluation 與 evidence | 目前 RBBC artifacts 加未來 system benchmarks | 部分完成 |
 

@@ -1,7 +1,7 @@
 # One-Time Ticket 狀態與 Access 邊界規格 v0.1
 
-> 狀態：Draft；canonical framing、use identity 與 process-local replay model 已實作／測試
-> 日期：2026-08-30
+> 狀態：Draft；canonical framing、access object codecs、transcript／use identities 與 process-local replay model 已實作／測試
+> 日期：2026-08-31
 > 所屬模組：M5 Satellite authentication、M6 Anti-replay／revocation／handover
 > Canonical architecture：`ARCHITECTURE_zh-TW.md`
 
@@ -14,8 +14,8 @@
 - `VerifyTicket(T)` 仍是 stateless cryptographic verification；
 - fresh serial、issuance-side `sid` replay control、opening-authorization replay control、one-more unforgeability，以及 trace DEM 的 one-time privacy，都不等於 access ticket one-use；
 - one-use 性質只在本規格的 FGS state transition、holder authentication 與儲存假設下成立；
-- 整體 protocol 目前是 Defined；canonical framing／parser、use identity 與 test-only process-local replay model 已達 Implemented／Tested。
-- Access object serializers、holder authenticator、PQ AKE、durable／distributed replay store、revocation 與 handover 尚未實作；上述局部測試不代表整個模組、proof 或 production closure。
+- 整體 protocol 目前是 Defined；canonical framing／parser、draft access object codecs、transcript／use identities 與 test-only process-local replay model 已達 Implemented／Tested。
+- Holder authenticator、PQ AKE、durable／distributed replay store、UE wallet journal、revocation 與 handover 尚未實作；上述局部測試不代表整個模組、proof 或 production closure。
 
 ## 2. v0.1 系統假設
 
@@ -70,7 +70,19 @@ serving_context_digest = SHAKE256(
 )
 ```
 
-`ServingContextV1` 至少包含共同的 operator、FGS、satellite／relay scope、beam／cell scope、epoch 與 policy identifiers。實際 identifier encoding 在 G1 interface freeze 前仍是 draft；不得使用自由格式或未長度分隔的字串。
+目前 reference codec 採用下列 draft fixed-width encoding：
+
+```text
+ServingContextV1 =
+    operator_id_digest[32]
+ || fgs_id_digest[32]
+ || relay_scope_digest[32]
+ || cell_scope_digest[32]
+ || epoch_u64be
+ || policy_digest[32]
+```
+
+這 168 bytes 的欄位順序與 digest 計算已建立正負 vectors，但 deployment identifier 如何 domain-separate 並映射成各 32-byte digest，仍須在 G1 interface freeze 前決定。不得直接雜湊自由格式或未長度分隔的字串，也不得把 reference codec 當成已選定 production namespace。
 
 ## 4. Canonical framing
 
@@ -102,7 +114,23 @@ Opaque = len_u32be || value[len]
 
 此 framing 是 v0.1 draft boundary；在 G1 前可透過版本更新修正，但一旦產生 frozen vectors，不得在同一 version 靜默改義。
 
+### 4.1 Suite registry boundary
+
+目前只有 private-use `suite_id = 0xffff` 的 test-only reference profile：
+
+| Opaque field | Maximum bytes |
+| --- | ---: |
+| ticket | 65,536 |
+| UE／FGS key share | 65,536 |
+| challenge cookie | 16,384 |
+| holder authenticator | 262,144 |
+| UE／FGS key confirmation | 65,536 |
+
+Parser 必須依 registry 對每個 field 個別執行 maximum check；unknown／disabled suite 一律拒絕。`0xffff` 不選定任何 production primitive，也不得出現在 production deployment。Production suite IDs、primitive choices 與精確長度仍待 D-002／G1 freeze。
+
 ## 5. Access objects
+
+本節的 `Encode(Access*V1)` 是包含 `FrameV1` header 的完整 wire bytes；`Encode(finish_core)` 則是 `AccessFinishV1` body 中由 `suite_id` 起至 `challenge_cookie` 結束的 canonical bytes，不含 frame header、holder authenticator 或 UE key confirmation。Digest functions 不接受其他解讀。
 
 ### 5.1 `AccessInitV1`（type `0x0001`）
 
@@ -354,13 +382,13 @@ retention_deadline = ticket_expiry + maximum_clock_skew + replay_grace
 
 ## 14. 下一個 implementation gate
 
-進入程式實作前仍須完成：
+進入 production-oriented integration 前仍須完成：
 
-1. 選定 `ServingContextV1` identifiers 的 exact widths／encodings；
-2. 選定 v0.1 `suite_id` registry 與每個 opaque field maximum；
+1. Review draft `ServingContextV1` 的 fixed-width digest encoding，並選定 deployment identifier 的 canonical mapping；
+2. 選定 production v0.1 `suite_id` registry、primitives 與每個 opaque field exact／maximum lengths；test-only `0xffff` 不構成此項完成；
 3. 決定 replay store reference backend 與 transaction model；
 4. 定義 holder authenticator 與 PQ AKE 的 production／test adapter boundary；
-5. 產生正負 canonical byte vectors；
+5. 將現有正負 canonical byte vectors 升級成 G1 frozen cross-language vectors；
 6. 將本文件與 threat-model lane 的 security games 交叉 review。
 
 上述項目完成並 review 後才可宣告 G1 interface freeze。

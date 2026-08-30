@@ -13,8 +13,8 @@ Updated from merged `main` checkpoint v2.25.
 | PQ-RBBC issuance and ticket | formal core defined | research relation and substantial circuit implementation | conditional reductions; production closure false |
 | Opening authorization | abstract verifier interface defined | not started | authorization unforgeability assumed |
 | Threshold trace opening | abstract construction defined | concrete full protocol not closed | robust transcript and real key open |
-| Satellite access and PQ AKE | requirements only | not started | not claimed |
-| Anti-replay and revocation | v0.1 has a draft one-time state machine, atomic consumption, retry/crash semantics, and framing; G1 is not frozen | canonical frame/opaque parser, use identity, and a test-only process-local linearizable replay model implemented | 16 focused tests included in the 266-test regression; not a durable/distributed store and no production closure claimed |
+| Satellite access and PQ AKE | v0.1 draft access-object layouts, transcript/attempt identities, and test-only suite profile; PQ AKE not selected | ServingContext and AccessInit/Challenge/Finish/Accept codecs implemented; no holder authenticator or AKE | 13 object/binding tests; no authentication-security or production-closure claim |
+| Anti-replay and revocation | v0.1 has a draft one-time state machine, atomic consumption, retry/crash semantics, and framing; G1 is not frozen | canonical frame/opaque parser, use identity, and a test-only process-local linearizable replay model implemented | 16 replay/framing tests; not a durable/distributed store and no production closure claimed |
 | Handover | requirements only | not started | not claimed |
 | End-to-end evaluation | metrics identified | not started | no system benchmark |
 

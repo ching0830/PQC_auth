@@ -1,6 +1,6 @@
 # 實驗紀錄（Experiments）
 
-> 最後更新：2026-08-30
+> 最後更新：2026-08-31
 > 用途：保存可重現的實驗環境、命令、結果、artifact identity 與結論。不得只寫「測試通過」。文件權責見 `docs/DOCUMENTATION_POLICY_zh-TW.md`。
 
 ## 記錄規範
@@ -86,6 +86,22 @@ PYTHONPATH=src python -m unittest discover -s tests -v
 - concurrency coverage：24 個不同 attempt 並行 reserve 僅一個新 winner；24 個相同 attempt retry 產生一個新 reservation 與 23 個 idempotent results。
 - skipped 原因：與基線相同，為 repository 外部的 v2.13–v2.25 assignments、execution caches 或 recovery artifacts 未安裝；無 failure 或 error。
 - 結論：支持局部 framing、identity 與 process-local state semantics 已 Implemented／Tested；不支持 durable／distributed replay、holder authentication、PQ AKE、完整 Access object、proof closure 或 production closure 宣稱。
+
+### EXP-20260831-01 — Canonical access objects 與 transcript identities
+
+- 研究問題／假設：能否在不選定 production holder authenticator／PQ AKE 的前提下，建立唯一的 ServingContext、AccessInit／Challenge／Finish／Accept bytes，並讓 transcript、attempt 與 response identities 對跨 object mutation fail closed。
+- 日期與時區：2026-08-31，Asia/Taipei。
+- Git branch／基線：`codex/system-vertical-slice`，基線 `8d84725`；測試時含尚未 commit 的 `src/pq_sat_auth/access.py`、新增 tests 與本次狀態文件更新。
+- 環境：Linux 6.8.0-138-generic x86_64；AMD Ryzen 5 7600X（6 cores／12 logical CPUs）；30 GiB RAM；Python 3.12.9。
+- 實作：168-byte draft `ServingContextV1`、四個 framed access object codecs、private-use `suite_id=0xffff` test-only limits、domain-separated init／challenge／transcript／attempt／accept digests，以及 cross-object binding checks。
+- focused command：`PYTHONPATH=src python -m unittest discover -s tests/system -v`
+- focused 結果：`Ran 29 tests in 0.008s`；`OK`，exit code 0。其中 13 項為新增 access object／binding tests，原有 16 項 framing／replay tests 亦通過。
+- full regression command：`PYTHONPATH=src python -m unittest discover -s tests -v`
+- full regression 結果：`Ran 279 tests in 661.962s`；`OK (skipped=12)`，exit code 0。
+- frozen vectors：ServingContext digest、init／challenge digests、transcript digest、attempt ID、accept digest，以及四種 object encoded lengths 均在 tests 中固定。
+- negative coverage：wrong frame type、unknown suite、suite-specific maximum、opaque truncation、trailing field、ServingContext alternate length、cross-object suite／context／nonce／cookie mismatch，以及 ticket／key-share mutation。
+- skipped 原因：與基線相同，為 repository 外部的 v2.13–v2.25 assignments、execution caches 或 recovery artifacts 未安裝；無 failure 或 error。
+- 結論：支持 draft byte-level access boundary 與 transcript identities 已 Implemented／Tested；`0xffff` 不是 production suite，且結果不支持 holder authentication、PQ AKE、UE wallet、durable／distributed replay、G1 freeze、proof closure 或 production closure 宣稱。
 
 ## 實驗模板
 

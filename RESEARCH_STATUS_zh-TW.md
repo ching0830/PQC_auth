@@ -13,8 +13,8 @@
 | PQ-RBBC issuance 與 ticket | formal core 已定義 | research relation 與大量 circuit implementation | conditional reductions；production closure false |
 | Opening authorization | abstract verifier interface 已定義 | 未開始 | 假設 authorization unforgeability |
 | Threshold trace opening | abstract construction 已定義 | 具體完整 protocol 未封閉 | robust transcript 與 real key 未完成 |
-| Satellite access 與 PQ AKE | 只有 requirements | 未開始 | 未宣稱 |
-| Anti-replay 與 revocation | v0.1 one-time state、原子消耗、retry／crash semantics 與 framing 已有 draft；G1 尚未 freeze | canonical frame／opaque parser、use identity 與 test-only process-local linearizable replay model 已實作 | 16 項 focused tests 已納入 266 項 regression；尚非 durable／distributed store，未宣稱 production closure |
+| Satellite access 與 PQ AKE | v0.1 access object layouts、transcript／attempt identities 與 test-only suite profile 已有 draft；PQ AKE 尚未選定 | ServingContext 與 AccessInit／Challenge／Finish／Accept codecs 已實作；無 holder authenticator 或 AKE | 13 項 object／binding tests；未宣稱 authentication security 或 production closure |
+| Anti-replay 與 revocation | v0.1 one-time state、原子消耗、retry／crash semantics 與 framing 已有 draft；G1 尚未 freeze | canonical frame／opaque parser、use identity 與 test-only process-local linearizable replay model 已實作 | 16 項 replay／framing tests；尚非 durable／distributed store，未宣稱 production closure |
 | Handover | 只有 requirements | 未開始 | 未宣稱 |
 | End-to-end evaluation | 已辨識 metrics | 未開始 | 無 system benchmark |
 

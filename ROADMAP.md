@@ -13,7 +13,7 @@ for their internal checkpoints.
 | T1 — PQ-RBBC core | finish production composition, parent join, fork proof, backend, and benchmarks | existing RBBC artifacts | yes; current tree work |
 | T2 — federation authorization | specify FAC threshold issuer/configuration authorization and its evidence format | T0 | yes |
 | T3 — opening governance | specify case authorization, OA gate, robust shares, combine, and public audit evidence | T0; stable RBBC ticket digest | yes |
-| T4 — satellite access and PQ AKE | define UE–FGS transcript, LEO/FLEO role, freshness, channel binding, and session keys | T0; stable VerifyTicket interface | yes |
+| T4 — satellite access and PQ AKE | draft access codecs and transcript identities exist; select holder authenticator/PQ AKE and define the UE–FGS state machine, LEO/FLEO role, and session keys | T0; stable VerifyTicket interface | yes |
 | T5 — replay and lifecycle | v0.1 draft and test-only state model exist; review and freeze production store, suite, revocation, expiry, and recovery interfaces | T0; T4 interfaces | yes |
 | T6 — handover | define serving-context transition and continuous authentication | T4; T5 | specification can start |
 | T7 — security proof composition | compose module games into end-to-end theorems | stable T1–T6 semantics | later |
