@@ -3,6 +3,7 @@
 *.f193r1cs
 *.f193assign
 *.f193assign.part
+*.f193assign.part-*
 *.part
 *.pkl
 *.tar
@@ -20,6 +21,7 @@ library_releases/
 restored_*/
 production_tree*/
 global_tail_parts/
+external_artifacts/
 
 # LaTeX intermediate files (release PDFs remain tracked)
 *.aux
