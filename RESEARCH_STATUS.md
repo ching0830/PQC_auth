@@ -14,7 +14,7 @@ Updated from merged `main` checkpoint v2.25.
 | Opening authorization | abstract verifier interface defined | not started | authorization unforgeability assumed |
 | Threshold trace opening | abstract construction defined | concrete full protocol not closed | robust transcript and real key open |
 | Satellite access and PQ AKE | requirements only | not started | not claimed |
-| Anti-replay and revocation | v0.1 selects short-lived, strictly one-use tickets; atomic consumption and failure semantics remain to be frozen | not started | not claimed |
+| Anti-replay and revocation | v0.1 has a draft one-time state machine, atomic consumption, retry/crash semantics, and framing; G1 is not frozen | not started | not claimed |
 | Handover | requirements only | not started | not claimed |
 | End-to-end evaluation | metrics identified | not started | no system benchmark |
 

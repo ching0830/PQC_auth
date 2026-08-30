@@ -96,7 +96,7 @@ $$
 
 ### M6. Anti-replay、revocation 與 handover
 
-System profile v0.1 使用 short-lived、strictly one-use ticket。FGS 維護具 epoch／expiry 邊界的 consumption state，並以 ticket digest、serial、serving context 與 access transcript 執行原子 check-and-consume；任何並行重複、失敗後重送或跨 context replay 的狀態轉移都必須明確定義。此模組亦負責 revocation distribution、handover authorization、failure recovery 與 availability；這些功能不屬於 RBBC core。
+System profile v0.1 使用 short-lived、strictly one-use ticket。FGS 維護具 epoch／expiry 邊界的 consumption state，並以 ticket digest、serial、serving context 與 access transcript 執行原子 check-and-consume；任何並行重複、失敗後重送或跨 context replay 的狀態轉移都必須明確定義。Draft state machine、crash semantics 與 access-object framing 見 [docs/specs/ONE_TIME_TICKET_STATE_v0_1_zh-TW.md](docs/specs/ONE_TIME_TICKET_STATE_v0_1_zh-TW.md)。此模組亦負責 revocation distribution、handover authorization、failure recovery 與 availability；這些功能不屬於 RBBC core。
 
 ## 協定階段
 

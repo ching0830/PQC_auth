@@ -14,7 +14,7 @@ for their internal checkpoints.
 | T2 — federation authorization | specify FAC threshold issuer/configuration authorization and its evidence format | T0 | yes |
 | T3 — opening governance | specify case authorization, OA gate, robust shares, combine, and public audit evidence | T0; stable RBBC ticket digest | yes |
 | T4 — satellite access and PQ AKE | define UE–FGS transcript, LEO/FLEO role, freshness, channel binding, and session keys | T0; stable VerifyTicket interface | yes |
-| T5 — replay and lifecycle | one-time policy selected; define atomic consumption, serial state, revocation, expiry, and recovery | T0; T4 interfaces | yes |
+| T5 — replay and lifecycle | v0.1 draft defined; review and freeze store, suite, revocation, expiry, and recovery interfaces | T0; T4 interfaces | yes |
 | T6 — handover | define serving-context transition and continuous authentication | T4; T5 | specification can start |
 | T7 — security proof composition | compose module games into end-to-end theorems | stable T1–T6 semantics | later |
 | T8 — evaluation | communication, computation, storage, latency, throughput, jitter, and baselines | executable modules | instrumentation can start |

@@ -130,9 +130,12 @@ System profile v0.1 uses short-lived, strictly one-use tickets. FGS maintains
 epoch/expiry-bounded consumption state and performs an atomic check-and-consume
 over the ticket digest, serial, serving context, and access transcript.
 Concurrent duplicates, retries after failure, and cross-context replay require
-explicit state-transition semantics. This module also defines revocation
-distribution, handover authorization, failure recovery, and availability;
-these functions are not provided by the RBBC core.
+explicit state-transition semantics. The draft state machine, crash semantics,
+and access-object framing are specified in
+[docs/specs/ONE_TIME_TICKET_STATE_v0_1_zh-TW.md](docs/specs/ONE_TIME_TICKET_STATE_v0_1_zh-TW.md).
+This module also defines revocation distribution, handover authorization,
+failure recovery, and availability; these functions are not provided by the
+RBBC core.
 
 ## Protocol phases
 

@@ -13,7 +13,7 @@
 | T2 — Federation authorization | 定義 FAC threshold issuer／configuration authorization 與 evidence format | T0 | 可以 |
 | T3 — Opening governance | 定義 case authorization、OA gate、robust shares、combine 與 public audit evidence | T0；穩定 RBBC ticket digest | 可以 |
 | T4 — Satellite access 與 PQ AKE | 定義 UE–FGS transcript、LEO／FLEO 角色、freshness、channel binding 與 session keys | T0；穩定 VerifyTicket interface | 可以 |
-| T5 — Replay 與 lifecycle | one-time policy 已選定；定義原子消耗、serial state、revocation、expiry 與 recovery | T0；T4 interfaces | 可以 |
+| T5 — Replay 與 lifecycle | v0.1 draft 已定義；review 並 freeze store、suite、revocation、expiry 與 recovery interfaces | T0；T4 interfaces | 可以 |
 | T6 — Handover | 定義 serving-context transition 與 continuous authentication | T4；T5 | 可先做 specification |
 | T7 — Security proof composition | 將各模組 games 組合成 end-to-end theorems | 穩定 T1–T6 semantics | 稍後 |
 | T8 — Evaluation | communication、computation、storage、latency、throughput、jitter 與 baselines | executable modules | 可先做 instrumentation |

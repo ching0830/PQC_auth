@@ -46,7 +46,7 @@
 
 | ID | 問題 | 選項 | 狀態 | 阻擋項目 |
 | --- | --- | --- | --- | --- |
-| D-001 | ticket-use semantics | **short-lived、strictly one-use**；unlinkable Show 為未來擴充 | 已決定（2026-08-30） | 原子消耗與 failure semantics 待規格化 |
+| D-001 | ticket-use semantics | **short-lived、strictly one-use**；unlinkable Show 為未來擴充 | 已決定（2026-08-30） | v0.1 draft 待 cross-lane review 與 G1 freeze |
 | D-002 | PQ AKE composition | 待比較候選 KEM／signature／transcript | 待研究 | access 與 handover |
 | D-003 | FAC threshold primitive | 待比較 PQ threshold signature 與 DKG | 待研究 | issuer authorization |
 | D-004 | OA threshold encryption | robust、auditable PQ construction | 待研究 | production opening |
@@ -61,6 +61,7 @@
 - **必要條件：**canonical digest、transactional store、並行請求互斥、驗證失敗不消耗、成功後不得 rollback 重用，以及明確的 timeout／crash recovery。
 - **代價：**UE 需要預先取得足夠的短效 ticket，FGS 需要維護 consumption state；離線或 partition 情境的 availability 必須單獨評估。
 - **未來擴充：**若後續加入 unlinkable `Show`，必須建立新的 presentation relation、security game、encoding、proof backend 與 benchmark，不能只移除 consumption check。
+- **實作規格：**`docs/specs/ONE_TIME_TICKET_STATE_v0_1_zh-TW.md` 定義 draft state machine、atomic commit、retry／crash、handover boundary、framing 與 machine-test invariants；目前仍未宣稱 implemented。
 
 ## 驗證與評估方法
 

@@ -13,7 +13,7 @@ work and artifact identities are not disturbed.
 | M3 | Opening authorization | core proof abstract interface | open |
 | M4 | Signature-gated threshold opening | core proof and reference relation boundaries | partially defined |
 | M5 | Satellite authentication and PQ AKE | architecture only | open |
-| M6 | Anti-replay, revocation, and handover | architecture only | open |
+| M6 | Anti-replay, revocation, and handover | `docs/specs/ONE_TIME_TICKET_STATE_v0_1_zh-TW.md` draft | defined; not implemented |
 | M7 | Evaluation and evidence | current RBBC artifacts plus future system benchmarks | partial |
 
 New modules should receive a module README, interface document, implementation
