@@ -96,3 +96,13 @@ pickle caches, resume state, and logs remain external and prohibited from Git.
 This bounded seal materializes trees 0 through 10 only; it does not close the
 remaining tree producers, all output relocations, parent join, complete
 18-tree replay, or production.
+
+The v2.27 tree-index-11-through-17 bounded batch completes the individually
+materialized producer positions and their 72 individual output relocations.
+Each tree still has an independent pre-freeze replay, frozen contract, and
+second replay with a separate fresh local cache.  Git stores only the
+path-free seal under `artifacts/metadata/tree11_17_bounded_recovery_v2_27/`.
+The seven assignments, BR1CS, pickle caches, resume state, and logs remain
+external.  Individual producer closure is not an aggregate 18-tree assignment
+replay and does not close cross-segment identity, the parent join, security
+proofs, or production.
