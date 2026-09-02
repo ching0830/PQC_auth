@@ -10,7 +10,7 @@ for their internal checkpoints.
 | Track | Goal | Dependency | Can proceed now? |
 | --- | --- | --- | --- |
 | T0 — architecture and claims | freeze roles, phases, interfaces, threat model, and claim vocabulary | none | in progress |
-| T1 — PQ-RBBC core | finish production composition, parent join, fork proof, backend, and benchmarks | existing RBBC artifacts | yes; current tree work |
+| T1 — PQ-RBBC core | trees 0–10 evidence-sealed; finish trees 11–17, 72 relocations, 18-tree composition, parent join, fork proof, backend, and benchmarks | existing RBBC artifacts | yes; next candidate batch is trees 11–13 |
 | T2 — federation authorization | specify FAC threshold issuer/configuration authorization and its evidence format | T0 | yes |
 | T3 — opening governance | specify case authorization, OA gate, robust shares, combine, and public audit evidence | T0; stable RBBC ticket digest | yes |
 | T4 — satellite access and PQ AKE | draft access codecs and transcript identities exist; select holder authenticator/PQ AKE and define the UE–FGS state machine, LEO/FLEO role, and session keys | T0; stable VerifyTicket interface | yes |

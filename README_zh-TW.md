@@ -55,7 +55,7 @@ flowchart TD
 
 ## 目前實作 checkpoint
 
-已合併的 RBBC v2.25 已 materialize 並獨立 replay 規劃中的 tree 0–7（共 8／18）。Tree 8–17、全部 72 個 relocations、完整 18-tree replay、cross-segment identity、parent join、fork-specific reductions、合格的 PQ proof backend、robust threshold opening、satellite AKE、replay／revocation 及 handover 仍未完成；`production_closed = false`。
+已整合的 RBBC v2.26 已 materialize 並獨立 replay 規劃中的 tree 0–10（共 11／18）。Tree 11–17、全部 72 個 relocations、完整 18-tree replay、cross-segment identity、parent join、fork-specific reductions、合格的 PQ proof backend、robust threshold opening、satellite AKE、production replay／revocation 及 handover 仍未完成；`production_closed = false`。
 
 ## 執行目前 RBBC 測試
 

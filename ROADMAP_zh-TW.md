@@ -9,7 +9,7 @@
 | Track | 目標 | 相依項目 | 現在可進行？ |
 | --- | --- | --- | --- |
 | T0 — 架構與 claims | 固定角色、階段、介面、threat model 與 claim vocabulary | 無 | 進行中 |
-| T1 — PQ-RBBC core | 完成 production composition、parent join、fork proof、backend 與 benchmarks | 既有 RBBC artifacts | 可以；目前 tree 工作 |
+| T1 — PQ-RBBC core | tree 0–10 已 evidence-sealed；完成 tree 11–17、72 relocations、18-tree composition、parent join、fork proof、backend 與 benchmarks | 既有 RBBC artifacts | 可以；下一個候選 batch 為 tree 11–13 |
 | T2 — Federation authorization | 定義 FAC threshold issuer／configuration authorization 與 evidence format | T0 | 可以 |
 | T3 — Opening governance | 定義 case authorization、OA gate、robust shares、combine 與 public audit evidence | T0；穩定 RBBC ticket digest | 可以 |
 | T4 — Satellite access 與 PQ AKE | draft access codecs 與 transcript identities 已建立；選定 holder authenticator／PQ AKE，並定義 UE–FGS state machine、LEO／FLEO 角色與 session keys | T0；穩定 VerifyTicket interface | 可以 |

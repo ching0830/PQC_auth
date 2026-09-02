@@ -2,7 +2,7 @@
 
 # 研究狀態
 
-依已合併的 `main` v2.25 checkpoint 更新。
+依已整合的 local `main` v2.26 tree 8–10 bounded checkpoint 更新。
 
 ## 整篇論文狀態
 
@@ -20,17 +20,17 @@
 
 ## RBBC checkpoint
 
-截至 v2.25 已完成：
+截至 v2.26 已完成：
 
 - production composer cache recovery；
 - global-tail regeneration 與 replay；
-- planned producer positions 0–7 materialized；
-- 八個位置皆依各自適用 frozen contracts 獨立 replay；
-- closed checkpoints 的 portable path-free evidence，包括分別綁定的 tree 5–7 batch。
+- planned producer positions 0–10 materialized；
+- 十一個位置皆依各自適用 frozen contracts 獨立 replay；
+- closed checkpoints 的 portable path-free evidence，包括分別綁定的 tree 5–7 batch 與 tree 8–10 bounded recovery。
 
 仍未完成：
 
-- tree 8–17；
+- tree 11–17；
 - 全部 72 個 output relocations；
 - 完整 18-tree assignment replay；
 - cross-segment wire identity；

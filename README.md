@@ -69,11 +69,11 @@ disrupted.
 
 ## Current implementation checkpoint
 
-Merged RBBC checkpoint v2.25 has materialized and independently replayed planned
-tree positions 0 through 7 (8 of 18). Positions 8 through 17, all 72
+Integrated RBBC checkpoint v2.26 has materialized and independently replayed
+planned tree positions 0 through 10 (11 of 18). Positions 11 through 17, all 72
 relocations, complete 18-tree replay, cross-segment identity, parent join,
 fork-specific reductions, qualified PQ proof backend, robust threshold
-opening, satellite AKE, replay/revocation, and handover remain open.
+opening, satellite AKE, production replay/revocation, and handover remain open.
 `production_closed = false`.
 
 ## Running current RBBC tests

@@ -1,6 +1,6 @@
 # 實驗紀錄（Experiments）
 
-> 最後更新：2026-08-31
+> 最後更新：2026-09-02
 > 用途：保存可重現的實驗環境、命令、結果、artifact identity 與結論。不得只寫「測試通過」。文件權責見 `docs/DOCUMENTATION_POLICY_zh-TW.md`。
 
 ## 記錄規範
@@ -27,12 +27,13 @@ PYTHONPATH=src python -m unittest discover -s tests -v
 
 ## 已封存的歷史實驗證據
 
-目前 `main` 的 RBBC v2.25 已記錄：
+目前 local `main` 的 RBBC v2.26 已記錄：
 
 - production composer cache recovery；
 - global-tail regeneration 與 replay；
-- planned tree positions 0–7 materialization 與各自 frozen-contract replay；
-- tree 5–7 的 independently bound batch evidence。
+- planned tree positions 0–10 materialization 與各自 frozen-contract replay；
+- tree 5–7 的 independently bound batch evidence；
+- tree 8–10 的 path-free bounded recovery evidence。
 
 詳細 identities 與 claim boundary 位於：
 
@@ -42,7 +43,7 @@ PYTHONPATH=src python -m unittest discover -s tests -v
 - `docs/releases/`
 - `docs/roadmaps/PQ_RBBC_CURRENT_HANDOFF_zh-TW.md`
 
-這些歷史 evidence 不代表 tree 8–17、72 relocations、完整 18-tree replay、parent join、PQ proof backend 或端到端衛星協定已完成。
+這些歷史 evidence 不代表 tree 11–17、72 relocations、完整 18-tree replay、parent join、PQ proof backend 或端到端衛星協定已完成。
 
 ## 本次 repository 基線檢查
 
@@ -102,6 +103,21 @@ PYTHONPATH=src python -m unittest discover -s tests -v
 - negative coverage：wrong frame type、unknown suite、suite-specific maximum、opaque truncation、trailing field、ServingContext alternate length、cross-object suite／context／nonce／cookie mismatch，以及 ticket／key-share mutation。
 - skipped 原因：與基線相同，為 repository 外部的 v2.13–v2.25 assignments、execution caches 或 recovery artifacts 未安裝；無 failure 或 error。
 - 結論：支持 draft byte-level access boundary 與 transcript identities 已 Implemented／Tested；`0xffff` 不是 production suite，且結果不支持 holder authentication、PQ AKE、UE wallet、durable／distributed replay、G1 freeze、proof closure 或 production closure 宣稱。
+
+### EXP-20260902-01 — A／B v2.26 integration regression
+
+- 研究問題／假設：local `main` 的 PQ-RBBC v2.26 tree 8–10 bounded recovery，能否與 A 的 one-time access codecs／replay model 共存，且 portable evidence、保守 claim boundary 與完整既有 regression 均維持一致。
+- 日期與時區：2026-09-02，Asia/Taipei。
+- Git branch／基線：`codex/system-vertical-slice`；local `main` `b9c09f1` 合併後的 A checkpoint `7cca274`，測試時含尚未 commit 的 root status 與 handoff 更新。
+- 環境：Linux 6.8.0-138-generic x86_64；AMD Ryzen 5 7600X（6 cores／12 logical CPUs）；30 GiB RAM；Python 3.12.9。
+- v2.26 bounded evidence：`artifacts/metadata/tree8_10_bounded_recovery_v2_26/pq_rbbc_cap_tree8_10_bounded_recovery_evidence_v2_26.json`，SHA-256 `9a8ad3b2b5af242ef6ee6b33d99035505c1b8a5764d84766ce6d44f9cd00895f`。
+- targeted command：`PYTHONPATH=src python -m unittest -v tests.system.test_pq_sat_auth_access tests.system.test_pq_sat_auth_framing tests.system.test_pq_sat_auth_replay tests.test_pq_rbbc_cap_global_tail_fresh_recovery tests.test_pq_rbbc_cap_tree5_7_fresh_recovery tests.test_pq_rbbc_cap_tree8_10_preflight tests.test_pq_rbbc_cap_tree8_frozen_replay tests.test_pq_rbbc_cap_tree9_frozen_replay tests.test_pq_rbbc_cap_tree10_frozen_replay`
+- targeted 結果：`Ran 45 tests in 0.011s`；`OK`，exit code 0。
+- additional validators：frozen tree 8–10 preflight manifest accepted；由三份 external frozen manifests 重建的 portable evidence bytes 與 tracked evidence 完全相同，SHA-256 同為 `9a8ad3…895f`；`compileall` 通過。
+- full regression command：`PYTHONPATH=src python -m unittest discover -s tests -v`
+- full regression 結果：`Ran 295 tests in 575.086s`；`OK (skipped=12)`，exit code 0。
+- skipped 原因：既有 optional v2.13–v2.25 external assignments、execution caches 或 recovery artifacts 未安裝；無新增 skip、failure 或 error。
+- 結論：支持 A system reference 與 B v2.26 bounded evidence 在目前 branch 上整合相容，且 planned trees 0–10 可維持 Evidence-sealed 宣稱；不支持 tree 11–17、72 relocations、完整 18-tree replay、parent join、holder authentication、PQ AKE、proof closure 或 production closure 宣稱。
 
 ## 實驗模板
 

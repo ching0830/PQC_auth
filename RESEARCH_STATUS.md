@@ -2,7 +2,7 @@
 
 # Research status
 
-Updated from merged `main` checkpoint v2.25.
+Updated from the integrated local `main` v2.26 tree-8-through-tree-10 bounded checkpoint.
 
 ## Whole-thesis status
 
@@ -20,19 +20,19 @@ Updated from merged `main` checkpoint v2.25.
 
 ## RBBC checkpoint
 
-Closed through v2.25:
+Closed through v2.26:
 
 - production composer cache recovery;
 - global-tail regeneration and replay;
-- planned producer positions 0 through 7 materialized;
-- all eight positions independently replayed under their applicable frozen
+- planned producer positions 0 through 10 materialized;
+- all eleven positions independently replayed under their applicable frozen
   contracts; and
 - portable path-free evidence for closed checkpoints, including the separately
-  bound tree-5-through-tree-7 batch.
+  bound tree-5-through-tree-7 batch and tree-8-through-tree-10 bounded recovery.
 
 Still open:
 
-- tree positions 8 through 17;
+- tree positions 11 through 17;
 - all 72 output relocations;
 - complete 18-tree assignment replay;
 - cross-segment wire identity;

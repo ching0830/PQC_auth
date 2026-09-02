@@ -7,7 +7,7 @@
 | ID | 模組 | 目前歸屬路徑 | 狀態 |
 | --- | --- | --- | --- |
 | M1 | Federation configuration 與 issuer authorization | 僅架構 | 未完成 |
-| M2 | PQ-RBBC relation-bound blind ticket | `src/pq_rbbc_*.py`、`tests/test_pq_rbbc_*.py`、`manifests/`、`docs/proof/` | 進行中 |
+| M2 | PQ-RBBC relation-bound blind ticket | `src/pq_rbbc_*.py`、`tests/test_pq_rbbc_*.py`、`manifests/`、`docs/proof/` | 進行中；planned trees 0–10 evidence-sealed，production closure false |
 | M3 | Opening authorization | core proof abstract interface | 未完成 |
 | M4 | Signature-gated threshold opening | core proof 與 reference relation boundaries | 部分定義 |
 | M5 | Satellite authentication 與 PQ AKE | `docs/specs/ONE_TIME_TICKET_STATE_v0_1_zh-TW.md`、`src/pq_sat_auth/access.py`、`tests/system/` | Defined；test-only codecs／transcript identities 已實作／測試，holder auth 與 AKE 未實作 |

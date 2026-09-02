@@ -9,7 +9,7 @@ work and artifact identities are not disturbed.
 | ID | Module | Owner paths today | Status |
 | --- | --- | --- | --- |
 | M1 | Federation configuration and issuer authorization | architecture only | open |
-| M2 | PQ-RBBC relation-bound blind ticket | `src/pq_rbbc_*.py`, `tests/test_pq_rbbc_*.py`, `manifests/`, `docs/proof/` | active |
+| M2 | PQ-RBBC relation-bound blind ticket | `src/pq_rbbc_*.py`, `tests/test_pq_rbbc_*.py`, `manifests/`, `docs/proof/` | active; planned trees 0–10 evidence-sealed, production closure false |
 | M3 | Opening authorization | core proof abstract interface | open |
 | M4 | Signature-gated threshold opening | core proof and reference relation boundaries | partially defined |
 | M5 | Satellite authentication and PQ AKE | `docs/specs/ONE_TIME_TICKET_STATE_v0_1_zh-TW.md`, `src/pq_sat_auth/access.py`, `tests/system/` | defined; test-only codecs/transcript identities implemented/tested, holder auth and AKE open |
