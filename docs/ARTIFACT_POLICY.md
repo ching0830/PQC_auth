@@ -86,3 +86,13 @@ a trust boundary: verify all three archive, body, row-stream, replay-manifest,
 contract, output, and tree-component identities before use.  None of the
 three assignments, any checkpoint or pickle, or the v2.25 BR1CS may be
 committed.
+
+The v2.26 tree-index-8-through-10 bounded batch follows the same two-replay
+rule.  Each tree's row-stream size is learned only from its own pre-freeze
+replay and is accepted only after a second complete replay with a separate
+fresh local cache.  Git stores only the path-free bounded seal under
+`artifacts/metadata/tree8_10_bounded_recovery_v2_26/`.  Assignments, BR1CS,
+pickle caches, resume state, and logs remain external and prohibited from Git.
+This bounded seal materializes trees 0 through 10 only; it does not close the
+remaining tree producers, all output relocations, parent join, complete
+18-tree replay, or production.
