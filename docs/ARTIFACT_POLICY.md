@@ -106,3 +106,14 @@ The seven assignments, BR1CS, pickle caches, resume state, and logs remain
 external.  Individual producer closure is not an aggregate 18-tree assignment
 replay and does not close cross-segment identity, the parent join, security
 proofs, or production.
+
+The v2.28 aggregate recovery streams all 18 frozen planned assignments in
+namespace order, checks all 72 relocation ranges wire by wire, and replays the
+shared global tail for 586,057,567 total rows with zero verification failures.
+The 18 assignments, global-tail assignment, incremental BR1CS, locally rebuilt
+pickle caches, JSON checkpoint, and runtime output remain external.  Git stores
+only the fail-closed runner and sealer, frozen preflight manifest, tests,
+documentation, checksums, and path-free recovery evidence under
+`artifacts/metadata/aggregate_recovery_v2_28/`.  This evidence closes the
+aggregate replay and cross-segment wire-identity gates only; it does not close
+the parent CAP-to-H-RBBC join, fork-security proof, or production.
