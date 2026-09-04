@@ -128,7 +128,52 @@ Core proof 已明示 timing、formatting 與個人化 metadata 位於 cryptograp
 
 短 expiry 減少 spent-state retention、stolen-ticket exposure 與 revocation lag，卻提高補發依賴與 batch exhaustion。長 expiry 提升 disconnected availability，但增加 UE/FGS storage、撤銷窗口與 traffic-correlation 時間。建議 benchmark 至少報告 `B`、每張 ticket bytes、UE wallet bytes、每 epoch spent-set entries、耗盡率及 p50/p95/p99 issuance gap。
 
-### 4.3 UE wallet 的原子狀態
+### 4.3 有效窗口內保存 ticket identity 的可行性結論
+
+在先不考慮跨 FGS／GS 驗證的單一 authoritative acceptance domain 中，保存仍可能被接受之 ticket identity，是達成 strictly one-use 的合理基線。Core 已定義 canonical payload digest：
+
+```text
+d_M = H_ticket(Encode(M))
+```
+
+FGS 必須先完成 ticket、expiry、context、revocation、holder possession 與 access transcript 驗證，再以 database unique constraint、linearizable compare-and-set 或等價 serializable transaction，原子執行 `check-and-insert(d_M)`；只有插入成功的 request 可以建立 initial session。普通的「先查詢、建立 session、最後寫入」存在並行 race，不能提供 one-use。
+
+Consumption record 不必永久保存。其安全清除下限為：
+
+```text
+retention_deadline
+  = ticket_expiry
+  + maximum_clock_skew
+  + maximum_in_flight_time
+  + replay_grace
+```
+
+清除 spent record 後，FGS 仍須獨立拒絕 expired ticket；record 消失不得使舊 ticket 恢復有效。若 expiry 使用 federation-wide epoch／bucket，可在 grace window 結束後整批刪除對應 partition，降低逐筆 garbage collection 成本，且避免 per-user expiry 成為 issuer watermark。
+
+最低限度只需保存固定長度 digest、serial、context／epoch、state 與 retention timestamp，不需保存完整 ticket、registered identity、holder secret、NIZK witness 或 session key。容量應以實測 record size `s_record`、成功 access rate `r` 與 retention window `W` 估算：
+
+```text
+records ≈ r × W
+storage ≈ r × W × s_record × replication_factor
+```
+
+例如 `r = 1,000 access/s`、`W = 1 hour` 時共有 360 萬筆；32-byte digest 的理論下限約 115 MB，但加入 database row/index、recovery metadata 與 replication 後會更大。這只是容量規劃示例，不是本專案 benchmark。Bloom filter 可作前置加速，但 false positive 會拒絕尚未使用的合法 ticket；若不接受此 availability loss，authoritative decision 仍須使用 exact store。
+
+因此，本階段的設計結論為：
+
+```text
+short-lived ticket
++ canonical d_M
++ validation-before-consumption
++ atomic check-and-insert
++ crash-safe session/consumption commit
++ expiry-bounded retention
+= 單一 authoritative domain 內的 strictly one-use enforcement
+```
+
+此結論尚不涵蓋跨 FGS global one-use；多 verifier 情境仍需 shared linearizable state、single-writer sharding 或明確降級為 later double-spend detection。
+
+### 4.4 UE wallet 的原子狀態
 
 UE 至少需要 `unused → reserved → outcome-known` 的 crash-safe local journal。`reserved` ticket 不應因 app restart 自動回到 `unused`；否則 FGS 可能已成功消耗它。UE 可用同一 request identifier 重查結果，但不得用新的 transcript 把相同 ticket 當新授權再次消耗。備份／多裝置同步亦須避免同一 ticket 被複製到兩個可獨立使用的 wallets；這是 non-transferability／wallet consistency 問題，不由 blind signature 自動解決。
 
