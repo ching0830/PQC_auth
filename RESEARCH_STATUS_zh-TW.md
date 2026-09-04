@@ -2,7 +2,8 @@
 
 # 研究狀態
 
-依已合併的 `main` v2.25 checkpoint 更新。
+依目前工作 branch 的 PQ-RBBC v2.30 bounded proof-audit checkpoint 更新；尚未宣稱已合併至
+`main`。
 
 ## 整篇論文狀態
 
@@ -20,22 +21,29 @@
 
 ## RBBC checkpoint
 
-截至 v2.25 已完成：
+截至 v2.29 已完成：
 
 - production composer cache recovery；
-- global-tail regeneration 與 replay；
-- planned producer positions 0–7 materialized；
-- 八個位置皆依各自適用 frozen contracts 獨立 replay；
-- closed checkpoints 的 portable path-free evidence，包括分別綁定的 tree 5–7 batch。
+- parent-bound global-tail regeneration 與 replay；
+- planned producer positions 0–17 materialized，且18個位置均依適用的frozen
+  contracts完成獨立及aggregate replay；
+- 全部72個output relocations逐wire核對；
+- complete 18-tree assignment replay與cross-segment wire identity；
+- legacy F2 parent relation確定性lift至GF(2^193)，以1,408個native equality
+  rows取代唯一external assertion；
+- exact parent CAP-to-H-RBBC join，合計589,030,555 rows、0 failures、0 external
+  assertions；
+- 上述bounded checkpoints的portable path-free evidence。
+- v2.30 fork-security唯讀preflight已綁定v2.29 final semantics；authoritative
+  Blind-UOV 2025-10-31 revision、fork-specific proof-audit packet、CAP／QROM／
+  blindness-one-more internal gap reviews與independent-review request均已凍結並由
+  path-free evidence封存。Internal audit已完成且可交付獨立review；由於review
+  明確找到CAP extractor、concrete QROM、fork proof、PQ SE-NIZK與獨立attestation
+  等blockers，沒有提升任何security claim，也沒有啟動large replay。
 
 仍未完成：
 
-- tree 8–17；
-- 全部 72 個 output relocations；
-- 完整 18-tree assignment replay；
-- cross-segment wire identity；
-- parent CAP-to-(H_{RBBC}) join；
-- fork-specific blindness 與 one-more proof；
+- fork-specific CAP extraction、blindness 與 one-more proof及其獨立review；
 - 合格 PQ zero-knowledge／simulation-extractable backend；
 - real trace-encryption key 與 robust threshold transcript；
 - 新的 size、time、memory benchmarks；

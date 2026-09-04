@@ -117,3 +117,39 @@ documentation, checksums, and path-free recovery evidence under
 `artifacts/metadata/aggregate_recovery_v2_28/`.  This evidence closes the
 aggregate replay and cross-segment wire-identity gates only; it does not close
 the parent CAP-to-H-RBBC join, fork-security proof, or production.
+
+The v2.29 parent CAP-to-H-RBBC checkpoint starts from the exact legacy F2 BR1CS
+but does not splice its mismatched deterministic fixture into the v2.28
+zero-message aggregate.  The unchanged parent ticket digest becomes the
+message of a fresh parent-bound global tail; production CAP supplies the mask
+and commitment, and native H_RBBC supplies the hash image.  The lifted
+GF(2^193) parent relation rebases only non-constant parent wires after the
+aggregate namespace and replaces the single external assertion with 1,408
+native equality rows.  The parent-bound global-tail assignment, 72 MB joined
+relation archive, 75 MB parent assignment, trusted cache, checkpoints, resume
+state, and runtime output remain external.  Git stores only path-free evidence,
+source, tests, frozen manifests, documentation, and checksums.  Closing this
+exact parent join does not revalidate the fork-security proof and does not make
+the wider system production-ready.
+
+The v2.30 fork-security preflight is read-only and does not create or replay a
+large assignment.  Git stores its fail-closed checker, frozen manifest, tests,
+documentation, and checksum inventory.  The authoritative Blind-UOV revision,
+fork proof packet, CAP extraction review, QROM review, blindness/one-more
+review, independent-review attestation, and candidate inventory reports remain
+external until their exact identities and review scope are frozen.  Merely
+providing a candidate file records its size and digest but cannot promote any
+security claim.  Fork-security revalidation, backend qualification, signature
+benchmarking, and production closure remain false.
+
+The bounded v2.30 proof audit subsequently freezes the authoritative
+2025-10-31 Blind-UOV PDF, an internally authored fork proof-audit PDF, three
+machine-readable fail-closed gap reviews, an independent-review request, and an
+audit manifest in the external v2.30 directory.  Git stores the reviewable HTML
+source, deterministic generators and validators, tests, documentation,
+checksums, and path-free audit evidence only.  The generated reviews explicitly
+identify themselves as internal and non-independent.  They may close the
+internal-audit and independent-review-readiness gates, but they cannot discharge
+CAP, QROM, blindness, one-more, backend, size, fork-security, or production
+claims.  An independent-review request is not an attestation; the expected
+attestation remains absent and must never be fabricated or self-signed.
