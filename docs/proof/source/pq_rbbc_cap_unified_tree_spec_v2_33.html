@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>PQ-RBBC v2.33 Unified-Tree CAP Candidate Specification</title>
+<style>
+@page { size: A4; margin: 17mm 16mm; @bottom-right { content: counter(page); } }
+body { font-family: "DejaVu Sans", sans-serif; color: #182230; font-size: 9.4pt; line-height: 1.34; }
+h1 { font-size: 19pt; color: #17365d; margin: 0 0 5mm; }
+h2 { font-size: 13pt; color: #24527a; border-bottom: 1px solid #9fb3c8; margin-top: 6mm; }
+h3 { font-size: 10.5pt; color: #24527a; }
+code, pre { font-family: "DejaVu Sans Mono", monospace; font-size: 8.2pt; }
+pre { background: #f2f5f8; border-left: 3px solid #4d789d; padding: 2.5mm; white-space: pre-wrap; }
+table { border-collapse: collapse; width: 100%; margin: 3mm 0; }
+th, td { border: 1px solid #aebdca; padding: 1.7mm; vertical-align: top; }
+th { background: #e8eef4; text-align: left; }
+.warning { border: 1px solid #a85d00; background: #fff4df; padding: 3mm; }
+.ok { border: 1px solid #287a4d; background: #edf8f1; padding: 3mm; }
+.small { font-size: 8pt; color: #445; }
+</style>
+</head>
+<body>
+<h1>PQ-RBBC v2.33 Unified-Tree CAP Candidate Specification</h1>
+<p><strong>Status:</strong> exact candidate algorithm and reduced executable profile;
+not a frozen or qualified production profile. Date: 2026-09-04.</p>
+
+<div class="warning"><strong>Claim boundary.</strong> This document defines a new,
+independent namespace. It does not modify or replace the legacy 18-root profile,
+does not validate a production CAP proof, and does not authorize production
+pre-freeze, relation replay, or proving. Existing tree stream sizes, assignments,
+digests, and v2.29 transcripts are not observations for this profile.</div>
+
+<h2>1. Sources and notation</h2>
+<p>The optimized BAVC construction follows Section 3.1 of
+<a href="https://eprint.iacr.org/2024/490">ePrint 2024/490</a>: one GGM tree with
+<em>L</em> leaves, a bijection π from leaves to logical vector positions, minimal
+frontier compression, and opening abort when |S| exceeds <em>T</em><sub>open</sub>.
+Counter grinding and the extra challenge bits follow Section 4. The selected
+Blind-UOV parameter row is cross-checked against Tables 4 and 7 of
+<a href="https://eprint.iacr.org/2024/541">ePrint 2024/541</a>. CAP integration
+requirements originate from the 2025-10-31 revision of
+<a href="https://eprint.iacr.org/2025/895">ePrint 2025/895</a>.</p>
+<p>All indices below are zero-based. <code>LE16</code>, <code>LE32</code>, and
+<code>LE64</code> are canonical unsigned little-endian integers. <code>FE</code>
+is a 25-byte little-endian GF(2<sup>193</sup>) element whose top seven bits are
+zero. <code>H386</code> is a 49-byte little-endian 386-bit value whose top six
+bits are zero. Every XOF input is the repository's tuple-injective Anemoi sponge
+frame.</p>
+
+<h2>2. Independent namespace and profiles</h2>
+<table>
+<tr><th>Item</th><th>Production candidate</th><th>Reduced executable profile</th></tr>
+<tr><td>Name</td><td><code>PQ-RBBC-CAP-TCitH-III/Anemoi-193-336-Unified-GGM-CANDIDATE-v1</code></td><td><code>PQ-RBBC-CAP-UNIFIED-GGM-REDUCED-TEST-ONLY-v1</code></td></tr>
+<tr><td>Relation ID</td><td colspan="2"><code>pq-rbbc/cap/tcith-iii/anemoi-193-336/unified-ggm/candidate/v1</code></td></tr>
+<tr><td>Logical leaf counts N<sub>α</sub></td><td>(4096, 4096, 2048 × 16); L=40960</td><td>(4, 4, 2, 2); L=12</td></tr>
+<tr><td>Challenge widths</td><td>(12, 12, 11 × 16); 200 index bits</td><td>(2, 2, 1, 1); 6 index bits</td></tr>
+<tr><td>Tape width</td><td>2450 bits</td><td>32 bits</td></tr>
+<tr><td>T<sub>open</sub></td><td>174</td><td>4</td></tr>
+<tr><td>Explicit PoW bits</td><td>9</td><td>2</td></tr>
+<tr><td>Status</td><td>disabled; fingerprint not frozen</td><td>test-only; executable</td></tr>
+</table>
+<p>The legacy profile name, commitment magic, domains, and fingerprint are
+forbidden in the new profile. New domain prefix:</p>
+<pre>PQ-RBBC/v2.33/CAP-UGGM/
+  seed-derive | seed-commit | tape-expand | vector-hash | root-hash | h3</pre>
+
+<h2>3. Tree topology and π mapping</h2>
+<p>The tree has one sampled root seed <em>k</em><sub>0</sub>, internal heap indices
+0…L−2, and leaf heap indices L−1…2L−2. For each internal node j in increasing
+order:</p>
+<pre>(k[2j+1], k[2j+2]) = XOF(seed-derive,
+  profile_fingerprint, salt, FE(k[j]), LE32(j), 386 bits)</pre>
+<p>Consequently the exact number of seed-derive calls is L−1: 40,959 for the
+production candidate and 11 for the reduced profile. The earlier L−2 planning
+value is invalid for a construction that samples a single root.</p>
+<p>For logical vector α and position i, define the position-major bijection:</p>
+<pre>π(α,i) = Σβ min(i,Nβ) + |{ β : 0 ≤ β &lt; α and i &lt; Nβ }|</pre>
+<p>For production, positions 0…2047 contain α=0…17 in order. Positions
+2048…4095 contain only α=0,1. The corresponding heap leaf is
+L−1+π(α,i). The inverse chooses the unique position i for which
+Σβ min(i,Nβ) ≤ u &lt; Σβ min(i+1,Nβ), then selects the indexed eligible α.
+No legacy tree number or legacy observed byte length participates in π.</p>
+
+<h2>4. Leaf material and batch commitment</h2>
+<p>Let metadata be <code>LE16(α)||LE32(i)||LE32(π(α,i))</code>. For each leaf
+seed sd, compute:</p>
+<pre>com[α,i] = XOF(seed-commit,
+  profile_fingerprint, salt, FE(sd), metadata, 386 bits)
+tape[α,i] = XOF(tape-expand,
+  profile_fingerprint, salt, FE(sd), metadata, tape_bits)</pre>
+<p>Logical vector digests and the one batch root are:</p>
+<pre>h[α] = XOF(vector-hash,
+  profile_fingerprint, LE16(α), LE32(Nα), H386(com[α,0]),..., 386 bits)
+h     = XOF(root-hash,
+  profile_fingerprint, LE16(τ), H386(h[0]),...,H386(h[τ-1]), 386 bits)</pre>
+<p>The decom commitment is the one root seed. Public commitment bytes are:</p>
+<pre>"PQRBBC-CAP-UGGM-COMMIT-V1" || LE16(1) ||
+profile_fingerprint[32] || FE(salt[0]) || FE(salt[1]) || H386(h)</pre>
+<p>The parser requires the exact length, magic, version, profile fingerprint,
+canonical high bits, and no trailing bytes.</p>
+
+<h2>5. Challenge decoding and grinding</h2>
+<p><code>challenge_prefix</code> is the exact canonical CAP transcript prefix that
+will later contain the public statement and all pre-h3 commitment material.
+The reduced vector uses the literal byte string
+<code>PQ-RBBC/v2.33/reduced/challenge-prefix</code>. Compute:</p>
+<pre>h3 = XOF(h3,
+  profile_fingerprint, challenge_prefix, commitment_bytes, LE64(counter),
+  386 bits)</pre>
+<p>Starting at bit 0, interpret h3 LSB-first. Consume one slice of
+log<sub>2</sub>(N<sub>α</sub>) bits for α=0…τ−1; each slice is i(α). The next w
+bits are the explicit PoW value. A candidate is acceptable iff those w bits are
+zero and the canonical frontier has at most T<sub>open</sub> nodes. Prove starts
+at counter zero, increments without wrap, and returns the first acceptable
+candidate. Verify need not rescan earlier counters, but recomputes h3 and both
+acceptance conditions. No generic leading-zero test may replace these rules.</p>
+
+<h2>6. Canonical minimal frontier</h2>
+<p>Initialize S with every heap leaf except the τ leaves selected by i(α). For
+j=L−2 down to 0, if both children 2j+1 and 2j+2 are in S, delete them and insert
+j. Sort the final S by strictly increasing heap index. This is the only accepted
+frontier; duplicates, reorderings, ancestors overlapping descendants, and a
+non-minimal equivalent cover are rejected.</p>
+<p>Opening bytes are:</p>
+<pre>"PQRBBC-CAP-UGGM-OPEN-V1" || LE16(1) || profile_fingerprint[32] ||
+LE64(counter) || H386(h3) || LE16(τ) ||
+for α=0..τ-1: LE16(α) || LE32(i(α)) || H386(com[α,i(α)]) ||
+LE16(|S|) || for j in increasing S: LE32(j) || FE(k[j])</pre>
+<p>The encoding is variable length but bounded by T<sub>open</sub>. Counts are
+explicit; unused slots and padding are forbidden.</p>
+
+<h2>7. Verify algorithm</h2>
+<ol>
+<li>Strictly parse the commitment and opening under the selected profile.</li>
+<li>Recompute h3 from the exact challenge prefix, commitment bytes, and counter.
+Reject mismatched h3, decoded indices, or nonzero explicit bits.</li>
+<li>Recompute the unique minimal frontier indices and reject any different list
+or a list longer than T<sub>open</sub>.</li>
+<li>Expand every supplied frontier seed using its heap index. Reject overlap,
+hidden-leaf disclosure, missing nonhidden leaves, or extra leaves.</li>
+<li>For every reconstructed leaf, recompute its commitment and tape. Insert the
+τ supplied hidden commitments, recompute every h[α] and h, and require exact
+equality with the public commitment.</li>
+<li>Return the nonhidden tapes only after all checks succeed.</li>
+</ol>
+
+<h2>8. Reduced qualification requirements</h2>
+<p>The reduced profile exhaustively covers all 64 hidden-index tuples. Its
+canonical frontier distribution must be exactly:</p>
+<table><tr><th>|S|</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th></tr>
+<tr><th>Tuples</th><td>1</td><td>1</td><td>6</td><td>20</td><td>16</td><td>20</td></tr></table>
+<p>Thus 28/64 tuples pass T<sub>open</sub> before the independent 2-bit explicit
+condition. Qualification requires: one accepted deterministic vector; exact
+round trips; full production π bijection without expanding production leaves;
+rejection of magic, length, transcript, h3, hidden-index, explicit-bit,
+T<sub>open</sub>, hidden-commitment, and frontier-seed mutations; a fresh-cache
+run; an identity-bound interrupted/resumed run; and overwrite refusal.</p>
+
+<div class="ok"><strong>Bounded implementation boundary.</strong> The reduced
+runner may execute only the 12-leaf profile. Production parameters are present
+for validation and mapping tests, but the implementation raises before expanding
+them unless a future, separately reviewed production phase is explicitly added.
+Reduced execution creates no assignment, BR1CS, proof, pickle, or log.</div>
+
+<h2>9. Remaining production gates</h2>
+<ul>
+<li>Independent review of this specification and the implementation identity.</li>
+<li>Operator-approved resource reservation and elapsed-time estimate derived
+from reduced benchmarks.</li>
+<li>Freeze the production profile fingerprint and complete CAP h1/h2/h3,
+<code>c_r</code>, <code>c_x</code>, and <code>pi_2</code> integration.</li>
+<li>Production runner qualification, pre-freeze observation, new row/wire
+contracts, then two fresh-cache complete replays.</li>
+<li>New aggregate, parent-bound global-tail, parent join, incremental BR1CS,
+extractor, concrete security, and independent proof review evidence.</li>
+</ul>
+<p class="small">This candidate deliberately makes no CAP-security,
+fork-security, QROM, backend, or production-closure claim.</p>
+</body>
+</html>

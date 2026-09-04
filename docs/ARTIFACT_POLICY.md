@@ -153,3 +153,204 @@ internal-audit and independent-review-readiness gates, but they cannot discharge
 CAP, QROM, blindness, one-more, backend, size, fork-security, or production
 claims.  An independent-review request is not an attestation; the expected
 attestation remains absent and must never be fabricated or self-signed.
+
+The v2.31 CAP-security qualification checkpoint is read-only and binds the
+v2.30 audit findings to the exact v2.29 execution semantics and production CAP
+profile.  Git stores its checker, sealer, tests, frozen contract manifest,
+documentation, checksum inventory, and path-free checkpoint evidence only.
+The straight-line extractor specification, unique committed-mask reduction,
+contract-bound full-transcript qualification candidate, independent-review
+attestation, and environment reports remain external.  The first three
+candidate identities are now frozen and validated; Git stores their reviewable
+HTML and executable authoring sources plus compact path-free authoring evidence,
+but not the PDFs or the 78 MB full-value transcript.  Identity and schema
+validation do not promote a security claim.  The independent attestation remains
+absent and must not be fabricated.  Moreover, the candidate records a raw
+degree-soundness term of only 2^-182 without the paper profile's proof of work,
+and leaves complete Prove/Verify, production c2 serialization, and concrete
+Anemoi ROM/QROM justification open.  No large replay is part of this gate, and
+no assignment, BR1CS, pickle/cache, checkpoint/resume state, or log may be
+committed.  CAP security, fork security, QROM review, backend qualification,
+and production closure remain false until the findings are dispositioned and an
+independent review is frozen and accepted.
+
+The v2.32 CAP Prove/Verify preflight is read-only.  Git stores its checker,
+frozen requirements manifest, tests, documentation, checksum inventory, and a
+compact path-free seal.  The Prove/Verify specification, production proof
+serialization candidate, PoW/security-profile disposition, implementation
+evidence, independent-review attestation, and initial inventory report remain
+external.  The checkpoint generates no proof and replays no relation rows.  It
+freezes only the outer envelope requirements; the production c_x, PoW nonce,
+pi_2 payloads, and complete public-statement encoding remain unfrozen.  The
+v2.31 candidate c2 is not a production serialization.  No assignment, BR1CS,
+pickle/cache, checkpoint/resume state, or log may be committed.  Schema validity
+alone cannot authorize implementation, a large proving run, a profile change,
+or any CAP, fork-security, backend, or production claim.
+
+Bounded v2.32 implementation work may add tracked canonical-codec source,
+tests, and reviewable specification source.  Generated PDFs and machine-readable
+candidate inventories remain external.  Until the complete pi_2 grammar,
+unified-GGM opening, counter grinding, Protocol-11 polynomial verifier, concrete
+ROM/QROM bound, and independent review are frozen, Prove must be unavailable and
+Verify must fail closed.  A generic leading-zero nonce is not a substitute for
+the paper-compatible combination of an interleaved unified GGM tree,
+T_open rejection sampling, and explicit challenge bits.  The current 18-root
+CAP profile must not be silently relabelled as the optimized one-tree profile.
+
+The v2.33 unified-tree migration preflight records explicit authorization for a
+separate candidate namespace while preserving the existing 18-root profile and
+all v2.19-v2.32 evidence as immutable historical evidence.  Git may store the
+read-only checker, frozen migration manifest, tests, documentation, checksum
+inventory, and compact path-free evidence.  The environment report and all
+source PDFs/candidate JSON inputs remain external.  Reserving the namespace is
+not implementation, profile freezing, security qualification, or production
+closure.
+
+The unified-tree profile must generate new per-profile domains, row streams,
+assignments, relocation evidence, aggregate evidence, parent-bound global tail,
+parent join, incremental BR1CS, and complete relation identity.  Existing tree
+0-17 observed stream sizes, row-stream digests, assignments, and the v2.29 replay
+transcript must not be reused as observations for the new profile.  No large
+pre-freeze, replay, or proving command may run until the migration checker
+reports its corresponding gate safe.  The new algorithm specification, reduced
+prototype evidence, runner qualification, resource reservation, and independent
+design review remain external gate artifacts; the independent review must not be
+fabricated or self-attested.  New assignments, BR1CS, pickle/cache, resume or
+checkpoint state, and logs remain prohibited from Git.
+
+The subsequently authorized v2.33 exact specification and reduced prototype
+remain bounded by the same policy.  Git may store the unified-tree source,
+reduced runner, tests, reviewable HTML specification source, and compact
+path-free reduced seal.  The rendered PDF, reduced execution evidence, runner
+qualification, post-reduced environment report, and JSON state/cache remain in
+the independent external directory.  The reduced runner expands 12 leaves and
+must reject the production profile; it creates no assignment, BR1CS, proof,
+pickle, or log.  A schema-valid reduced run does not authorize production
+pre-freeze or replay.  Those phases still require an operator-approved resource
+reservation, independent design/cryptographic review, and a later read-only
+checker that binds the exact reduced seal and production contract.
+
+The v2.34 production pre-freeze checkpoint supplies that read-only checker and
+a closed-world JSON Schema for operator resource reservations.  Git may store
+the checker, schema, frozen checkpoint manifest, tests, documentation, checksum
+inventory, and compact path-free evidence.  The environment report, completed
+operator reservation, independent-review attestation, and all future production
+outputs remain external.  The printed reservation template is deliberately
+unapproved and is not an operator attestation.
+
+The v2.34 checker freezes only the unified-tree production descriptor
+fingerprint, pre-freeze contract, prospective command digest, reservation
+grammar, and v2.33 evidence bindings.  Host capacity does not authorize
+execution, and schema validity does not freeze an external identity.  The
+current runner remains reduced-only, so the production runner, production
+relation contract, resource reservation identity, review identity, and explicit
+execution authorization are all required blockers.  Production pre-freeze,
+frozen replay, large proving, CAP/fork security, and production closure remain
+false.  A later checkpoint must implement and qualify the production runner and
+freeze the external identities; no one may enable the prospective command by
+editing booleans in the v2.34 checker or manifest.
+
+The v2.35 production-runner authoring checkpoint may store the independent
+runner skeleton, authored relation-stage contract, frozen manifest, tests,
+documentation, checksum inventory, and compact path-free portable evidence in
+Git.  Its 40-leaf production-shaped execution evidence, runner qualification,
+canonical JSON state, interrupted/resumed output, and resource measurements
+remain external.  No pickle, cache directory, checkpoint/resume state, log,
+assignment, BR1CS, or proof output may be committed.
+
+The bounded v2.35 fixture preserves all 18 logical-vector positions but is
+explicitly test-only and insecure.  It qualifies runner control flow, not the
+production runner, production relation, resource projection, CAP security, or
+fork security.  Production observations remain null, and legacy tree 0-17
+observed stream sizes, digests, assignments, and the v2.29 transcript cannot be
+reused as observations.  The production branch must continue to reject before
+creating output until its checkpoint payload and relation generator are
+implemented, operator reservation and independent-review identities are frozen,
+the user authorizes production pre-freeze, and a later launch manifest binds all
+of those inputs.
+
+The v2.36 bounded relation checkpoint may store the checkpoint-payload and
+relation-generator source, frozen manifest, tests, documentation, checksum
+inventory, and compact path-free portable evidence in Git.  The interrupted
+and completed checkpoint payloads, private witness bytes, bounded relation
+document, run evidence, qualification report, resource measurements, and all
+audit reruns remain external.  No checkpoint/resume state, assignment, BR1CS,
+pickle/cache, log, or proof output may be committed.
+
+The v2.36 payload format is qualified only on the 40-leaf, 18-vector test
+fixture.  Its 144 equality records are checkpoint-contract IR, not BR1CS or
+production relation rows; the 122,904-record production-shape projection is
+not an observation or a substitute for the production relation.  Resume must
+bind an externally supplied expected payload SHA-256 in addition to validating
+the internal stage chain.  Production execution must continue to fail before
+creating output until production-scale materialization, final statement
+encoding, operator reservation, independent review, explicit authorization,
+and an identity-frozen launch manifest are complete.  Legacy tree observations
+and the v2.29 transcript remain historical evidence and may not be reused as
+unified-profile observations.
+
+The v2.37 unified-statement checkpoint may store the strict statement and
+parent-input codec, frozen manifest, tests, documentation, checksum inventory,
+and compact path-free portable evidence in Git.  Deterministic statement and
+bounded-parent vectors, run evidence, qualification reports, and preliminary
+audit reruns remain external.  No private witness bytes, checkpoint/resume
+state, assignment, BR1CS, pickle/cache, log, or proof output may be committed.
+
+The production-profile statement artifact is a serialization test vector only.
+It does not imply that a production unified-tree commitment, parent envelope,
+parent join, relation, proof, or benchmark exists.  A production parent envelope
+must not be materialized until an exact production `c_r` exists under the same
+profile fingerprint.  The v2.36 bounded `c_r` may qualify the ABI but cannot be
+relabelled as a production observation.  The legacy v2.32 codec and 18-tree
+profile remain immutable; their tree stream sizes, digests, assignments, and
+v2.29 transcript must not be reused as unified-profile observations.
+
+V2.37 permits authoring the production streaming/checkpoint path, but does not
+authorize its execution.  Production pre-freeze remains blocked on an
+operator-approved resource reservation, independent review, explicit execution
+authorization, and an identity-frozen launch manifest.  Large replay, proving,
+CAP/fork security, and production closure remain false.
+
+The v2.38 streaming-prefreeze checkpoint may store the chunk/checkpoint codec,
+frozen manifest, tests, documentation, checksum inventory, and compact
+path-free portable evidence in Git.  Binary stream chunks, interrupted and
+completed checkpoints, stream indexes, run evidence, qualification, capacity
+observations, launch-preflight reports, and audit reruns remain external.
+Stream chunks may contain private seed or tape material and must never be
+committed, even when their aggregate identities appear in portable evidence.
+
+The 163,859-record, 163-chunk, 16,631,418-byte production layout is a plan, not
+an execution observation.  It excludes relation streams, assignments, BR1CS,
+proofs, and replay cost, and must not replace the 589,054,075-row planning lower
+bound.  Bounded runtime and byte counts must not be linearly extrapolated to a
+production wall-clock claim.  Existing tree 0-17 stream sizes, digests,
+assignments, and the v2.29 transcript remain forbidden as unified-profile
+observations.
+
+V2.38 may validate external reservation, review, and launch candidates only as
+inputs for a later identity-freeze checkpoint.  A schema-shaped or
+format-shaped candidate is not an attestation and does not authorize execution.
+Production pre-freeze remains prohibited until the exact operator reservation,
+independent review, launch manifest, implementation, predecessor seal, and
+command are frozen together by a later read-only checkpoint.  Large replay,
+proving, CAP/fork security, and production closure remain false.
+
+The v2.39 launch-preflight checkpoint may store the strict resource-reservation,
+independent-review, and launch-manifest schemas, their validators and generator,
+the frozen authoring manifest, tests, documentation, checksum inventory, and a
+compact path-free portable seal.  Deliberately invalid draft templates,
+qualification output, host-capacity observations, and preflight reports remain
+external.  Completed operator or reviewer attestations and any authored launch
+manifest must also remain external.
+
+A draft template is never an attestation.  The tool must not invent an operator,
+reviewer, affiliation, approval, signature reference, resource reservation, or
+review disposition.  Schema validity and file presence do not freeze identity.
+Even an exact candidate set may only become ready for a later identity-freeze
+checkpoint; v2.39 does not grant production execution authorization.
+
+Production stream/checkpoint materialization, scale qualification, replay,
+proving, CAP/fork security, and production closure remain false.  Legacy tree
+0-17 observations and the v2.29 transcript remain forbidden as unified-profile
+observations.  No assignment, BR1CS, pickle/cache, checkpoint/resume state, log,
+private stream payload, or production output may be committed.

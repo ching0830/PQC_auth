@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>PQ-RBBC v2.31 CAP Unique-Mask Reduction Candidate</title>
+  <style>
+    @page { size: A4; margin: 17mm 16mm 19mm; }
+    body { color: #17202a; font: 10pt/1.42 Arial, sans-serif; }
+    h1 { color: #123b5d; font-size: 20pt; margin: 0 0 5mm; }
+    h2 { color: #185b7d; font-size: 14pt; margin: 7mm 0 2mm; page-break-after: avoid; }
+    h3 { color: #246b86; font-size: 11.5pt; margin: 5mm 0 1.5mm; page-break-after: avoid; }
+    p, li { orphans: 3; widows: 3; }
+    table { border-collapse: collapse; width: 100%; margin: 3mm 0 5mm; font-size: 8.8pt; }
+    th, td { border: 0.25mm solid #9aa9b2; padding: 2mm; vertical-align: top; }
+    th { background: #eaf2f6; text-align: left; }
+    code { font-family: "DejaVu Sans Mono", monospace; font-size: 8.5pt; }
+    pre { background: #f4f6f7; border-left: 1mm solid #6c8ea0; padding: 3mm; white-space: pre-wrap; font-size: 8.4pt; }
+    .status { border: 0.4mm solid #a85632; background: #fff3eb; padding: 3mm; }
+    .ok { color: #176b45; font-weight: bold; }
+    .blocked { color: #9b381f; font-weight: bold; }
+    .small { color: #4d5b63; font-size: 8.6pt; }
+    .break { page-break-before: always; }
+  </style>
+</head>
+<body>
+  <h1>PQ-RBBC v2.31 CAP Unique-Mask Reduction Candidate</h1>
+  <p><strong>Checkpoint date:</strong> 2026-09-04<br>
+     <strong>Game:</strong> pq-rbbc/cap/unique-committed-mask/v1<br>
+     <strong>Target:</strong> one canonical admissible <code>c_r</code> cannot
+     bind two distinct 576-bit masks.</p>
+
+  <div class="status">
+    <strong>Disposition:</strong> the reduction is specified and its diagnostic
+    terms are numeric, but the current fork does <span class="blocked">not</span>
+    meet the prerequisites needed to instantiate it. In particular, the final
+    CAP verifier and the NIST-III/Shorter proof-of-work layer are missing. The
+    raw mixed-tree challenge term is only 182 bits even before query loss.
+    Unique-mask and CAP-security claims remain false.
+  </div>
+
+  <h2>1. Unique-mask game</h2>
+  <p>The adversary receives the frozen CAP profile and access to the six-domain
+  ROM oracle. It wins by outputting one canonical <code>c_1</code>, two distinct
+  masks <code>r_0 != r_1</code>, one common ordered full-value oracle transcript,
+  and two accepted opening-relation continuations proving that the same
+  commitment prefix opens to those masks. Canonical parsing, oracle domain
+  separation, and the exact mixed tree shapes are part of the game.</p>
+  <p>This definition intentionally requires accepted final continuations. A
+  commitment produced by the deterministic functional fixture is not, by that
+  fact alone, an admissible adversarial commitment.</p>
+
+  <h2>2. Conditional reduction</h2>
+  <p>Assume a deterministic Definition-10 extractor <code>Ext_1</code> for the
+  opening relation, with failure probability <code>epsilon_ext</code>, and strict
+  injective serialization/domain parsing. Given a winning unique-mask
+  adversary, run <code>Ext_1(Q_CAP,c_1)</code> once. Its output cannot equal both
+  distinct masks. Select one of the two accepted continuations uniformly and
+  use it in the Definition-10 knowledge-soundness game. With probability at
+  least one half, the selected public opening value differs from the extractor
+  output. Conflicting oracle responses or parser aliases are diverted to their
+  respective collision/ambiguity games.</p>
+  <pre>Adv_uw(A) <= 2 * Adv_ext(B)
+             + Adv_oracle_collision(C)
+             + Adv_serialization_ambiguity(D).</pre>
+  <p>The factor two is conservative and avoids assuming that the two
+  continuations can both be submitted in one knowledge-soundness experiment.
+  If a reviewed multi-opening formulation permits the reduction to choose the
+  mismatching continuation directly, the factor can be tightened.</p>
+
+  <h2>3. Fork-specific bad events</h2>
+  <table>
+    <tr><th>ID</th><th>Event</th><th>Required disposition</th></tr>
+    <tr><td>UWM-01</td><td><code>h2</code>, <code>h1</code>, or a leaf commitment has no decisive oracle preimage.</td><td>Bound by ROM guessing plus final challenge acceptance.</td></tr>
+    <tr><td>UWM-02</td><td>One digest has multiple formatted preimages or one query has conflicting responses.</td><td>Reduce to domain-separated oracle collision/ambiguity.</td></tr>
+    <tr><td>UWM-03</td><td>Two corrected tree constants pass the consistency digest but differ.</td><td>Two-point polynomial universal-hash bound.</td></tr>
+    <tr><td>UWM-04</td><td>Malformed profile, unused high bits, tree size, degree, index, correction, or append encoding.</td><td>Strict parser rejection; no probability term.</td></tr>
+    <tr><td>UWM-05</td><td>All trees lack a recoverable leaf while a final proof verifies.</td><td>Mixed product of per-tree unopened challenges plus proof-of-work.</td></tr>
+    <tr><td>UWM-06</td><td>An invalid degree-2 relation passes all tree challenges.</td><td>Mixed product of <code>d/N_e</code> plus proof-of-work.</td></tr>
+    <tr><td>UWM-07</td><td>Classical ROM transcript is applied to quantum superposition queries.</td><td>Out of scope; requires a separate QROM lift.</td></tr>
+  </table>
+
+  <h2 class="break">4. Exact mixed-tree accounting</h2>
+  <p>The production profile has two trees with <code>N=2^12</code> and sixteen
+  trees with <code>N=2^11</code>. Therefore:</p>
+  <pre>sum_e log2(N_e) = 2*12 + 16*11 = 200
+Pr[one hidden leaf per tree] = product_e (1/N_e) = 2^-200
+
+d = 2, tau = 18
+Pr[invalid degree-2 relation passes raw challenges]
+    = product_e (d/N_e) = 2^18 / 2^200 = 2^-182.</pre>
+  <p>Table 2 of the source paper assigns approximately 13.9 bits of total
+  proof-of-work to the NIST-III/Shorter TCitH parameter set. The current fork
+  implements neither that proof-of-work nor the final challenge/opening
+  verifier. Consequently the paper's parameter theorem does not transfer. It
+  is not sound to silently add 13.9 bits to the fork.</p>
+
+  <h2>5. Diagnostic ROM terms</h2>
+  <p>With 386-bit oracle outputs (<code>2*lambda</code>,
+  <code>lambda=193</code>), the directly identifiable terms are:</p>
+  <pre>T_guess(q_H)     = q_H / 2^386
+T_collision(q_H) = q_H^2 / 2^387
+T_missing(q_H)   = q_H / 2^200
+T_degree(q_H)    = q_H / 2^182.</pre>
+  <p>The consistency hash parses the 2,048-bit vector as 11 coefficients over
+  GF(2^193), so one evaluation has collision probability at most
+  <code>10/(2^193-1)</code>. Two independently derived, distinct nonzero points
+  give the diagnostic bound
+  <code>epsilon_uuh &lt;= (10/(2^193-1))^2</code>. Across 18 trees the union term
+  is <code>q_H * C(18,2) * epsilon_uuh</code>. This calculation assumes the
+  consistency-point oracle behaves as the required random source; it is not a
+  concrete Anemoi proof.</p>
+
+  <table>
+    <tr><th>q_H budget</th><th>Guess bits</th><th>Collision bits</th><th>Missing-leaf bits</th><th>Degree-term bits</th><th>Dominant diagnostic</th></tr>
+    <tr><td>1</td><td>386</td><td>387</td><td>200</td><td>182</td><td>2^-182</td></tr>
+    <tr><td>2^32</td><td>354</td><td>323</td><td>168</td><td>150</td><td>2^-150</td></tr>
+    <tr><td>2^64</td><td>322</td><td>259</td><td>136</td><td>118</td><td>2^-118</td></tr>
+  </table>
+  <p>These are term-by-term diagnostics, not an accepted total security bound.
+  Constraint-sampling, proof-of-work, multi-target, adaptive-session, concrete
+  Anemoi, and final-verifier terms remain uninstantiated.</p>
+
+  <h2>6. Qualification consequence</h2>
+  <p>At <code>q_H=1</code>, the raw degree term already exceeds the target
+  <code>2^-192</code>. Thus the current commit-only profile cannot be qualified
+  at 192 bits from the mixed-tree challenge schedule alone. A safe resolution
+  must freeze and review one of:</p>
+  <ol>
+    <li>the paper's proof-of-work and final TCitH proof semantics in the exact fork;</li>
+    <li>a strengthened tree/challenge schedule with fresh performance and size evidence; or</li>
+    <li>a lower, explicitly accepted security target supported by a complete proof.</li>
+  </ol>
+  <p>Choosing among these changes the cryptographic profile and is outside this
+  authoring checkpoint.</p>
+
+  <h2>7. Claim boundary</h2>
+  <pre>unique_mask_game_specified = true
+numeric_diagnostic_accounting_complete = true
+paper_parameter_theorem_inherited = false
+cap_unique_witness_reviewed = false
+cap_security_qualified = false
+fork_security_proof_revalidated = false
+production_closed = false</pre>
+  <p>An independent cryptographic reviewer must check the game, reduction,
+  mixed-tree adaptation, universal-hash term, proof-of-work integration, and
+  accepted query budget. The project cannot self-attest that review.</p>
+
+  <p class="small">Primary source: Bouillaguet et al., “Blinding
+  Post-Quantum Hash-and-Sign Signatures,” IACR ePrint 2025/895, major revision
+  2025-10-31, especially Table 2, Definition 10, Theorem 4, and Appendix B.1.</p>
+</body>
+</html>
