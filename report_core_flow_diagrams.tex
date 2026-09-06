@@ -1,0 +1,688 @@
+% Compile with XeLaTeX.
+% This file contains the flow-diagram slides for the thesis presentation.
+\documentclass[aspectratio=169,11pt]{beamer}
+
+\usepackage{fontspec}
+\usepackage{xeCJK}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{tikz}
+
+\setmainfont{TeX Gyre Heros}
+\setsansfont{TeX Gyre Heros}
+\setCJKmainfont{Noto Sans CJK TC}
+\setCJKsansfont{Noto Sans CJK TC}
+
+\usetikzlibrary{
+  arrows.meta,
+  positioning,
+  shapes.geometric,
+  fit,
+  backgrounds,
+  calc
+}
+
+\definecolor{rbbcblue}{HTML}{2459A6}
+\definecolor{rbbcteal}{HTML}{087F8C}
+\definecolor{rbbcpurple}{HTML}{7251A3}
+\definecolor{rbbcorange}{HTML}{C76D00}
+\definecolor{rbbcred}{HTML}{B33636}
+
+\setbeamertemplate{navigation symbols}{}
+\setbeamercolor{title}{fg=rbbcblue}
+\setbeamercolor{frametitle}{fg=rbbcblue}
+\setbeamerfont{frametitle}{series=\bfseries}
+
+\tikzset{
+  role/.style={
+    rectangle,
+    rounded corners=2pt,
+    draw=rbbcblue,
+    fill=rbbcblue!8,
+    thick,
+    align=center,
+    minimum width=25mm,
+    minimum height=10mm
+  },
+  authority/.style={
+    rectangle,
+    rounded corners=2pt,
+    draw=rbbcpurple,
+    fill=rbbcpurple!8,
+    thick,
+    align=center,
+    minimum width=25mm,
+    minimum height=10mm
+  },
+  process/.style={
+    rectangle,
+    rounded corners=2pt,
+    draw=rbbcteal,
+    fill=rbbcteal!8,
+    thick,
+    align=center,
+    minimum width=28mm,
+    minimum height=10mm
+  },
+  data/.style={
+    rectangle,
+    rounded corners=1pt,
+    draw=rbbcorange,
+    fill=rbbcorange!8,
+    thick,
+    align=center,
+    minimum width=25mm,
+    minimum height=9mm
+  },
+  decision/.style={
+    diamond,
+    aspect=2,
+    draw=rbbcred,
+    fill=rbbcred!6,
+    thick,
+    align=center,
+    inner sep=1pt
+  },
+  arrow/.style={
+    -{Latex[length=2.5mm]},
+    thick
+  },
+  dashedarrow/.style={
+    -{Latex[length=2.5mm]},
+    thick,
+    dashed
+  },
+  note/.style={
+    font=\scriptsize,
+    align=center,
+    text=black!75
+  }
+}
+
+\title{RBBC 與受治理身分開啟機制}
+\subtitle{核心機制與流程圖}
+\author{}
+\date{}
+
+\begin{document}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+% -----------------------------------------------------------------------------
+% Slide 1: Overall architecture
+% -----------------------------------------------------------------------------
+\begin{frame}{核心機制：離線發行、在線驗證、條件式開啟}
+\centering
+
+\resizebox{0.97\textwidth}{!}{
+\begin{tikzpicture}[
+  node distance=14mm and 18mm,
+  font=\small
+]
+
+\node[authority] (fac)
+  {FAC\\Federation Authorization};
+
+\node[role, below left=18mm and 18mm of fac] (ue)
+  {UE\\Holder};
+
+\node[role, below right=18mm and 18mm of fac] (hncc)
+  {HNCC\\Issuer};
+
+\node[role, right=30mm of hncc] (sat)
+  {LEO／FLEO\\Relay};
+
+\node[role, right=22mm of sat] (fgs)
+  {FGS\\Verifier};
+
+\node[authority, below=24mm of hncc] (auth)
+  {Opening\\Authorization};
+
+\node[authority, right=30mm of auth] (oa)
+  {OA Members\\Threshold Shares};
+
+\node[data, right=26mm of oa] (audit)
+  {Opened Identity\\Audit Evidence};
+
+\draw[arrow]
+  (fac) -- node[note, right]
+  {Issuer／configuration\\authorization}
+  (hncc);
+
+\draw[arrow]
+  (ue) -- node[note, above, sloped]
+  {Blind request\\＋RBBC proof}
+  (hncc);
+
+\draw[arrow]
+  ([yshift=-2mm]hncc.west) --
+  node[note, below, sloped]
+  {Blind-signing response}
+  ([yshift=-2mm]ue.east);
+
+\draw[arrow]
+  (ue.east) to[bend left=20]
+  node[note, above]
+  {Anonymous ticket\\＋access transcript}
+  (sat.west);
+
+\draw[arrow]
+  (sat) -- node[note, above]
+  {Forward／lightweight check}
+  (fgs);
+
+\draw[dashedarrow]
+  (fgs.south west) to[bend left=15]
+  node[note, below]
+  {Accept／reject\\＋key confirmation}
+  (ue.south east);
+
+\draw[dashedarrow]
+  (fgs.south) |- node[note, near start, right]
+  {Ticket＋evidence}
+  (auth.east);
+
+\draw[arrow]
+  (auth) -- node[note, above]
+  {Authorized request}
+  (oa);
+
+\draw[arrow]
+  (oa) -- node[note, above]
+  {$t_O$ valid shares}
+  (audit);
+
+\begin{scope}[on background layer]
+  \node[
+    draw=rbbcblue!55,
+    dashed,
+    rounded corners,
+    fit=(fac)(ue)(hncc),
+    inner sep=6mm,
+    label={[rbbcblue]above:Offline Issuance}
+  ] {};
+
+  \node[
+    draw=rbbcteal!55,
+    dashed,
+    rounded corners,
+    fit=(sat)(fgs),
+    inner sep=6mm,
+    label={[rbbcteal]above:Online Access}
+  ] {};
+
+  \node[
+    draw=rbbcpurple!55,
+    dashed,
+    rounded corners,
+    fit=(auth)(oa)(audit),
+    inner sep=6mm,
+    label={[rbbcpurple]below:Conditional Identity Opening}
+  ] {};
+\end{scope}
+
+\end{tikzpicture}
+}
+
+\vspace{1mm}
+\footnotesize
+重型 relation proof 與 threshold opening 留在地面端；
+衛星在線路徑只執行中繼或指定的輕量檢查。
+
+\end{frame}
+
+% -----------------------------------------------------------------------------
+% Slide 2: Offline issuance
+% -----------------------------------------------------------------------------
+\begin{frame}{Phase 1：Relation-Bound Blind Issuance}
+\centering
+
+\resizebox{0.96\textwidth}{!}{
+\begin{tikzpicture}[
+  node distance=12mm,
+  font=\small
+]
+
+\node[authority] (fac)
+  {FAC\\Authorized Context};
+
+\node[role, right=16mm of fac] (ue)
+  {UE／Holder};
+
+\node[process, right=14mm of ue] (construct)
+  {Generate $sk_H,sn$\\
+   $C\gets\mathsf{TraceEnc}(pk_{OA},id,sn,ctx)$\\
+   $M\gets\mathsf{Encode}(ctx,sn,h,C)$};
+
+\node[process, right=14mm of construct] (proof)
+  {Build $R_{\mathrm{blind}}$\\
+   Generate $\pi_{\mathrm{RBBC}}$};
+
+\node[role, right=14mm of proof] (hncc)
+  {HNCC\\Issuer};
+
+\node[process, below=15mm of hncc] (verify)
+  {Verify identity／policy\\
+   Verify $\pi_{\mathrm{RBBC}}$};
+
+\node[process, left=20mm of verify] (response)
+  {Blind-signing\\response};
+
+\node[data, left=20mm of response] (ticket)
+  {$T=(M,\sigma)$};
+
+\draw[arrow]
+  (fac) -- node[note, above]
+  {$ctx$, issuer authorization}
+  (ue);
+
+\draw[arrow] (ue) -- (construct);
+\draw[arrow] (construct) -- (proof);
+
+\draw[arrow]
+  (proof) -- node[note, above]
+  {$R_{\mathrm{blind}},\pi_{\mathrm{RBBC}}$}
+  (hncc);
+
+\draw[arrow] (hncc) -- (verify);
+
+\draw[arrow]
+  (verify) -- node[note, above]
+  {if valid}
+  (response);
+
+\draw[arrow]
+  (response) -- node[note, above]
+  {unblind／finalize}
+  (ticket);
+
+\draw[arrow]
+  (ticket.west) -| node[note, near start, below]
+  {stored by UE}
+  (ue.south);
+
+\node[
+  draw=rbbcorange,
+  fill=rbbcorange!5,
+  rounded corners,
+  align=left,
+  below=17mm of proof,
+  minimum width=54mm
+] (relation) {
+  $\mathcal{R}_{\mathrm{RBBC}}(x,w)=1$ requires\\[1mm]
+  $\bullet$ ticket and blind-request consistency\\
+  $\bullet$ identity／serial／context binding\\
+  $\bullet$ trace-ciphertext consistency
+};
+
+\draw[dashedarrow] (proof) -- (relation);
+
+\end{tikzpicture}
+}
+
+\end{frame}
+
+% -----------------------------------------------------------------------------
+% Slide 3: Online access and consumption
+% -----------------------------------------------------------------------------
+\begin{frame}{Phase 2：Anonymous Access and One-Time Consumption}
+\centering
+
+\resizebox{0.93\textwidth}{!}{
+\begin{tikzpicture}[
+  node distance=10mm and 14mm,
+  font=\small
+]
+
+\node[role] (ue) {UE};
+\node[role, right=16mm of ue] (sat) {LEO／FLEO};
+\node[role, right=16mm of sat] (fgs) {FGS};
+
+\node[process, below=15mm of fgs] (verify)
+  {Verify ticket signature\\
+   Check $ctx$, expiry and nonce\\
+   Verify access／AKE transcript};
+
+\node[decision, below=15mm of verify] (valid)
+  {All valid?};
+
+\node[process, left=23mm of valid] (consume)
+  {Atomic check-and-consume\\
+   $\mathsf{Unused}(use\_key)$};
+
+\node[decision, below=16mm of consume] (commit)
+  {Commit\\success?};
+
+\node[data, below left=15mm and 12mm of commit] (accept)
+  {Access accepted\\Session established};
+
+\node[data, below right=15mm and 12mm of commit] (reject)
+  {Access rejected\\No second session};
+
+\draw[arrow]
+  (ue) -- node[note, above]
+  {$T$, UE ephemeral}
+  (sat);
+
+\draw[arrow]
+  (sat) -- node[note, above]
+  {Forward}
+  (fgs);
+
+\draw[arrow]
+  (fgs) -- node[note, right]
+  {Process request}
+  (verify);
+
+\draw[arrow] (verify) -- (valid);
+
+\draw[arrow]
+  (valid.west) -- node[note, above]
+  {Yes}
+  (consume);
+
+\draw[arrow]
+  (valid.east) -| node[note, near start, above]
+  {No}
+  (reject.east);
+
+\draw[arrow] (consume) -- (commit);
+
+\draw[arrow]
+  (commit.south west) -- node[note, left]
+  {Yes}
+  (accept);
+
+\draw[arrow]
+  (commit.south east) -- node[note, right]
+  {No／already used}
+  (reject);
+
+\draw[dashedarrow]
+  (accept.west) -| node[note, near start, below]
+  {Key confirmation}
+  (ue.south);
+
+\draw[dashedarrow]
+  (reject.west) to[bend right=12]
+  node[note, below]
+  {Reject}
+  (ue.south east);
+
+\node[
+  draw=black!45,
+  fill=black!3,
+  rounded corners,
+  below=14mm of valid,
+  xshift=35mm,
+  align=center
+] (key) {
+  $d_M=H_{\mathrm{ticket}}(\mathsf{Encode}(M))$\\
+  $use\_key=H_{\mathrm{use}}(ctx\parallel sn\parallel d_M)$
+};
+
+\end{tikzpicture}
+}
+
+\vspace{1mm}
+\footnotesize
+$\mathsf{VerifyTicket}$ 是 stateless；strictly one-use 必須由 FGS 的
+durable atomic state transition 提供。$\mathsf{AKEValid}$ 目前為待實例化介面。
+
+\end{frame}
+
+% -----------------------------------------------------------------------------
+% Slide 4: Ticket state machine
+% -----------------------------------------------------------------------------
+\begin{frame}{Strictly One-Use Ticket State Machine}
+\centering
+
+\begin{tikzpicture}[
+  node distance=45mm,
+  font=\small
+]
+
+\node[
+  circle,
+  draw=green!50!black,
+  fill=green!8,
+  thick,
+  minimum size=24mm
+] (unused) {UNUSED};
+
+\node[
+  circle,
+  draw=rbbcred,
+  fill=rbbcred!8,
+  thick,
+  minimum size=24mm,
+  right=of unused
+] (consumed) {CONSUMED};
+
+\draw[arrow]
+  (unused) --
+  node[note, above, text width=40mm]
+  {All checks valid\\＋durable atomic commit}
+  (consumed);
+
+\draw[
+  -{Latex[length=2.5mm]},
+  thick,
+  rbbcred,
+  dashed
+]
+  (consumed) to[bend left=45]
+  node[note, above, text=rbbcred]
+  {禁止 rollback}
+  (unused);
+
+\node[
+  process,
+  below=22mm of unused,
+  text width=38mm
+] (failure) {
+  驗證失敗：不消耗票券
+};
+
+\node[
+  data,
+  below=22mm of consumed,
+  text width=43mm
+] (crash) {
+  Commit 後發生 timeout／crash：\\
+  票券仍維持 CONSUMED
+};
+
+\draw[dashedarrow] (unused) -- (failure);
+\draw[dashedarrow] (consumed) -- (crash);
+
+\end{tikzpicture}
+
+\vspace{5mm}
+\begin{block}{Lifecycle boundary}
+Fresh nonce 可阻止舊 transcript replay，但不能阻止合法持有者使用同一張
+ticket 回應新的 challenge；後者必須由 consumption state 處理。
+\end{block}
+
+\end{frame}
+
+% -----------------------------------------------------------------------------
+% Slide 5: Conditional opening
+% -----------------------------------------------------------------------------
+\begin{frame}{Phase 3：Signature-Gated Threshold Identity Opening}
+\centering
+
+\resizebox{0.96\textwidth}{!}{
+\begin{tikzpicture}[
+  node distance=12mm and 15mm,
+  font=\small
+]
+
+\node[role] (requester)
+  {Requester／Investigator};
+
+\node[authority, right=18mm of requester] (governance)
+  {Authorization\\Governance};
+
+\node[data, right=18mm of governance] (request)
+  {$Q=(T,caseID,purpose,$\\
+   $d_E,expiry,auth)$};
+
+\node[authority, below left=20mm and 18mm of request] (oa1)
+  {$OA_1$};
+
+\node[authority, below=20mm of request] (oa2)
+  {$OA_2$};
+
+\node[authority, below right=20mm and 18mm of request] (oat)
+  {$OA_t$};
+
+\node[process, below=18mm of oa2] (checks)
+  {Verify ticket and authorization\\
+   Check purpose, evidence, expiry, replay};
+
+\node[data, below left=18mm and 22mm of checks] (shares)
+  {$share_1,\ldots,share_t$};
+
+\node[process, right=20mm of shares] (combine)
+  {Verify shares\\Threshold combine};
+
+\node[decision, right=20mm of combine] (consistent)
+  {$sn'=T.sn$?\\$ctx'=T.ctx$?};
+
+\node[data, below=17mm of consistent] (result)
+  {Opened identity\\＋audit evidence};
+
+\draw[arrow]
+  (requester) -- node[note, above]
+  {Ticket＋case＋evidence}
+  (governance);
+
+\draw[arrow]
+  (governance) -- node[note, above]
+  {Signed authorization}
+  (request);
+
+\draw[arrow] (request) -- (oa1);
+\draw[arrow] (request) -- (oa2);
+\draw[arrow] (request) -- (oat);
+
+\draw[arrow] (oa1) -- (checks);
+\draw[arrow] (oa2) -- (checks);
+\draw[arrow] (oat) -- (checks);
+
+\draw[arrow]
+  (checks) -- node[note, above, sloped]
+  {if allowed}
+  (shares);
+
+\draw[arrow] (shares) -- (combine);
+\draw[arrow] (combine) -- (consistent);
+
+\draw[arrow]
+  (consistent) -- node[note, right]
+  {Yes}
+  (result);
+
+\node[data, above right=13mm and 14mm of consistent] (reject)
+  {Reject opening};
+
+\draw[arrow]
+  (consistent) -- node[note, above]
+  {No}
+  (reject);
+
+\node[
+  draw=rbbcred,
+  fill=rbbcred!5,
+  rounded corners,
+  align=center,
+  below=14mm of checks
+] (warning) {
+  OA 不提供任意\\
+  $\mathsf{PartialDecrypt}(tsk_i,C)$ API
+};
+
+\draw[dashedarrow] (checks) -- (warning);
+
+\end{tikzpicture}
+}
+
+\end{frame}
+
+% -----------------------------------------------------------------------------
+% Slide 6: Security invariants
+% -----------------------------------------------------------------------------
+\begin{frame}{核心流程的三個安全不變量}
+\centering
+
+\begin{tikzpicture}[
+  node distance=8mm,
+  font=\small
+]
+
+\node[
+  process,
+  minimum width=92mm,
+  minimum height=15mm
+] (issue) {
+  $\mathsf{Issue}(T)$
+  $\Rightarrow$
+  ticket 與 trace ciphertext 綁定同一 witness
+};
+
+\node[
+  process,
+  minimum width=92mm,
+  minimum height=15mm,
+  below=of issue
+] (accept) {
+  $\mathsf{Accept}(T)$
+  $\Rightarrow$
+  ticket 有效、fresh 且尚未被成功使用
+};
+
+\node[
+  process,
+  minimum width=92mm,
+  minimum height=15mm,
+  below=of accept
+] (open) {
+  $\mathsf{Open}(T)$
+  $\Rightarrow$
+  合法授權＋門檻 shares＋開啟結果一致
+};
+
+\draw[arrow] (issue) -- (accept);
+\draw[arrow] (accept) -- (open);
+
+\node[
+  draw=rbbcpurple,
+  fill=rbbcpurple!5,
+  rounded corners,
+  align=center,
+  right=16mm of accept,
+  text width=35mm,
+  minimum height=20mm
+] (goal) {
+  正常使用時保持匿名\\[1mm]
+  合法條件下可以追責
+};
+
+\draw[arrow] (issue.east) -- (goal.north west);
+\draw[arrow] (accept.east) -- (goal.west);
+\draw[arrow] (open.east) -- (goal.south west);
+
+\end{tikzpicture}
+
+\vspace{5mm}
+\begin{alertblock}{目前的 claim boundary}
+RBBC relation 與部分 circuit 已建立；完整 composition、合格 PQ ZK／SE backend、
+robust threshold opening transcript 與衛星 PQ AKE 尚未封閉。
+\end{alertblock}
+
+\end{frame}
+
+\end{document}
