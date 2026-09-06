@@ -47,6 +47,125 @@ class RelationTests(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.matrix, cls.statement, cls.witness, cls.adapter = core.reference_fixture()
 
+    def trace_kdf_output(self) -> bytes:
+        error_bytes = self.witness.error.to_bytes(core.N // 8, "little")
+        return hashlib.shake_256(
+            core.LABEL_KDF
+            + error_bytes
+            + self.statement.payload.syndrome
+            + self.statement.common_ctx
+        ).digest(core.TRACE_KDF_BYTES)
+
+    def wrong_order_instance(
+        self,
+    ) -> tuple[core.IssueStatement, core.IssueWitness]:
+        key_stream = self.trace_kdf_output()
+        wrong_mac_key = key_stream[: core.TRACE_MAC_KEY_BYTES]
+        wrong_pad = key_stream[core.TRACE_MAC_KEY_BYTES :]
+        masked_identity = core.xor_bytes(
+            self.statement.rid + self.witness.sn, wrong_pad
+        )
+        associated_data = (
+            self.statement.common_ctx
+            + self.witness.sn
+            + self.statement.payload.holder_hash
+        )
+        wrong_payload = replace(
+            self.statement.payload,
+            masked_identity=masked_identity,
+            tag=core.kmac256(
+                wrong_mac_key,
+                self.statement.payload.syndrome
+                + masked_identity
+                + associated_data,
+            ),
+        )
+        digest = hashlib.shake_256(
+            core.LABEL_TICKET + wrong_payload.encode()
+        ).digest(32)
+        wrong_statement = replace(
+            self.statement,
+            payload=wrong_payload,
+            blind_request=self.adapter.create(
+                digest,
+                self.witness.blind_mask,
+                self.witness.blind_randomness,
+            ),
+        )
+        wrong_witness = replace(
+            self.witness,
+            blind_hash_image=self.adapter.hash_image(
+                digest,
+                self.witness.blind_mask,
+                self.witness.blind_randomness,
+            ),
+        )
+        return wrong_statement, wrong_witness
+
+    def test_trace_kdf_canonical_split_and_frozen_vector(self) -> None:
+        key_stream = self.trace_kdf_output()
+        pad, mac_key = core.split_trace_kdf_output(key_stream)
+        self.assertEqual(core.TRACE_PAD_OFFSET, 0)
+        self.assertEqual(core.TRACE_MAC_KEY_OFFSET, 48)
+        self.assertEqual(len(key_stream), 80)
+        self.assertEqual(pad, key_stream[0:48])
+        self.assertEqual(mac_key, key_stream[48:80])
+        self.assertEqual(
+            pad.hex(),
+            "05d55d5c53c03ecbbf4d3b2fc1a85bed27270f8a2c223abcc1c22c42b1886cbc"
+            "99a87a12adc761f070f3d5ac82efbde8",
+        )
+        self.assertEqual(
+            mac_key.hex(),
+            "8fe834eaf1b9709306ad6bb5d7e92da6429e952c33aa53c5e0991390ae5465cb",
+        )
+        self.assertEqual(
+            self.statement.payload.masked_identity.hex(),
+            "d25e40637cfdc440d8f18f199f4fbfdd341667a16574343d7d1d0aca21eb2c2"
+            "f0d6f660ca2ef999e5337d9d77add8319",
+        )
+        self.assertEqual(
+            self.statement.payload.tag.hex(),
+            "02719cd84e00ea323270bdf0dd634771ef8f3e93eba0662b7f193afcf27acedb",
+        )
+        self.assertEqual(
+            hashlib.sha256(self.statement.payload.encode()).hexdigest(),
+            "8d88e08b4c5283723803906e00e47064b75cfe5e134faed9ef2be72fb46aa3e0",
+        )
+        self.assertEqual(
+            hashlib.shake_256(
+                core.LABEL_TICKET + self.statement.payload.encode()
+            ).digest(32).hex(),
+            "ef49a7a0ba4788c062ccfa21dab6d0bfd35ba2c20bb19b0fbadc0e205ee44870",
+        )
+        self.assertFalse(core.PRODUCTION_OPENING_IMPLEMENTED)
+
+    def test_trace_kdf_split_rejects_noncanonical_boundaries(self) -> None:
+        for size in (79, 81):
+            with self.subTest(size=size):
+                with self.assertRaisesRegex(ValueError, "exactly 80 bytes"):
+                    core.split_trace_kdf_output(bytes(size))
+
+        for size in (639, 641):
+            with self.subTest(size=size):
+                with self.assertRaisesRegex(ValueError, "exactly 640 bits"):
+                    core.split_trace_kdf_wires([0] * size)
+
+    def test_trace_kdf_wrong_order_rejected_by_direct_relation(self) -> None:
+        statement, witness = self.wrong_order_instance()
+        result = core.verify_relation(self.matrix, statement, witness, self.adapter)
+        self.assertFalse(result.ok)
+        self.assertEqual(set(result.failures), {"masked_identity", "trace_tag"})
+
+    def test_trace_kdf_wrong_order_rejected_by_constraint_circuit(self) -> None:
+        statement, witness = self.wrong_order_instance()
+        report = core.generate_issue_circuit(
+            self.matrix, statement, witness, self.adapter
+        )
+        self.assertFalse(report.satisfied)
+        self.assertEqual(report.external_assertions, 1)
+        self.assertGreater(report.blocks["trace"]["failed_assertions"], 0)
+
     def test_frozen_wire_sizes(self) -> None:
         self.assertEqual(len(self.statement.payload.encode()), 368)
         self.assertEqual(len(self.statement.payload.encode()) + core.SIGNATURE_BYTES, 12012)

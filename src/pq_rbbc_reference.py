@@ -50,6 +50,16 @@ LABEL_HOLD = b"PQ-RBBC/HOLD"
 LABEL_KDF = b"PQ-RBBC/KDF"
 LABEL_TICKET = b"PQ-RBBC/TICKET"
 
+# Canonical trace-KDF split for the existing profile.  These are zero-based,
+# half-open byte offsets into the 80-byte SHAKE256 output.  Existing frozen
+# vectors use P || K_mac; reversing the two fields requires a new profile.
+TRACE_KDF_BYTES = 80
+TRACE_PAD_BYTES = 48
+TRACE_MAC_KEY_BYTES = 32
+TRACE_PAD_OFFSET = 0
+TRACE_MAC_KEY_OFFSET = TRACE_PAD_OFFSET + TRACE_PAD_BYTES
+PRODUCTION_OPENING_IMPLEMENTED = False
+
 MASK64 = (1 << 64) - 1
 RHO = (
     (0, 36, 3, 41, 18),
@@ -90,6 +100,26 @@ def xor_bytes(left: bytes, right: bytes) -> bytes:
     if len(left) != len(right):
         raise ValueError("xor operands must have equal length")
     return bytes(a ^ b for a, b in zip(left, right))
+
+
+def split_trace_kdf_output(key_stream: bytes) -> tuple[bytes, bytes]:
+    """Return canonical ``(P, K_mac)`` from an 80-byte trace-KDF output."""
+    if len(key_stream) != TRACE_KDF_BYTES:
+        raise ValueError("trace KDF output must be exactly 80 bytes")
+    pad = key_stream[TRACE_PAD_OFFSET:TRACE_MAC_KEY_OFFSET]
+    mac_key = key_stream[TRACE_MAC_KEY_OFFSET:TRACE_KDF_BYTES]
+    return pad, mac_key
+
+
+def split_trace_kdf_wires(
+    key_stream: Sequence[int],
+) -> tuple[Sequence[int], Sequence[int]]:
+    """Return canonical ``(P, K_mac)`` from the bit-level KDF output."""
+    expected_bits = TRACE_KDF_BYTES * 8
+    if len(key_stream) != expected_bits:
+        raise ValueError("trace KDF wire output must be exactly 640 bits")
+    boundary = TRACE_MAC_KEY_OFFSET * 8
+    return key_stream[:boundary], key_stream[boundary:]
 
 
 def bits_from_bytes(data: bytes) -> list[int]:
@@ -320,8 +350,10 @@ def _derive_trace(
     holder_hash = hashlib.shake_256(LABEL_HOLD + holder_key).digest(32)
     syndrome = matrix.syndrome(error)
     error_bytes = error.to_bytes(N // 8, "little")
-    key_stream = hashlib.shake_256(LABEL_KDF + error_bytes + syndrome + common_ctx).digest(80)
-    pad, mac_key = key_stream[:48], key_stream[48:]
+    key_stream = hashlib.shake_256(
+        LABEL_KDF + error_bytes + syndrome + common_ctx
+    ).digest(TRACE_KDF_BYTES)
+    pad, mac_key = split_trace_kdf_output(key_stream)
     masked_identity = xor_bytes(rid + sn, pad)
     associated_data = common_ctx + sn + holder_hash
     tag = kmac256(mac_key, syndrome + masked_identity + associated_data)
@@ -968,9 +1000,8 @@ def generate_issue_circuit(
         + computed_syndrome
         + common_ctx
     )
-    key_stream = shake256_wires(builder, kdf_input, 80)
-    pad = key_stream[: 48 * 8]
-    mac_key = key_stream[48 * 8 :]
+    key_stream = shake256_wires(builder, kdf_input, TRACE_KDF_BYTES)
+    pad, mac_key = split_trace_kdf_wires(key_stream)
     identity_and_serial = rid + secret_sn
     computed_mask = [builder.xor(a, b) for a, b in zip(identity_and_serial, pad)]
     _assert_wire_vectors_equal(builder, computed_mask, public_masked_identity)
