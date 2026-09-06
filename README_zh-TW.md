@@ -11,10 +11,11 @@ PQ-RBBC 是目前最成熟的密碼學模組，但不是整篇論文的全部。
 1. [research-notes.md](research-notes.md)、[methodology.md](methodology.md)、[experiments.md](experiments.md)、[thesis-outline.md](thesis-outline.md)：跨任務恢復研究脈絡、方法、實驗與寫作進度。
 2. [docs/DOCUMENTATION_POLICY_zh-TW.md](docs/DOCUMENTATION_POLICY_zh-TW.md)：各文件的 canonical responsibility、更新與歷史保存規則。
 3. [ARCHITECTURE_zh-TW.md](ARCHITECTURE_zh-TW.md)：系統分層、角色、模組、階段、信任假設及安全邊界。
-4. [RESEARCH_STATUS_zh-TW.md](RESEARCH_STATUS_zh-TW.md)：哪些內容已定義、實作、測試或證明，以及仍未完成的項目。
-5. [ROADMAP_zh-TW.md](ROADMAP_zh-TW.md)：整篇論文的工作線、可平行工作及整合 gates。
-6. [modules/README_zh-TW.md](modules/README_zh-TW.md)：模組 registry 與目前路徑歸屬。
-7. [docs/roadmaps/PQ_RBBC_CURRENT_HANDOFF_zh-TW.md](docs/roadmaps/PQ_RBBC_CURRENT_HANDOFF_zh-TW.md)：目前 RBBC tree 工作的操作交接文件。
+4. [docs/guides/PROTOCOL_TO_IMPLEMENTATION_GUIDE_zh-TW.md](docs/guides/PROTOCOL_TO_IMPLEMENTATION_GUIDE_zh-TW.md)：把 protocol 公式連到 bytes、relation、circuit、assignment、tests 與 evidence。
+5. [RESEARCH_STATUS_zh-TW.md](RESEARCH_STATUS_zh-TW.md)：哪些內容已定義、實作、測試或證明，以及仍未完成的項目。
+6. [ROADMAP_zh-TW.md](ROADMAP_zh-TW.md)：整篇論文的工作線、可平行工作及整合 gates。
+7. [modules/README_zh-TW.md](modules/README_zh-TW.md)：模組 registry 與目前路徑歸屬。
+8. [docs/roadmaps/PQ_RBBC_CURRENT_HANDOFF_zh-TW.md](docs/roadmaps/PQ_RBBC_CURRENT_HANDOFF_zh-TW.md)：目前 RBBC tree 工作的操作交接文件。
 
 ## 架構概覽
 
@@ -46,6 +47,7 @@ flowchart TD
 | `manifests/` | 凍結的 RBBC machine-readable evidence 與 claims |
 | `artifacts/metadata/` | 外部 RBBC artifacts 的 portable metadata |
 | `docs/proof/` | RBBC 形式化證明原始檔與 release PDF |
+| `docs/guides/` | Protocol、實作與 evidence 之間的非 canonical 教學導覽 |
 | `docs/roadmaps/` | RBBC 版本化 roadmap 與操作交接 |
 | `docs/releases/` | RBBC checkpoint release notes |
 | `docs/artifacts/` | RBBC artifact 重建與 evidence 說明 |

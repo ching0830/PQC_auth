@@ -27,7 +27,17 @@
 
 當其他文件的狀態摘要與本層衝突時，以本層相應的 canonical 文件為準。
 
-### 3. 歷史 checkpoint（新增、不回寫）
+### 3. 教學與導覽層（持續更新，但非 canonical status）
+
+| 文件 | 責任 | 不應承擔的內容 |
+| --- | --- | --- |
+| `docs/guides/PROTOCOL_TO_IMPLEMENTATION_GUIDE_zh-TW.md` | 將 protocol 公式對應到 canonical bytes、relation、circuit、assignment、tests 與 evidence，並提供 handoff 閱讀方法 | 最新 completion／production claim、raw result 或 artifact identity 的唯一來源 |
+
+導覽文件必須引用正式專案定義與機器證據，不能建立另一份互相競爭的工程狀態。
+若狀態例子過時，以 `RESEARCH_STATUS_zh-TW.md`、module handoff 及 machine evidence
+為準。
+
+### 4. 歷史 checkpoint（新增、不回寫）
 
 - `docs/releases/`：各版本 release note。
 - `docs/artifacts/`：artifact 產生、重建與 evidence 說明。
@@ -36,7 +46,7 @@
 
 舊文件可以保留當時的未完成事項或舊 claim boundary；它們代表歷史，不應改寫成最新狀態。最新狀態由 `RESEARCH_STATUS_zh-TW.md` 與 `PQ_RBBC_CURRENT_HANDOFF_zh-TW.md` 提供。
 
-### 4. 機器可驗證證據
+### 5. 機器可驗證證據
 
 - `manifests/`：結構化 identities、metrics 與 claims。
 - `checksums/`：release checksum inventories。

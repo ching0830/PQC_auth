@@ -7,8 +7,9 @@ Before changing this repository, read the files relevant to the task:
 1. `research-notes.md`, `methodology.md`, `experiments.md`, and `thesis-outline.md` for cross-task research context.
 2. `docs/DOCUMENTATION_POLICY_zh-TW.md` for document ownership and update rules.
 3. `ARCHITECTURE_zh-TW.md`, `RESEARCH_STATUS_zh-TW.md`, and `ROADMAP_zh-TW.md` for the canonical system definition, claim boundary, and project plan.
-4. `docs/roadmaps/PQ_RBBC_CURRENT_HANDOFF_zh-TW.md` before any PQ-RBBC production work.
-5. `docs/specs/ONE_TIME_TICKET_STATE_v0_1_zh-TW.md` before system access, replay, revocation, or handover work.
+4. `docs/guides/PROTOCOL_TO_IMPLEMENTATION_GUIDE_zh-TW.md` when translating protocol steps into code, circuits, artifacts, or checkpoints.
+5. `docs/roadmaps/PQ_RBBC_CURRENT_HANDOFF_zh-TW.md` before any PQ-RBBC production work.
+6. `docs/specs/ONE_TIME_TICKET_STATE_v0_1_zh-TW.md` before system access, replay, revocation, or handover work.
 
 Use Traditional Chinese for research and thesis documentation unless the task explicitly requests English. Keep code identifiers, manifest fields, protocol labels, and cryptographic terminology stable in English.
 
