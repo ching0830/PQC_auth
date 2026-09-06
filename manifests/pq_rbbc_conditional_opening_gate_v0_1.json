@@ -1,0 +1,40 @@
+{
+  "claim_boundary": {
+    "atomic_replay_interface_defined": true,
+    "canonical_request_and_share_codecs_implemented": true,
+    "combiner_control_flow_implemented": true,
+    "full_verify_ticket_implemented": false,
+    "oa_dkg_implemented": false,
+    "production_opening_implemented": false,
+    "robust_threshold_decoder_implemented": false,
+    "signature_gated_control_flow_implemented": true
+  },
+  "format": "PQRBBC-CONDITIONAL-OPENING-GATE-CHECKPOINT-1",
+  "integration_blockers": {
+    "ciphertext_decoding_kept_behind_backend_boundary": true,
+    "trace_kdf_80_byte_split_order_unresolved": true
+  },
+  "request": {
+    "authorization_statement_sha256": "4f5e0eb2402b6563c03650ebfcb763d6639a1b3609e285c4958bbb27faa97861",
+    "bytes": 441,
+    "request_digest": "df66fe26ed8220de539c090ed47480eb45ac12b539fd40035adba52285121c28",
+    "sha256": "a7864a37213d759e596e2ba16e8edb0a9e2b7b1c6960b4ab43ae31be8d602a34",
+    "ticket_digest": "2e733c849f22dc50b5711654dfa20d755ff1f6761b8a155a9d2017d06e58b47f"
+  },
+  "share": {
+    "bytes": 303,
+    "member_id": "ff541d602116685a6c64709bbf7b220b5c5d6fbbecb03b3876bea2ea4b15701a",
+    "sha256": "f44feaa4ab8c94d4c076c24d823eaa4fa75fb8fbaa144b1e7bf08cd477e2380d"
+  },
+  "system_profile": "0.1",
+  "validation_order": [
+    "parse_request",
+    "verify_authenticated_initialization_and_pinned_trust_anchor",
+    "verify_ticket",
+    "check_ctx_epoch_and_key_ids",
+    "verify_case_authorization_and_all_bindings",
+    "atomic_replay_begin",
+    "threshold_backend",
+    "atomic_replay_commit_before_share_release"
+  ]
+}

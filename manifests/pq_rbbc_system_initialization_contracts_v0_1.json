@@ -1,0 +1,37 @@
+{
+  "authenticated_envelope_bytes": 677,
+  "authenticated_envelope_sha256": "59d4f0fc94e49a53bf53b30031073f6405fc15e159b95d11ab33775be6be2f2f",
+  "bundle_bytes": 609,
+  "bundle_sha256": "5103e95793f747be2a4ffb325ebe47d6411dcbfe274e8294254f0a38b9be17e5",
+  "claim_boundary": {
+    "canonical_configuration_codec_implemented": true,
+    "canonical_initialization_bundle_codec_implemented": true,
+    "configuration_authentication_backend_abstract": true,
+    "explicit_configuration_trust_anchor_required": true,
+    "fac_dkg_implemented": false,
+    "fac_threshold_signature_instantiated": false,
+    "opening_dkg_implemented": false,
+    "production_system_initialized": false,
+    "threshold_decoder_implemented": false
+  },
+  "common_parameters_digest": "ee7521f82b4aab2440b91a04c133d4f7302ffcca9506ddd73b9a56ecadd8f1ff",
+  "configuration_sha256": "9798bd7aac56a2b100da54f71c8351c5024261becc9a01ac927349fdf9ad7150",
+  "ctx": "b446e4856aecef5352380c5e79e84b947e52b1deadacc62aec055fbea46cb989",
+  "federation_threshold": {
+    "members": 5,
+    "threshold": 3
+  },
+  "format": "PQRBBC-SYSTEM-INITIALIZATION-CONTRACT-CHECKPOINT-1",
+  "key_roles": [
+    "FEDERATION_CONFIGURATION",
+    "ISSUER_AUTHORIZATION",
+    "OPENING_AUTHORIZATION",
+    "ISSUER_VERIFICATION",
+    "OPENING_ENCRYPTION"
+  ],
+  "opening_threshold": {
+    "members": 7,
+    "threshold": 5
+  },
+  "system_profile": "0.1"
+}
