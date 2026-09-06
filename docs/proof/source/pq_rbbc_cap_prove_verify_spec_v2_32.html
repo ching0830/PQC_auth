@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>PQ-RBBC v2.32 CAP Prove/Verify Specification Candidate</title>
+<style>
+  @page { size: A4; margin: 18mm 17mm 19mm; }
+  body { font: 10.2pt/1.38 "Liberation Serif", serif; color: #111; }
+  h1 { font-size: 19pt; margin: 0 0 4mm; }
+  h2 { font-size: 13.5pt; margin: 6mm 0 2mm; border-bottom: 0.3mm solid #777; }
+  h3 { font-size: 11.5pt; margin: 4mm 0 1mm; }
+  code { font: 8.8pt "Liberation Mono", monospace; }
+  pre { font: 8.2pt/1.3 "Liberation Mono", monospace; white-space: pre-wrap;
+        background: #f4f4f4; border: 0.2mm solid #bbb; padding: 2.5mm; }
+  table { border-collapse: collapse; width: 100%; margin: 2mm 0 4mm; }
+  th, td { border: 0.2mm solid #999; padding: 1.5mm; vertical-align: top; }
+  th { background: #eee; }
+  .blocked { color: #9b1c1c; font-weight: bold; }
+  .ok { color: #176b34; font-weight: bold; }
+  .small { font-size: 8.5pt; }
+</style>
+</head>
+<body>
+<h1>PQ-RBBC v2.32 CAP Prove/Verify Specification Candidate</h1>
+<p><b>Status:</b> implementation input and gap record; not an accepting production
+proof specification. <b>Relation:</b> 589,030,555 rows, zero verification
+failures and zero external assertions under the frozen v2.29 identity. No row
+replay or proof generation is performed by this artifact.</p>
+
+<h2>1. Sources and interpretation boundary</h2>
+<p>The normative algorithm family is the TCitH CAP of ePrint 2025/895,
+Definition 8 and Protocols 10–11 (revision dated 2025-10-31). Its optimized
+opening and proof-of-work are described by ePrint 2024/490, Sections 3.1 and 4,
+and summarized by ePrint 2024/541, Section 5.3. The selected paper profile is
+NIST III / Shorter / TCitH: 18 repetitions, two vectors of 2<sup>12</sup>
+leaves, sixteen vectors of 2<sup>11</sup> leaves, <i>T</i><sub>open</sub>=174,
+explicit <i>w</i>=9, reported total work 13.9 bits.</p>
+<p>The fork uses Anemoi-193/336 and is expressly not bit-exact Blind-UOV. Paper
+security statements do not transfer automatically. In particular, the paper's
+optimized construction uses one interleaved GGM tree for the 18 vector
+commitments, whereas the current forked <code>CAP.Commit</code> materializes
+18 independent roots. This difference is security- and serialization-relevant.</p>
+
+<h2>2. Public statement and proof envelope</h2>
+<p>The candidate public statement is the exact byte encoding of
+<code>(common_parameters_digest, ctx, sid, rid, y)</code>. The widths are
+32, 32, 32, 32, and 72 bytes. It is encoded as:</p>
+<pre>"PQRBBC-CAP-STATEMENT-V1" || u16le(1) || profile_fingerprint[32]
+|| u16le(5)
+|| repeated(u16le(field_id) || u64le(field_bytes) || field)</pre>
+<p>Field identifiers are 1 through 5 in the order above. The proof does not
+embed the statement; every Fiat–Shamir hash must bind the exact encoded bytes.</p>
+<p>The already-frozen outer proof envelope is:</p>
+<pre>"PQRBBC-CAP-PROOF-V1" || u16le(1) || profile_fingerprint[32]
+|| u16le(4)
+|| section(1,c_r) || section(2,c_x) || section(3,pow_nonce) || section(4,pi_2)
+section(id,v) := u16le(id) || u64le(len(v)) || v</pre>
+<table>
+<tr><th>Section</th><th>Candidate representation</th><th>Status</th></tr>
+<tr><td><code>c_r</code></td><td>5,391-byte frozen fork commitment encoding</td><td class="ok">inner parser exists</td></tr>
+<tr><td><code>c_x</code></td><td>184 raw bytes for the 1,472-bit append delta</td><td>candidate; the 252-byte v2.31 extractor wrapper is forbidden</td></tr>
+<tr><td><code>pow_nonce</code></td><td>unsigned 64-bit little-endian counter</td><td>candidate only</td></tr>
+<tr><td><code>pi_2</code></td><td><code>h3 || unified-opening || Qbar[e,k]</code></td><td class="blocked">inner byte grammar not frozen</td></tr>
+</table>
+
+<h2>3. Required CAP.Prove semantics</h2>
+<p>The future production prover must implement all steps below. A function that
+only serializes the envelope is not CAP.Prove.</p>
+<ol>
+ <li>Strictly decode the public statement; derive the relation polynomials from
+ the frozen relation/profile rather than accepting them from the witness.</li>
+ <li>Parse the CAP state and <code>c_r</code>. Append the 1,472-bit signature
+ witness <code>x</code> as the raw delta <code>c_x</code>. Concatenate both witness
+ deltas and pad only as prescribed by Protocol 11.</li>
+ <li>Compute the post-append <code>h2</code> from the pre-append consistency
+ digest carried by <code>c_r</code>, the deltas, the exact public statement, and
+ a new fork-specific domain. The current source name <code>h2</code> corresponds
+ to the paper's pre-append <code>h2'</code>; the implementation must not alias
+ these two transcript values.</li>
+ <li>Derive every <code>gamma[k,j]</code> for k=1..rho and every relation
+ polynomial. Compute the corrected witness polynomials for all 18 repetitions.</li>
+ <li>For each repetition and k=1..rho, compute
+ <code>Q[e,k](X)=q[e,k]+X*Qbar[e,k](X)</code> satisfying the degree-2 relation
+ identity of Protocol 11. The complete 589,030,555-row relation is the only
+ admissible production relation.</li>
+ <li>Starting with counter zero, derive <code>h3</code> from the statement,
+ <code>h2</code>, all <code>q</code>/<code>Qbar</code> values, and the canonical
+ counter. Decode hidden indices using the exact mixed-tree injective mapping.
+ Require the explicit 9 challenge bits to be zero and require that the
+ interleaved unified-tree opening contains at most 174 revealed nodes. Increment
+ the counter and retry otherwise.</li>
+ <li>Serialize <code>pi_2=(h3, opening, {Qbar[e,k]})</code> canonically and return
+ the complete proof envelope. Fresh cryptographic randomness is mandatory.</li>
+</ol>
+
+<h2>4. Required CAP.Verify semantics</h2>
+<ol>
+ <li>Strictly decode the statement and the complete proof. Reject wrong magic,
+ version, profile, order, duplication, unknown sections, length overflow,
+ non-canonical field elements, truncated data, or trailing bytes before
+ algebraic verification.</li>
+ <li>Parse <code>c_r</code>, raw <code>c_x</code>, counter, <code>h3</code>, the
+ unified-tree opening, and every <code>Qbar[e,k]</code>. Recompute the exact
+ Fiat–Shamir transcript including the statement and counter.</li>
+ <li>Require the explicit 9 challenge bits to be zero. Decode all 18 hidden
+ indices, reconstruct the interleaved unified-tree frontier, require at most
+ 174 nodes, and verify its root and hidden-leaf commitments.</li>
+ <li>Reconstruct corrected evaluations <code>vP''</code> and <code>vM</code> at
+ each hidden point. Re-derive every gamma. For all 18 repetitions and all
+ rho=16 combinations, reconstruct <code>q[e,k]</code> from the Protocol-11
+ evaluation equation and check the recomputed <code>h3</code>.</li>
+ <li>Accept only if every structural, PoW, opening, transcript, and degree-2
+ relation check succeeds. The verifier receives neither witness, prover
+ randomness, nor an oracle transcript supplied by the prover.</li>
+</ol>
+
+<h2>5. Current executable boundary</h2>
+<p>The v2.32 module implements strict statement encoding and the frozen outer
+proof envelope. It validates the existing <code>c_r</code> inner encoding,
+requires 184-byte raw <code>c_x</code>, an 8-byte counter, and a bounded nonempty
+<code>pi_2</code>. <code>prove()</code> raises a typed unavailable error and
+<code>verify()</code> never accepts, even for a canonical envelope.</p>
+<table>
+<tr><th>Capability</th><th>State</th></tr>
+<tr><td>Canonical statement / outer proof codec</td><td class="ok">implemented and mutation-tested</td></tr>
+<tr><td>Complete <code>pi_2</code> parser</td><td class="blocked">missing</td></tr>
+<tr><td>Unified GGM tree and ≤174-node opening</td><td class="blocked">incompatible with current 18-root implementation</td></tr>
+<tr><td>Paper-compatible counter grinding</td><td class="blocked">not implemented; no synthetic leading-zero substitute</td></tr>
+<tr><td>Protocol-11 polynomial prover/verifier</td><td class="blocked">not implemented</td></tr>
+<tr><td>Complete ROM/QROM concrete bound</td><td class="blocked">missing</td></tr>
+<tr><td>Independent review</td><td class="blocked">must be supplied by an independent reviewer</td></tr>
+</table>
+
+<h2>6. Security and claim boundary</h2>
+<p>The current mixed-tree degree term is 2<sup>−182</sup> before PoW at one
+oracle query. Adding 13.9 to 182 is not a complete ROM or QROM proof. Required
+accounting includes degree acceptance, hidden-leaf probability, oracle
+collision/guessing, universal-hash consistency, constraint sampling, grinding,
+multi-target/adaptive-session loss, the concrete Anemoi idealization, and QROM
+measurement/programming.</p>
+<p class="blocked">No accepting proof exists in this checkpoint. CAP.Prove,
+CAP.Verify, fork PoW, production proof serialization, CAP security
+qualification, fork-security revalidation, and production closure all remain
+false. System architecture, ticket lifecycle, and pq_sat_auth are unchanged.</p>
+
+<h2>7. Reproducibility notes</h2>
+<p class="small">Authoritative source identities: ePrint 2025/895 PDF SHA-256
+7ba2c040fd04823fb0d2aaad5e58348b5ef374726657ff1c0d87d000b4beff95;
+ePrint 2024/490 PDF SHA-256
+b41c874ea925a65f33984e0789951144dd012380c6e99e53859af53aa9ffe7a4;
+ePrint 2024/541 PDF SHA-256
+ce30ff1d9a49b13211340f4c20d05a4ee76a9f9db1745d3f853102aad0b9837f.
+The first is the frozen Blind-UOV revision used by v2.31; the other two were
+retrieved from the IACR ePrint archive for algorithm-level cross-checking.</p>
+</body>
+</html>

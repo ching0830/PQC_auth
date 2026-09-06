@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>PQ-RBBC v2.31 CAP Straight-Line Extractor Candidate</title>
+  <style>
+    @page { size: A4; margin: 17mm 16mm 19mm; }
+    body { color: #17202a; font: 10pt/1.42 Arial, sans-serif; }
+    h1 { color: #123b5d; font-size: 20pt; margin: 0 0 5mm; }
+    h2 { color: #185b7d; font-size: 14pt; margin: 7mm 0 2mm; page-break-after: avoid; }
+    h3 { color: #246b86; font-size: 11.5pt; margin: 5mm 0 1.5mm; page-break-after: avoid; }
+    p, li { orphans: 3; widows: 3; }
+    table { border-collapse: collapse; width: 100%; margin: 3mm 0 5mm; font-size: 8.8pt; }
+    th, td { border: 0.25mm solid #9aa9b2; padding: 2mm; vertical-align: top; }
+    th { background: #eaf2f6; text-align: left; }
+    code { font-family: "DejaVu Sans Mono", monospace; font-size: 8.5pt; }
+    pre { background: #f4f6f7; border-left: 1mm solid #6c8ea0; padding: 3mm; white-space: pre-wrap; font-size: 8.4pt; }
+    .status { border: 0.4mm solid #a85632; background: #fff3eb; padding: 3mm; }
+    .ok { color: #176b45; font-weight: bold; }
+    .blocked { color: #9b381f; font-weight: bold; }
+    .small { color: #4d5b63; font-size: 8.6pt; }
+    .break { page-break-before: always; }
+  </style>
+</head>
+<body>
+  <h1>PQ-RBBC v2.31 CAP Straight-Line Extractor Candidate</h1>
+  <p><strong>Checkpoint date:</strong> 2026-09-04<br>
+     <strong>Target:</strong> PQ-RBBC-CAP-TCitH-III/Anemoi-193-336-v1<br>
+     <strong>Paper anchor:</strong> ePrint 2025/895, revision 2025-10-31,
+     Definition 10, Remarks 2–3, Protocols 10–11, and Theorem 4.</p>
+
+  <div class="status">
+    <strong>Disposition:</strong> this document specifies executable candidate
+    algorithms <code>Ext_1</code> and <code>Ext_2</code> for the exact fork
+    commitment transcript. It is internal authoring material, not an independent
+    review and not a proof that the fork is straight-line-extractable. The fork
+    has no complete CAP <code>Prove/Verify</code> implementation, its second
+    commitment has no previously frozen serialization, and the paper's
+    proof-of-work layer is absent. Security claims remain <span class="blocked">false</span>.
+  </div>
+
+  <h2>1. Frozen inputs and profile</h2>
+  <table>
+    <tr><th>Item</th><th>Frozen value</th></tr>
+    <tr><td>CAP profile fingerprint</td><td><code>2ac471f8d7c6cb4e6352bbc5a2eb7f9394b807ff132aec8cadebd696f7b1fa38</code></td></tr>
+    <tr><td>Oracle contract</td><td><code>d5b200abba58a4e5f8c7ec02c76d404b4dc04179205ffc7a69038975d73267de</code></td></tr>
+    <tr><td>Admissible-commitment contract</td><td><code>677773f1c0ad3863d7bceaea9f3e4d14724204a63050d3f2bc98101cc0b6faec</code></td></tr>
+    <tr><td>Extractor contract</td><td><code>3183f143027c89e001c13110ca1411cad4753e2aa91660b1355a711cd201ebe2</code></td></tr>
+    <tr><td>Unique-mask game</td><td><code>321caf34885e2ac0a24a535bf00c230f02ed103b33a7f05dbb7912ba531dce7b</code></td></tr>
+    <tr><td>Mixed topology</td><td>2 trees × 4,096 leaves in GF(2^13); 16 trees × 2,048 leaves in GF(2^12)</td></tr>
+    <tr><td>Witness prefix</td><td><code>r</code>: 576 bits; <code>x</code>: 1,472 bits; total: 2,048 bits</td></tr>
+    <tr><td>Commitment</td><td>5,391 canonical bytes; 122,847 ordered CAP oracle calls</td></tr>
+  </table>
+  <p>The only execution source is the exact production CAP transcript whose
+  XOF-trace SHA-256 is
+  <code>ccfa51ec2aee9501483c65023c4a877316eb6dd0557ccd6c42dfdf5f20f2c4e6</code>.
+  No sibling-tree observed stream length is used.</p>
+
+  <h2>2. Oracle transcript model</h2>
+  <p><code>Q_CAP</code> is an ordered sequence of full query/response values. A
+  record contains the sequence index, one of the six CAP domain identifiers,
+  the complete canonical tuple-encoded input, the declared output width, and
+  the complete canonical output. The domains are
+  <code>seed_derive</code>, <code>seed_commit</code>,
+  <code>tape_expand</code>, <code>h1</code>,
+  <code>consistency_points</code>, and <code>h2</code>. Digest-only records are
+  not extractor input.</p>
+  <p>The parser rejects non-contiguous ordering, unknown or aliased domains,
+  wrong output widths, malformed tuple framing, noncanonical hex, nonzero
+  unused high bits, and conflicting responses to the same query. The
+  request-binding oracle <code>H_RBBC</code> is outside <code>Q_CAP</code>.</p>
+
+  <h2>3. Canonical prefix parsing</h2>
+  <h3>3.1 First commitment <code>c_1</code></h3>
+  <p>The strict parser accepts exactly:</p>
+  <pre>magic || u16le(version=1) || profile_sha256 || salt[0] || salt[1]
+      || h2 || u32le(correction_bytes) || alpha
+      || repeated(delta_P[e] || delta_Mhat[e]), e=2..18</pre>
+  <p>Field elements are 25-byte little-endian GF(2^193) encodings, hash values
+  are canonical 386-bit strings, <code>alpha</code> and every
+  <code>delta_Mhat</code> are 386 bits, and every <code>delta_P</code> is 2,048
+  bits. The correction block is checked byte-for-byte against the preimage of
+  <code>h1</code>.</p>
+  <h3>3.2 Candidate second commitment <code>c_2</code></h3>
+  <p>The current implementation exposes <code>delta_x</code> as a 1,472-bit
+  integer but did not freeze a serialized <code>c_2</code>. For executable test
+  vectors only, this packet defines a domain-specific candidate encoding:</p>
+  <pre>"PQRBBC-CAP-APPEND-CANDIDATE-V1" || u16le(1)
+      || profile_sha256 || u32le(1472) || delta_x[184 bytes]</pre>
+  <p>This encoding must not be treated as a production format until a later
+  contract explicitly freezes it.</p>
+
+  <h2 class="break">4. Extractor algorithms</h2>
+  <h3>4.1 Shared recovery</h3>
+  <pre>Recover(Q_CAP, c_1):
+  1. Strictly parse Q_CAP and c_1.
+  2. Find the unique h2 query whose output is c_1.h2; recover h1 and 18 xi fields.
+  3. Find the unique h1 query whose output is h1; recover all leaf commitments
+     and correction data. Reject a profile, tree-size, degree, index, or
+     correction mismatch.
+  4. Recover the consistency points from their unique full-value oracle query;
+     reject zero, repeated, or wrong-width points.
+  5. For every leaf commitment, find its unique seed_commit preimage and the
+     corresponding tape_expand query. A missing leaf makes that tree incomplete;
+     multiple preimages are an ambiguity failure.
+  6. For each complete tree e, XOR the tapes to obtain plain[e]. Apply
+     delta_P[e] and delta_Mhat[e], recompute alpha, reconstruct the extension-
+     field masks, and compare the complete xi[e] preimage committed by h2.
+  7. Reject if no candidate survives or if surviving trees give distinct
+     2,048-bit witnesses. For the production vector, require at least one
+     complete degree-13 tree and one complete degree-12 tree.
+  8. Return the unique witness P'(0).</pre>
+
+  <h3>4.2 <code>Ext_1</code> and <code>Ext_2</code></h3>
+  <pre>Ext_1(Q_CAP, c_1):
+    witness = Recover(Q_CAP, c_1)
+    return witness[0..575]
+
+Ext_2(Q_CAP, c_1, c_2):
+    witness = Recover(Q_CAP, c_1)
+    delta_x = StrictParseCandidateAppend(c_2)
+    r = witness[0..575]
+    x = witness[576..2047] XOR delta_x
+    return (r, x)</pre>
+  <p>Neither function has a statement, relation instance, final proof, secret
+  root seed, or prover randomness parameter. There is no rewinding and no
+  quantum-query measurement step.</p>
+
+  <h2>5. Honest-vector correctness</h2>
+  <p>For the frozen production generation transcript, every committed leaf seed
+  and tape query is present. XORing the tapes reproduces each tree's constant
+  coefficient. The correction values make the 18 corrected constant
+  coefficients identical. Recomputing the two-point polynomial hash and
+  extension-field masks reproduces <code>alpha</code> and all 18
+  <code>xi</code> inputs to <code>h2</code>. Consequently the executable
+  candidate returns the commitment's derived 576-bit mask, and after applying
+  the candidate <code>c_2</code>, returns the deterministic 1,472-bit test
+  witness.</p>
+  <p>This is an implementation/vector statement. It does not quantify over
+  adversarial commitments accepted by a verifier.</p>
+
+  <h2>6. Fail-closed boundaries</h2>
+  <table>
+    <tr><th>Obligation</th><th>Candidate result</th><th>Security result</th></tr>
+    <tr><td>Exact full-value ROM transcript parser</td><td class="ok">Implemented and vector-tested</td><td>Does not model quantum queries</td></tr>
+    <tr><td><code>Ext_1</code>/<code>Ext_2</code> straight-line interface</td><td class="ok">Implemented for the frozen commitment transcript</td><td>Not proved for every accepted proof</td></tr>
+    <tr><td>Canonical <code>c_1</code></td><td class="ok">Strictly parsed</td><td>Admissibility still needs final Verify</td></tr>
+    <tr><td>Canonical <code>c_2</code></td><td>Candidate-only encoding</td><td class="blocked">Not frozen</td></tr>
+    <tr><td>CAP <code>Prove/Verify</code></td><td>Not present</td><td class="blocked">Definition-10 game cannot be closed</td></tr>
+    <tr><td>Paper proof-of-work layer</td><td>Not present</td><td class="blocked">Paper parameter theorem cannot transfer</td></tr>
+    <tr><td>Independent cryptographic review</td><td>Requested</td><td class="blocked">Absent</td></tr>
+  </table>
+
+  <h2>7. Required negative vectors</h2>
+  <p>The machine-readable candidate records rejection tests for a missing query,
+  reordered query, wrong domain, wrong output width, noncanonical commitment,
+  changed 4,096-leaf tree, changed 2,048-leaf tree, changed extension degree,
+  changed expected mask, and any attempted final-proof argument. Passing these
+  tests establishes parser and implementation behavior only.</p>
+
+  <h2>8. Review disposition</h2>
+  <p>An independent reviewer must verify the algorithm against Definition 10,
+  audit the missing-query and collision reduction, decide whether the
+  candidate <code>c_2</code> format may be frozen, and reject qualification
+  unless a complete final proof verifier and its proof-of-work/challenge
+  semantics are supplied. Until then:</p>
+  <pre>candidate_extractor_vector_verified = true
+cap_straightline_extractor_implemented = false
+cap_straightline_extraction_reviewed = false
+cap_security_qualified = false</pre>
+
+  <p class="small">Primary source: Bouillaguet et al., “Blinding
+  Post-Quantum Hash-and-Sign Signatures,” IACR ePrint 2025/895, major revision
+  2025-10-31. The source PDF identity is
+  7ba2c040fd04823fb0d2aaad5e58348b5ef374726657ff1c0d87d000b4beff95.</p>
+</body>
+</html>

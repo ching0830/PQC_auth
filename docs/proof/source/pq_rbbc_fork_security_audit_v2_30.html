@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>PQ-RBBC v2.30 Fork-Security Proof-Audit Packet</title>
+  <style>
+    @page { size: A4; margin: 18mm 17mm 20mm; }
+    body { color: #17202a; font: 10.2pt/1.42 Arial, sans-serif; }
+    h1 { color: #123b5d; font-size: 21pt; margin: 0 0 5mm; }
+    h2 { color: #185b7d; font-size: 14pt; margin: 7mm 0 2mm; page-break-after: avoid; }
+    h3 { color: #246b86; font-size: 11.5pt; margin: 5mm 0 1.5mm; page-break-after: avoid; }
+    p, li { orphans: 3; widows: 3; }
+    table { border-collapse: collapse; width: 100%; margin: 3mm 0 5mm; font-size: 9pt; }
+    th, td { border: 0.25mm solid #9aa9b2; padding: 2mm; vertical-align: top; }
+    th { background: #eaf2f6; text-align: left; }
+    code { font-family: "DejaVu Sans Mono", monospace; font-size: 8.8pt; }
+    pre { background: #f4f6f7; border-left: 1mm solid #6c8ea0; padding: 3mm; white-space: pre-wrap; }
+    .status { border: 0.4mm solid #a85632; background: #fff3eb; padding: 3mm; }
+    .ok { color: #176b45; font-weight: bold; }
+    .blocked { color: #9b381f; font-weight: bold; }
+    .small { color: #4d5b63; font-size: 8.7pt; }
+    .break { page-break-before: always; }
+  </style>
+</head>
+<body>
+  <h1>PQ-RBBC v2.30 Fork-Security Proof-Audit Packet</h1>
+  <p><strong>Checkpoint date:</strong> 2026-09-04<br>
+     <strong>Target:</strong> PQ-RBBC-BUOV-III/Anemoi-193-336 experimental fork<br>
+     <strong>Source anchor:</strong> Bouillaguet et al.,
+     <em>Blinding Post-Quantum Hash-and-Sign Signatures</em>, IACR ePrint
+     2025/895, revision 2025-10-31.</p>
+
+  <div class="status">
+    <strong>Disposition:</strong> this packet closes the bounded v2.30 internal
+    proof audit and prepares an exact independent-review handoff. It is
+    <span class="blocked">not</span> an independent cryptographic review and it
+    does <span class="blocked">not</span> establish fork blindness, fork one-more
+    unforgeability, CAP extraction, a concrete QROM instantiation, or production
+    closure. Those claims remain false.
+  </div>
+
+  <h2>1. Frozen execution semantics</h2>
+  <p>The audit is bound to the path-free v2.29 parent-join evidence and no other
+  execution transcript:</p>
+  <table>
+    <tr><th>Item</th><th>Frozen value</th></tr>
+    <tr><td>v2.29 evidence SHA-256</td><td><code>1281afaee1d5d784390ee51c96c66ecc7f486ef4b4b7933590826a708f81b20e</code></td></tr>
+    <tr><td>Input identity</td><td><code>b92aa6b78d123173574ad00cb337e12877a9615f56605bddfd66236ca263d11a</code></td></tr>
+    <tr><td>Ordered transcript</td><td><code>1f0113f965a03351b6d62c4801a9d15d0255640282b90215397170b87ad6a514</code></td></tr>
+    <tr><td>Exact replay accounting</td><td>589,030,555 rows; 0 failures; 0 external assertions</td></tr>
+    <tr><td>Request relation</td><td><code>c_r = CAP.Commit(r; rho)</code> and <code>y = r + H_RBBC(m,c_r)</code></td></tr>
+    <tr><td>Signer request data field</td><td>the 576-bit value <code>y</code>; the protocol also carries the well-built-request proof replacing paper <code>pi_1</code></td></tr>
+    <tr><td>Hidden state</td><td><code>m, r, rho, c_r</code></td></tr>
+  </table>
+  <p>Functional replay proves that these frozen rows implement this relation for
+  the sealed witness and reject the recorded mutations. It is not evidence for
+  zero knowledge, extraction, blindness, one-more unforgeability, or random-oracle
+  indifferentiability.</p>
+
+  <h2>2. Source-framework alignment</h2>
+  <p>The authoritative revision defines a three-pass blind-signature framework.
+  In Protocols 3 and 4, the user commits to <code>r</code>, computes
+  <code>h = H(mu,c_r)</code> and <code>y = F(r)+h</code>, and sends
+  <code>(y,pi_1)</code> to the signer. The final signature is
+  <code>(c_r,c_x,pi_2)</code>. For Blind-UOV with the identity masking map,
+  Section 5.3 specializes the equation to <code>Q(x)=r+h</code>. The paper's
+  Blind-UOV-III row uses a 576-bit mask and a 1,472-bit UOV preimage.</p>
+  <table>
+    <tr><th>Source condition</th><th>PQ-RBBC mapping</th><th>Audit result</th></tr>
+    <tr><td>Well-built-request NIZK <code>pi_1</code></td><td>The augmented issuance proof is intended to replace and strengthen <code>pi_1</code>; its public statement includes <code>y</code>.</td><td><span class="blocked">Open:</span> no qualified post-quantum ZK and simulation-/straight-line-extractable backend.</td></tr>
+    <tr><td>CAP commitment and final proof</td><td>The fork has an exact 5,391-byte commitment encoding and fully replayed 18-tree relation.</td><td><span class="blocked">Open:</span> exact relation replay does not prove CAP knowledge soundness, straight-line extraction, or ZK.</td></tr>
+    <tr><td>Hash-and-sign trapdoor function</td><td>The ABI preserves a 1,472-bit target profile.</td><td><span class="blocked">Open:</span> the repository module is an import contract/test adapter, not a complete reviewed UOV signer and finalizer.</td></tr>
+    <tr><td>Random-oracle separation</td><td>The fork fixes a domain-separated Anemoi-193/336 sponge and exact serialization.</td><td><span class="blocked">Open:</span> no concrete-to-ideal QROM justification or explicit accepted query budget.</td></tr>
+    <tr><td>Published Blind-UOV implementation</td><td>The fork changes the hash/permutation row profile and integrates a different augmented statement.</td><td><span class="blocked">Not bit-exact;</span> paper security and size results do not transfer automatically.</td></tr>
+  </table>
+
+  <h2>3. Reduction dependency audit</h2>
+  <h3>3.1 Source one-more chain</h3>
+  <p>The paper's Theorem 1 reduces the unblinded EUF-CMA+ game to the
+  underlying hash-and-sign EUF-CMA game plus CAP extraction failure:</p>
+  <pre>Adv_USIG(A) &lt;= Adv_HS-SIG(B) + Adv_KS-CAP(C).</pre>
+  <p>The reduction must extract <code>r</code> from <code>c_r</code> using the
+  CAP oracle query/response list before programming the message hash. Paper
+  Definition 10 requires extraction from the commitment and oracle transcript,
+  without the proof as extractor input.</p>
+  <p>The paper's Theorem 2 then extracts <code>(mu,r,rho)</code> from the request
+  proof and reduces one-more unforgeability to EUF-CMA+ plus NIZK extraction:</p>
+  <pre>Adv_BSIG(A) &lt;= Adv_USIG(B) + Adv_KS-NIZK(C).</pre>
+  <p>The source explicitly separates the two random-oracle stages. A fork proof
+  must preserve that separation; a single informal “all hashes are random”
+  step is not an adequate substitute.</p>
+
+  <h3>3.2 Source blindness chain</h3>
+  <p>The paper's Theorem 3 uses NIZK zero knowledge, CAP zero knowledge, and
+  pseudorandomness of the masking map:</p>
+  <pre>Adv_BLIND(A) &lt;= Adv_ZK-NIZK(B) + Adv_ZK-CAP(C) + Adv_PRG(D).</pre>
+  <p>For the identity masking map, the fork still must establish uniform and
+  independent sampling of the 576-bit <code>r</code> in the real protocol. A
+  deterministic replay seed is only an evidence fixture and cannot be used as
+  protocol randomness evidence.</p>
+
+  <h3>3.3 PQ-RBBC cross-message binding</h3>
+  <p>The repository proof defines
+  <code>J_m(r,rho)=r+H_RBBC(m,CAP.Commit(r;rho))</code> and gives the conditional
+  ideal-QROM bound:</p>
+  <pre>Adv_xmsg &lt;= Adv_CAP-unique + Adv_CAP-extract + O(q_H^3 / 2^576).</pre>
+  <p>The v2.29 replay closes the exact serialization and parent wire join needed
+  to state this game. The bound nevertheless remains conditional because the
+  two CAP terms have not been discharged and the concrete Anemoi construction
+  has not been justified as the independent quantum random oracle assumed by
+  the theorem.</p>
+
+  <h2 class="break">4. Obligation-by-obligation findings</h2>
+  <table>
+    <tr><th>ID</th><th>Evidence obtained</th><th>Missing evidence</th><th>Status</th></tr>
+    <tr><td><code>cap.unique_committed_mask</code></td><td>Canonical commitment bytes, exact 18-tree replay, mutation rejection.</td><td>A security game, a fork extractor with oracle transcript interface, a unique-witness bound, and independent review.</td><td><span class="blocked">OPEN</span></td></tr>
+    <tr><td><code>cap.straightline_extraction</code></td><td>Paper Definition 10 and source extractor requirements identified.</td><td>An implemented or formal fork-specific extractor that does not consume the final proof, plus failure probability.</td><td><span class="blocked">OPEN</span></td></tr>
+    <tr><td><code>request_binding.qrom_cross_message</code></td><td>Exact v2.29 serialization and conditional 576-bit collision theorem.</td><td>Discharged CAP bad events, domain-oracle independence review, concrete-to-ideal justification, and accepted <code>q_H</code> policy.</td><td><span class="blocked">CONDITIONAL</span></td></tr>
+    <tr><td><code>fork.honest_protocol_signer_blindness</code></td><td>Source hybrid sequence and hidden-state ABI mapped.</td><td>Complete fork transcript implementation, uniform mask sampling evidence, fork NIZK/CAP simulators, and independent reduction review.</td><td><span class="blocked">OPEN</span></td></tr>
+    <tr><td><code>fork.one_more_unforgeability</code></td><td>Source Theorems 1–2 dependency chain mapped to augmented issuance.</td><td>Complete fork signer/finalizer, fork CAP and NIZK extractors, session accounting proof, and underlying UOV assumption review.</td><td><span class="blocked">OPEN</span></td></tr>
+    <tr><td><code>augmented_issuance.composition</code></td><td>The augmented statement is bound to the final v2.29 <code>y</code> relation and exact parent semantics.</td><td>A qualified PQ SE-NIZK backend and a checked reduction translating an accepted augmented proof into the source request proof game.</td><td><span class="blocked">CONDITIONAL</span></td></tr>
+    <tr><td><code>independent_review</code></td><td>A digest-bound review packet and machine-readable checklist are supplied.</td><td>A named, independent cryptographic reviewer must sign off on the frozen inputs and findings.</td><td><span class="blocked">OPEN</span></td></tr>
+  </table>
+
+  <h2>5. Negative result and safe claim boundary</h2>
+  <p>The bounded audit finds no basis for promoting
+  <code>fork_security_proof_revalidated</code>. In particular:</p>
+  <ol>
+    <li>the paper proves the framework under explicit CAP, NIZK, random-oracle,
+        masking, and underlying signature assumptions;</li>
+    <li>the fork has exact functional row evidence but not proofs of those
+        cryptographic properties;</li>
+    <li>the available native module explicitly describes itself as an import
+        contract and not a TCitH implementation;</li>
+    <li>the test adapter is not a native Blind-UOV implementation;</li>
+    <li>paper signature sizes are comparison targets and have not been measured
+        for the fork.</li>
+  </ol>
+  <p>The safe output is therefore a closed internal audit checkpoint with
+  <code>independent_review_ready=true</code>, while CAP review, blindness,
+  one-more unforgeability, full fork-security revalidation, backend
+  qualification, size benchmarking, and production closure all remain false.</p>
+
+  <h2>6. Independent-review checklist</h2>
+  <p>An independent reviewer should reject the packet unless every item below
+  is supported by a digest-bound artifact or is retained as an explicit
+  assumption:</p>
+  <ol>
+    <li>Verify all source and generated artifact byte lengths and SHA-256 values.</li>
+    <li>Confirm that the source revision is the 2025-10-31 revision of ePrint 2025/895.</li>
+    <li>Check that the signing request is <code>(y,pi_issue)</code>, where
+        <code>y</code> is the only serialized request data field and
+        <code>pi_issue</code> replaces only source <code>pi_1</code>.</li>
+    <li>Audit CAP unique-witness and straight-line extraction in the exact fork
+        oracle model; functional mutation tests are insufficient.</li>
+    <li>Audit the two-stage source one-more reduction and every extractor,
+        oracle-programming, abort, and advantage-loss step.</li>
+    <li>Audit blindness with real fork randomness and both proof simulators.</li>
+    <li>Audit QROM domain separation, query counting, and the boundary between
+        the ideal oracle theorem and concrete Anemoi.</li>
+    <li>Confirm that v2.29 semantics—not a sibling tree transcript or observed
+        stream-byte estimate—are used.</li>
+    <li>Do not approve paper size or interoperability claims without fresh fork
+        measurements and vectors.</li>
+  </ol>
+
+  <h2>7. Artifact policy</h2>
+  <p>No system architecture, ticket lifecycle, or <code>pq_sat_auth</code> file
+  is changed by this checkpoint. No assignment, BR1CS, pickle/cache,
+  checkpoint/resume state, or log belongs in Git. The authoritative paper and
+  generated PDF remain external; only compact path-free metadata, validators,
+  checksums, documentation, and this reviewable source are repository artifacts.</p>
+
+  <p class="small">Primary source: Charles Bouillaguet, Thibauld Feneuil,
+  Jules Maire, Matthieu Rivain, Julia Sauvage, and Damien Vergnaud,
+  “Blinding Post-Quantum Hash-and-Sign Signatures,” IACR Cryptology ePrint
+  Archive, Report 2025/895, major revision 2025-10-31,
+  https://eprint.iacr.org/2025/895.</p>
+</body>
+</html>

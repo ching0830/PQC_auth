@@ -82,13 +82,13 @@ zero-knowledge verifier 只能取得 public statement 與 proof bytes。
 
 | Protocol 階段 | 高階輸入／輸出 | 主要工程位置 | 狀態查詢位置 |
 | --- | --- | --- | --- |
-| System initialization | FAC、issuer、OA keys、public configuration／parameters | architecture；未來各 primitive adapters | `ARCHITECTURE_zh-TW.md`、`RESEARCH_STATUS_zh-TW.md` |
-| Issuer authorization | epoch／policy／quota-bound authorization | 尚待 federation module | `ROADMAP_zh-TW.md` T2 |
+| System initialization | FAC、issuer、OA keys、public configuration／parameters | `src/pq_rbbc/contracts/system.py`、`governance/system_init.py`；production primitive adapters仍缺 | system-initialization artifact、project status |
+| Issuer authorization | epoch／policy／quota-bound authorization | `src/pq_rbbc/governance/issuer_authorization.py`；production FAC signature／distributed quota仍缺 | issuer-authorization artifact、project status |
 | Enrollment／offline issuance | authenticated `rid` → blind response → ticket `T` | `src/pq_rbbc_*.py`、`tests/test_pq_rbbc_*.py`、manifests、proof | RBBC current handoff |
 | Satellite access | ticket＋freshness／key shares → session | `src/pq_sat_auth/access.py`、`framing.py` | one-time ticket spec、system tests |
 | One-time consumption | `UNSEEN → RESERVED → CONSUMED` | `src/pq_sat_auth/identities.py`、`replay.py` | one-time ticket spec、system tests |
 | Handover | existing session → new serving context | 尚待 specification／implementation | `ROADMAP_zh-TW.md` T6 |
-| Conditional opening | authorized case＋ticket → threshold shares → identity | core proof abstract interface；production module 未完成 | architecture、status、future opening spec |
+| Conditional opening | authorized case＋ticket → threshold shares → identity | `src/pq_rbbc/opening/` bounded gate／combiner；production threshold primitive仍缺 | conditional-opening artifact、project status |
 | Evaluation | communication、time、memory、storage、latency | instrumentation 與 experiment records | `experiments.md` |
 
 上表的「主要工程位置」是導航，不是完成宣告。精確成熟度只由

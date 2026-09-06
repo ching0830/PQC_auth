@@ -2,7 +2,10 @@
 
 # Research status
 
-Updated from the integrated local `main` v2.26 tree-8-through-tree-10 bounded checkpoint.
+This English mirror is not yet synchronized beyond the v2.26 summary below.
+For the integrated system-control-plane and PQ-RBBC v2.27-through-v2.39 status,
+use the authoritative [Traditional Chinese status](RESEARCH_STATUS_zh-TW.md).
+Do not infer the current completion boundary from this mirror.
 
 ## Whole-thesis status
 
