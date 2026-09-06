@@ -9,6 +9,8 @@ import json
 from pathlib import Path
 from typing import Mapping
 
+import pq_rbbc_trace_kdf_source_transition as trace_kdf_transition
+
 
 IMPLEMENTATION_VERSION = "2.30"
 FORMAT = "PQRBBC-FORK-SECURITY-PREFLIGHT-1"
@@ -47,6 +49,13 @@ PROOF_SOURCE = (
 PROOF_PDF = (
     617_710,
     "42ad8b2061505a285309806091d9e392b4c3e130379cd9bbab44052c9d01f55c",
+)
+TRACE_KDF_SOURCE_TRANSITION_MANIFEST = (
+    3_230,
+    "3e214be777aa80eb0c94ab1371c911ab578c80ab126c453d7ca66145e1f66d3d",
+)
+TRACE_KDF_SOURCE_TRANSITION_PATH = (
+    ROOT / "manifests/pq_rbbc_trace_kdf_source_transition_manifest_v2_40.json"
 )
 
 V2_29_RELATION_ID = "pq-rbbc/parent-cap-to-h-rbbc-recovery-evidence/v1"
@@ -179,8 +188,18 @@ def _read_json(path: Path) -> dict[str, object]:
 def validate_tracked_inputs() -> tuple[str, ...]:
     failures: list[str] = []
     for label, (relative, expected) in TRACKED_INPUTS.items():
-        if not _identity(ROOT / relative, expected)["verified"]:
-            failures.append(f"{label}_identity")
+        if _identity(ROOT / relative, expected)["verified"]:
+            continue
+        if (
+            label == "conditional_proof_source"
+            and not trace_kdf_transition.validate_transition(
+                TRACE_KDF_SOURCE_TRANSITION_PATH,
+                TRACE_KDF_SOURCE_TRANSITION_MANIFEST,
+                ROOT,
+            )
+        ):
+            continue
+        failures.append(f"{label}_identity")
     if failures:
         return tuple(failures)
 

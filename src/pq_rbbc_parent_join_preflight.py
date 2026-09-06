@@ -11,6 +11,7 @@ from typing import Mapping
 
 import pq_rbbc_br1cs as br1cs
 import pq_rbbc_reference as reference
+import pq_rbbc_trace_kdf_source_transition as trace_kdf_transition
 
 
 IMPLEMENTATION_VERSION = "2.29"
@@ -50,6 +51,13 @@ REFERENCE_SOURCE = (
 BR1CS_SOURCE = (
     53_474,
     "83d9689b635f2ea90cf50ef1f5280f57e138e31bae4dbeb186c97c69f71d2140",
+)
+TRACE_KDF_SOURCE_TRANSITION_MANIFEST = (
+    3_230,
+    "3e214be777aa80eb0c94ab1371c911ab578c80ab126c453d7ca66145e1f66d3d",
+)
+TRACE_KDF_SOURCE_TRANSITION_PATH = (
+    ROOT / "manifests/pq_rbbc_trace_kdf_source_transition_manifest_v2_40.json"
 )
 
 AGGREGATE_ROWS = 586_057_567
@@ -252,8 +260,15 @@ def validate_tracked_contracts() -> tuple[str, ...]:
         "br1cs_source": (ROOT / "src/pq_rbbc_br1cs.py", BR1CS_SOURCE),
     }
     for label, (path, expected) in tracked.items():
-        if not _identity(path, expected)["verified"]:
-            failures.append(f"{label}_identity")
+        if _identity(path, expected)["verified"]:
+            continue
+        if label == "reference_source" and not trace_kdf_transition.validate_transition(
+            TRACE_KDF_SOURCE_TRANSITION_PATH,
+            TRACE_KDF_SOURCE_TRANSITION_MANIFEST,
+            ROOT,
+        ):
+            continue
+        failures.append(f"{label}_identity")
     if failures:
         return tuple(failures)
 
