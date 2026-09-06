@@ -1,0 +1,60 @@
+{
+  "canonical_ticket_bytes": 462,
+  "canonical_ticket_sha256": "25800ecc6190e8474b8848866b47d11f31d2819c4abcdefecacb14ae41cb7cc6",
+  "claim_boundary": {
+    "authenticated_initialization_required": true,
+    "blind_uov_backend_instantiated": false,
+    "canonical_ticket_transport_codec_implemented": true,
+    "cap_prove_or_verify_called": false,
+    "configuration_expiry_enforced": true,
+    "explicit_configuration_trust_anchor_required": true,
+    "frozen_reference_payload_encoding_reused": true,
+    "holder_authentication_implemented": false,
+    "issuer_authentication_backend_abstract": true,
+    "issuer_verification_role_enforced": true,
+    "online_issuance_proof_expected": false,
+    "production_signature_encoding_frozen": false,
+    "production_verify_ticket_complete": false,
+    "stateless_verify_ticket_control_flow_implemented": true,
+    "test_signature_is_cryptographic": false,
+    "ticket_consumption_implemented": false
+  },
+  "format": "PQRBBC-VERIFY-TICKET-CONTRACT-CHECKPOINT-1",
+  "issuer_key_id": "e76089b0af1304417905a6bc968d02d272f00b4235ed70065d235679ba29f248",
+  "payload_bytes": 368,
+  "payload_digest": "41284b146af4f04412e8e39d4a82d2a76a855014951f05223aa1f000ac0364d5",
+  "payload_encoding_hex": "e72b44581e9945ed8f1c5ed522cddb6e87d8d2ef15f5cc7b293df9b855e2506a0610e4bfd63f35f49bb94fbdffc2bb48ad1faa7b22015db883cec42d3cccef7cbb45e58e1047853334a269b1f08bd53ca3886d5bf19b23593fb5be271512daad80361b95c83355b95da7fd7bdb5b917a53d639408aed1f58ec01b42b54afff955b99890c2c227fbf0f7aca39b0de744103298e0988dcd7db52cc24cc7120c53a29d2e229b460470b33606184a716de4fc978c790114ea4188b576d888a2127d594f848c5539a66397be01c9ac89c775c5a880722c61bdd67ec13fcc754659cf076c4843d6c3d9f845a67f93ee289a82197154496ec237d8df85dc15071e133388a6e37f390e6fe34e4eaddffbe091bfa46b180c3083e67a8602617c144023d2d25d1425890c89d7a5547d538e090ca5ccbb51ee75d906008f9c99cb0d24323083e74e4c91b61a6e24dd9f559b31caea5bd2dad6800fa3f592cf45123e1601343d7590fe22b16ea0404a6965d335cf5bf",
+  "payload_offsets": {
+    "ctx": [
+      0,
+      32
+    ],
+    "holder_hash": [
+      48,
+      80
+    ],
+    "masked_identity": [
+      288,
+      336
+    ],
+    "syndrome": [
+      80,
+      288
+    ],
+    "trace_tag": [
+      336,
+      368
+    ],
+    "visible_serial": [
+      32,
+      48
+    ]
+  },
+  "protocol_version": 1,
+  "schema_version": 1,
+  "signature_bytes": 32,
+  "signing_role": "ISSUER_VERIFICATION",
+  "system_profile": "0.1",
+  "ticket_magic": "PQRBBC-TICKET-V1",
+  "ticket_payload_digest_domain": "PQ-RBBC/TICKET"
+}
