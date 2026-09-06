@@ -1,0 +1,59 @@
+{
+  "claim_boundary": {
+    "deterministic_backends_test_only": true,
+    "fixed_ticket_verifier_used": false,
+    "holder_authentication_implemented": false,
+    "production_blind_uov_backend_instantiated": false,
+    "production_opening_complete": false,
+    "production_source_modified": false,
+    "production_threshold_opening_instantiated": false,
+    "production_verify_ticket_complete": false,
+    "threshold_combiner_control_flow_connected": true,
+    "ticket_consumption_implemented": false,
+    "ticket_verification_stateless": true,
+    "verify_ticket_to_open_share_connected": true
+  },
+  "cross_module_bindings": {
+    "request_ticket_digest_equals_verified_transport_digest": true,
+    "share_ticket_digest_equals_verified_transport_digest": true,
+    "threshold_combiner_accepts_gate_outputs": true,
+    "ticket_ctx_equals_authenticated_bundle_ctx": true,
+    "ticket_issuer_key_equals_bundle_issuer_verification_key": true
+  },
+  "format": "PQRBBC-VERIFY-TICKET-OPENING-INTEGRATION-CHECKPOINT-1",
+  "open_share": {
+    "bytes": 303,
+    "sha256": "a928c243015db656f8377b71b3db28c4a5a856e3714eb4e0b89a37af0d2bcf9f"
+  },
+  "opening_request": {
+    "bytes": 832,
+    "request_digest": "7bc8965e40ae23621d70b0cf0758e27fd5d0dcba713d34d404731e70149143c6",
+    "sha256": "1e5d2fd0c54185db5095a8286ae7e1ffa472f215b6ddc5ed994a950b59992265",
+    "ticket_digest": "25800ecc6190e8474b8848866b47d11f31d2819c4abcdefecacb14ae41cb7cc6"
+  },
+  "parent_verify_ticket_commit": "28980cfdcac030abc2fbcb0b84288c47dcd72fda",
+  "system_profile": "0.1",
+  "ticket": {
+    "bytes": 462,
+    "ctx": "e72b44581e9945ed8f1c5ed522cddb6e87d8d2ef15f5cc7b293df9b855e2506a",
+    "issuer_key_id": "e76089b0af1304417905a6bc968d02d272f00b4235ed70065d235679ba29f248",
+    "payload_digest": "41284b146af4f04412e8e39d4a82d2a76a855014951f05223aa1f000ac0364d5",
+    "sha256": "25800ecc6190e8474b8848866b47d11f31d2819c4abcdefecacb14ae41cb7cc6",
+    "visible_serial": "0610e4bfd63f35f49bb94fbdffc2bb48"
+  },
+  "validation_order": [
+    "parse_opening_request",
+    "verify_opening_service_initialization",
+    "verify_ticket_initialization",
+    "strict_parse_canonical_ticket",
+    "check_ticket_ctx_role_key_and_configuration_expiry",
+    "verify_ticket_payload_digest_under_issuer_verification_key",
+    "check_opening_request_ctx_epoch_keys_and_ticket_digest",
+    "verify_opening_authorization",
+    "atomic_opening_replay_begin",
+    "test_only_share_backend",
+    "atomic_opening_replay_commit",
+    "validate_threshold_shares",
+    "test_only_reconstruction_and_trace_authentication"
+  ]
+}
