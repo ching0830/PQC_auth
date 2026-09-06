@@ -2073,8 +2073,9 @@ Sample $e$ uniformly from the weight-$t$ vectors and compute
  Z&=\mathsf{SHAKE256}(
    \mathtt{PQ\mbox{-}RBBC/KDF}\|e\|s\|\ctx,640),
    &&\tag{N3}\label{eq:n3}\\
- (K_{\mathrm{mac}},P)&=Z,
-   &|K_{\mathrm{mac}}|&=32,\quad |P|=48, \tag{N4}\label{eq:n4}\\
+ (P,K_{\mathrm{mac}})&=Z,
+   &P&=Z[0{:}48],\quad K_{\mathrm{mac}}=Z[48{:}80],
+   \quad |P|=48,\quad |K_{\mathrm{mac}}|=32, \tag{N4}\label{eq:n4}\\
  c_\mu&=\mu\oplus P, &&\tag{N5}\label{eq:n5}\\
  \gamma&=\mathsf{KMAC256}_{K_{\mathrm{mac}}}
  (s\|c_\mu\|\mathsf{ad},256;
@@ -2082,10 +2083,17 @@ Sample $e$ uniformly from the weight-$t$ vectors and compute
  &&\tag{N6}\label{eq:n6}\\
  C&=(s,c_\mu,\gamma). &&\tag{N7}\label{eq:n7}
 \end{align}
-The output length in (N3) is in bits.  SHAKE256 and KMAC256 are the standardized
+The output length in (N3) is in bits, while the zero-based, half-open slice
+offsets in (N4) are in bytes.  The order $P\|K_{\mathrm{mac}}$ is canonical for
+this profile and for its existing frozen vectors.  A profile using the reverse
+order is byte-incompatible and MUST use a new profile identifier and regenerate
+all dependent vectors and evidence; it MUST NOT reinterpret the existing
+artifacts.  SHAKE256 and KMAC256 are the standardized
 extendable-output and MAC functions of FIPS~202 and SP~800-185,
 respectively~\cite{fips202,sp800185}.  The composition $\HDEM$ is nevertheless a
 new protocol profile, not a standardized AEAD and not yet a production claim.
+A production threshold-opening implementation remains explicitly out of scope:
+\texttt{production\_opening\_implemented=false}.
 A standardized one-time AEAD may replace it later without changing the abstract
 $R_{\mathsf{enc}}$ interface.
 
