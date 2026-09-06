@@ -1,0 +1,187 @@
+% Thesis-style protocol sequence figure for the PQ-RBBC mechanism.
+% Compile this complete example with XeLaTeX.
+\documentclass[tikz,border=12pt]{standalone}
+\usepackage{fontspec}
+\usepackage{xeCJK}
+\usepackage{amsmath,amssymb}
+\usepackage{tikz}
+\setmainfont{TeX Gyre Termes}
+\setCJKmainfont{Noto Serif CJK TC}
+\usetikzlibrary{calc,positioning}
+\begin{document}
+\begin{tikzpicture}[
+  x=3.75cm,
+  y=0.80cm,
+  >=latex,
+  entity/.style={draw, rounded corners, minimum width=2.75cm,
+                 minimum height=0.72cm, align=center, font=\footnotesize,
+                 inner sep=3pt},
+  msg/.style={->, line width=0.55pt},
+  bidir/.style={<->, dashed, line width=0.55pt},
+  offline/.style={msg, dashed},
+  exceptional/.style={msg, densely dashed},
+  label/.style={font=\scriptsize, fill=white, inner sep=1.5pt, align=center},
+  phase/.style={font=\scriptsize\bfseries, anchor=east, align=right}
+]
+
+% Entities
+\node[entity] (ue)   at (0,0) {UE／Holder};
+\node[entity] (hncc) at (1,0) {HNCC／Issuer};
+\node[entity] (leo)  at (2,0) {LEO／FLEO};
+\node[entity] (fgs)  at (3,0) {FGS／Combiner};
+\node[entity] (auth) at (4,0)
+  {FAC／$\{\mathrm{OA}_{\ell}\}$\\independent keys};
+
+% Lifelines
+\foreach \x in {0,1,2,3,4}{
+  \draw[densely dotted,gray] (\x,-0.48) -- (\x,-17.10);
+}
+
+% Phase labels and separators
+\node[phase] at (-0.48,-1.05) {Governance};
+\node[phase] at (-0.48,-3.20) {Offline\\issuance};
+\node[phase] at (-0.48,-8.05) {Online\\access};
+\node[phase] at (-0.48,-14.40) {Conditional\\opening};
+\draw[gray!55] (-0.30,-1.75) -- (4.30,-1.75);
+\draw[gray!55] (-0.30,-5.65) -- (4.30,-5.65);
+\draw[gray!55] (-0.30,-12.70) -- (4.30,-12.70);
+
+% Phase 0: Governance and public configuration
+\draw[offline]
+  (4,-0.90) --
+  node[label,above] {authorized $ctx$ and issuer authorization}
+  (1,-0.90);
+
+\draw[offline]
+  (4,-1.35) --
+  node[label,above]
+  {$pk_{\mathrm{OA}}$, OA key identifier, and certified FGS verification key $vk_F$}
+  (0,-1.35);
+
+% Phase 1: Offline relation-bound blind issuance
+\draw[bidir]
+  (0,-2.20) --
+  node[label,above] {registration and identity verification}
+  (1,-2.20);
+
+\draw[offline]
+  (0,-2.95) --
+  node[label,above] {$R_{\mathrm{blind}},\ \pi_{\mathrm{RBBC}},\ C,\ ctx,\ sn$}
+  (1,-2.95);
+
+\node[label,anchor=west] at (0.04,-3.48)
+  {$C\gets\mathsf{TraceEnc}(pk_{\mathrm{OA}},id,sn,ctx;r_{enc})$};
+\node[label,anchor=west] at (0.04,-3.92)
+  {$M\gets\mathsf{Encode}(ctx,sn,h,C)$};
+\node[label,anchor=west] at (1.04,-3.48)
+  {verify registration, policy and $\mathcal{R}_{\mathrm{RBBC}}(x,w)$};
+
+\draw[offline]
+  (1,-4.45) --
+  node[label,above] {blind-signing response}
+  (0,-4.45);
+
+\node[label,anchor=west] at (0.04,-4.88)
+  {unblind／finalize and store $T=(M,\sigma)$};
+
+% Phase 2: Anonymous online access without an online verifier challenge.
+% UE sends an ephemeral KEM public key; FGS encapsulates only after validation.
+\node[label,anchor=west, text width=6.5cm] at (0.04,-6.15)
+  {$(epk_U,esk_U)\gets\mathsf{KEM.KeyGen}()$};
+
+\draw[msg]
+  (0,-7.05) --
+  node[label,above, text width=7.3cm]
+  {$\mathsf{AuthReq}=(T,epk_U,requestID,ctx_{target})$}
+  (2,-7.05);
+
+\draw[msg]
+  (2,-8.05) --
+  node[label,above] {forward $\mathsf{AuthReq}$ and serving context}
+  (3,-8.05);
+
+\draw[msg]
+  (3,-8.65)
+  to[out=0,in=0,looseness=5]
+  node[label,right, text width=5.3cm]
+  {$\mathsf{VerifyTicket}(T)$, including NIZK／CAP verification;\\
+   check $ctx$, expiry, target context, and request identity}
+  (3,-9.25);
+
+\draw[msg]
+  (3,-9.50)
+  to[out=0,in=0,looseness=5]
+  node[label,right, text width=5.3cm]
+  {$(ct_F,K)\gets\mathsf{KEM.Encaps}(epk_U)$;\\
+   $\tau\gets H(H(T),epk_U,ct_F,requestID,ctx_f)$;\\
+   $K_{sess}\gets\mathsf{KDF}(K,\tau)$}
+  (3,-10.10);
+
+\draw[msg]
+  (3,-10.35)
+  to[out=0,in=0,looseness=5]
+  node[label,right]
+  {$\mathsf{AtomicCheckAndConsume}(use\_key)$}
+  (3,-10.95);
+
+\draw[msg]
+  (3,-11.35) --
+  node[label,above, text width=7.0cm]
+  {$\mathsf{AuthResp}=(ct_F,sessionID,\mathsf{KeyConfirm},\sigma_F)$}
+  (2,-11.35);
+
+\draw[msg]
+  (2,-12.05) --
+  node[label,above] {forward $\mathsf{AuthResp}$}
+  (0,-12.05);
+
+\node[label,anchor=west, text width=7.0cm] at (0.04,-12.48)
+  {$K\gets\mathsf{KEM.Decaps}(esk_U,ct_F)$; verify $\sigma_F$ and
+   $\mathsf{KeyConfirm}$};
+
+% Phase 3: Signature-gated threshold identity opening
+\draw[exceptional]
+  (3,-13.25) --
+  node[label,above] {$Q=(T,caseID,purpose,d_E,expiry,auth)$}
+  (4,-13.25);
+
+\node[label,anchor=east, text width=7.0cm] at (3.96,-13.88)
+  {verify ticket, authorization, purpose, evidence, expiry and replay state};
+
+\draw[exceptional]
+  (4,-14.60) --
+  node[label,above]
+  {$\{share_{\ell},\pi_{\ell}\}_{\ell\in I}$, $|I|\geq t_O$}
+  (3,-14.60);
+
+\draw[exceptional]
+  (3,-15.20)
+  to[out=0,in=0,looseness=5]
+  node[label,right] {verify shares and threshold combine}
+  (3,-15.75);
+
+\draw[exceptional]
+  (3,-16.10)
+  to[out=0,in=0,looseness=5]
+  node[label,right] {check $sn'=T.sn$ and $ctx'=T.ctx$}
+  (3,-16.65);
+
+\draw[exceptional]
+  (3,-17.05) --
+  node[label,above] {opened identity and auditable evidence}
+  (1,-17.05);
+
+% Legend and API boundary
+\node[font=\scriptsize, anchor=west, align=left] at (0,-18.15) {
+  \textbf{Legend:} solid arrows denote the online satellite-access path;\\
+  dashed arrows denote offline or exceptional procedures.
+};
+
+\node[font=\scriptsize, anchor=east, align=right] at (4,-19.00) {
+  OA exposes $\mathsf{OpenShare}(tsk_{\ell},Q)$, not an unrestricted\\
+  $\mathsf{PartialDecrypt}(tsk_{\ell},C)$ API.
+};
+
+\end{tikzpicture}
+
+\end{document}
