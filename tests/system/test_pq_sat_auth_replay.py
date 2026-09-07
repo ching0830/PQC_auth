@@ -11,9 +11,11 @@ from pq_sat_auth.replay import (
     IdentityConflict,
     InMemoryLinearizableReplayStore,
     InvalidTransition,
+    RevocationChanged,
     ReservationNotFound,
     ReserveDisposition,
     TicketUnavailable,
+    TicketRevoked,
 )
 
 
@@ -76,6 +78,7 @@ class ReplayStoreTests(unittest.TestCase):
             transcript_digest=self.transcript,
             reserved_at=100,
             lease_deadline=200,
+            revocation_generation=0,
         )
 
     def commit(self) -> Consumption:
@@ -88,6 +91,7 @@ class ReplayStoreTests(unittest.TestCase):
             sealed_response=b"sealed-access-accept",
             consumed_at=150,
             retention_deadline=500,
+            revocation_generation=0,
         )
 
     def test_reserve_commit_and_same_attempt_retry_are_idempotent(self) -> None:
@@ -121,6 +125,7 @@ class ReplayStoreTests(unittest.TestCase):
                 transcript_digest=fixed(9),
                 reserved_at=101,
                 lease_deadline=201,
+                revocation_generation=0,
             )
         self.commit()
         with self.assertRaises(TicketUnavailable):
@@ -130,6 +135,7 @@ class ReplayStoreTests(unittest.TestCase):
                 transcript_digest=fixed(9),
                 reserved_at=102,
                 lease_deadline=202,
+                revocation_generation=0,
             )
 
     def test_commit_requires_exact_reservation(self) -> None:
@@ -146,6 +152,7 @@ class ReplayStoreTests(unittest.TestCase):
                 sealed_response=b"sealed-access-accept",
                 consumed_at=150,
                 retention_deadline=500,
+                revocation_generation=0,
             )
         self.assertNotIsInstance(self.store.lookup(self.identity), Consumption)
 
@@ -188,6 +195,7 @@ class ReplayStoreTests(unittest.TestCase):
                 transcript_digest=fixed(11),
                 reserved_at=100,
                 lease_deadline=200,
+                revocation_generation=0,
             )
         with self.assertRaises(IdentityConflict):
             self.store.reserve(
@@ -196,7 +204,35 @@ class ReplayStoreTests(unittest.TestCase):
                 transcript_digest=fixed(11),
                 reserved_at=100,
                 lease_deadline=200,
+                revocation_generation=0,
             )
+
+    def test_revocation_generation_is_checked_inside_transition(self) -> None:
+        snapshot = self.store.snapshot_revocation(self.identity)
+        self.assertEqual(snapshot.generation, 0)
+        self.assertFalse(snapshot.revoked)
+        revoked = self.store.revoke(self.identity)
+        self.assertEqual(revoked.generation, 1)
+        self.assertTrue(revoked.revoked)
+        with self.assertRaises(RevocationChanged):
+            self.store.reserve(
+                self.identity,
+                attempt_id=self.attempt,
+                transcript_digest=self.transcript,
+                reserved_at=100,
+                lease_deadline=200,
+                revocation_generation=snapshot.generation,
+            )
+        with self.assertRaises(TicketRevoked):
+            self.store.reserve(
+                self.identity,
+                attempt_id=self.attempt,
+                transcript_digest=self.transcript,
+                reserved_at=100,
+                lease_deadline=200,
+                revocation_generation=revoked.generation,
+            )
+        self.assertEqual(len(self.store), 0)
 
     def test_parallel_distinct_attempts_have_one_winner(self) -> None:
         workers = 24
@@ -211,6 +247,7 @@ class ReplayStoreTests(unittest.TestCase):
                     transcript_digest=fixed(worker + 80),
                     reserved_at=100,
                     lease_deadline=200,
+                    revocation_generation=0,
                 )
                 return result.disposition
             except TicketUnavailable:

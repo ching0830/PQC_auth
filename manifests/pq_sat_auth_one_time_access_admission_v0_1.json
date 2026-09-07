@@ -1,0 +1,62 @@
+{
+  "accepted_response": {
+    "bytes": 158,
+    "response_digest": "8abf2aa68bd6d555801be9c8272d3d2c244e78d7d50f994a2038aa549b08f72c",
+    "session_id": "51934aef4e463e2a52c9c717342127ab8971c198e04289093f65ea08d3863821",
+    "sha256": "1c8307ae6feaa9b7bb6e41cd6550005e0b05d670d17081ec50846d31eb163cd5"
+  },
+  "access_objects": {
+    "challenge_bytes": 242,
+    "challenge_digest": "7bb122c368bf6f97196ad55149ce8883ab5c33c0eb842677190d74da7ecbff57",
+    "challenge_sha256": "06803c39fe647c8da3f178fcfa4906e2081660a9546d9c9fef7ea81897a17533",
+    "finish_bytes": 270,
+    "finish_sha256": "314ca3a1f186fce56a9c20c561d0b2a20c55f3eee71336ec57730b6570ff3421",
+    "init_bytes": 632,
+    "init_digest": "8186ce1970de829a196740a94c800d844e79cc6d70e730decdfdf31060fa6fe4",
+    "init_sha256": "974d6428ce9e3f5c6a3577de06e56d3df83375cab1420d4eb60e4753c4352ac7",
+    "transcript_digest": "17252060a005db8f09f81510576d064850aa96711863187f887804cda8653115"
+  },
+  "attempt_id": "1c4fdfeb8aafef57666b7aa3fea78e60b408c37069653f705e8a05b2157167da",
+  "claim_boundary": {
+    "atomic_one_time_control_flow_implemented": true,
+    "cross_fgs_strictly_one_use_proven": false,
+    "durable_or_distributed_store_implemented": false,
+    "external_session_activation_implemented": false,
+    "handover_implemented": false,
+    "payload_identity_used_for_consumption": true,
+    "process_local_revocation_generation_model_implemented": true,
+    "production_access_admission_complete": false,
+    "production_holder_authentication_implemented": false,
+    "production_pq_ake_implemented": false,
+    "real_verify_ticket_integrated": true,
+    "revocation_distribution_implemented": false,
+    "same_attempt_response_recovery_implemented": true,
+    "test_only_suite_is_cryptographic": false
+  },
+  "format": "PQSAT-ONE-TIME-ACCESS-ADMISSION-CHECKPOINT-1",
+  "parent_verify_ticket_opening_integration_commit": "ecab1d9919d8627fb96fc986008a961a82a37df8",
+  "suite_id": 65535,
+  "system_profile": "0.1",
+  "ticket_identity": {
+    "ctx": "e72b44581e9945ed8f1c5ed522cddb6e87d8d2ef15f5cc7b293df9b855e2506a",
+    "payload_digest": "41284b146af4f04412e8e39d4a82d2a76a855014951f05223aa1f000ac0364d5",
+    "use_key": "1f450cfed8c4aae648f282d24f5bd9a104ed8c6103cea844c7925854f36c98b9",
+    "visible_serial": "0610e4bfd63f35f49bb94fbdffc2bb48"
+  },
+  "validation_order": [
+    "strict_access_object_parsing",
+    "authenticated_initialization_and_pinned_trust_anchor",
+    "trusted_time_and_serving_context",
+    "stateless_verify_ticket",
+    "payload_digest_serial_and_use_key",
+    "revocation_snapshot",
+    "challenge_cookie",
+    "holder_authentication",
+    "ue_key_confirmation",
+    "pure_policy_admission",
+    "atomic_reserve_with_revocation_generation",
+    "inert_session_preparation",
+    "atomic_commit_with_revocation_generation",
+    "response_release"
+  ]
+}

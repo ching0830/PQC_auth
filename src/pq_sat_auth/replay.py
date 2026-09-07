@@ -41,6 +41,14 @@ class InvalidTransition(ReplayStoreError):
     """The requested transition would weaken one-time semantics."""
 
 
+class RevocationChanged(ReplayStoreError):
+    """The revocation generation changed before an atomic state transition."""
+
+
+class TicketRevoked(ReplayStoreError):
+    """The ticket identity is revoked in the authoritative store snapshot."""
+
+
 class ReserveDisposition(Enum):
     NEW = "new"
     EXISTING_RESERVATION = "existing_reservation"
@@ -64,12 +72,24 @@ def _timestamp(value: int, name: str) -> int:
 
 
 @dataclass(frozen=True)
+class RevocationSnapshot:
+    generation: int
+    revoked: bool
+
+    def __post_init__(self) -> None:
+        _timestamp(self.generation, "revocation generation")
+        if not isinstance(self.revoked, bool):
+            raise TypeError("revoked must be a boolean")
+
+
+@dataclass(frozen=True)
 class Reservation:
     identity: TicketUseIdentity
     attempt_id: bytes
     transcript_digest: bytes
     reserved_at: int
     lease_deadline: int
+    revocation_generation: int = 0
 
     def __post_init__(self) -> None:
         if not isinstance(self.identity, TicketUseIdentity):
@@ -84,6 +104,7 @@ class Reservation:
         _timestamp(self.lease_deadline, "lease_deadline")
         if self.lease_deadline <= self.reserved_at:
             raise ValueError("lease_deadline must follow reserved_at")
+        _timestamp(self.revocation_generation, "revocation_generation")
 
 
 @dataclass(frozen=True)
@@ -96,6 +117,7 @@ class Consumption:
     sealed_response: bytes
     consumed_at: int
     retention_deadline: int
+    revocation_generation: int = 0
 
     def __post_init__(self) -> None:
         if not isinstance(self.identity, TicketUseIdentity):
@@ -120,6 +142,7 @@ class Consumption:
         _timestamp(self.retention_deadline, "retention_deadline")
         if self.retention_deadline < self.consumed_at:
             raise ValueError("retention_deadline precedes consumed_at")
+        _timestamp(self.revocation_generation, "revocation_generation")
 
 
 UseRecord = Reservation | Consumption
@@ -145,6 +168,9 @@ class InMemoryLinearizableReplayStore:
         self._records: dict[bytes, UseRecord] = {}
         self._digest_index: dict[tuple[bytes, bytes], bytes] = {}
         self._serial_index: dict[tuple[bytes, bytes], bytes] = {}
+        self._revocation_generation = 0
+        self._revoked_digests: set[tuple[bytes, bytes]] = set()
+        self._revoked_serials: set[tuple[bytes, bytes]] = set()
 
     def _check_identity_bindings(self, identity: TicketUseIdentity) -> bytes:
         use_key = identity.use_key
@@ -165,6 +191,54 @@ class InMemoryLinearizableReplayStore:
         self._digest_index[(identity.ctx, identity.ticket_digest)] = use_key
         self._serial_index[(identity.ctx, identity.serial)] = use_key
 
+    def _is_revoked(self, identity: TicketUseIdentity) -> bool:
+        return (
+            (identity.ctx, identity.ticket_digest) in self._revoked_digests
+            or (identity.ctx, identity.serial) in self._revoked_serials
+        )
+
+    def _check_revocation_generation(
+        self,
+        identity: TicketUseIdentity,
+        expected_generation: int,
+    ) -> int:
+        expected = _timestamp(expected_generation, "revocation_generation")
+        if expected != self._revocation_generation:
+            raise RevocationChanged("revocation generation changed")
+        if self._is_revoked(identity):
+            raise TicketRevoked("ticket identity is revoked")
+        return expected
+
+    def snapshot_revocation(
+        self, identity: TicketUseIdentity
+    ) -> RevocationSnapshot:
+        """Return the process-local authoritative revocation generation.
+
+        The admission service supplies this generation back to both ``reserve``
+        and ``commit``.  Each transition rechecks it while holding the same lock
+        as the one-time state transition, modeling serializable ordering.
+        """
+
+        with self._lock:
+            self._check_identity_bindings(identity)
+            return RevocationSnapshot(
+                generation=self._revocation_generation,
+                revoked=self._is_revoked(identity),
+            )
+
+    def revoke(self, identity: TicketUseIdentity) -> RevocationSnapshot:
+        """Test-only process-local revocation update.
+
+        This is not a revocation distribution protocol or production registry.
+        """
+
+        with self._lock:
+            self._check_identity_bindings(identity)
+            self._revocation_generation += 1
+            self._revoked_digests.add((identity.ctx, identity.ticket_digest))
+            self._revoked_serials.add((identity.ctx, identity.serial))
+            return RevocationSnapshot(self._revocation_generation, True)
+
     def reserve(
         self,
         identity: TicketUseIdentity,
@@ -173,6 +247,7 @@ class InMemoryLinearizableReplayStore:
         transcript_digest: bytes,
         reserved_at: int,
         lease_deadline: int,
+        revocation_generation: int,
     ) -> ReserveResult:
         """Atomically reserve a validated ticket for one authenticated attempt."""
 
@@ -182,9 +257,11 @@ class InMemoryLinearizableReplayStore:
             transcript_digest=transcript_digest,
             reserved_at=reserved_at,
             lease_deadline=lease_deadline,
+            revocation_generation=revocation_generation,
         )
         with self._lock:
             use_key = self._check_identity_bindings(identity)
+            self._check_revocation_generation(identity, revocation_generation)
             existing = self._records.get(use_key)
             if existing is None:
                 self._bind_identity(identity, use_key)
@@ -213,6 +290,7 @@ class InMemoryLinearizableReplayStore:
         sealed_response: bytes,
         consumed_at: int,
         retention_deadline: int,
+        revocation_generation: int,
     ) -> Consumption:
         """Atomically commit the unique session and its idempotent response."""
 
@@ -225,9 +303,11 @@ class InMemoryLinearizableReplayStore:
             sealed_response=sealed_response,
             consumed_at=consumed_at,
             retention_deadline=retention_deadline,
+            revocation_generation=revocation_generation,
         )
         with self._lock:
             use_key = self._check_identity_bindings(identity)
+            self._check_revocation_generation(identity, revocation_generation)
             existing = self._records.get(use_key)
             if existing is None:
                 raise ReservationNotFound("cannot commit an unreserved ticket")
