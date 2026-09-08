@@ -9,10 +9,21 @@
 ## V2.41 branch checkpoint
 
 `codex/pq-rbbc-v2-41-launch-validation-hardening` 從 local main `3885b01` 建立獨立
-worktree，修正 v2.39 AI technical pre-review 的八項 validation findings。新版本採
-single-read immutable snapshots、exact command locations、strict canonical JSON 與
+worktree，針對 v2.39 AI technical pre-review 的八項 validation findings 建立 successor。
+新版本採 single-read immutable snapshots、exact command locations、strict canonical JSON 與
 bool/int、trusted time、reservation/batch-bound review、exclusive atomic publication，
 並讓 authoring 與 builder 都要求 exact contracts/v2.38 predecessor。
+
+Commit `1b89ebe` 的 AI technical re-review 找到一項 P2，corrective contract 已明確
+縮限：`read_snapshot` 是 single-open、single bounded read；identity、strict JSON parse、
+binding 與所有 validation 只使用同一 immutable `Snapshot.raw`。Inode／size／mtime／ctime
+僅為 best-effort mutation signals，不證明 capture 期間完全沒有 writer。同 inode、同長度
+原地改寫若發生在舊 bytes 完整 capture 之後，可以接受該舊 snapshot；future executor 必須
+消費 `CandidateSet` 中的相同 snapshots，不得重開 pathname。
+
+Trusted producer handoff、writer quiescence、owner／mode／ACL、既有 writable FD 及 mount
+namespace 均為部署前提／外部 blocker；本 branch 不以重複 stat、sleep、advisory lock 或
+重讀 pathname 宣稱一般 filesystem 強不可變性。
 
 V2.38/v2.39 source、tests、schemas、manifests、portable evidence、artifact notes 與
 checksums 的 19 份 historical identities 均未變動。下方 v2.39 freeze-ready 敘述
@@ -20,8 +31,8 @@ checksums 的 19 份 historical identities 均未變動。下方 v2.39 freeze-re
 attestations，也沒有正式 launch identity freeze。
 
 新 portable evidence 只保存缺少真實候選的 negative observation。原 13 項及新增
-55 項 targeted tests 全部通過；完整 suite 為 628 passed、12 既有 optional skips、
-0 failures/errors（共 640 tests）。結果與每個 finding 的 regression 對照見
+56 項 targeted tests 全部通過；完整 suite 為 629 passed、12 既有 optional skips、
+0 failures/errors（共 641 tests）。結果與每個 finding 的 regression 對照見
 [`../artifacts/PQ_RBBC_v2_41_LAUNCH_VALIDATION_HARDENING_zh-TW.md`](../artifacts/PQ_RBBC_v2_41_LAUNCH_VALIDATION_HARDENING_zh-TW.md)。
 下一步為唯讀 AI technical re-review，再等待 integration。此 branch 不 merge/push；
 root canonical status 由 integration lane 更新。

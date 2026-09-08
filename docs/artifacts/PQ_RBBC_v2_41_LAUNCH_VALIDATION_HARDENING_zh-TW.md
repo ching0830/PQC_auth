@@ -17,11 +17,24 @@ successor。V2.39 的 source、tests、schemas、manifest、portable evidence、
 它回報的 `safe_to_freeze_launch_identity_set=true` 不具 v2.41 acceptance 效力。
 不得把舊文件自動改 version 後當成新 attestation。
 
+Commit `1b89ebe` 的後續 AI technical re-review 找到一項 P2：同 inode、同長度原地
+改寫可能沒有產生不同的 inode／size／mtime／ctime observation，因此 metadata tuple
+不能證明 capture 期間沒有 writer。本 corrective checkpoint 明確縮限 F1 contract：
+每份輸入只 single-open、single bounded-read 一次；identity、strict JSON parse、binding
+與所有 validation 均只使用該次擷取的 immutable `Snapshot.raw`。Metadata 比較只提供
+best-effort mutation signals，不是一般 filesystem 上的強不可變性證明。
+
+| Contract 面向 | `1b89ebe` 原文字義 | Corrective contract |
+| --- | --- | --- |
+| Metadata | 將 `stat` 描述成會偵測 read-time 變動 | 只作 best-effort signal；tuple 相等不證明無 writer |
+| Acceptance authority | Immutable snapshot 已存在，但 in-place mutation 被要求一律拒絕 | 可接受完整 capture 的舊 raw；identity、parse、binding、validation 必須全由該 raw 得出 |
+| Execution handoff | Future executor 使用已驗證 bytes | 明定只能消費同一 `CandidateSet` snapshots，不得重開 pathname |
+
 ## 變更檔案與設計理由
 
 | 檔案 | 理由與新行為 |
 | --- | --- |
-| `src/pq_rbbc_launch_io_v2_41.py` | 共用 immutable raw snapshot、1 MiB byte limit、strict JSON、directory-FD traversal 及 exclusive publication。避免 validator、builder、sealer 各自出現不同 I/O 邊界。 |
+| `src/pq_rbbc_launch_io_v2_41.py` | 共用 single-open／single bounded-read immutable raw snapshot、1 MiB byte limit、strict JSON、directory-FD traversal 及 exclusive publication。Identity、parse 與 validation 共用同一 raw；metadata 僅是 best-effort signal。 |
 | `src/pq_rbbc_cap_unified_tree_launch_validation_v2_41.py` | 新版本 grammar、strict schema subset validator、exact execution mapping、reservation/review/batch/time binding、authoring/prelaunch gates；production branch 一律拒絕。 |
 | `src/pq_rbbc_cap_unified_tree_launch_validation_evidence_v2_41.py` | 只接受指定 identity 的「缺少三份候選」negative report；同一 snapshot 負責 identity 與 parse。不封存真實 attestation 或 launch freeze。 |
 | `schemas/pq_rbbc_cap_unified_tree_{resource_reservation,independent_review,launch_manifest}_v2_41.schema.json` | 新 formats 分別為 reservation `-4`、review `-4`、launch `-3`，新增 batch、review subject 與 execution locations；所有 nested identities 明定 integer bytes。 |
@@ -43,7 +56,7 @@ V2.39 source 本身亦列入 exact historical contract，不能無聲改動此�
 
 | Finding | Positive／negative／mutation | TOCTOU／race regression |
 | --- | --- | --- |
-| F1 單次 bytes snapshot | `test_f1_positive_single_open_and_read_each_candidate` 計數三檔各一次 open/read；`test_f1_snapshot_is_immutable_and_parser_mutation_is_detached`；`test_f1_bounded_size_empty_and_nonregular_input_rejected` | `test_f1_negative_hash_unapproved_parse_approved_toctou`、`test_f1_builder_never_hashes_unvalidated_replacement`、`test_f1_file_replaced_while_reading_rejected`；evidence 的三個 `test_f1_evidence_*` 確認 sealer 同樣不重讀。 |
+| F1 單次 bytes snapshot | `test_f1_positive_single_open_and_read_each_candidate` 計數三檔各一次 open/read；`test_f1_snapshot_is_immutable_and_parser_mutation_is_detached`；`test_f1_bounded_size_empty_and_nonregular_input_rejected` | `test_f1_negative_hash_unapproved_parse_approved_toctou`、`test_f1_builder_never_hashes_unvalidated_replacement`、inode replacement rejection，以及 `test_p2_same_inode_rewrite_keeps_one_authoritative_snapshot`：受控同 inode／同長度改寫即使 metadata signal 相同，也只接受先前完整擷取的舊 raw，pathname 新內容不能替換它。Evidence tests 同樣不重讀。 |
 | F2 exact command locations | `test_f2_positive_command_binds_all_exact_locations`；`test_f2_same_basename_other_directory_rejected_before_read`；`test_f2_command_and_mapping_mutations_rejected`；`test_f2_rebinding_requires_new_attestations` | `test_f2_and_f7_input_parent_rename_race_cannot_rebind_command`；F1 replacement cases 亦確認 bytes identity 不隨 pathname 變更。 |
 | F3 strict canonical JSON | `test_f3_positive_canonical_utf8_roundtrip`；`test_f3_all_prereview_encoding_probes_rejected` 包括 duplicate/UTF-8/BOM/whitespace/float/exponent/NaN/Infinity/escape/surrogate/depth；evidence 的 `test_f3_evidence_rejects_noncanonical_and_duplicate_report` | `test_f3_and_f4_malformed_snapshot_cannot_be_rescued_by_replacement`；bad snapshot 不因隨後換成好檔而通過。 |
 | F4 exact bool/int 與 nested identity | Positive fixture 通過；`test_f4_every_boolean_rejects_numeric_and_other_types`；`test_f4_every_nested_identity_rejects_float_bool_and_mutations`；`test_f4_resource_integer_bounds_and_versions`；`test_f4_unhashable_attestation_method_is_structured_rejection` | 共用 F3/F4 replacement regression；evidence `test_f4_evidence_rejects_numeric_claims_and_identity_sizes` 拒絕 numeric false 與 float bytes。 |
@@ -62,9 +75,12 @@ JSON 證明獨立性」測試，沒有假裝以字串不相等驗證人員關係
 `read_snapshot` 以 `O_NOFOLLOW | O_NONBLOCK` 單次開啟 regular、single-link file，
 先拒絕過大檔案，再以一個 `read(MAX_JSON_BYTES + 1)` 擷取 bytes。Size、digest、
 UTF-8 decode、duplicate-key rejection、JSON parse、canonical equality 與 semantic
-validation 全部使用該 immutable `bytes`。`stat` 只偵測讀取期間的變動，不作為回報
-length 的來源。Snapshot 不保留可被外部 mutation 的 parsed dict；後續 parse 可重算，
-但只從原 bytes 進行。Post-read pathname/inode/mtime/ctime 與 parent location 不一致即拒絕。
+validation 全部使用該 immutable `bytes`。`stat` 不作為回報 length 的來源；前後
+inode／size／mtime／ctime 或 pathname／parent location 不一致時會提供額外拒絕訊號，
+但相等不能證明 capture 期間沒有 writer，也不能排除同長度原地改寫。Snapshot 不保留
+可被外部 mutation 的 parsed dict；後續 parse 可重算，但只從原 bytes 進行。若 writer
+在 bounded read 完整取得舊 bytes 後改寫 pathname，該舊 immutable snapshot 可被驗證；
+後續 pathname 內容不得替換或改變已 capture 的 raw。
 
 Canonical encoding 是 sorted keys、ASCII escapes、無多餘空白、單一末尾 LF；
 raw 必須等於 `canonical_json(parsed)`。本 grammar 沒有 floating-point fields，
@@ -85,7 +101,8 @@ wall_clock_seconds == reservation_expiry - reservation_start
 
 未生效與已過期窗口都不能 freeze-ready。Builder 再取一次時鐘；prelaunch primitive
 也重新驗證 contracts、相同 snapshots 與新 now。未來 executor 必須消費同一份
-已驗證 bytes，不能把 report 的 boolean 或再次開啟 pathname 當成延續信任的方式。
+`CandidateSet` 內已驗證的 snapshots，不能把 report 的 boolean 或再次開啟 candidate
+pathname 當成延續信任的方式。
 本版本 production branch 在重新驗證後仍無條件拒絕。
 
 Default trusted root 為 `/tmp/pq_rbbc_v2_41_launch_artifacts`，須由 trusted caller
@@ -114,6 +131,12 @@ root 的擁有者。這不是對可任意修改同一 UID 記憶體、source、m
 也不提供 signed-attestation verification、resource allocator proof、host execution lock、
 revocation service 或 production executor。
 
+部署前提另包括 trusted producer handoff、candidate writer quiescence、正確的 inode
+owner／mode／ACL、沒有不可信方持有既有 writable file descriptor，以及受信任的 mount
+namespace。若政策要求「capture 期間任何 writer 都必須被偵測或排除」，必須由可信的
+immutable handoff 或 OS／filesystem enforcement 提供；不得以增加 `stat` 次數、sleep、
+advisory lock、重讀 pathname 或比較第二次內容宣稱已建立該強保證。
+
 ## 實驗與歷史 evidence
 
 環境：Linux 6.8.0-138-generic x86_64、glibc 2.35、Python 3.12.9、12 logical CPUs。
@@ -130,7 +153,7 @@ PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python -m unittest \
   tests.test_pq_rbbc_cap_unified_tree_launch_validation_evidence_v2_41 -v
 ```
 
-結果：68 tests，68 passed、0 failed、0 errors、0 skipped，2.260 s，exit 0。
+Corrective 結果：69 tests，69 passed、0 failed、0 errors、0 skipped，2.092 s，exit 0。
 原有 13 tests 未修改；另一次 baseline 單獨執行為 13 passed、0 skipped，0.007 s。
 完整 suite 命令：
 
@@ -138,9 +161,15 @@ PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python -m unittest \
 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python -m unittest discover -s tests -v
 ```
 
-完整 suite 結果：640 tests，628 passed、0 failed、0 errors、12 skipped，711.725 s，
+Corrective 完整 suite 結果：641 tests，629 passed、0 failed、0 errors、12 skipped，711.966 s，
 exit 0。12 項 skip 都是既有 optional v2.13–v2.25 external artifacts 未安裝，沒有新增
-skip。Raw stdout/stderr 留在 `/tmp/pq-rbbc-v241-validation-results/`，不加入 Git。
+skip。Raw stdout/stderr 留在獨立 `/tmp/pq-rbbc-v241-corrective-validation-*`，不加入 Git。
+
+重審提供的 `inplace_probe.py` 另在獨立目錄執行 200 次：200 次同 inode／同長度改寫
+均已執行，178 次 metadata tuple 未變且回傳完整舊 raw，22 次因 best-effort metadata
+signal 改變而拒絕；所有接受案例的磁碟 pathname 均已是完整新 raw。這個比例只是一輪
+本機 observation，不是 filesystem 保證。它支持 captured-byte consistency contract，
+不支持「所有 writer 都會被偵測」宣稱。
 
 原 `probe-results.json` 的 27 個 keys 已逐一對應到 17 項等價回歸測試，另行執行得到
 17 passed、0 failed、0 errors、0 skipped，0.555 s，exit 0。可由 regression-results
@@ -163,15 +192,18 @@ manifest 與 regression results。核心 identities：
 舊 v2.38/v2.39 inventories 中 current handoff 與 research status 的 digests 對應
 `b3a00f36bedc9d65a56f1153357c5db5f20d21aa` 的 historical docs；它們在 `7769a2e`
 integration 已有更新。本次不重寫舊 checksum 讓它看似匹配 current docs；v2.41 inventory
-另外綁定目前 task 的文件。其餘既有 source/schema/manifest/portable 與 external
-draft/report identities 不因本次修正而變動。
+另外綁定目前 task 的文件。V2.38/v2.39 source/schema/manifest/portable 與 external
+draft/report identities 不因本次修正而變動；corrective source/test/manifest 則以新的
+v2.41 successor identities 重封。
 
 V2.41 negative report 的 observed time 是 `2026-09-08T15:19:46.174028+00:00`。
 它明確記錄三份 candidates 都未提供，authoring/freeze/production gates 皆 false。
 Report 為 1,975 bytes，SHA-256
-`0745d815d5dd185237821fdad59519a94cd1170dfb3a1ae32372bf78614d0711`。
+`07a80a7de2f947803beb164ef62594e1f2111f91acdf9ee50d3c723dee173add`。
 新 portable seal 只綁定此 negative report、successor source/tests/contracts 與歷史 identities；
-沒有 candidate bytes、人員 attestation 或正式 identity freeze。
+沒有 candidate bytes、人員 attestation 或正式 identity freeze。Corrective portable 為
+7,992 bytes，SHA-256
+`0ead1e9913e9b449f8eaa2bca652a2b08e68cdff72b2970169d027b1405084b4`。
 
 ## 保守 claim boundary 與下一步
 
@@ -187,7 +219,7 @@ production leaves、materialize production stream/checkpoint、large replay/prov
 及所有 large-run gates 保持 false。Legacy 18-tree observations、assignments 與 v2.29
 transcript 沒有被重用為 unified-profile observations。
 
-下一個 bounded gate 是依
+下一個 bounded gate 是依更新後的
 `docs/reviews/PQ_RBBC_v2_41_AI_TECHNICAL_RE_REVIEW_PROMPT_zh-TW.md` 做 AI-assisted
 technical re-review；通過仍不代表獨立密碼學審查或執行授權。真實 reservation、independent
 review、後續 identity-freeze checkpoint 與 production 授權必須另行成立。

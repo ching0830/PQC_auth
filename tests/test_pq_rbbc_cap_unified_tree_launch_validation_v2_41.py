@@ -195,6 +195,99 @@ class LaunchValidationV241Tests(unittest.TestCase):
         with patch.object(IO.os, "fdopen", swapping):
             self.assert_rejected(self.report())
 
+    def test_p2_same_inode_rewrite_keeps_one_authoritative_snapshot(self):
+        store = IO.ArtifactRoot(self.root)
+        review_snapshot = self.snap(1)
+        launch_snapshot = self.snap(2)
+        original = self.paths[0].read_bytes()
+        replacement = original.replace(
+            b"TEST-ONLY-operator", b"TEST-ONLY-OPERAT0R", 1
+        )
+        self.assertNotEqual(replacement, original)
+        self.assertEqual(len(replacement), len(original))
+
+        stable = self.paths[0].stat()
+        real_fdopen = os.fdopen
+        real_fstat = os.fstat
+        real_stat = os.stat
+        mutation_executed = []
+
+        def stable_fstat(fd):
+            info = real_fstat(fd)
+            if (info.st_dev, info.st_ino) == (stable.st_dev, stable.st_ino):
+                return stable
+            return info
+
+        def stable_stat(path, *args, **kwargs):
+            info = real_stat(path, *args, **kwargs)
+            if (info.st_dev, info.st_ino) == (stable.st_dev, stable.st_ino):
+                return stable
+            return info
+
+        def rewrite_after_read(fd, *args, **kwargs):
+            handle = real_fdopen(fd, *args, **kwargs)
+            info = real_fstat(handle.fileno())
+            if (info.st_dev, info.st_ino) != (stable.st_dev, stable.st_ino):
+                return handle
+
+            class RewritingHandle:
+                def __enter__(inner):
+                    return inner
+
+                def __exit__(inner, *exc):
+                    handle.close()
+
+                def fileno(inner):
+                    return handle.fileno()
+
+                def read(inner, count):
+                    raw = handle.read(count)
+                    self.paths[0].write_bytes(replacement)
+                    self.assertEqual(self.paths[0].stat().st_ino, stable.st_ino)
+                    mutation_executed.append(True)
+                    return raw
+
+            return RewritingHandle()
+
+        with (
+            patch.object(IO.os, "fdopen", rewrite_after_read),
+            patch.object(IO.os, "fstat", stable_fstat),
+            patch.object(IO.os, "stat", stable_stat),
+        ):
+            resource_snapshot = store.read(self.paths[0])
+
+        self.assertEqual(mutation_executed, [True])
+        self.assertEqual(self.paths[0].stat().st_ino, stable.st_ino)
+        self.assertEqual(len(self.paths[0].read_bytes()), len(original))
+        self.assertEqual(self.paths[0].read_bytes(), replacement)
+        self.assertEqual(resource_snapshot.raw, original)
+        self.assertEqual(
+            resource_snapshot.identity, IO.Snapshot(self.paths[0], original).identity
+        )
+        self.assertEqual(resource_snapshot.document(), IO.strict_json(original))
+
+        candidates = L.CandidateSet(
+            self.root, resource_snapshot, review_snapshot, launch_snapshot
+        )
+        with patch.object(
+            IO.ArtifactRoot,
+            "read",
+            side_effect=AssertionError("candidate pathname must not be reopened"),
+        ):
+            self.assertIs(
+                L.revalidate_before_launch(candidates, clock=lambda: NOW), candidates
+            )
+
+        output = self.root / "production-prefreeze"
+        with self.assertRaisesRegex(IO.ValidationError, "does not authorize"):
+            L.reject_production(
+                self.paths,
+                output,
+                artifact_root=self.root,
+                clock=lambda: NOW,
+            )
+        self.assertFalse(output.exists())
+
     def test_f2_positive_command_binds_all_exact_locations(self):
         command = shlex.split(self.launch["execution"]["command"])
         for kind, path in zip(L.KINDS, self.paths):

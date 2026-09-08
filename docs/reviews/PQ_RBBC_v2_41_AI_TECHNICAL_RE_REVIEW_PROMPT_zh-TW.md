@@ -1,9 +1,10 @@
 # PQ-RBBC v2.41 AI technical re-review prompt
 
-請在 `codex/pq-rbbc-v2-41-launch-validation-hardening` 的獨立乾淨 worktree 執行
-唯讀、AI-assisted technical re-review。先核對 `git status --short --branch`、HEAD、
-main 與 worktree list；不要切換或修改其他 task。此 branch 基於
-`3885b01d2b7bccd8ae0cb5e465c4b63aa48d4442`，提交後尚未 merge/push。
+請在 `codex/pq-rbbc-v2-41-launch-validation-hardening` corrective commit 的獨立乾淨
+worktree 執行唯讀、AI-assisted technical re-review。先核對
+`git status --short --branch`、HEAD、main 與 worktree list；不要切換或修改其他 task。
+Corrective HEAD 必須是 `1b89ebea12110a655dc1dc6abb5a00d4bd38a338` 的直接後繼，且
+尚未 merge/push；請記錄實際 corrective commit hash，不要只由文件推測。
 
 本審查不是 external human cryptographic review、independent-review attestation、
 operator approval、launch artifact、identity freeze 或 execution authorization。
@@ -24,13 +25,20 @@ operator approval、launch artifact、identity freeze 或 execution authorizatio
    `/tmp/pq-rbbc-v239-ai-prereview-61qzZGSw/AI_TECHNICAL_PRE_REVIEW_zh-TW.md`、
    `probe-results.json` 與 `probes.py`。不要執行會回寫原 probe-results 的舊 probe；
    可在新的 `/tmp` 目錄撰寫等價 synthetic regression。
+7. 若本機仍有 commit `1b89ebe` 的重審目錄，讀取其
+   `AI_TECHNICAL_RE_REVIEW_zh-TW.md`、`inplace_probe.py` 與
+   `inplace-results.json`；將 probe 複製到新的 `/tmp` 目錄後執行，避免覆寫原結果。
 
 請獨立核對下列八項，不因 tests 已通過就假設修正充分：
 
-1. 每份 candidate 是否只 open/read 一次；raw 是否 bounded/immutable；identity、
-   JSON decode、canonical 與 semantics 是否始終來自同一 bytes；builder/sealer 是否還有
-   分離的 hash/parse pathname 讀取；讀取中 in-place change、rename、symlink、FIFO、
-   oversized/deep JSON 是否 fail closed。
+1. 依 corrective contract 核對每份 candidate 是否只 single-open、single bounded read
+   一次；identity、strict JSON decode／canonical parse、binding 與所有 semantic validation
+   是否始終來自同一 immutable `Snapshot.raw`；builder/sealer 是否還有分離的 hash/parse
+   pathname 讀取。不得要求 inode／size／mtime／ctime 證明 capture 期間沒有 writer；它們
+   只能作 best-effort mutation signals。執行受控同 inode、同長度原地改寫 regression：
+   若舊 bytes 已完整 capture，可以接受該舊 snapshot，但 identity、parse 與 binding 必須
+   全對應同一 raw，pathname 後續內容不得取代它。另核對 detectable inode replacement、
+   rename、symlink、FIFO、oversized/deep JSON 拒絕仍成立。
 2. 驗證的三份 exact absolute locations 是否就是 command inputs；same-basename
    substitution、root alias、parent rename、command digest 重算、explicit rebind 是否
    需要重新綁定 reservation/review/launch。確認沒有 self-referential launch digest。
@@ -54,6 +62,12 @@ operator approval、launch artifact、identity freeze 或 execution authorizatio
 8. Preflight authoring gate、直接 builder、CLI author 與 evidence builder 是否都要求
    exact tracked contracts 與 exact v2.38 predecessor；缺件、byte mutation 或 TOCTOU
    不得使 authoring readiness 與 read-only gate 互相矛盾。
+
+另確認 future executor contract 仍要求直接消費 `CandidateSet` 內已驗證的相同
+snapshots，不得重新開啟 candidate pathname。將 trusted producer handoff、writer
+quiescence、owner／mode／ACL、既有 writable FD 與 mount namespace 列為部署前提／外部
+blocker。不要以增加 stat 次數、sleep、重讀 pathname、比較第二次內容或 advisory lock
+宣稱一般 filesystem 上的強不可變性保證。
 
 重新執行（全部使用 `PYTHONDONTWRITEBYTECODE=1`）：
 

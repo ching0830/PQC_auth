@@ -1,7 +1,11 @@
 """Bounded immutable JSON snapshots and exclusive publication for v2.41.
 
 Linux/POSIX filesystem boundary. The caller provisions the trusted artifact
-root; candidate documents cannot select it. No pickle or shell execution.
+root; candidate documents cannot select it. A snapshot is one single-open,
+single bounded-read capture whose identity, parsing and validation all consume
+the same immutable ``Snapshot.raw``. File metadata is only a best-effort
+mutation signal; equality does not prove that no writer ran during capture.
+No pickle or shell execution.
 """
 
 from contextlib import contextmanager
@@ -69,6 +73,8 @@ def strict_json(raw: bytes) -> dict:
 
 @dataclass(frozen=True)
 class Snapshot:
+    """One immutable captured byte string and its original lexical location."""
+
     location: Path
     raw: bytes
 
@@ -162,6 +168,13 @@ def _same_directory(path: Path, fd: int, *, external: bool):
 
 
 def read_snapshot(path: Path, *, external: bool = False) -> Snapshot:
+    """Capture one bounded read; metadata checks are best-effort signals only.
+
+    Safety comes from using the returned immutable ``raw`` for identity,
+    strict parsing and every later validation.  The inode/size/mtime/ctime
+    comparisons can reject observed changes, but cannot prove writer
+    quiescence on a general filesystem.
+    """
     path = exact_path(path)
     with directory_fd(path.parent, external=external) as parent:
         fd = os.open(path.name, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK |
@@ -176,6 +189,8 @@ def read_snapshot(path: Path, *, external: bool = False) -> Snapshot:
             # in an identity. All subsequent operations consume only raw.
             raw = handle.read(MAX_JSON_BYTES + 1)
             after = os.fstat(handle.fileno())
+            # These comparisons are useful best-effort mutation signals, not a
+            # proof that no same-inode writer ran between observations.
             signature = lambda s: (_inode(s), s.st_size, s.st_mtime_ns, s.st_ctime_ns)
             if signature(before) != signature(after) or len(raw) != after.st_size:
                 raise ValidationError("file changed during snapshot read")

@@ -387,6 +387,13 @@ def build_manifest() -> dict:
                       "artifact_root_selected_by_trusted_caller_only": True,
                       "all_git_worktree_ancestors_forbidden": True,
                       "rebind_requires_new_reservation_review_and_launch": True,
+                      "snapshot_safety_contract": "identity, strict JSON parsing and all validation consume one immutable Snapshot.raw",
+                      "metadata_mutation_signals_best_effort_only": True,
+                      "metadata_equality_proves_no_writer": False,
+                      "future_executor_consumes_same_candidate_set_snapshots": True,
+                      "executor_reopens_candidate_pathnames": False,
+                      "deployment_requires_trusted_producer_handoff_and_writer_quiescence": True,
+                      "deployment_requires_owner_mode_acl_writable_fd_and_mount_namespace_controls": True,
                       "output_publication": "fsync then atomic exclusive hard link"},
         "time_policy": {"clock": "trusted caller UTC clock; CLI uses system UTC; no candidate now",
                         "order": "approved <= start < expiry; approved <= review <= created <= now; start <= now < expiry",
@@ -428,6 +435,8 @@ def validate_tracked_contracts(manifest_path=MANIFEST_PATH, predecessor=V2_38_PO
 
 @dataclass(frozen=True)
 class CandidateSet:
+    """Validated snapshots that a future executor must consume without reopen."""
+
     root: Path
     resource: Snapshot
     review: Snapshot
@@ -530,7 +539,8 @@ def revalidate_before_launch(candidates: CandidateSet, *, clock: Clock = trusted
     """Revalidate immutable inputs at a fresh trusted time, never a prior report.
 
     A future executor must consume these same snapshots, not reopen their paths.
-    This is only a validation primitive, not an authorization or executor.
+    Later pathname contents cannot replace a captured ``Snapshot.raw``. This is
+    only a validation primitive, not an authorization or executor.
     """
     failures = validate_tracked_contracts()
     failures += validate_launch(candidates.launch.document(), candidates.resource, candidates.review,
