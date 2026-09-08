@@ -1,10 +1,33 @@
 [English](PQ_RBBC_CURRENT_HANDOFF.md)
 
-# PQ-RBBC 目前交接 — v2.39 unified-tree launch identity-set preflight
+# PQ-RBBC 目前交接 — v2.41 launch validation successor（待整合）
 
 > **模組範圍：**這是 PQ-RBBC 的操作交接，不是整篇論文 roadmap。專案級背景請先讀 [../../ARCHITECTURE_zh-TW.md](../../ARCHITECTURE_zh-TW.md)、[../../RESEARCH_STATUS_zh-TW.md](../../RESEARCH_STATUS_zh-TW.md) 與 [../../ROADMAP_zh-TW.md](../../ROADMAP_zh-TW.md)。
 
-日期：2026 年 9 月 6 日
+日期：2026 年 9 月 8 日
+
+## V2.41 branch checkpoint
+
+`codex/pq-rbbc-v2-41-launch-validation-hardening` 從 local main `3885b01` 建立獨立
+worktree，修正 v2.39 AI technical pre-review 的八項 validation findings。新版本採
+single-read immutable snapshots、exact command locations、strict canonical JSON 與
+bool/int、trusted time、reservation/batch-bound review、exclusive atomic publication，
+並讓 authoring 與 builder 都要求 exact contracts/v2.38 predecessor。
+
+V2.38/v2.39 source、tests、schemas、manifests、portable evidence、artifact notes 與
+checksums 的 19 份 historical identities 均未變動。下方 v2.39 freeze-ready 敘述
+屬歷史 checkpoint；不得用其舊 validator 的結果取代 v2.41 驗證。V2.41 不自動升級
+attestations，也沒有正式 launch identity freeze。
+
+新 portable evidence 只保存缺少真實候選的 negative observation。原 13 項及新增
+55 項 targeted tests 全部通過；完整 suite 為 628 passed、12 既有 optional skips、
+0 failures/errors（共 640 tests）。結果與每個 finding 的 regression 對照見
+[`../artifacts/PQ_RBBC_v2_41_LAUNCH_VALIDATION_HARDENING_zh-TW.md`](../artifacts/PQ_RBBC_v2_41_LAUNCH_VALIDATION_HARDENING_zh-TW.md)。
+下一步為唯讀 AI technical re-review，再等待 integration。此 branch 不 merge/push；
+root canonical status 由 integration lane 更新。
+
+沒有真實 reservation、偽造 review、production-prefreeze、large replay/proving 或
+新的 production observation；所有 production/security claims 維持 false。
 
 新工作階段先讀本文件、v2.29 recovery note、v2.30 fork-security audit、
 v2.31 CAP-security qualification evidence、v2.32 CAP Prove/Verify preflight、
