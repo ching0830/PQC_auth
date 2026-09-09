@@ -181,9 +181,14 @@ checkpoint is closed.
 
 ## Current claim boundary
 
-The latest merged RBBC checkpoint is v2.25. Planned tree positions 0 through 7
-are materialized and independently replayed; positions 8 through 17, all 72
-relocations, the complete 18-tree replay, parent CAP-to-$H_{RBBC}$ join,
-fork-specific reductions, a qualified PQ SE-NIZK backend, a real trace key,
-robust opening transcript, satellite AKE, anti-replay, and handover remain open.
-Production closure is false.
+The latest merged RBBC checkpoint is v2.41. The legacy 18-tree profile has
+executable evidence for every tree, all 72 relocations, the complete replay,
+and the parent CAP-to-$H_{RBBC}$ join. The separate unified-tree candidate has
+bounded specification, runner/checkpoint/statement/streaming primitives, and
+fail-closed launch validation. V2.41 establishes validation over one immutable
+captured byte snapshot; strong filesystem immutability remains a deployment
+precondition. No real operator reservation, external human independent review,
+launch-identity freeze, or execution authorization exists. Fork-specific
+reductions, a qualified PQ SE-NIZK backend, a real trace key, a robust opening
+transcript, satellite AKE, durable/distributed anti-replay, and handover remain
+open. Production closure is false.

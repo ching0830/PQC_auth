@@ -1,15 +1,17 @@
 [English](PQ_RBBC_CURRENT_HANDOFF.md)
 
-# PQ-RBBC 目前交接 — v2.41 launch validation successor（待整合）
+# PQ-RBBC 目前交接 — v2.41 launch validation successor（已整合）
 
 > **模組範圍：**這是 PQ-RBBC 的操作交接，不是整篇論文 roadmap。專案級背景請先讀 [../../ARCHITECTURE_zh-TW.md](../../ARCHITECTURE_zh-TW.md)、[../../RESEARCH_STATUS_zh-TW.md](../../RESEARCH_STATUS_zh-TW.md) 與 [../../ROADMAP_zh-TW.md](../../ROADMAP_zh-TW.md)。
 
-日期：2026 年 9 月 8 日
+日期：2026 年 9 月 9 日
 
 ## V2.41 branch checkpoint
 
 `codex/pq-rbbc-v2-41-launch-validation-hardening` 從 local main `3885b01` 建立獨立
-worktree，針對 v2.39 AI technical pre-review 的八項 validation findings 建立 successor。
+worktree，並以 `1b89ebe`、`1a1d576` 兩個 commits 針對 v2.39 AI technical
+pre-review 的八項 validation findings 建立 successor；effective tree 已 fast-forward
+整合至 local `main`。
 新版本採 single-read immutable snapshots、exact command locations、strict canonical JSON 與
 bool/int、trusted time、reservation/batch-bound review、exclusive atomic publication，
 並讓 authoring 與 builder 都要求 exact contracts/v2.38 predecessor。
@@ -34,8 +36,21 @@ attestations，也沒有正式 launch identity freeze。
 56 項 targeted tests 全部通過；完整 suite 為 629 passed、12 既有 optional skips、
 0 failures/errors（共 641 tests）。結果與每個 finding 的 regression 對照見
 [`../artifacts/PQ_RBBC_v2_41_LAUNCH_VALIDATION_HARDENING_zh-TW.md`](../artifacts/PQ_RBBC_v2_41_LAUNCH_VALIDATION_HARDENING_zh-TW.md)。
-下一步為唯讀 AI technical re-review，再等待 integration。此 branch 不 merge/push；
-root canonical status 由 integration lane 更新。
+Effective tree 的唯讀 AI technical re-review 未發現新 findings：69 項 targeted、17 組
+八項獨立 probes、4 組 corrective probes與17項額外cases全部通過；完整 regression 為
+629 passed、12既有optional skips、0 failures/errors（共641 tests）。審查摘要與暫存
+report identities 見
+[`../reviews/PQ_RBBC_v2_41_AI_TECHNICAL_RE_REVIEW_RESULT_zh-TW.md`](../reviews/PQ_RBBC_v2_41_AI_TECHNICAL_RE_REVIEW_RESULT_zh-TW.md)。
+
+V2.41 checksum inventory 中本 handoff 的 entry 是 `1a1d576:<path>` 的歷史 identity
+（24,839 bytes、SHA-256 `689f330692cc3110a422902ce451c116bf0640f13ce71a01bbbb41deab11c3cf`）；
+本文件作為 integration-owned current handoff 已繼續前進。驗證 inventory 時須對該一項
+使用上述 Git object，其餘15項直接核對current tree；不得回寫歷史checksum掩蓋差異。
+
+下一個 bounded gate 是先 provision repository 外的 trusted artifact root，再由真實
+operator 建立 exact v2.41 resource reservation，並由合格且獨立的 human reviewer 對
+exact commit、reservation bytes、batch 與 command binding 出具 review。兩者到齊後才
+author launch manifest candidate 並重跑唯讀 preflight；這仍不構成 production 授權。
 
 沒有真實 reservation、偽造 review、production-prefreeze、large replay/proving 或
 新的 production observation；所有 production/security claims 維持 false。

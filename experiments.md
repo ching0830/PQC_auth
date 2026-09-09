@@ -1,6 +1,6 @@
 # 實驗紀錄（Experiments）
 
-> 最後更新：2026-09-02
+> 最後更新：2026-09-09
 > 用途：保存可重現的實驗環境、命令、結果、artifact identity 與結論。不得只寫「測試通過」。文件權責見 `docs/DOCUMENTATION_POLICY_zh-TW.md`。
 
 ## 記錄規範
@@ -118,6 +118,41 @@ PYTHONPATH=src python -m unittest discover -s tests -v
 - full regression 結果：`Ran 295 tests in 575.086s`；`OK (skipped=12)`，exit code 0。
 - skipped 原因：既有 optional v2.13–v2.25 external assignments、execution caches 或 recovery artifacts 未安裝；無新增 skip、failure 或 error。
 - 結論：支持 A system reference 與 B v2.26 bounded evidence 在目前 branch 上整合相容，且 planned trees 0–10 可維持 Evidence-sealed 宣稱；不支持 tree 11–17、72 relocations、完整 18-tree replay、parent join、holder authentication、PQ AKE、proof closure 或 production closure 宣稱。
+
+### EXP-20260909-01 — PQ-RBBC v2.41 launch validation 整合驗證
+
+- 研究問題／假設：v2.41 hardening 與 snapshot-contract corrective effective tree 能否在
+  不改寫 v2.38/v2.39 historical identities、且不提升 production/security claims 的前提
+  下，通過獨立技術重審與 local `main` regression。
+- 日期與時區：2026-09-09，Asia/Taipei。
+- Git commit／branch：code effective tree `1a1d576ef3868a1c997063db80171c9f2cb4f5f8`
+  （直接包含 `1b89ebea12110a655dc1dc6abb5a00d4bd38a338`，base `3885b01`）；
+  於乾淨 integration worktree fast-forward 至 local `main` 後執行。
+- 主要契約：single-open／single bounded-read；identity、strict parse、binding 與
+  validation 只使用同一 immutable `Snapshot.raw`。Metadata 只提供 best-effort signal，
+  不證明 filesystem 強不可變性。
+- local targeted command：
+  `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src TMPDIR=<private-0700-tmp> python -m unittest tests.test_pq_rbbc_cap_unified_tree_launch_preflight tests.test_pq_rbbc_cap_unified_tree_launch_preflight_evidence tests.test_pq_rbbc_cap_unified_tree_launch_validation_v2_41 tests.test_pq_rbbc_cap_unified_tree_launch_validation_evidence_v2_41 -v`
+- local targeted 結果：code merge 後 `Ran 69 tests in 2.096s`；integration docs 更新後
+  再跑為 `Ran 69 tests in 2.279s`。兩次均69 passed、0 failed/errors/skips，exit 0。
+- local full command：
+  `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src TMPDIR=<private-0700-tmp> python -m unittest discover -s tests -v`
+- local full 結果：`Ran 641 tests in 717.047s`；629 passed、12 skipped、0 failures/errors，
+  exit 0。Skips 均為既有 optional v2.13–v2.25 external artifacts 未安裝。
+- 獨立重審：69 targeted、629 full-suite passed 加12既有skips、17/17八項probe groups、
+  4/4 corrective probes及17/17額外cases；新 findings 為空。完整暫存報告在審查時為
+  23,637 bytes、SHA-256
+  `34ca21f07a1adb150692712b4d2227bb0d0cb874fdda6e2d5f951e59066250de`；持久摘要見
+  `docs/reviews/PQ_RBBC_v2_41_AI_TECHNICAL_RE_REVIEW_RESULT_zh-TW.md`。
+- Artifact 核對：19份v2.38/v2.39 historical identities、三版inventories與negative
+  portable rebuild均相符。Integration 更新current handoff後，v2.41 checksum的該一entry
+  依`1a1d576:<path>`歷史Git object核對（24,839 bytes、SHA-256 `689f3306…cf`），其餘
+  15項直接符合current tree；未回寫歷史inventory，也未執行production、large replay或proving。
+- 結論：支持v2.41 launch validation為Implemented／Tested且negative portable evidence
+  可重建；不支持external human review、真實reservation、identity freeze、filesystem
+  強不可變性、CAP/fork proof closure或Production-closed宣稱。
+- 下一步：provision可信external artifact root，取得真實operator reservation及external
+  human independent review，之後才可產生launch manifest candidate並跑唯讀preflight。
 
 ## 實驗模板
 

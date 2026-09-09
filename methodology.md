@@ -1,6 +1,6 @@
 # 研究方法（Methodology）
 
-> 最後更新：2026-08-31
+> 最後更新：2026-09-09
 > 用途：記錄研究設計、威脅模型、決策理由、評估方法及尚未決定事項。文件權責見 `docs/DOCUMENTATION_POLICY_zh-TW.md`。
 
 ## 研究方法概覽
@@ -51,6 +51,7 @@
 | D-003 | FAC threshold primitive | 待比較 PQ threshold signature 與 DKG | 待研究 | issuer authorization |
 | D-004 | OA threshold encryption | robust、auditable PQ construction | 待研究 | production opening |
 | D-005 | SE-NIZK backend | 合格 PQ backend 候選 | 待研究 | RBBC proof closure |
+| D-006 | Launch artifact snapshot boundary | 同一 immutable captured bytes；filesystem 強不可變性列為部署前提 | 已決定（2026-09-09） | unified-tree launch／execution handoff |
 
 ### D-001 — System profile v0.1 採 strictly one-use ticket
 
@@ -62,6 +63,20 @@
 - **代價：**UE 需要預先取得足夠的短效 ticket，FGS 需要維護 consumption state；離線或 partition 情境的 availability 必須單獨評估。
 - **未來擴充：**若後續加入 unlinkable `Show`，必須建立新的 presentation relation、security game、encoding、proof backend 與 benchmark，不能只移除 consumption check。
 - **實作規格：**`docs/specs/ONE_TIME_TICKET_STATE_v0_1_zh-TW.md` 定義 draft state machine、atomic commit、retry／crash、handover boundary、framing 與 machine-test invariants。Canonical access codecs、transcript／use identities 與 test-only process-local replay model 已實作／測試；holder authenticator、PQ AKE、UE wallet journal 與 durable／distributed production store 仍未實作。
+
+### D-006 — Launch artifact 採 captured-byte consistency boundary
+
+- **決定日期：**2026-09-09。
+- **選擇：**launch validation 對每個輸入執行 single-open、single bounded read，後續
+  identity、strict parse、binding 與 semantic validation 全部只消費同一 immutable
+  `Snapshot.raw`。Inode、size、mtime、ctime 僅作 best-effort mutation signals。
+- **理由：**一般 filesystem 的 metadata equality 無法證明 capture 期間完全沒有 writer；
+  反覆 `stat` 或重讀 pathname 不能建立該保證，後者還可能重新引入 hash／parse TOCTOU。
+- **必要條件：**future executor 必須直接消費已驗證 `CandidateSet` 中的 snapshots，不得
+  重開 pathname。Trusted producer handoff、writer quiescence、owner／mode／ACL、既有
+  writable FD 與 mount namespace 由部署與正式授權流程負責。
+- **claim boundary：**此決策封閉 byte-consistency contract，不證明 filesystem 強不可變性、
+  reviewer authenticity／independence、execution authorization 或 production closure。
 
 ## 驗證與評估方法
 

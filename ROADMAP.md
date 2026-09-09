@@ -10,7 +10,7 @@ for their internal checkpoints.
 | Track | Goal | Dependency | Can proceed now? |
 | --- | --- | --- | --- |
 | T0 — architecture and claims | freeze roles, phases, interfaces, threat model, and claim vocabulary | none | in progress |
-| T1 — PQ-RBBC core | trees 0–10 evidence-sealed; finish trees 11–17, 72 relocations, 18-tree composition, parent join, fork proof, backend, and benchmarks | existing RBBC artifacts | yes; next candidate batch is trees 11–13 |
+| T1 — PQ-RBBC core | legacy 18-tree relation/parent join has executable evidence; complete real unified-tree launch artifacts, production qualification, fork proof, backend, and benchmarks | v2.41 contracts, trusted artifact root, external operator/reviewer | yes; next bounded gate is reservation and human independent review |
 | T2 — federation authorization | specify FAC threshold issuer/configuration authorization and its evidence format | T0 | yes |
 | T3 — opening governance | specify case authorization, OA gate, robust shares, combine, and public audit evidence | T0; stable RBBC ticket digest | yes |
 | T4 — satellite access and PQ AKE | draft access codecs and transcript identities exist; select holder authenticator/PQ AKE and define the UE–FGS state machine, LEO/FLEO role, and session keys | T0; stable VerifyTicket interface | yes |
@@ -24,10 +24,13 @@ for their internal checkpoints.
 
 ### Lane A — existing RBBC work
 
-Continue the current module handoff at
-[docs/roadmaps/PQ_RBBC_CURRENT_HANDOFF.md](docs/roadmaps/PQ_RBBC_CURRENT_HANDOFF.md).
-Do not change its tree-producer paths or artifact identities during the
-architecture reorganization.
+Continue under the authoritative Traditional Chinese handoff at
+[docs/roadmaps/PQ_RBBC_CURRENT_HANDOFF_zh-TW.md](docs/roadmaps/PQ_RBBC_CURRENT_HANDOFF_zh-TW.md).
+Provision the repository-external trusted artifact root, obtain a real operator
+reservation and external human independent review, then author a launch
+manifest candidate and run read-only preflight. Production remains forbidden
+without separate authorization. Do not change legacy tree-producer paths or
+historical artifact identities during the architecture reorganization.
 
 ### Lane B — system specification
 

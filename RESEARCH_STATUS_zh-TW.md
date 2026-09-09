@@ -2,9 +2,9 @@
 
 # 研究狀態
 
-依 2026 年 9 月 6 日整合 checkpoint 更新，包含 system vertical slice、system
+依 2026 年 9 月 9 日整合 checkpoint 更新，包含 system vertical slice、system
 initialization／issuer authorization／conditional opening control plane，以及 PQ-RBBC
-v2.27–v2.39。精確發布位置仍以 Git commit 與 branch 為準。
+v2.27–v2.41。精確發布位置仍以 Git commit 與 branch 為準。
 
 ## 整篇論文狀態
 
@@ -119,15 +119,25 @@ v2.27–v2.39。精確發布位置仍以 Git commit 與 branch 為準。
   authorization亦未成立；因此production pre-freeze、large replay/proving與全部
   security claims維持false。Portable evidence只封存schema與負向qualification，沒有
   偽造operator或independent-review attestation。
+- v2.41已針對v2.39 technical pre-review的八項findings建立獨立successor：候選輸入
+  採single-open／single bounded-read snapshots，identity、strict canonical JSON parse、
+  binding與validation共用同一immutable raw；exact paths/commands、strict bool/int、
+  trusted time、reservation-bound review、exclusive publication及authoring predecessor
+  gates均有positive／negative／mutation／race regressions。初次重審發現metadata不能
+  證明同長度原地改寫不存在，corrective commit已將契約精確縮限為captured-byte
+  consistency，並把filesystem強不可變性列為部署前提。Effective-tree AI technical
+  re-review未發現新問題；本機integration regression為641 tests，629 passed、12既有
+  optional skips、0 failures/errors。這不是external human cryptographic review；真實
+  reservation/review、launch identity freeze、execution authorization與production仍未成立。
 
 仍未完成：
 
 - 完整CAP Prove／Verify、production `c_x` serialization、PoW／192-bit profile
   disposition、concrete Anemoi ROM／QROM justification及CAP獨立review；
 - unified-tree production-scale checkpoint payload materialization／relation
-  qualification、production streaming materialization、operator resource reservation、independent
-  design/cryptographic review、production runner qualification、外部identity freeze與
-  launch manifest，
+  qualification、production streaming materialization、真實operator resource reservation、external
+  human design/cryptographic review、production runner scale qualification、可信producer
+  handoff／writer quiescence、外部identity freeze與launch manifest，
   以及全新profile pre-freeze與兩次完整replay；
 - fork-specific QROM、blindness與one-more proof及其獨立review；
 - 合格 PQ zero-knowledge／simulation-extractable backend；

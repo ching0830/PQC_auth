@@ -9,7 +9,7 @@
 | Track | 目標 | 相依項目 | 現在可進行？ |
 | --- | --- | --- | --- |
 | T0 — 架構與 claims | 固定角色、階段、介面、threat model 與 claim vocabulary | 無 | 進行中 |
-| T1 — PQ-RBBC core | tree 0–10 已 evidence-sealed；完成 tree 11–17、72 relocations、18-tree composition、parent join、fork proof、backend 與 benchmarks | 既有 RBBC artifacts | 可以；下一個候選 batch 為 tree 11–13 |
+| T1 — PQ-RBBC core | legacy 18-tree relation／parent join 已有 executable evidence；完成 unified-tree 真實 launch artifacts、production qualification、fork proof、backend 與 benchmarks | v2.41 contracts、可信 artifact root、外部 operator／reviewer | 可以；下一個 bounded gate 是 reservation 與 human independent review |
 | T2 — Federation authorization | 定義 FAC threshold issuer／configuration authorization 與 evidence format | T0 | 可以 |
 | T3 — Opening governance | 定義 case authorization、OA gate、robust shares、combine 與 public audit evidence | T0；穩定 RBBC ticket digest | 可以 |
 | T4 — Satellite access 與 PQ AKE | draft access codecs 與 transcript identities 已建立；選定 holder authenticator／PQ AKE，並定義 UE–FGS state machine、LEO／FLEO 角色與 session keys | T0；穩定 VerifyTicket interface | 可以 |
@@ -23,7 +23,7 @@
 
 ### Lane A — 既有 RBBC 工作
 
-依 [docs/roadmaps/PQ_RBBC_CURRENT_HANDOFF_zh-TW.md](docs/roadmaps/PQ_RBBC_CURRENT_HANDOFF_zh-TW.md) 繼續。目前架構重整期間不得變更 tree-producer paths 或 artifact identities。
+依 [docs/roadmaps/PQ_RBBC_CURRENT_HANDOFF_zh-TW.md](docs/roadmaps/PQ_RBBC_CURRENT_HANDOFF_zh-TW.md) 繼續。先依 v2.41 provision repository 外的 trusted artifact root、取得真實 operator reservation 與 external human independent review，再建立 launch manifest candidate 及執行唯讀 preflight；未取得另行授權前不得啟動 production。架構重整期間不得變更 legacy tree-producer paths 或 historical artifact identities。
 
 ### Lane B — System specification
 

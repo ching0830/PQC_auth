@@ -2,20 +2,19 @@
 
 # Research status
 
-This English mirror is not yet synchronized beyond the v2.26 summary below.
-For the integrated system-control-plane and PQ-RBBC v2.27-through-v2.39 status,
-use the authoritative [Traditional Chinese status](RESEARCH_STATUS_zh-TW.md).
-Do not infer the current completion boundary from this mirror.
+Synchronized at the 9 September 2026 integration checkpoint, including the
+system control plane and PQ-RBBC through v2.41. The Traditional Chinese version
+remains the primary editorial source.
 
 ## Whole-thesis status
 
 | Area | Specification | Implementation | Evidence / proof |
 | --- | --- | --- | --- |
-| Overall architecture | initial top-level definition | not applicable | review required |
-| FAC issuer authorization | requirements known | not started | not started |
+| Overall architecture | initial top-level definition and system-profile v0.1 contracts | canonical configuration and public-initialization bundle codecs | deterministic vectors and negative tests; production key ceremony open |
+| FAC issuer authorization | v0.1 epoch/policy/quota-bound grant contract | bounded control plane and process-local atomic quota reference store | canonical vectors and quota/replay tests; FAC PQ signature and distributed store open |
 | PQ-RBBC issuance and ticket | formal core defined | research relation and substantial circuit implementation | conditional reductions; production closure false |
-| Opening authorization | abstract verifier interface defined | not started | authorization unforgeability assumed |
-| Threshold trace opening | abstract construction defined | concrete full protocol not closed | robust transcript and real key open |
+| Opening authorization | v0.1 canonical request, authorization statement, replay, and share gate | bounded fail-closed `OpenShareService` control flow | deterministic codecs and gate tests; production signature/share proof open |
+| Threshold trace opening | abstract construction plus v0.1 share/combiner boundary | share consistency, threshold combine, and serial check under a test-only backend | robust decoder, OA DKG, real keys, and production transcript open |
 | Satellite access and PQ AKE | v0.1 draft access-object layouts, transcript/attempt identities, and test-only suite profile; PQ AKE not selected | ServingContext and AccessInit/Challenge/Finish/Accept codecs implemented; no holder authenticator or AKE | 13 object/binding tests; no authentication-security or production-closure claim |
 | Anti-replay and revocation | v0.1 has a draft one-time state machine, atomic consumption, retry/crash semantics, and framing; G1 is not frozen | canonical frame/opaque parser, use identity, and a test-only process-local linearizable replay model implemented | 16 replay/framing tests; not a durable/distributed store and no production closure claimed |
 | Handover | requirements only | not started | not claimed |
@@ -23,24 +22,28 @@ Do not infer the current completion boundary from this mirror.
 
 ## RBBC checkpoint
 
-Closed through v2.26:
+Integrated through v2.41:
 
-- production composer cache recovery;
-- global-tail regeneration and replay;
-- planned producer positions 0 through 10 materialized;
-- all eleven positions independently replayed under their applicable frozen
-  contracts; and
-- portable path-free evidence for closed checkpoints, including the separately
-  bound tree-5-through-tree-7 batch and tree-8-through-tree-10 bounded recovery.
+- the legacy 18-tree profile has executable evidence for every tree, all 72
+  relocations, the complete replay, and the parent CAP-to-$H_{RBBC}$ join;
+- v2.30 through v2.32 freeze the fork/CAP audit and Prove/Verify contracts while
+  preserving unresolved proof, QROM, PoW, and backend blockers;
+- v2.33 through v2.38 define a separate unified-tree candidate and bounded
+  runner, checkpoint, statement, relation, and streaming primitives without
+  claiming a production-scale execution; and
+- v2.39/v2.41 provide closed-world launch contracts and hardened fail-closed
+  validation. Identity, parsing, binding, and validation consume one immutable
+  captured byte snapshot. Filesystem immutability remains a deployment
+  precondition, and the successful AI technical re-review is not an external
+  human review or execution authorization.
 
 Still open:
 
-- tree positions 11 through 17;
-- all 72 output relocations;
-- complete 18-tree assignment replay;
-- cross-segment wire identity;
-- parent CAP-to-$H_{RBBC}$ join;
-- fork-specific blindness and one-more proof;
+- production-scale unified-tree materialization, replay, and runner
+  qualification;
+- a real operator reservation, external human design/cryptographic review,
+  trusted producer handoff, identity freeze, and launch manifest;
+- fork-specific CAP/QROM, blindness, and one-more proof;
 - qualified PQ zero-knowledge / simulation-extractable backend;
 - real trace-encryption key and robust threshold transcript;
 - fresh size, time, and memory benchmarks; and
