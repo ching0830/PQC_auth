@@ -1,10 +1,37 @@
 [English](PQ_RBBC_CURRENT_HANDOFF.md)
 
-# PQ-RBBC 目前交接 — v2.41 launch validation successor（已整合）
+# PQ-RBBC 目前交接 — v2.42 recovery／provenance successor（待整合）
 
 > **模組範圍：**這是 PQ-RBBC 的操作交接，不是整篇論文 roadmap。專案級背景請先讀 [../../ARCHITECTURE_zh-TW.md](../../ARCHITECTURE_zh-TW.md)、[../../RESEARCH_STATUS_zh-TW.md](../../RESEARCH_STATUS_zh-TW.md) 與 [../../ROADMAP_zh-TW.md](../../ROADMAP_zh-TW.md)。
 
-日期：2026 年 9 月 9 日
+日期：2026 年 9 月 10 日
+
+## V2.42 recovery／provenance successor（待整合）
+
+2026-09-10 的 Codex AI-assisted cryptographic review 新增 CR-01（P2：兩個 chunk／
+checkpoint crash windows 無法 resume）及 CR-02（P3：Blind-UOV 參數引用錯置）。
+因此下方 v2.41「下一個 gate」敘述只保留為歷史；目前仍不具 production 核准條件。
+
+`codex/pq-rbbc-v2-42-recovery-and-provenance` 從 `973deee` 建立獨立 worktree，新增
+bounded recovery runner、append-only checkpoint journal、exact orphan 重算驗證與
+idempotent finalization，以及固定三份 PDF revisions 的 provenance erratum。
+V2.33 sealed spec、v2.38／39／41 historical evidence 與原 v2.41 operator reservation
+都保留 exact bytes；v2.41 reservation 不能授權未來 v2.42 effective tree。
+
+詳細變更、targeted／full suite、historical preservation 與 claim boundary 見
+[新 artifact note](../artifacts/PQ_RBBC_v2_42_RECOVERY_AND_PROVENANCE_zh-TW.md)。
+本 branch 只 commit，等待整合；本段不表示 v2.42 已 merge 或已獲獨立核准。
+
+先完成 final exact commit 的 regression 與
+[獨立 technical re-review](../reviews/PQ_RBBC_v2_42_AI_TECHNICAL_RE_REVIEW_PROMPT_zh-TW.md)，
+才可重新取得 v2.42 resource reservation；之後再由真正具名獨立人員 review exact
+reservation bytes／SHA／ID、batch、command 與 effective implementation identity。
+只有該 review 無 blocking findings，才能生成 launch manifest candidate。
+Codex AI-assisted review 不等於該具名人員核准。
+
+目前 v2.42 reservation、independent review、launch candidate／identity freeze 都未建立，
+production-prefreeze、large replay／proving 與全部 security／production claims 為 false。
+Root canonical docs 由 integration lane 依這份新 evidence 更新。
 
 ## V2.41 branch checkpoint
 
