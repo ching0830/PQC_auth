@@ -15,6 +15,8 @@ NOW = datetime(2026, 9, 10, 12, 0, 0, tzinfo=timezone.utc)
 APPROVED = "2026-09-10T10:00:00Z"
 START = "2026-09-10T11:00:00Z"
 END = "2026-09-17T11:00:00Z"
+EXPECTED_REVIEWED_COMMIT = "1" * 40
+EXPECTED_REVIEWED_TREE = "2" * 40
 
 
 def approval_document():
@@ -74,13 +76,19 @@ def resource_document(root: Path, review_root: Path, contract_review_root: Path,
             "trusted_artifact_root": str(root),
             "trusted_review_root": str(review_root),
             "trusted_contract_review_root": str(contract_review_root),
+            "expected_reviewed_commit": EXPECTED_REVIEWED_COMMIT,
+            "expected_reviewed_tree": EXPECTED_REVIEWED_TREE,
             "external_output": str(root / "production-prefreeze"),
             "candidate_locations": {
                 key: paths[key]
                 for key in ("resource_reservation", "independent_review", "launch_manifest")
             },
-            "exact_command": subject.production_command(root, review_root, contract_review_root),
-            "exact_command_sha256": subject.command_sha256(root, review_root, contract_review_root),
+            "exact_command": subject.production_command(
+                root, review_root, contract_review_root,
+                EXPECTED_REVIEWED_COMMIT, EXPECTED_REVIEWED_TREE),
+            "exact_command_sha256": subject.command_sha256(
+                root, review_root, contract_review_root,
+                EXPECTED_REVIEWED_COMMIT, EXPECTED_REVIEWED_TREE),
             "fresh_cache_required": True,
             "existing_output_overwrite_forbidden": True,
             "legacy_evidence_read_only": True,
@@ -169,8 +177,8 @@ class ReservationBindingV243Tests(unittest.TestCase):
             path.write_bytes(contract_review_raw[key])
             contract_reviews[key] = ArtifactRoot(self.contract_review_root).read(path)
         status_doc = subject.build_technical_review_status(
-            reviewed_commit="1" * 40,
-            reviewed_tree="2" * 40,
+            reviewed_commit=EXPECTED_REVIEWED_COMMIT,
+            reviewed_tree=EXPECTED_REVIEWED_TREE,
             completed_at_utc="2026-09-10T09:00:00Z",
             **contract_reviews,
         )
@@ -194,20 +202,31 @@ class ReservationBindingV243Tests(unittest.TestCase):
     def validate_resource(self, document, *, approval=None, technical_status=None,
                           root=None, review_root=None, contract_review_root=None,
                           now=NOW):
-        return subject.validate_resource(
-            document,
-            approval or self.approval,
-            technical_status or self.technical_status,
-            root or self.root,
-            review_root or self.review_root,
-            contract_review_root or self.contract_review_root,
-            now,
-        )
+        with patch.object(subject, "verify_reviewed_git_target", return_value=()):
+            return subject.validate_resource(
+                document,
+                approval or self.approval,
+                technical_status or self.technical_status,
+                root or self.root,
+                review_root or self.review_root,
+                contract_review_root or self.contract_review_root,
+                now,
+                EXPECTED_REVIEWED_COMMIT,
+                EXPECTED_REVIEWED_TREE,
+            )
 
     def validate_review(self, document, *, now=NOW):
-        return subject.validate_review(
-            document, self.resource, self.approval, self.technical_status,
-            self.root, self.review_root, self.contract_review_root, now)
+        with patch.object(subject, "verify_reviewed_git_target", return_value=()):
+            return subject.validate_review(
+                document, self.resource, self.approval, self.technical_status,
+                self.root, self.review_root, self.contract_review_root, now,
+                EXPECTED_REVIEWED_COMMIT, EXPECTED_REVIEWED_TREE)
+
+    def validate_status(self, document, *, now=NOW):
+        with patch.object(subject, "verify_reviewed_git_target", return_value=()):
+            return subject.validate_technical_review_status(
+                document, self.contract_review_root, now,
+                EXPECTED_REVIEWED_COMMIT, EXPECTED_REVIEWED_TREE)
 
     def test_tracked_repository_contracts_match_generated_contracts(self):
         self.assertEqual((), subject.validate_tracked_repository_contracts())
@@ -220,8 +239,7 @@ class ReservationBindingV243Tests(unittest.TestCase):
         self.assertFalse(subject.claim_boundary()["production_prefreeze_authorized"])
 
     def test_resource_and_named_human_review_positive(self):
-        self.assertEqual((), subject.validate_technical_review_status(
-            self.technical_status.document(), self.contract_review_root, NOW))
+        self.assertEqual((), self.validate_status(self.technical_status.document()))
         self.assertEqual((), self.validate_resource(self.resource_doc))
         self.assertEqual((), self.validate_review(self.review_doc))
 
@@ -229,20 +247,44 @@ class ReservationBindingV243Tests(unittest.TestCase):
         document = self.technical_status.document()
         document["reviewed_contracts"]["contract_source"]["sha256"] = "0" * 64
         self.assertIn("technical_review_status:contract_binding",
-                      subject.validate_technical_review_status(
-                          document, self.contract_review_root, NOW))
+                      self.validate_status(document))
         document = self.technical_status.document()
         document["external_review_artifacts"]["report"]["sha256"] = "0" * 64
         self.assertIn("technical_review_status:external_identity:report",
-                      subject.validate_technical_review_status(
-                          document, self.contract_review_root, NOW))
+                      self.validate_status(document))
 
     def test_technical_review_status_future_completion_rejects(self):
         document = self.technical_status.document()
         document["completed_at_utc"] = "2026-09-10T13:00:00Z"
         self.assertIn("technical_review_status:future_completion",
-                      subject.validate_technical_review_status(
-                          document, self.contract_review_root, NOW))
+                      self.validate_status(document))
+
+    def test_technical_review_status_binds_real_expected_git_objects_and_blobs(self):
+        document = self.technical_status.document()
+
+        def fake_git(*arguments):
+            if arguments[:2] == ("cat-file", "-t"):
+                return (b"commit\n" if arguments[2] == EXPECTED_REVIEWED_COMMIT
+                        else b"tree\n")
+            if arguments[:2] == ("rev-parse", "--verify"):
+                return (EXPECTED_REVIEWED_TREE + "\n").encode("ascii")
+            if arguments[0] == "show":
+                relative = arguments[1].split(":", 1)[1]
+                return (subject.ROOT / relative).read_bytes()
+            self.fail("unexpected Git query: " + repr(arguments))
+
+        with patch.object(subject, "_git", side_effect=fake_git), \
+                patch.object(subject, "_git_is_ancestor", return_value=True):
+            self.assertEqual((), subject.verify_reviewed_git_target(
+                document, EXPECTED_REVIEWED_COMMIT, EXPECTED_REVIEWED_TREE))
+
+        self.assertIn("git_target:commit_binding", subject.verify_reviewed_git_target(
+            document, "3" * 40, EXPECTED_REVIEWED_TREE))
+        self.assertIn("git_target:tree_binding", subject.verify_reviewed_git_target(
+            document, EXPECTED_REVIEWED_COMMIT, "3" * 40))
+        with patch.object(subject, "_git", side_effect=ValidationError("missing")):
+            self.assertIn("git_target:object_lookup", subject.verify_reviewed_git_target(
+                document, EXPECTED_REVIEWED_COMMIT, EXPECTED_REVIEWED_TREE))
 
     def test_resource_builder_blocks_before_tracked_review_status_exists(self):
         with self.assertRaisesRegex(
@@ -252,6 +294,8 @@ class ReservationBindingV243Tests(unittest.TestCase):
                 artifact_root=self.root,
                 review_root=Path("/home/ucheng0830/pq_rbbc_runtime/v2_42_review"),
                 contract_review_root=self.contract_review_root,
+                expected_reviewed_commit=EXPECTED_REVIEWED_COMMIT,
+                expected_reviewed_tree=EXPECTED_REVIEWED_TREE,
                 starts_at_utc=START,
                 ends_at_utc=END,
                 cpu_cores=4,
@@ -272,12 +316,15 @@ class ReservationBindingV243Tests(unittest.TestCase):
         status_path = Path(self.temporary.name) / subject.TECHNICAL_REVIEW_STATUS_PATH.name
         status_path.write_bytes(self.technical_status.raw)
         with patch.object(subject, "TECHNICAL_REVIEW_STATUS_PATH", status_path), \
-                patch.object(subject, "validate_tracked_contracts", return_value=()):
+                patch.object(subject, "validate_tracked_contracts", return_value=()), \
+                patch.object(subject, "verify_reviewed_git_target", return_value=()):
             resource = subject.build_resource_reservation(
                 approval=self.approval,
                 artifact_root=self.root,
                 review_root=Path("/home/ucheng0830/pq_rbbc_runtime/v2_42_review"),
                 contract_review_root=self.contract_review_root,
+                expected_reviewed_commit=EXPECTED_REVIEWED_COMMIT,
+                expected_reviewed_tree=EXPECTED_REVIEWED_TREE,
                 starts_at_utc=START,
                 ends_at_utc=END,
                 cpu_cores=4,
@@ -383,6 +430,37 @@ class ReservationBindingV243Tests(unittest.TestCase):
         document["reviewer"]["completed_at_utc"] = "2026-09-10T09:00:00Z"
         self.assertIn("review:time_order", self.validate_review(document))
 
+    def test_review_rejects_operator_as_reviewer(self):
+        document = copy.deepcopy(self.review_doc)
+        document["reviewer"]["identifier"] = self.resource_doc["operator"]["identifier"]
+        self.assertIn("review:reviewer_is_operator", self.validate_review(document))
+
+    def test_operator_as_reviewer_closes_review_and_launch_gates(self):
+        document = copy.deepcopy(self.review_doc)
+        document["reviewer"]["identifier"] = self.resource_doc["operator"]["identifier"]
+        review_path = self.root / subject.FILENAMES["independent_review"]
+        review_path.write_bytes(canonical_json(document))
+        status_path = Path(self.temporary.name) / subject.TECHNICAL_REVIEW_STATUS_PATH.name
+        status_path.write_bytes(self.technical_status.raw)
+        with patch.object(subject, "TECHNICAL_REVIEW_STATUS_PATH", status_path), \
+                patch.object(subject, "validate_tracked_contracts", return_value=()), \
+                patch.object(subject, "verify_reviewed_git_target", return_value=()):
+            report = subject.build_preflight(
+                artifact_root=self.root,
+                review_root=self.review_root,
+                contract_review_root=self.contract_review_root,
+                expected_reviewed_commit=EXPECTED_REVIEWED_COMMIT,
+                expected_reviewed_tree=EXPECTED_REVIEWED_TREE,
+                resource_path=self.resource_path,
+                review_path=review_path,
+                clock=lambda: NOW,
+            )
+        self.assertIn(
+            "review:reviewer_is_operator",
+            report["external_candidates"]["independent_review"]["failures"])
+        self.assertFalse(report["result"]["independent_review_acceptable_for_freeze"])
+        self.assertFalse(report["result"]["safe_to_author_launch_manifest_candidate"])
+
     def test_noncanonical_candidate_bytes_are_rejected(self):
         path = self.root / subject.FILENAMES["independent_review"]
         path.write_text(json.dumps(self.review_doc, indent=2), encoding="utf-8")
@@ -393,12 +471,57 @@ class ReservationBindingV243Tests(unittest.TestCase):
         failures = subject.verify_external_review_archive(self.review_root)
         self.assertEqual(3, len(failures))
 
+    def test_contract_or_archive_failure_closes_every_downstream_gate(self):
+        review_path = self.root / subject.FILENAMES["independent_review"]
+        review_path.write_bytes(canonical_json(self.review_doc))
+        status_path = Path(self.temporary.name) / subject.TECHNICAL_REVIEW_STATUS_PATH.name
+        status_path.write_bytes(self.technical_status.raw)
+        injected_failures = [
+            "review_archive:identity:" + filename
+            for filename in subject.EXTERNAL_REVIEW_IDENTITIES
+        ] + [
+            "tracked_dependency:" + relative
+            for relative in subject.TRACKED_DEPENDENCY_IDENTITIES
+        ]
+        for injected_failure in injected_failures:
+            with self.subTest(injected_failure=injected_failure), \
+                    patch.object(subject, "TECHNICAL_REVIEW_STATUS_PATH", status_path), \
+                    patch.object(subject, "validate_tracked_contracts",
+                                 return_value=(injected_failure,)), \
+                    patch.object(subject, "verify_reviewed_git_target", return_value=()):
+                report = subject.build_preflight(
+                    artifact_root=self.root,
+                    review_root=self.review_root,
+                    contract_review_root=self.contract_review_root,
+                    expected_reviewed_commit=EXPECTED_REVIEWED_COMMIT,
+                    expected_reviewed_tree=EXPECTED_REVIEWED_TREE,
+                    resource_path=self.resource_path,
+                    review_path=review_path,
+                    clock=lambda: NOW,
+                )
+            self.assertFalse(report["tracked_contracts"]["verified"])
+            for gate in (
+                    "safe_to_run_read_only_reservation_preflight",
+                    "v2_43_contract_technical_review_acceptable",
+                    "resource_reservation_acceptable_for_freeze",
+                    "safe_to_submit_named_independent_human_review",
+                    "independent_review_acceptable_for_freeze",
+                    "safe_to_author_launch_manifest_candidate"):
+                self.assertFalse(report["result"][gate])
+            for candidate in (
+                    "technical_review_status", "resource_reservation", "independent_review"):
+                self.assertIn(
+                    "tracked_contracts_or_dependencies_unverified",
+                    report["external_candidates"][candidate]["failures"])
+
     def test_production_always_rejects(self):
         with self.assertRaisesRegex(ValidationError, "production-prefreeze is unavailable"):
             subject.reject_production(
                 artifact_root=self.root,
                 review_root=self.review_root,
                 contract_review_root=self.contract_review_root,
+                expected_reviewed_commit=EXPECTED_REVIEWED_COMMIT,
+                expected_reviewed_tree=EXPECTED_REVIEWED_TREE,
                 resource_path=self.resource_path,
                 review_path=None,
                 launch_path=self.root / subject.FILENAMES["launch_manifest"],
@@ -413,6 +536,8 @@ class ReservationBindingV243Tests(unittest.TestCase):
             "--trusted-artifact-root", str(self.root),
             "--trusted-review-root", str(self.review_root),
             "--trusted-contract-review-root", str(self.contract_review_root),
+            "--expected-reviewed-commit", EXPECTED_REVIEWED_COMMIT,
+            "--expected-reviewed-tree", EXPECTED_REVIEWED_TREE,
             "--output", str(self.root / "wrong.json"),
             "--fresh-output",
         ]
@@ -450,8 +575,8 @@ class ExternalReviewArchiveV243Tests(unittest.TestCase):
                 path.write_bytes(raw[key])
                 snapshots[key] = ArtifactRoot(contract_review_root).read(path)
             status_doc = subject.build_technical_review_status(
-                reviewed_commit="1" * 40,
-                reviewed_tree="2" * 40,
+                reviewed_commit=EXPECTED_REVIEWED_COMMIT,
+                reviewed_tree=EXPECTED_REVIEWED_TREE,
                 completed_at_utc="2026-09-10T09:00:00Z",
                 **snapshots,
             )
@@ -469,11 +594,14 @@ class ExternalReviewArchiveV243Tests(unittest.TestCase):
             review_path = root / subject.FILENAMES["independent_review"]
             review_path.write_bytes(canonical_json(
                 review_document(resource_snapshot, approval, status)))
-            with patch.object(subject, "TECHNICAL_REVIEW_STATUS_PATH", status_path):
+            with patch.object(subject, "TECHNICAL_REVIEW_STATUS_PATH", status_path), \
+                    patch.object(subject, "verify_reviewed_git_target", return_value=()):
                 report = subject.build_preflight(
                     artifact_root=root,
                     review_root=review_root,
                     contract_review_root=contract_review_root,
+                    expected_reviewed_commit=EXPECTED_REVIEWED_COMMIT,
+                    expected_reviewed_tree=EXPECTED_REVIEWED_TREE,
                     resource_path=resource_path,
                     review_path=review_path,
                     clock=lambda: NOW,

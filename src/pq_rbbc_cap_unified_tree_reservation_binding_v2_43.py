@@ -14,6 +14,7 @@ import hashlib
 from pathlib import Path
 import re
 import shlex
+import subprocess
 from typing import Callable
 
 from pq_rbbc_launch_io_v2_41 import (
@@ -248,7 +249,9 @@ def locations(root: Path) -> dict[str, str]:
     return {kind: str(root / name) for kind, name in FILENAMES.items()}
 
 
-def production_command(root: Path, review_root: Path, contract_review_root: Path) -> str:
+def production_command(root: Path, review_root: Path, contract_review_root: Path,
+                       expected_reviewed_commit: str,
+                       expected_reviewed_tree: str) -> str:
     paths = locations(root)
     argv = [
         "python", "-u", "src/pq_rbbc_cap_unified_tree_reservation_binding_v2_43.py",
@@ -256,6 +259,8 @@ def production_command(root: Path, review_root: Path, contract_review_root: Path
         "--trusted-artifact-root", str(exact_path(root)),
         "--trusted-review-root", str(exact_path(review_root)),
         "--trusted-contract-review-root", str(exact_path(contract_review_root)),
+        "--expected-reviewed-commit", expected_reviewed_commit,
+        "--expected-reviewed-tree", expected_reviewed_tree,
         "--resource-reservation", paths["resource_reservation"],
         "--independent-review", paths["independent_review"],
         "--launch-manifest", paths["launch_manifest"],
@@ -265,9 +270,14 @@ def production_command(root: Path, review_root: Path, contract_review_root: Path
     return "PYTHONPATH=src " + shlex.join(argv)
 
 
-def command_sha256(root: Path, review_root: Path, contract_review_root: Path) -> str:
+def command_sha256(root: Path, review_root: Path, contract_review_root: Path,
+                   expected_reviewed_commit: str,
+                   expected_reviewed_tree: str) -> str:
     return hashlib.sha256(
-        production_command(root, review_root, contract_review_root).encode("utf-8")
+        production_command(
+            root, review_root, contract_review_root,
+            expected_reviewed_commit, expected_reviewed_tree,
+        ).encode("utf-8")
     ).hexdigest()
 
 
@@ -367,6 +377,8 @@ def resource_schema() -> dict:
                 "trusted_artifact_root": _string(concrete=True),
                 "trusted_review_root": _string(concrete=True),
                 "trusted_contract_review_root": _string(concrete=True),
+                "expected_reviewed_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+                "expected_reviewed_tree": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
                 "external_output": _string(concrete=True),
                 "candidate_locations": _object({
                     key: _string(concrete=True)
@@ -490,6 +502,89 @@ def current_contract_identities() -> dict:
     }
 
 
+def _git(*arguments: str) -> bytes:
+    try:
+        result = subprocess.run(
+            ("git", *arguments), cwd=ROOT, stdin=subprocess.DEVNULL,
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+            timeout=10,
+        )
+    except (OSError, subprocess.SubprocessError) as error:
+        raise ValidationError("trusted Git object lookup failed") from error
+    if result.returncode != 0:
+        raise ValidationError("trusted Git object lookup rejected")
+    return result.stdout
+
+
+def _git_is_ancestor(ancestor: str, descendant: str) -> bool:
+    try:
+        result = subprocess.run(
+            ("git", "merge-base", "--is-ancestor", ancestor, descendant),
+            cwd=ROOT, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE, check=False, timeout=10,
+        )
+    except (OSError, subprocess.SubprocessError) as error:
+        raise ValidationError("trusted Git ancestry lookup failed") from error
+    return result.returncode == 0
+
+
+def verify_reviewed_git_target(document: dict, expected_commit: str,
+                               expected_tree: str) -> tuple[str, ...]:
+    """Bind review status to caller-selected Git objects and exact blobs.
+
+    The expected target is trusted operator input, not candidate JSON.  A later
+    status-only commit may be HEAD while this target remains the exact commit
+    actually inspected by the reviewer.
+    """
+    failures = []
+    if (type(expected_commit) is not str or
+            re.fullmatch(r"[0-9a-f]{40}", expected_commit) is None):
+        return ("git_target:expected_commit",)
+    if (type(expected_tree) is not str or
+            re.fullmatch(r"[0-9a-f]{40}", expected_tree) is None):
+        return ("git_target:expected_tree",)
+    if document["reviewed_commit"] != expected_commit:
+        failures.append("git_target:commit_binding")
+    if document["reviewed_tree"] != expected_tree:
+        failures.append("git_target:tree_binding")
+    if failures:
+        return tuple(failures)
+    try:
+        if _git("cat-file", "-t", expected_commit).strip() != b"commit":
+            failures.append("git_target:commit_type")
+            return tuple(failures)
+        actual_tree = _git("rev-parse", "--verify", expected_commit + "^{tree}").strip().decode("ascii")
+        if actual_tree != expected_tree:
+            failures.append("git_target:tree_mismatch")
+            return tuple(failures)
+        if _git("cat-file", "-t", expected_tree).strip() != b"tree":
+            failures.append("git_target:tree_type")
+            return tuple(failures)
+        if not _git_is_ancestor(INTEGRATION_BASELINE_COMMIT, expected_commit):
+            failures.append("git_target:integration_ancestry")
+            return tuple(failures)
+        paths = {
+            "contract_source": SOURCE_PATH,
+            "manifest": MANIFEST_PATH,
+            **{"schema:" + key: path for key, path in SCHEMA_PATHS.items()},
+        }
+        expected_identities = {
+            "contract_source": document["reviewed_contracts"]["contract_source"],
+            "manifest": document["reviewed_contracts"]["manifest"],
+            **{"schema:" + key: value
+               for key, value in document["reviewed_contracts"]["schemas"].items()},
+        }
+        for label, path in paths.items():
+            relative = path.relative_to(ROOT).as_posix()
+            raw = _git("show", expected_commit + ":" + relative)
+            observed = Snapshot(Path(relative), raw).identity
+            if not strict_equal(observed, expected_identities[label]):
+                failures.append("git_target:blob:" + label)
+    except (UnicodeError, ValueError, ValidationError, subprocess.SubprocessError):
+        failures.append("git_target:object_lookup")
+    return tuple(sorted(failures))
+
+
 def build_technical_review_status(*, reviewed_commit: str, reviewed_tree: str,
                                   completed_at_utc: str,
                                   report: Snapshot, findings: Snapshot,
@@ -554,6 +649,8 @@ def build_approval_record(*, reservation_id: str, launch_batch_id: str,
 
 def build_resource_reservation(*, approval: Snapshot, artifact_root: Path,
                                review_root: Path, contract_review_root: Path,
+                               expected_reviewed_commit: str,
+                               expected_reviewed_tree: str,
                                starts_at_utc: str,
                                ends_at_utc: str, cpu_cores: int,
                                available_memory_bytes: int,
@@ -573,7 +670,8 @@ def build_resource_reservation(*, approval: Snapshot, artifact_root: Path,
     except (OSError, ValueError) as error:
         raise ValidationError("v2.43 contract technical review status unavailable") from error
     status_failures = validate_technical_review_status(
-        technical_status.document(), contract_reviews, clock())
+        technical_status.document(), contract_reviews, clock(),
+        expected_reviewed_commit, expected_reviewed_tree)
     if status_failures:
         raise ValidationError("v2.43 contract technical review status rejected: " + str(status_failures))
     paths = locations(root)
@@ -608,13 +706,19 @@ def build_resource_reservation(*, approval: Snapshot, artifact_root: Path,
             "trusted_artifact_root": str(root),
             "trusted_review_root": str(reviews),
             "trusted_contract_review_root": str(contract_reviews),
+            "expected_reviewed_commit": expected_reviewed_commit,
+            "expected_reviewed_tree": expected_reviewed_tree,
             "external_output": str(root / "production-prefreeze"),
             "candidate_locations": {
                 key: paths[key]
                 for key in ("resource_reservation", "independent_review", "launch_manifest")
             },
-            "exact_command": production_command(root, reviews, contract_reviews),
-            "exact_command_sha256": command_sha256(root, reviews, contract_reviews),
+            "exact_command": production_command(
+                root, reviews, contract_reviews,
+                expected_reviewed_commit, expected_reviewed_tree),
+            "exact_command_sha256": command_sha256(
+                root, reviews, contract_reviews,
+                expected_reviewed_commit, expected_reviewed_tree),
             "fresh_cache_required": True,
             "existing_output_overwrite_forbidden": True,
             "legacy_evidence_read_only": True,
@@ -640,14 +744,16 @@ def build_resource_reservation(*, approval: Snapshot, artifact_root: Path,
         },
     }
     failures = validate_resource(
-        document, approval, technical_status, root, reviews, contract_reviews, clock())
+        document, approval, technical_status, root, reviews, contract_reviews, clock(),
+        expected_reviewed_commit, expected_reviewed_tree)
     if failures:
         raise ValidationError("resource reservation rejected: " + str(failures))
     return document
 
 
 def validate_technical_review_status(document: object, contract_review_root: Path,
-                                     now: datetime) -> tuple[str, ...]:
+                                     now: datetime, expected_reviewed_commit: str,
+                                     expected_reviewed_tree: str) -> tuple[str, ...]:
     check_now(now)
     failures = list(validate_schema(document, schemas()["technical_review_status"]))
     if failures:
@@ -658,6 +764,8 @@ def validate_technical_review_status(document: object, contract_review_root: Pat
         return ("technical_review_status:tracked_contract:" + str(error),)
     if not strict_equal(document["reviewed_contracts"], expected_contracts):
         failures.append("technical_review_status:contract_binding")
+    failures.extend(verify_reviewed_git_target(
+        document, expected_reviewed_commit, expected_reviewed_tree))
     try:
         store = ArtifactRoot(contract_review_root)
     except (OSError, ValueError) as error:
@@ -684,7 +792,9 @@ def validate_approval(document: object) -> tuple[str, ...]:
 
 def validate_resource(document: object, approval: Snapshot, technical_review_status: Snapshot,
                       artifact_root: Path, review_root: Path,
-                      contract_review_root: Path, now: datetime) -> tuple[str, ...]:
+                      contract_review_root: Path, now: datetime,
+                      expected_reviewed_commit: str,
+                      expected_reviewed_tree: str) -> tuple[str, ...]:
     check_now(now)
     failures = list(validate_schema(document, schemas()["resource_reservation"]))
     try:
@@ -694,7 +804,9 @@ def validate_resource(document: object, approval: Snapshot, technical_review_sta
     failures.extend(validate_approval(approval_doc))
     try:
         status_doc = technical_review_status.document()
-        failures.extend(validate_technical_review_status(status_doc, contract_review_root, now))
+        failures.extend(validate_technical_review_status(
+            status_doc, contract_review_root, now,
+            expected_reviewed_commit, expected_reviewed_tree))
     except (ValueError, OSError) as error:
         failures.append("technical_review_status:" + str(error))
     if failures:
@@ -713,10 +825,16 @@ def validate_resource(document: object, approval: Snapshot, technical_review_sta
         "trusted_artifact_root": str(root),
         "trusted_review_root": str(reviews),
         "trusted_contract_review_root": str(contract_reviews),
+        "expected_reviewed_commit": expected_reviewed_commit,
+        "expected_reviewed_tree": expected_reviewed_tree,
         "external_output": str(root / "production-prefreeze"),
         "candidate_locations": expected_locations,
-        "exact_command": production_command(root, reviews, contract_reviews),
-        "exact_command_sha256": command_sha256(root, reviews, contract_reviews),
+        "exact_command": production_command(
+            root, reviews, contract_reviews,
+            expected_reviewed_commit, expected_reviewed_tree),
+        "exact_command_sha256": command_sha256(
+            root, reviews, contract_reviews,
+            expected_reviewed_commit, expected_reviewed_tree),
     }
     if any(not strict_equal(scope[key], value) for key, value in expected_scope.items()):
         failures.append("resource:execution_binding")
@@ -753,10 +871,12 @@ def validate_resource(document: object, approval: Snapshot, technical_review_sta
 def validate_review(document: object, resource: Snapshot, approval: Snapshot,
                     technical_review_status: Snapshot, artifact_root: Path,
                     review_root: Path, contract_review_root: Path,
-                    now: datetime) -> tuple[str, ...]:
+                    now: datetime, expected_reviewed_commit: str,
+                    expected_reviewed_tree: str) -> tuple[str, ...]:
     resource_failures = validate_resource(
         resource.document(), approval, technical_review_status,
-        artifact_root, review_root, contract_review_root, now)
+        artifact_root, review_root, contract_review_root, now,
+        expected_reviewed_commit, expected_reviewed_tree)
     failures = list(resource_failures) + list(validate_schema(document, schemas()["independent_review"]))
     if failures:
         return tuple(sorted(failures))
@@ -766,6 +886,8 @@ def validate_review(document: object, resource: Snapshot, approval: Snapshot,
         failures.append("review:subject_binding")
     if document["launch_batch_id"] != resource_doc["launch_batch_id"]:
         failures.append("review:batch_binding")
+    if document["reviewer"]["identifier"] == resource_doc["operator"]["identifier"]:
+        failures.append("review:reviewer_is_operator")
     completed = _utc(document["reviewer"]["completed_at_utc"])
     approved = _utc(resource_doc["operator"]["approved_at_utc"])
     if not approved <= completed <= now:
@@ -828,6 +950,10 @@ def build_manifest() -> dict:
             "v2_42_ai_re_review_is_named_human_approval": False,
             "new_v2_42_bound_reservation_required": True,
             "exact_v2_43_contract_review_status_required_before_reservation": True,
+            "trusted_expected_reviewed_commit_and_tree_required": True,
+            "reviewed_git_objects_and_contract_blobs_verified": True,
+            "tracked_contract_failure_closes_all_dependent_gates": True,
+            "reviewer_identifier_must_differ_from_operator_identifier": True,
             "reservation_precedes_named_independent_human_review": True,
             "human_review_precedes_launch_candidate": True,
         },
@@ -901,6 +1027,7 @@ def _capture_canonical(store: ArtifactRoot, path: Path, expected: Path) -> Snaps
 
 
 def build_preflight(*, artifact_root: Path, review_root: Path, contract_review_root: Path,
+                    expected_reviewed_commit: str, expected_reviewed_tree: str,
                     resource_path: Path | None = None, review_path: Path | None = None,
                     clock: Clock = trusted_now) -> dict:
     contracts = validate_tracked_contracts(review_root)
@@ -911,7 +1038,8 @@ def build_preflight(*, artifact_root: Path, review_root: Path, contract_review_r
     try:
         technical_status = read_snapshot(TECHNICAL_REVIEW_STATUS_PATH)
         failures = list(validate_technical_review_status(
-            technical_status.document(), contract_review_root, now))
+            technical_status.document(), contract_review_root, now,
+            expected_reviewed_commit, expected_reviewed_tree))
         statuses["technical_review_status"] = {
             "provided": True,
             "identity": technical_status.identity,
@@ -934,7 +1062,8 @@ def build_preflight(*, artifact_root: Path, review_root: Path, contract_review_r
             else:
                 failures.extend(validate_resource(
                     resource.document(), approval, technical_status, store.root,
-                    review_root, contract_review_root, now))
+                    review_root, contract_review_root, now,
+                    expected_reviewed_commit, expected_reviewed_tree))
         except (OSError, ValueError) as error:
             failures.append(str(error))
         statuses["resource_reservation"] = {
@@ -953,7 +1082,8 @@ def build_preflight(*, artifact_root: Path, review_root: Path, contract_review_r
             else:
                 failures.extend(validate_review(
                     review.document(), resource, approval, technical_status,
-                    store.root, review_root, contract_review_root, now))
+                    store.root, review_root, contract_review_root, now,
+                    expected_reviewed_commit, expected_reviewed_tree))
         except (OSError, ValueError) as error:
             failures.append(str(error))
         statuses["independent_review"] = {
@@ -963,9 +1093,17 @@ def build_preflight(*, artifact_root: Path, review_root: Path, contract_review_r
         }
     else:
         statuses["independent_review"] = {"provided": False, "failures": ["not_provided"]}
-    status_ok = technical_status is not None and not statuses["technical_review_status"]["failures"]
-    resource_ok = resource is not None and approval is not None and status_ok and not statuses["resource_reservation"]["failures"]
-    review_ok = review is not None and resource_ok and not statuses["independent_review"]["failures"]
+    contracts_ok = not contracts
+    if not contracts_ok:
+        dependency_failure = "tracked_contracts_or_dependencies_unverified"
+        for key in ("technical_review_status", "resource_reservation", "independent_review"):
+            statuses[key]["failures"].append(dependency_failure)
+    status_ok = (contracts_ok and technical_status is not None and
+                 not statuses["technical_review_status"]["failures"])
+    resource_ok = (contracts_ok and resource is not None and approval is not None and
+                   status_ok and not statuses["resource_reservation"]["failures"])
+    review_ok = (contracts_ok and review is not None and resource_ok and
+                 not statuses["independent_review"]["failures"])
     return {
         "format": REPORT_FORMAT,
         "contract_version": CONTRACT_VERSION,
@@ -974,7 +1112,7 @@ def build_preflight(*, artifact_root: Path, review_root: Path, contract_review_r
         "tracked_contracts": {"verified": not contracts, "failures": list(contracts)},
         "external_candidates": statuses,
         "result": {
-            "safe_to_run_read_only_reservation_preflight": not contracts,
+            "safe_to_run_read_only_reservation_preflight": contracts_ok,
             "v2_43_contract_technical_review_acceptable": status_ok,
             "resource_reservation_acceptable_for_freeze": resource_ok,
             "safe_to_submit_named_independent_human_review": resource_ok,
@@ -993,6 +1131,7 @@ def build_preflight(*, artifact_root: Path, review_root: Path, contract_review_r
 
 
 def reject_production(*, artifact_root: Path, review_root: Path, contract_review_root: Path,
+                      expected_reviewed_commit: str, expected_reviewed_tree: str,
                       resource_path: Path | None, review_path: Path | None,
                       launch_path: Path | None, output: Path, clock: Clock = trusted_now):
     root = ArtifactRoot(artifact_root).root
@@ -1002,6 +1141,8 @@ def reject_production(*, artifact_root: Path, review_root: Path, contract_review
         raise ValidationError("launch manifest exact location mismatch")
     build_preflight(artifact_root=root, review_root=review_root,
                     contract_review_root=contract_review_root,
+                    expected_reviewed_commit=expected_reviewed_commit,
+                    expected_reviewed_tree=expected_reviewed_tree,
                     resource_path=resource_path, review_path=review_path, clock=clock)
     raise ValidationError("v2.43 is a reservation-binding checkpoint; production-prefreeze is unavailable")
 
@@ -1012,6 +1153,8 @@ def main() -> None:
     parser.add_argument("--trusted-artifact-root", type=Path, required=True)
     parser.add_argument("--trusted-review-root", type=Path, required=True)
     parser.add_argument("--trusted-contract-review-root", type=Path, required=True)
+    parser.add_argument("--expected-reviewed-commit", required=True)
+    parser.add_argument("--expected-reviewed-tree", required=True)
     parser.add_argument("--resource-reservation", type=Path)
     parser.add_argument("--independent-review", type=Path)
     parser.add_argument("--launch-manifest", type=Path)
@@ -1025,6 +1168,8 @@ def main() -> None:
             artifact_root=args.trusted_artifact_root,
             review_root=args.trusted_review_root,
             contract_review_root=args.trusted_contract_review_root,
+            expected_reviewed_commit=args.expected_reviewed_commit,
+            expected_reviewed_tree=args.expected_reviewed_tree,
             resource_path=args.resource_reservation,
             review_path=args.independent_review,
             launch_path=args.launch_manifest,
@@ -1036,6 +1181,8 @@ def main() -> None:
         artifact_root=args.trusted_artifact_root,
         review_root=args.trusted_review_root,
         contract_review_root=args.trusted_contract_review_root,
+        expected_reviewed_commit=args.expected_reviewed_commit,
+        expected_reviewed_tree=args.expected_reviewed_tree,
         resource_path=args.resource_reservation,
         review_path=args.independent_review,
     )

@@ -6,7 +6,7 @@
 
 日期：2026 年 9 月 11 日
 
-## V2.43 reservation-binding checkpoint（待 exact-commit 技術審查）
+## V2.43 reservation-binding checkpoint（初審未通過；corrective 待重審）
 
 V2.42 corrective AI technical re-review 通過後，實際 machine contract 仍缺少可綁定
 `d6d3490` effective tree 的 reservation schema／validator；既有 v2.41 schema 固定
@@ -26,6 +26,19 @@ reviewed checkpoint commit／tree、contract source、manifest、四份 schemas 
 external review delivery。Status 目前不存在，builder 因而 fail closed；不能只憑聊天
 結論越過這一步。
 
+初始 commit `1f75dc85e9494ccb340c96e6cdc51ac61a600536`、tree
+`eb03aa0d79838c8067ee99b65f1d2570f9804102` 的 exact review 未通過：
+`TR243-01`（status 未驗證可信 Git commit／tree／contract blobs）、`TR243-02`
+（tracked evidence 失敗未關閉 downstream gates）、`TR243-03`（允許 operator 與 reviewer
+使用同一 identifier），三項皆為 P2。完整交付已保存於 repository 外
+`/home/ucheng0830/pq_rbbc_runtime/v2_43_review_1f75dc8`，tracked identities 見
+[initial review result](../reviews/PQ_RBBC_v2_43_INITIAL_AI_TECHNICAL_REVIEW_RESULT_zh-TW.md)。
+
+Corrective tree 已加入 caller-selected expected review target、Git object／commit-to-tree／
+ancestry／六份 blob 驗證，將 required contract／dependency／archive failure 納入全部
+相依 gate，並在 direct validator 與 preflight 拒絕 reviewer/operator 同 identifier。
+這只表示修正已實作，尚不等於 corrective technical review 已通過。
+
 建構時發現 Git 內 v2.42 review 摘要的 `findings.json` SHA-256 有一個轉錄錯字；raw
 reviewer output、operator archive 與 `SHA256SUMS.txt` 一致。本 branch 只更正摘要值為
 `a190e31fc0787064d6d1746a56c489776ea0ba26cc7171be738e063eef9b228d`，沒有改寫
@@ -36,10 +49,11 @@ Reservation 語義只表示 resources reserved；`authorizes_production_prefreez
 Production API／CLI 一律 fail closed，沒有 production runner scale qualification、stream
 materialization、large replay／proving 或 security closure。詳細邊界與測試見
 [artifact note](../artifacts/PQ_RBBC_v2_43_RESERVATION_BINDING_zh-TW.md)。
-V2.43 focused 22 passed；相依 targeted 125 passed；完整 regression 為 698 passed、
-12 個既有 optional skips、0 failures／errors（共 710 tests）。
+Corrective focused 26 passed；相依 targeted 129 passed；完整 regression 共 714 tests，
+702 passed、12 個既有 optional skips、0 failures／errors。測試通過不取代新的
+exact-commit 唯讀重審。
 
-下一步是先對 exact v2.43 commit 做唯讀 technical review；通過後先整合 exact status
+下一步是先對 exact corrective commit 做唯讀 technical re-review；通過後先整合 exact status
 record，驗證通過才可在 repository 外建立 operator approval 與 v2.42-bound
 reservation。其後仍須具名且獨立的人員 review，
 再另建 launch-manifest authoring／preflight successor。不得先做 production。

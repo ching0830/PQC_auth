@@ -10,6 +10,9 @@
   archive、本 contract source、trusted roots、batch／window／resources 與 exact command。
 - 新增 bounded builders，供合約通過技術審查後建立 canonical approval／reservation
   documents；本 checkpoint 未呼叫 builders 產生真實操作檔案。
+- 初始 `1f75dc8` exact review 的三項 P2 已在 corrective tree 處理：可信 reviewed
+  commit／tree 的 Git object/blob binding、tracked evidence failure 的 downstream gate
+  propagation，以及 same-identifier operator/reviewer rejection。Corrective 仍待獨立重審。
 - 更正 v2.42 review integration record 中一個 `findings.json` SHA-256 轉錄錯字；raw
   external artifacts 未修改。
 - Production phase 無條件 fail closed；沒有 producer、launch authorization、large
@@ -20,10 +23,11 @@
 
 ## 狀態
 
-Checkpoint 實作完成但仍待 exact-commit technical review 與其 status integration。真實 v2.42 operator
+初始 exact-commit review 未通過；corrective 實作完成但仍待新的 exact-commit re-review
+與其 status integration。真實 v2.42 operator
 reservation、具名獨立人員 review 與 launch candidate 均未建立。全部 production／
 security claims 維持 false。
 
-V2.43 focused：22 passed；相依 targeted：125 passed；完整 regression：710 tests，
-698 passed、12 個既有 optional skips、0 failures／errors。Machine result 見
+Corrective focused：26 passed；相依 targeted：129 passed；完整 regression 共 714 tests，
+702 passed、12 個既有 optional skips、0 failures／errors。Machine result 見
 `artifacts/metadata/cap_reservation_binding_v2_43/`。

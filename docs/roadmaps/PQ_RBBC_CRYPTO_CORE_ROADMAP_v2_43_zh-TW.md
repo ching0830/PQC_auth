@@ -12,10 +12,14 @@
 - 實作 canonical snapshot validation、exact root／location／command、時間窗、資源下限、
   approval／reservation／review cross-binding 與 production fail-closed boundary。
 - 更正 Git review 摘要的一個 SHA-256 轉錄錯字，不修改 raw review evidence。
+- 初始 `1f75dc8` review 找到三項 P2；corrective 增加 trusted reviewed Git target／blob
+  verification、required evidence failure 的 downstream gate closure，以及 reviewer／operator
+  same-identifier rejection。新的 corrective exact-commit review 尚未完成。
 
 ## Topological order
 
-1. Exact v2.43 commit 唯讀 technical review。
+1. Exact v2.43 corrective commit 唯讀 technical re-review，確認 `TR243-01`／`02`／`03`
+   關閉且沒有新 blocking findings。
 2. 整合並驗證綁定 exact review delivery 的 contract technical-review status。
 3. Operator 在 repository 外建立 approval record 與 resource reservation。
 4. 具名且獨立的人員審查 exact identities 與 command／resource boundary。
@@ -23,5 +27,6 @@
 6. 另行完成 production runner scale qualification 與必要 proof／security gates；只有
    新的明確授權才可啟動 production-prefreeze。
 
-目前只有第 1 步可開始。Contract-review status、resource reservation、human review、launch manifest、
+目前只有第 1 步可開始。初始 review 不得轉成 passed status；contract-review status、
+resource reservation、human review、launch manifest、
 production／large replay／proving 與 security claims 均未凍結。
