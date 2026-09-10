@@ -75,3 +75,16 @@ fail closed; there is no truncate/replace fallback. fsync errors propagate.
 
 def read(path: Path) -> io.Snapshot:
     return io.read_snapshot(path, external=True)
+
+
+def sync_directory(path: Path, fd: int):
+    """Persist validated existing entries through their pinned parent directory.
+
+    A prior publisher may have died after linkat but before directory fsync.
+    Reading exact bytes does not discharge that missing durability barrier.
+    Validate the pinned directory before and after fsync; errors propagate.
+    This neither rewrites files nor proves writer quiescence or mount safety.
+    """
+    io._same_directory(path, fd, external=True)
+    os.fsync(fd)
+    io._same_directory(path, fd, external=True)

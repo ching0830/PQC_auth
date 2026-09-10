@@ -18,7 +18,7 @@ import pq_rbbc_recovery_io_v2_42 as disk
 
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST_PATH = ROOT / "manifests/pq_rbbc_cap_unified_tree_recovery_manifest_v2_42.json"
-MANIFEST_SHA256 = "bba9b8c4aa00069896a2d067ea1f6cd130015639a3598265927a702585ad8f98"
+MANIFEST_SHA256 = "e0474efea9df518983e1e86e9304546c02af84ab315c2462edf4ca236a3e78c1"
 PROVENANCE_PATH = ROOT / "manifests/pq_rbbc_cap_unified_tree_provenance_v2_42.json"
 CHUNK_DIRECTORY = "chunks"
 JOURNAL_DIRECTORY = "checkpoints"
@@ -170,8 +170,11 @@ def _names(path):
     return names
 
 
-def _require_document(path, expected):
-    captured = disk.read(path)
+def _require_document(path, expected, *, captured=None):
+    if captured is None:
+        captured = disk.read(path)
+    elif captured.location != path:
+        raise io.ValidationError("checkpoint snapshot location mismatch")
     captured.document()  # strict JSON (including exact int/bool encoding)
     if captured.raw != io.canonical_json(expected):
         raise io.ValidationError("checkpoint/index exact bytes mismatch: " + path.name)
@@ -218,24 +221,42 @@ def run_bounded_stream(checkpoint_input_path, parent_input_path, output, *,
                    or any(c not in "0123456789abcdef" for c in expected_checkpoint_sha256)):
         raise io.ValidationError("resume requires external expected checkpoint SHA-256")
     manifest = validate_contracts()
-    source = io.ArtifactRoot(input_root)
-    inputs = (source.read(checkpoint_input_path), source.read(parent_input_path))
-    chunks = bounded_chunks(*inputs)
-    prefixes, complete, index, evidence = expected_documents(manifest, inputs, chunks)
-    target = len(chunks) if stop_after_chunks is None else stop_after_chunks
-    if type(target) is not int or not 0 <= target <= len(chunks):
-        raise io.ValidationError("invalid stop-after-chunks")
+
+    def expected_state():
+        source = io.ArtifactRoot(input_root)
+        inputs = (source.read(checkpoint_input_path), source.read(parent_input_path))
+        chunks = bounded_chunks(*inputs)
+        documents = expected_documents(manifest, inputs, chunks)
+        target = len(chunks) if stop_after_chunks is None else stop_after_chunks
+        if type(target) is not int or not 0 <= target <= len(chunks):
+            raise io.ValidationError("invalid stop-after-chunks")
+        return chunks, *documents, target
+
+    # Fresh runs still validate inputs before creating any output. Resume must
+    # instead acquire the lock and check the captured latest digest BEFORE even
+    # reading bounded fixtures. The same snapshot later supplies JSON semantics.
+    state = expected_state() if fresh_output else None
     with disk.locked_output(output, artifact_root, fresh=fresh_output) as output_fd:
         if fresh_output:
             for name in (CHUNK_DIRECTORY, JOURNAL_DIRECTORY):
                 os.mkdir(name, mode=0o700, dir_fd=output_fd)
             os.fsync(output_fd)
-            disk.publish(output / JOURNAL_DIRECTORY / prefix_name(0), io.canonical_json(prefixes[0]))
-        return _recover(output, chunks, prefixes, complete, index, evidence, target,
-                        expected_checkpoint_sha256 if resume else None)
+        with io.directory_fd(output / JOURNAL_DIRECTORY, external=True) as journal_fd, \
+                io.directory_fd(output / CHUNK_DIRECTORY, external=True) as chunks_fd:
+            captured = None
+            if resume:
+                captured = latest_checkpoint(output, artifact_root=artifact_root)
+                if captured.identity["sha256"] != expected_checkpoint_sha256:
+                    raise io.ValidationError("resume checkpoint identity mismatch (including stale digest)")
+                state = expected_state()
+            else:
+                disk.publish(output / JOURNAL_DIRECTORY / prefix_name(0),
+                             io.canonical_json(state[1][0]))
+            return _recover(output, *state, captured, output_fd, chunks_fd, journal_fd)
 
 
-def _recover(output, chunks, prefixes, complete, index, evidence, target, expected_sha256):
+def _recover(output, chunks, prefixes, complete, index, evidence, target,
+             latest, output_fd, chunks_fd, journal_fd):
     allowed = {CHUNK_DIRECTORY, JOURNAL_DIRECTORY, INDEX_FILENAME, EVIDENCE_FILENAME}
     if _names(output) - allowed:
         raise io.ValidationError("unknown output artifact")
@@ -248,16 +269,18 @@ def _recover(output, chunks, prefixes, complete, index, evidence, target, expect
     if not committed or committed != expected_names[:len(committed)]:
         raise io.ValidationError("checkpoint journal is not a contiguous prefix")
     count = len(committed) - 1
-    last = None
-    for i, name in enumerate(committed):
-        last = _require_document(journal / name, prefixes[i])
     finished = COMPLETE_FILENAME in names
+    latest_path = journal / (COMPLETE_FILENAME if finished else committed[-1])
+    if latest is not None and latest.location != latest_path:
+        raise io.ValidationError("latest checkpoint location changed during resume")
+    for i, name in enumerate(committed):
+        path = journal / name
+        _require_document(path, prefixes[i],
+                          captured=latest if path == latest_path else None)
     if finished:
         if count != len(chunks):
             raise io.ValidationError("premature complete checkpoint")
-        last = _require_document(journal / COMPLETE_FILENAME, complete)
-    if expected_sha256 is not None and last.identity["sha256"] != expected_sha256:
-        raise io.ValidationError("resume checkpoint identity mismatch (including stale digest)")
+        _require_document(journal / COMPLETE_FILENAME, complete, captured=latest)
     if target < count:
         raise io.ValidationError("stop boundary precedes committed prefix")
     chunk_names = _names(output / CHUNK_DIRECTORY)
@@ -278,12 +301,21 @@ def _recover(output, chunks, prefixes, complete, index, evidence, target, expect
                 raise io.ValidationError("premature final artifact")
             _require_document(output / name, document)
     # No mutation until ALL existing durable state (including an orphan) passes.
+    # Existing entries may only have reached linkat in an interrupted publisher.
+    # Recover their missing barriers in dependency order: chunks before journal,
+    # journal before final index/evidence. Even an otherwise complete retry must
+    # not return success if one of these pinned-directory fsyncs fails.
+    disk.sync_directory(output / CHUNK_DIRECTORY, chunks_fd)
+    disk.sync_directory(journal, journal_fd)
+    disk.sync_directory(output, output_fd)
     for chunk in chunks[count:target]:
         path = output / CHUNK_DIRECTORY / old.chunk_filename(chunk)
         if path.name not in chunk_names:
             disk.publish(path, chunk.encode(old.BOUNDED_PROFILE_FINGERPRINT))
         # Recheck the exact bytes that will be adopted immediately before commit.
         _require_chunk(path, chunk)
+        if path.name in chunk_names:
+            disk.sync_directory(output / CHUNK_DIRECTORY, chunks_fd)
         disk.publish(journal / prefix_name(chunk.ordinal + 1),
                      io.canonical_json(prefixes[chunk.ordinal + 1]))
     if target < len(chunks):

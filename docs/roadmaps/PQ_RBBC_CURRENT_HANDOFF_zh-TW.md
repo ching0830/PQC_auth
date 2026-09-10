@@ -33,6 +33,35 @@ Codex AI-assisted review 不等於該具名人員核准。
 production-prefreeze、large replay／proving 與全部 security／production claims 為 false。
 Root canonical docs 由 integration lane 依這份新 evidence 更新。
 
+### V2.42 corrective：RR242-01／RR242-02（待新重審）
+
+Exact `81374602b5c1e304f396f54ef6f2d5b9bf2f06e9` 的 AI technical re-review
+確認 CR-02，但新增 RR242-01（P2：orphan／existing entry 的 directory fsync
+recovery barrier）與 RR242-02（P3：digest 驗證晚於 bounded 重算）。原報告與
+machine findings identities 已固定於 recovery manifest，不能把初次重審稱為通過。
+
+本 corrective 在 output lock 內先 capture／比對 latest externally supplied digest，
+再讀取／重算 bounded fixtures，後續驗證只使用該 checkpoint 的原 captured raw。
+Existing chunks、prefixes／complete、index／evidence 驗證後，依相依順序同步其
+pinned parent directories；orphan 在 successor prefix 前另補同步，EIO 一律傳出，
+保留既有 bytes／inodes。Wrong／stale digest 不啟動 fixture read／bounded_chunks。
+
+本次新增 9 個 corrective test methods。Focused 47 passed；targeted 128 passed；
+完整 regression 676 passed、12 skipped、0 failures／errors（共 688 tests，735.905 秒）。
+另以真實 bounded fixtures 重算 fresh／resume／repeated resume 與四種 link 後 fsync
+EIO／retry 窗口；結果及 log identities 已更新至 v2.42 metadata。這是實作者驗證，
+修正後 effective tree 仍待新的獨立唯讀重審。
+
+新 source／manifest identities 要求新的 fresh output；不得將初始 v2.42 outputs
+改寫為 corrective journal。CR-02 provenance 的四份 source／manifest／test／erratum
+檔案、78 sealed predecessors 與歷史 v2.41 reservation／approval records 均不變。
+本次未做實體斷電測試，filesystem／mount／writer／ACL／writable-FD assumptions
+維持不變；production／security flags 全部 false。
+
+下一步為 [corrective exact-commit 唯讀重審](../reviews/PQ_RBBC_v2_42_CORRECTIVE_AI_TECHNICAL_RE_REVIEW_PROMPT_zh-TW.md)。
+本 branch 只新增 corrective commit，不 amend／merge／push；沒有建立 reservation、
+launch candidate 或 identity freeze。具名獨立人員 review 與後續 gates 仍須另行完成。
+
 ## V2.41 branch checkpoint
 
 `codex/pq-rbbc-v2-41-launch-validation-hardening` 從 local main `3885b01` 建立獨立

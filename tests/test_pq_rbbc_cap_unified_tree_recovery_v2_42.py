@@ -1,9 +1,11 @@
 from dataclasses import replace
 from functools import lru_cache
+import errno
 import multiprocessing
 import os
 from pathlib import Path
 import subprocess
+import stat
 import sys
 import tempfile
 import unittest
@@ -411,6 +413,201 @@ class RecoveryV242Tests(unittest.TestCase):
         self.assertFalse(self.out.exists())
         self.assertTrue(all(value is False for value in r.claim_boundary().values()))
 
+    def fail_directory_fsync_after_link(self, name):
+        original_publish, original_fsync = disk.publish, os.fsync
+        publishing = None
+        def publish(path, raw):
+            nonlocal publishing
+            publishing = path
+            try:
+                return original_publish(path, raw)
+            finally:
+                publishing = None
+        def fsync(fd):
+            if (publishing is not None and publishing.name == name
+                    and stat.S_ISDIR(os.fstat(fd).st_mode)):
+                self.assertTrue(publishing.is_file())  # real linkat already ran
+                raise OSError(errno.EIO, "post-link directory fsync")
+            return original_fsync(fd)
+        with patch.object(disk, "publish", side_effect=publish), \
+                patch.object(disk.os, "fsync", side_effect=fsync), \
+                self.assertRaisesRegex(OSError, "post-link directory fsync"):
+            self.run_stream(fresh_output=True)
+
+    def check_failed_barrier_then_retry(self, directory):
+        before = self.snapshot_files()
+        inodes = {p: p.stat().st_ino for p in self.out.rglob("*")}
+        expected_sha256 = self.latest().identity["sha256"]
+        original_fsync = os.fsync
+        def still_fails(fd):
+            if (stat.S_ISDIR(os.fstat(fd).st_mode)
+                    and os.readlink(f"/proc/self/fd/{fd}") == str(directory)):
+                raise OSError(errno.EIO, "retry directory fsync still fails")
+            return original_fsync(fd)
+        # Repeated EIO must not publish anything, including on a fully complete
+        # journal whose last evidence entry was linked but not directory-synced.
+        for _ in range(2):
+            with patch.object(disk.os, "fsync", side_effect=still_fails), \
+                    patch.object(disk, "publish") as publish, \
+                    self.assertRaisesRegex(OSError, "retry directory fsync still fails"):
+                self.resume(expected_checkpoint_sha256=expected_sha256)
+            publish.assert_not_called()
+            self.assertEqual(self.snapshot_files(), before)
+            self.assertTrue(all(p.stat().st_ino == inode for p, inode in inodes.items()))
+        events = []
+        original_sync, original_publish = disk.sync_directory, disk.publish
+        def sync(path, fd):
+            original_sync(path, fd)
+            events.append(("synced", path))
+        def publish(path, raw):
+            self.assertIn(("synced", directory), events)
+            events.append(("publish", path))
+            return original_publish(path, raw)
+        with patch.object(disk, "sync_directory", side_effect=sync), \
+                patch.object(disk, "publish", side_effect=publish):
+            result = self.resume(expected_checkpoint_sha256=expected_sha256)
+        self.assertIn(("synced", directory), events)
+        self.assertEqual(result["bounded_chunks_materialized"], 15)
+        self.assertEqual(events[:3], [("synced", self.out / r.CHUNK_DIRECTORY),
+                                     ("synced", self.out / r.JOURNAL_DIRECTORY),
+                                     ("synced", self.out)])
+        self.assertTrue(all((self.out / name).read_bytes() == raw for name, raw in before.items()))
+        self.assertTrue(all(p.stat().st_ino == inode for p, inode in inodes.items()))
+        return events
+
+    def test_orphan_link_fsync_eio_retry_requires_barrier_before_prefix(self):
+        for ordinal in (0, 14):
+            with self.subTest(orphan=ordinal):
+                self.out = self.root / f"orphan-fsync-{ordinal}"
+                self.fail_directory_fsync_after_link(r.old.chunk_filename(self.chunks[ordinal]))
+                self.assertEqual(self.latest().document()["completed_chunk_count"], ordinal)
+                events = self.check_failed_barrier_then_retry(self.out / r.CHUNK_DIRECTORY)
+                prefix = ("publish", self.out / r.JOURNAL_DIRECTORY / r.prefix_name(ordinal + 1))
+                # The immediate orphan-adoption check must be followed by a
+                # successful chunks barrier before the successor prefix link.
+                self.assertEqual(events[events.index(prefix) - 1],
+                                 ("synced", self.out / r.CHUNK_DIRECTORY))
+
+    def test_existing_prefix_and_complete_link_fsync_eio_retry_requires_barrier(self):
+        for name in (r.prefix_name(0), r.prefix_name(1), r.prefix_name(15), r.COMPLETE_FILENAME):
+            with self.subTest(checkpoint=name):
+                self.out = self.root / name
+                self.fail_directory_fsync_after_link(name)
+                self.check_failed_barrier_then_retry(self.out / r.JOURNAL_DIRECTORY)
+
+    def test_existing_index_and_evidence_link_fsync_eio_retry_requires_barrier(self):
+        for name in (r.INDEX_FILENAME, r.EVIDENCE_FILENAME):
+            with self.subTest(final=name):
+                self.out = self.root / name
+                self.fail_directory_fsync_after_link(name)
+                events = self.check_failed_barrier_then_retry(self.out)
+                publications = [path.name for kind, path in events if kind == "publish"]
+                self.assertEqual(publications, [r.EVIDENCE_FILENAME] if name == r.INDEX_FILENAME else [])
+
+    def test_wrong_and_stale_digest_reject_before_fixture_read_or_recompute(self):
+        self.run_stream(fresh_output=True, stop_after_chunks=0)
+        stale = self.latest().identity["sha256"]
+        self.resume(stop_after_chunks=1)
+        before = self.snapshot_files()
+        for expected in ("0" * 64, stale):
+            with self.subTest(digest=expected), \
+                    patch.object(io.ArtifactRoot, "read") as read_inputs, \
+                    patch.object(r, "bounded_chunks") as recompute, \
+                    patch.object(disk, "publish") as publish, \
+                    self.assertRaisesRegex(io.ValidationError, "identity mismatch"):
+                self.run_stream(resume=True, expected_checkpoint_sha256=expected)
+            read_inputs.assert_not_called()
+            recompute.assert_not_called()
+            publish.assert_not_called()
+        self.assertEqual(self.snapshot_files(), before)
+
+    def test_latest_capture_is_locked_once_and_precedes_fixture_reads(self):
+        self.run_stream(fresh_output=True, stop_after_chunks=1)
+        latest = self.latest()
+        events = []
+        original_read, original_input_read = disk.read, io.ArtifactRoot.read
+        def capture(path):
+            if path == latest.location:
+                with self.assertRaisesRegex(io.ValidationError, "another bounded writer"):
+                    with disk.locked_output(self.out, self.root, fresh=False):
+                        self.fail("latest capture ran without output lock")
+                events.append("latest")
+            return original_read(path)
+        def read_input(store, path):
+            self.assertEqual(events[0], "latest")
+            events.append("input")
+            return original_input_read(store, path)
+        def chunks(*inputs):
+            self.assertEqual(events, ["latest", "input", "input"])
+            events.append("chunks")
+            return self.cached_chunks(*inputs)
+        with patch.object(disk, "read", side_effect=capture), \
+                patch.object(io.ArtifactRoot, "read", read_input), \
+                patch.object(r, "bounded_chunks", side_effect=chunks):
+            self.run_stream(resume=True, expected_checkpoint_sha256=latest.identity["sha256"])
+        self.assertEqual(events, ["latest", "input", "input", "chunks"])
+
+    def test_matching_digest_cannot_rescue_bad_latest_snapshot_by_replacing_path(self):
+        self.run_stream(fresh_output=True, stop_after_chunks=1)
+        latest = self.latest()
+        wrong_chain = latest.document()
+        wrong_chain["chain_sha256"] = "0" * 64
+        wrong_type = latest.document()
+        wrong_type["completed_chunk_count"] = True
+        variants = (io.canonical_json(wrong_chain), io.canonical_json(wrong_type),
+                    latest.raw + b"\n", b"\xff{}\n",
+                    latest.raw.replace(b'"complete":false', b'"complete":false,"complete":false'))
+        original = disk.read
+        for raw in variants:
+            latest.location.write_bytes(raw)
+            captures = []
+            def capture(path):
+                snapshot = original(path)
+                if path == latest.location:
+                    captures.append(snapshot)
+                    latest.location.write_bytes(latest.raw)
+                return snapshot
+            with self.subTest(raw=raw[:32]), patch.object(disk, "read", side_effect=capture), \
+                    patch.object(disk, "sync_directory") as sync, \
+                    patch.object(disk, "publish") as publish, self.assertRaises(io.ValidationError):
+                self.run_stream(resume=True, expected_checkpoint_sha256=r.digest(raw))
+            self.assertEqual(len(captures), 1)
+            sync.assert_not_called()
+            publish.assert_not_called()
+        self.assertEqual(self.latest().raw, latest.raw)
+
+    def test_latest_valid_snapshot_is_not_reopened_for_semantic_validation(self):
+        self.run_stream(fresh_output=True, stop_after_chunks=0)
+        latest = self.latest()
+        captures = []
+        original = disk.read
+        def capture(path):
+            snapshot = original(path)
+            if path == latest.location:
+                captures.append(snapshot)
+                latest.location.write_bytes(b"{}\n")
+            return snapshot
+        try:
+            with patch.object(disk, "read", side_effect=capture):
+                self.assertIsNone(self.run_stream(resume=True, stop_after_chunks=0,
+                                                expected_checkpoint_sha256=latest.identity["sha256"]))
+            self.assertEqual(captures, [latest])
+            self.assertEqual(latest.location.read_bytes(), b"{}\n")
+        finally:
+            latest.location.write_bytes(latest.raw)
+
+    def test_latest_namespace_change_after_capture_is_rejected(self):
+        self.run_stream(fresh_output=True, stop_after_chunks=0)
+        latest = self.latest()
+        def changed(*inputs):
+            (self.out / r.JOURNAL_DIRECTORY / r.COMPLETE_FILENAME).write_bytes(latest.raw)
+            return self.cached_chunks(*inputs)
+        with patch.object(r, "bounded_chunks", side_effect=changed), \
+                patch.object(disk, "publish") as publish, \
+                self.assertRaisesRegex(io.ValidationError, "latest checkpoint location changed"):
+            self.run_stream(resume=True, expected_checkpoint_sha256=latest.identity["sha256"])
+        publish.assert_not_called()
+
 
 class RecoveryPublicationTests(unittest.TestCase):
     def setUp(self):
@@ -475,6 +672,27 @@ class RecoveryPublicationTests(unittest.TestCase):
         self.assertEqual(list(self.root.iterdir()), [self.path])
         with self.assertRaises(FileExistsError):
             disk.publish(self.path, b"changed\n")
+
+    def test_directory_barrier_rejects_parent_substitution_before_and_after_fsync(self):
+        original_fsync = os.fsync
+        for when in ("before", "after"):
+            with self.subTest(substitution=when):
+                parent = self.root / when
+                moved = self.root / (when + "-moved")
+                parent.mkdir(mode=0o700)
+                def substitute():
+                    parent.rename(moved)
+                    parent.mkdir(mode=0o700)
+                with io.directory_fd(parent, external=True) as fd:
+                    def fsync(candidate):
+                        original_fsync(candidate)
+                        substitute()
+                    if when == "before":
+                        substitute()
+                    with patch.object(disk.os, "fsync", side_effect=fsync) as sync, \
+                            self.assertRaisesRegex(io.ValidationError, "directory location changed"):
+                        disk.sync_directory(parent, fd)
+                    self.assertEqual(sync.call_count, 0 if when == "before" else 1)
 
 
 if __name__ == "__main__":
