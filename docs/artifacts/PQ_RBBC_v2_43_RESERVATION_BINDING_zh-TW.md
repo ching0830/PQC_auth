@@ -69,7 +69,8 @@ signature 或第三方 authentication。Resource reservation 只表示指定時�
 資源已保留。它必須綁定一份 tracked v2.43 contract technical-review status；該 status
 另綁 exact reviewed commit／tree、contract source、manifest、四份 schemas 與三份
 repository-external review artifacts。Status 不存在或任一 identity 不符時，builder 與
-preflight 都拒絕，因此目前不能提前產生 real reservation。其 claim boundary 明定：
+preflight 都拒絕；本次只有在 status-only integration 與 successor validation 通過後才
+建立 real reservation。其 claim boundary 明定：
 
 - `resources_reserved_for_prospective_prefreeze = true`；
 - `authorizes_production_prefreeze = false`；
@@ -120,15 +121,15 @@ Corrective 相依 targeted regression：129 passed、0 failures／errors／skips
 
 ## 下一個 gate
 
-1. 對新的 exact v2.43 corrective commit 做唯讀 AI-assisted corrective re-review，逐項
-   關閉 `TR243-01`／`02`／`03`。
-2. 若沒有 blocking findings，整合一份只綁定該 exact commit／tree、四份 contracts 與
-   external review delivery identities 的 technical-review status record。
-3. Status validation 通過後，才由 operator 在 repository 外建立新的 approval record
-   與 v2.42-bound resource reservation，使用 exclusive publication 並保存 identity。
-4. 再交給真正具名且獨立的人員審查 exact reservation、approval、implementation 及
+1. Exact corrective re-review 已通過，`TR243-01`／`02`／`03` 均關閉。
+2. Status-only commit `53a0909` 已整合並驗證 exact commit／tree、contracts 與 external
+   review delivery identities。
+3. Operator 已在 repository 外建立新的 approval record 與 v2.42-bound resource
+   reservation，使用 exclusive publication 並保存 identity；詳見
+   [operator reservation note](PQ_RBBC_v2_43_OPERATOR_RESERVATION_zh-TW.md)。
+4. 現在交給真正具名且獨立的人員審查 exact reservation、approval、implementation 及
    command bindings。
 5. 正式 human review 通過後，另建 launch-manifest authoring／preflight successor。
 
-在上述 gates 完成前，不得建立 launch identity freeze、啟動 production-prefreeze、
+在 human-review gate 完成前，不得建立 launch identity freeze、啟動 production-prefreeze、
 large replay 或 proving；所有 production／security claims 維持 false。

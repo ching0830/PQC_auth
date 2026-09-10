@@ -287,8 +287,11 @@ class ReservationBindingV243Tests(unittest.TestCase):
                 document, EXPECTED_REVIEWED_COMMIT, EXPECTED_REVIEWED_TREE))
 
     def test_resource_builder_blocks_before_tracked_review_status_exists(self):
-        with self.assertRaisesRegex(
-                ValidationError, "contract technical review status unavailable"):
+        missing_status = (Path(self.temporary.name) / "missing" /
+                          subject.TECHNICAL_REVIEW_STATUS_PATH.name)
+        with patch.object(subject, "TECHNICAL_REVIEW_STATUS_PATH", missing_status), \
+                self.assertRaisesRegex(
+                    ValidationError, "contract technical review status unavailable"):
             subject.build_resource_reservation(
                 approval=self.approval,
                 artifact_root=self.root,

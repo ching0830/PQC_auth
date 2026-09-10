@@ -12,7 +12,8 @@
   documents；本 checkpoint 未呼叫 builders 產生真實操作檔案。
 - 初始 `1f75dc8` exact review 的三項 P2 已在 corrective tree 處理：可信 reviewed
   commit／tree 的 Git object/blob binding、tracked evidence failure 的 downstream gate
-  propagation，以及 same-identifier operator/reviewer rejection。Corrective 仍待獨立重審。
+  propagation，以及 same-identifier operator/reviewer rejection。Exact corrective 重審
+  已通過，三項 findings 均關閉。
 - 更正 v2.42 review integration record 中一個 `findings.json` SHA-256 轉錄錯字；raw
   external artifacts 未修改。
 - Production phase 無條件 fail closed；沒有 producer、launch authorization、large
@@ -23,10 +24,10 @@
 
 ## 狀態
 
-初始 exact-commit review 未通過；corrective 實作完成但仍待新的 exact-commit re-review
-與其 status integration。真實 v2.42 operator
-reservation、具名獨立人員 review 與 launch candidate 均未建立。全部 production／
-security claims 維持 false。
+初始 exact-commit review 未通過；corrective re-review 已通過。Status-only commit
+`53a0909` 已整合並驗證，真實 v2.42-bound operator reservation 已在 repository 外建立。
+具名獨立人員 review 與 launch candidate 仍未建立，全部 production／security claims
+維持 false。
 
 Corrective focused：26 passed；相依 targeted：129 passed；完整 regression 共 714 tests，
 702 passed、12 個既有 optional skips、0 failures／errors。Machine result 見
