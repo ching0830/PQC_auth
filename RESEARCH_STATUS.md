@@ -2,8 +2,8 @@
 
 # Research status
 
-Synchronized at the 9 September 2026 integration checkpoint, including the
-system control plane and PQ-RBBC through v2.41. The Traditional Chinese version
+Synchronized at the 10 September 2026 integration checkpoint, including the
+system control plane and PQ-RBBC through v2.42. The Traditional Chinese version
 remains the primary editorial source.
 
 ## Whole-thesis status
@@ -12,7 +12,7 @@ remains the primary editorial source.
 | --- | --- | --- | --- |
 | Overall architecture | initial top-level definition and system-profile v0.1 contracts | canonical configuration and public-initialization bundle codecs | deterministic vectors and negative tests; production key ceremony open |
 | FAC issuer authorization | v0.1 epoch/policy/quota-bound grant contract | bounded control plane and process-local atomic quota reference store | canonical vectors and quota/replay tests; FAC PQ signature and distributed store open |
-| PQ-RBBC issuance and ticket | formal core defined | research relation and substantial circuit implementation | conditional reductions; production closure false |
+| PQ-RBBC issuance and ticket | formal core defined | research relation, substantial circuit implementation, and v2.42 bounded recovery/provenance successor | bounded corrective AI technical re-review passed; formal human review and production closure remain false |
 | Opening authorization | v0.1 canonical request, authorization statement, replay, and share gate | bounded fail-closed `OpenShareService` control flow | deterministic codecs and gate tests; production signature/share proof open |
 | Threshold trace opening | abstract construction plus v0.1 share/combiner boundary | share consistency, threshold combine, and serial check under a test-only backend | robust decoder, OA DKG, real keys, and production transcript open |
 | Satellite access and PQ AKE | v0.1 draft access-object layouts, transcript/attempt identities, and test-only suite profile; PQ AKE not selected | ServingContext and AccessInit/Challenge/Finish/Accept codecs implemented; no holder authenticator or AKE | 13 object/binding tests; no authentication-security or production-closure claim |
@@ -22,7 +22,7 @@ remains the primary editorial source.
 
 ## RBBC checkpoint
 
-Integrated through v2.41:
+Integrated through v2.42:
 
 - the legacy 18-tree profile has executable evidence for every tree, all 72
   relocations, the complete replay, and the parent CAP-to-$H_{RBBC}$ join;
@@ -35,13 +35,20 @@ Integrated through v2.41:
   validation. Identity, parsing, binding, and validation consume one immutable
   captured byte snapshot. Filesystem immutability remains a deployment
   precondition, and the successful AI technical re-review is not an external
-  human review or execution authorization.
+  human review or execution authorization; and
+- v2.42 preserves sealed predecessors while adding exact orphan recovery,
+  idempotent finalization, dependency-ordered directory durability barriers,
+  digest-first same-snapshot resume validation, and a source-provenance erratum.
+  The exact corrective AI technical re-review passed 128 targeted tests and a
+  688-test full suite (676 passed, 12 existing optional skips, no failures or
+  errors) with no new blocking findings. This closes only its bounded technical
+  review scope, not physical-power-loss or production-scale qualification.
 
 Still open:
 
 - production-scale unified-tree materialization, replay, and runner
   qualification;
-- a real operator reservation, external human design/cryptographic review,
+- a new v2.42 operator reservation, external human design/cryptographic review,
   trusted producer handoff, identity freeze, and launch manifest;
 - fork-specific CAP/QROM, blindness, and one-more proof;
 - qualified PQ zero-knowledge / simulation-extractable backend;

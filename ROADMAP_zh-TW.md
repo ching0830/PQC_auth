@@ -9,7 +9,7 @@
 | Track | 目標 | 相依項目 | 現在可進行？ |
 | --- | --- | --- | --- |
 | T0 — 架構與 claims | 固定角色、階段、介面、threat model 與 claim vocabulary | 無 | 進行中 |
-| T1 — PQ-RBBC core | legacy 18-tree relation／parent join 已有 executable evidence；完成 unified-tree 真實 launch artifacts、production qualification、fork proof、backend 與 benchmarks | v2.41 contracts、可信 artifact root、外部 operator／reviewer | 可以；下一個 bounded gate 是 reservation 與 human independent review |
+| T1 — PQ-RBBC core | legacy 18-tree relation／parent join 已有 executable evidence；完成 unified-tree 真實 launch artifacts、production qualification、fork proof、backend 與 benchmarks | v2.42 bounded recovery／provenance、可信 artifact root、外部 operator／reviewer | 可以；下一個 bounded gate 是新的 v2.42 reservation 與 human independent review |
 | T2 — Federation authorization | 定義 FAC threshold issuer／configuration authorization 與 evidence format | T0 | 可以 |
 | T3 — Opening governance | 定義 case authorization、OA gate、robust shares、combine 與 public audit evidence | T0；穩定 RBBC ticket digest | 可以 |
 | T4 — Satellite access 與 PQ AKE | draft access codecs 與 transcript identities 已建立；選定 holder authenticator／PQ AKE，並定義 UE–FGS state machine、LEO／FLEO 角色與 session keys | T0；穩定 VerifyTicket interface | 可以 |
@@ -23,7 +23,7 @@
 
 ### Lane A — 既有 RBBC 工作
 
-依 [docs/roadmaps/PQ_RBBC_CURRENT_HANDOFF_zh-TW.md](docs/roadmaps/PQ_RBBC_CURRENT_HANDOFF_zh-TW.md) 繼續。先依 v2.41 provision repository 外的 trusted artifact root、取得真實 operator reservation 與 external human independent review，再建立 launch manifest candidate 及執行唯讀 preflight；未取得另行授權前不得啟動 production。架構重整期間不得變更 legacy tree-producer paths 或 historical artifact identities。
+依 [docs/roadmaps/PQ_RBBC_CURRENT_HANDOFF_zh-TW.md](docs/roadmaps/PQ_RBBC_CURRENT_HANDOFF_zh-TW.md) 繼續。V2.42 bounded corrective technical re-review 已通過；下一步建立綁定 v2.42 effective implementation、source identities、exact command、batch、output 與資源窗口的新 operator reservation，再取得具名 external human independent review。兩者成立後才建立 launch manifest candidate 及執行唯讀 preflight；未取得另行授權前不得啟動 production。V2.41 reservation 只作為被拒流程的歷史，不能沿用。架構重整期間不得變更 legacy tree-producer paths 或 historical artifact identities。
 
 ### Lane B — System specification
 

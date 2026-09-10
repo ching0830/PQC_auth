@@ -2,9 +2,9 @@
 
 # 研究狀態
 
-依 2026 年 9 月 9 日整合 checkpoint 更新，包含 system vertical slice、system
+依 2026 年 9 月 10 日整合 checkpoint 更新，包含 system vertical slice、system
 initialization／issuer authorization／conditional opening control plane，以及 PQ-RBBC
-v2.27–v2.41。精確發布位置仍以 Git commit 與 branch 為準。
+v2.27–v2.42。精確發布位置仍以 Git commit 與 branch 為準。
 
 ## 整篇論文狀態
 
@@ -12,7 +12,7 @@ v2.27–v2.41。精確發布位置仍以 Git commit 與 branch 為準。
 | --- | --- | --- | --- |
 | 整體架構 | 初版頂層定義與 system profile v0.1 contracts | canonical configuration／public initialization bundle codecs | deterministic vectors與negative tests；production key ceremony未完成 |
 | FAC issuer authorization | v0.1 epoch／policy／quota-bound grant contract | bounded control-plane與單程序atomic quota reference store | canonical vectors與quota／replay tests；FAC PQ signature及distributed store未完成 |
-| PQ-RBBC issuance 與 ticket | formal core 已定義 | research relation 與大量 circuit implementation | conditional reductions；production closure false |
+| PQ-RBBC issuance 與 ticket | formal core 已定義 | research relation、大量 circuit implementation與v2.42 bounded recovery／provenance successor | bounded corrective AI technical re-review通過；formal human review與production closure仍為false |
 | Opening authorization | v0.1 canonical request、authorization statement、replay與share gate | bounded fail-closed `OpenShareService` control flow | deterministic codecs與gate tests；production signature／share proof未完成 |
 | Threshold trace opening | abstract construction與v0.1 share／combiner boundary已定義 | test-only backend下的share consistency、threshold combine及serial check | robust threshold decoder、OA DKG、real keys與production transcript未完成 |
 | Satellite access 與 PQ AKE | v0.1 access object layouts、transcript／attempt identities與test-only suite profile；PQ AKE尚未選定 | ServingContext與AccessInit／Challenge／Finish／Accept codecs已實作；無holder authenticator或AKE | object／binding tests；未宣稱authentication security或production closure |
@@ -127,15 +127,25 @@ v2.27–v2.41。精確發布位置仍以 Git commit 與 branch 為準。
   證明同長度原地改寫不存在，corrective commit已將契約精確縮限為captured-byte
   consistency，並把filesystem強不可變性列為部署前提。Effective-tree AI technical
   re-review未發現新問題；本機integration regression為641 tests，629 passed、12既有
-  optional skips、0 failures/errors。這不是external human cryptographic review；真實
-  reservation/review、launch identity freeze、execution authorization與production仍未成立。
+  optional skips、0 failures/errors。其後建立的v2.41 operator reservation屬被拒流程的
+  歷史，不能授權v2.42；external human review、launch identity freeze、execution
+  authorization與production仍未成立。
+- v2.42已以不改寫sealed v2.33／v2.38／v2.41 evidence的successor修正兩個原始
+  interruption-recovery窗口及Blind-UOV參數引用錯置。Corrective commit進一步要求
+  existing orphan／checkpoint／complete／index／evidence在採用前補足dependency-ordered
+  directory durability barriers，並在output lock內先比對external checkpoint digest，
+  再以同一captured bytes完成bounded重算後的canonical／semantic validation。Exact
+  corrective AI technical re-review對RR242-01／02、CR-01／02及78份sealed predecessors
+  均無新blocking findings；targeted 128 passed，完整suite 676 passed、12既有optional
+  skips、0 failures/errors。這只封閉bounded recovery／provenance technical-review範圍；
+  未做實體斷電或production-scale qualification，也不是具名human review。
 
 仍未完成：
 
 - 完整CAP Prove／Verify、production `c_x` serialization、PoW／192-bit profile
   disposition、concrete Anemoi ROM／QROM justification及CAP獨立review；
 - unified-tree production-scale checkpoint payload materialization／relation
-  qualification、production streaming materialization、真實operator resource reservation、external
+  qualification、production streaming materialization、新的v2.42 operator resource reservation、external
   human design/cryptographic review、production runner scale qualification、可信producer
   handoff／writer quiescence、外部identity freeze與launch manifest，
   以及全新profile pre-freeze與兩次完整replay；

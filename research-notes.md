@@ -1,6 +1,6 @@
 # 研究筆記（Research Notes）
 
-> 最後更新：2026-08-30
+> 最後更新：2026-09-10
 > 用途：保存文獻脈絡、理論基礎、研究問題與概念上的研究缺口。新任務開始時應優先閱讀本文件及 `methodology.md`。文件權責見 `docs/DOCUMENTATION_POLICY_zh-TW.md`。
 
 ## 研究主題
@@ -61,6 +61,9 @@ PQ-RBBC 是目前最成熟的密碼學核心，但不是整篇論文。完整系
 
 | 文獻／標準 | 主題 | 對本研究的用途 | 閱讀狀態 | 預計章節 |
 | --- | --- | --- | --- | --- |
+| [IACR ePrint 2024/490](https://eprint.iacr.org/2024/490)，2025-03-31 revision | optimized BAVC／single interleaved GGM tree | unified-tree frontier、opening threshold與grinding設計來源 | exact PDF identity與§3.1／§4已核對 | 第 2、4、5 章 |
+| [IACR ePrint 2024/541](https://eprint.iacr.org/2024/541)，2024-11-08 revision | generic TCitH comparison | Table 7只可作RSD support-decomposition比較；Table 4為MinRank，不是Blind-UOV參數來源 | exact PDF identity與表格角色已核對 | 第 2、4、7 章 |
+| [IACR ePrint 2025/895](https://eprint.iacr.org/2025/895)，2025-10-31 revision | Blind-UOV與CAP | Table 2提供Blind-UOV CAP profile；Table 4提供Blind-UOV／MAYO效能比較 | exact PDF identity與Table 2／4已核對 | 第 2、4、5、7 章 |
 | 待補 | PQ satellite authentication | baseline 與 threat model | 未開始 | 第 2、3 章 |
 | 待補 | blind／anonymous credentials | unlinkability 與 ticket lifecycle | 未開始 | 第 2、4 章 |
 | 待補 | robust threshold opening | opening governance 與 audit | 未開始 | 第 2、4、5 章 |

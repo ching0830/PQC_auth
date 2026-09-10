@@ -1,6 +1,6 @@
 # 實驗紀錄（Experiments）
 
-> 最後更新：2026-09-09
+> 最後更新：2026-09-10
 > 用途：保存可重現的實驗環境、命令、結果、artifact identity 與結論。不得只寫「測試通過」。文件權責見 `docs/DOCUMENTATION_POLICY_zh-TW.md`。
 
 ## 記錄規範
@@ -153,6 +153,49 @@ PYTHONPATH=src python -m unittest discover -s tests -v
   強不可變性、CAP/fork proof closure或Production-closed宣稱。
 - 下一步：provision可信external artifact root，取得真實operator reservation及external
   human independent review，之後才可產生launch manifest candidate並跑唯讀preflight。
+
+### EXP-20260910-01 — PQ-RBBC v2.42 recovery／provenance 整合驗證
+
+- 研究問題／假設：v2.42 successor及其corrective能否在不改寫sealed predecessors、
+  v2.33 specification與歷史v2.41 reservation的前提下，修正CR-01／CR-02及
+  RR242-01／RR242-02，並與完整repository regression共存。
+- 日期與時區：2026-09-10，Asia/Taipei。
+- Git commit／branch／dirty state：implementation exact commit
+  `d6d349020f8ef22e65115130c335ea6db7e337b4`，parent
+  `81374602b5c1e304f396f54ef6f2d5b9bf2f06e9`，base
+  `973deee5b5603ee47ceadabd870004e214c81a96`；先以`--ff-only`整合至local
+  `main`，再於含尚未commit之integration-owned文件更新的working tree執行本機驗證。
+- 環境：Linux 6.8.0-138-generic x86_64；AMD Ryzen 5 7600X（6 cores／12 logical
+  CPUs）；30 GiB RAM；Python 3.12.9；private `0700` TMPDIR。
+- 主要修正：append-only checkpoint journal、exact orphan重算、idempotent finalization；
+  existing chunk／journal／final entries依chunks → journal → output順序補directory
+  durability barriers；output lock內先比對external checkpoint digest，再以同一captured
+  bytes完成bounded reconstruction後的canonical／semantic validation；另以provenance
+  erratum固定ePrint 2024/490、2024/541及2025/895的exact revisions／roles／tables。
+- 本機 targeted command：
+  `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src TMPDIR=<private-0700-tmp> python -m unittest tests.test_pq_rbbc_cap_unified_tree_streaming_prefreeze tests.test_pq_rbbc_cap_unified_tree_streaming_prefreeze_evidence tests.test_pq_rbbc_cap_unified_tree_launch_preflight tests.test_pq_rbbc_cap_unified_tree_launch_preflight_evidence tests.test_pq_rbbc_cap_unified_tree_launch_validation_v2_41 tests.test_pq_rbbc_cap_unified_tree_launch_validation_evidence_v2_41 tests.test_pq_rbbc_cap_unified_tree_recovery_v2_42 tests.test_pq_rbbc_cap_provenance_v2_42 -q`
+- 本機 targeted結果：`Ran 128 tests in 35.918s`；128 passed、0 failures／errors／
+  skips，exit 0。
+- 本機 full command：
+  `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src TMPDIR=<private-0700-tmp> python -m unittest discover -s tests -q`
+- 本機 full結果：`Ran 688 tests in 738.554s`；676 passed、12 skipped、0 failures／
+  errors，exit 0。12 skips均為既有optional v2.13–v2.25 external artifacts未安裝。
+- 獨立corrective AI technical re-review：exact commit／parent相符，RR242-01／02、
+  CR-01／02與78份sealed predecessors均符合bounded範圍，沒有新blocking findings；
+  targeted 128 passed，full 676 passed加12既有skips。13組recovery probes、4組extended
+  probes、8個EIO窗口、34個durable boundaries及32個mutation cases均完成指定assertions。
+- 外部review identities：報告18,055 bytes、SHA-256
+  `d232d1b5fa50e8c839aa883198c1f3909c003c33fa55eae6a0ea2f7259d36a0c`；machine
+  findings 19,192 bytes、SHA-256
+  `a190e31fc0787064c62c0040e28c226239c18a3ffe2508b86b555b88904e4b3c`；持久摘要見
+  `docs/reviews/PQ_RBBC_v2_42_CORRECTIVE_AI_TECHNICAL_RE_REVIEW_RESULT_zh-TW.md`。
+- 結論：支持v2.42 bounded recovery／provenance successor為Implemented／Tested，且
+  四項review findings在該bounded範圍內已處置；不支持physical power-loss、filesystem
+  強不可變性、production-scale relation／stream、formal human review、CAP／fork proof、
+  launch authorization或Production-closed宣稱。
+- 下一步：建立綁定v2.42 effective implementation、source identities、exact command、
+  batch、output與資源窗口的新operator reservation，再取得具名human independent
+  review；通過後才建立launch manifest candidate並執行唯讀preflight。
 
 ## 實驗模板
 

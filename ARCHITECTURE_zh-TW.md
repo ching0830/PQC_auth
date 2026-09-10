@@ -127,12 +127,15 @@ System profile v0.1 使用 short-lived、strictly one-use ticket。FGS 維護具
 
 ## 目前 claim boundary
 
-最新合併 checkpoint 為 RBBC v2.41。Legacy 18-tree profile 已完成全部 tree、72 個
+最新合併 checkpoint 為 RBBC v2.42。Legacy 18-tree profile 已完成全部 tree、72 個
 relocations、完整 replay 與 parent CAP-to-$H_{RBBC}$ join 的 executable evidence；新的
 unified-tree candidate profile 已推進至 bounded specification、runner/checkpoint/statement/
-streaming primitives 與 fail-closed launch validation。V2.41 只證明候選 artifacts 可按同一
-immutable snapshot bytes 驗證；filesystem 強不可變性仍是部署前提，而且尚未取得真實
-operator reservation、external human independent review、launch identity freeze 或 execution
-authorization。Fork-specific reductions、合格 PQ SE-NIZK backend、real trace key、robust
+streaming primitives、fail-closed launch validation，以及具append-only journal、idempotent
+finalization與dependency-ordered directory durability barriers的bounded recovery successor。
+V2.42亦以provenance erratum修正Blind-UOV參數來源，且bounded corrective AI technical
+re-review未發現blocking finding；這不等於具名獨立人員核准或實體斷電／production-scale
+qualification。V2.41 reservation只屬歷史，新的v2.42 operator reservation、external human
+independent review、launch identity freeze及execution authorization仍未建立。Filesystem
+強不可變性仍是部署前提。Fork-specific reductions、合格 PQ SE-NIZK backend、real trace key、robust
 opening transcript、satellite AKE、durable/distributed anti-replay 與 handover 仍未封閉；
 production closure 為 false。

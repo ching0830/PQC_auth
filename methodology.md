@@ -1,6 +1,6 @@
 # 研究方法（Methodology）
 
-> 最後更新：2026-09-09
+> 最後更新：2026-09-10
 > 用途：記錄研究設計、威脅模型、決策理由、評估方法及尚未決定事項。文件權責見 `docs/DOCUMENTATION_POLICY_zh-TW.md`。
 
 ## 研究方法概覽
@@ -52,6 +52,7 @@
 | D-004 | OA threshold encryption | robust、auditable PQ construction | 待研究 | production opening |
 | D-005 | SE-NIZK backend | 合格 PQ backend 候選 | 待研究 | RBBC proof closure |
 | D-006 | Launch artifact snapshot boundary | 同一 immutable captured bytes；filesystem 強不可變性列為部署前提 | 已決定（2026-09-09） | unified-tree launch／execution handoff |
+| D-007 | Append-only recovery durability ordering | external digest先驗；same capture驗證；既存entries依相依順序補directory fsync | 已決定（2026-09-10） | unified-tree production-scale qualification |
 
 ### D-001 — System profile v0.1 採 strictly one-use ticket
 
@@ -77,6 +78,23 @@
   writable FD 與 mount namespace 由部署與正式授權流程負責。
 - **claim boundary：**此決策封閉 byte-consistency contract，不證明 filesystem 強不可變性、
   reviewer authenticity／independence、execution authorization 或 production closure。
+
+### D-007 — Append-only recovery 採 durability-ordered commit boundary
+
+- **決定日期：**2026-09-10。
+- **選擇：**resume在output lock內先capture latest checkpoint並比對外部提供的SHA-256，
+  再讀取fixture及進行bounded重算；canonical與semantic validation持續使用同一份
+  captured bytes。採用中斷後留下的既存chunk、journal或final entry前，依
+  chunks → journal → output相依順序同步被pin住且驗證過的parent directories。
+- **理由：**檔案內容fsync與pathname可見都不能單獨保證directory entry已持久化；若先
+  發布承諾後才補barrier，system crash可能留下checkpoint但遺失它所承諾的chunk。錯誤或
+  stale digest若延後檢查，也會無必要地啟動bounded重算。
+- **必要條件：**exclusive cooperative writer、可信filesystem／mount fsync語義、可信
+  producer handoff與writer quiescence；fsync錯誤必須fail closed且可重試，既存bytes／inode
+  不得以truncate、replace或overwrite修補。
+- **claim boundary：**fault injection、process death及syscall ordering支持bounded recovery
+  contract，但不等於實體斷電、kernel crash、remount、跨主機durability或production-scale
+  qualification。
 
 ## 驗證與評估方法
 

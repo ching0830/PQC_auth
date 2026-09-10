@@ -181,14 +181,19 @@ checkpoint is closed.
 
 ## Current claim boundary
 
-The latest merged RBBC checkpoint is v2.41. The legacy 18-tree profile has
+The latest merged RBBC checkpoint is v2.42. The legacy 18-tree profile has
 executable evidence for every tree, all 72 relocations, the complete replay,
 and the parent CAP-to-$H_{RBBC}$ join. The separate unified-tree candidate has
 bounded specification, runner/checkpoint/statement/streaming primitives, and
-fail-closed launch validation. V2.41 establishes validation over one immutable
-captured byte snapshot; strong filesystem immutability remains a deployment
-precondition. No real operator reservation, external human independent review,
-launch-identity freeze, or execution authorization exists. Fork-specific
+fail-closed launch validation. V2.42 adds bounded append-only recovery with an
+idempotent journal, dependency-ordered directory durability barriers, and a
+source-provenance erratum. Its corrective AI technical re-review found no
+blocking issue in that bounded scope; it is not a named independent-human
+approval or a physical-power-loss/production-scale qualification. The v2.41
+reservation is historical and cannot authorize v2.42. A new v2.42 operator
+reservation, external human independent review, launch-identity freeze, and
+execution authorization do not yet exist. Strong filesystem immutability
+remains a deployment precondition. Fork-specific
 reductions, a qualified PQ SE-NIZK backend, a real trace key, a robust opening
 transcript, satellite AKE, durable/distributed anti-replay, and handover remain
 open. Production closure is false.

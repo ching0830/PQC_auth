@@ -1,12 +1,12 @@
 [English](PQ_RBBC_CURRENT_HANDOFF.md)
 
-# PQ-RBBC 目前交接 — v2.42 recovery／provenance successor（待整合）
+# PQ-RBBC 目前交接 — v2.42 recovery／provenance successor（已整合）
 
 > **模組範圍：**這是 PQ-RBBC 的操作交接，不是整篇論文 roadmap。專案級背景請先讀 [../../ARCHITECTURE_zh-TW.md](../../ARCHITECTURE_zh-TW.md)、[../../RESEARCH_STATUS_zh-TW.md](../../RESEARCH_STATUS_zh-TW.md) 與 [../../ROADMAP_zh-TW.md](../../ROADMAP_zh-TW.md)。
 
 日期：2026 年 9 月 10 日
 
-## V2.42 recovery／provenance successor（待整合）
+## V2.42 recovery／provenance successor（已整合）
 
 2026-09-10 的 Codex AI-assisted cryptographic review 新增 CR-01（P2：兩個 chunk／
 checkpoint crash windows 無法 resume）及 CR-02（P3：Blind-UOV 參數引用錯置）。
@@ -20,20 +20,22 @@ V2.33 sealed spec、v2.38／39／41 historical evidence 與原 v2.41 operator re
 
 詳細變更、targeted／full suite、historical preservation 與 claim boundary 見
 [新 artifact note](../artifacts/PQ_RBBC_v2_42_RECOVERY_AND_PROVENANCE_zh-TW.md)。
-本 branch 只 commit，等待整合；本段不表示 v2.42 已 merge 或已獲獨立核准。
+Initial commit `81374602b5c1e304f396f54ef6f2d5b9bf2f06e9` 與 corrective commit
+`d6d349020f8ef22e65115130c335ea6db7e337b4` 已於 2026-09-10 由 integration lane
+以 fast-forward 整合至 local `main`；沒有改寫兩次負面 review 的受審 identities。
 
-先完成 final exact commit 的 regression 與
-[獨立 technical re-review](../reviews/PQ_RBBC_v2_42_AI_TECHNICAL_RE_REVIEW_PROMPT_zh-TW.md)，
-才可重新取得 v2.42 resource reservation；之後再由真正具名獨立人員 review exact
-reservation bytes／SHA／ID、batch、command 與 effective implementation identity。
-只有該 review 無 blocking findings，才能生成 launch manifest candidate。
-Codex AI-assisted review 不等於該具名人員核准。
+Final exact corrective commit 的唯讀 AI technical re-review 已通過，RR242-01、
+RR242-02、CR-01、CR-02 與歷史保存均符合本次 bounded 範圍，沒有新 blocking
+findings。Targeted 128 passed；完整 regression 為676 passed、12既有optional skips、
+0 failures／errors。持久摘要與完整外部交付 identities 見
+[review integration record](../reviews/PQ_RBBC_v2_42_CORRECTIVE_AI_TECHNICAL_RE_REVIEW_RESULT_zh-TW.md)。
+Codex AI-assisted review 不等於具名獨立人員核准。
 
-目前 v2.42 reservation、independent review、launch candidate／identity freeze 都未建立，
+目前 v2.42 reservation、formal human independent review、launch candidate／identity freeze 都未建立，
 production-prefreeze、large replay／proving 與全部 security／production claims 為 false。
-Root canonical docs 由 integration lane 依這份新 evidence 更新。
+Root canonical docs 已由 integration lane 依這份 evidence 更新。
 
-### V2.42 corrective：RR242-01／RR242-02（待新重審）
+### V2.42 corrective：RR242-01／RR242-02（bounded 重審通過）
 
 Exact `81374602b5c1e304f396f54ef6f2d5b9bf2f06e9` 的 AI technical re-review
 確認 CR-02，但新增 RR242-01（P2：orphan／existing entry 的 directory fsync
@@ -49,8 +51,9 @@ pinned parent directories；orphan 在 successor prefix 前另補同步，EIO �
 本次新增 9 個 corrective test methods。Focused 47 passed；targeted 128 passed；
 完整 regression 676 passed、12 skipped、0 failures／errors（共 688 tests，735.905 秒）。
 另以真實 bounded fixtures 重算 fresh／resume／repeated resume 與四種 link 後 fsync
-EIO／retry 窗口；結果及 log identities 已更新至 v2.42 metadata。這是實作者驗證，
-修正後 effective tree 仍待新的獨立唯讀重審。
+EIO／retry 窗口；結果及 log identities 已更新至 v2.42 metadata。獨立重審另涵蓋
+8個post-link／pre-directory-fsync EIO窗口、34個durable publication boundaries、
+32個mutation cases及digest-first／same-capture順序，均符合本次bounded契約。
 
 新 source／manifest identities 要求新的 fresh output；不得將初始 v2.42 outputs
 改寫為 corrective journal。CR-02 provenance 的四份 source／manifest／test／erratum
@@ -58,9 +61,11 @@ EIO／retry 窗口；結果及 log identities 已更新至 v2.42 metadata。這�
 本次未做實體斷電測試，filesystem／mount／writer／ACL／writable-FD assumptions
 維持不變；production／security flags 全部 false。
 
-下一步為 [corrective exact-commit 唯讀重審](../reviews/PQ_RBBC_v2_42_CORRECTIVE_AI_TECHNICAL_RE_REVIEW_PROMPT_zh-TW.md)。
-本 branch 只新增 corrective commit，不 amend／merge／push；沒有建立 reservation、
-launch candidate 或 identity freeze。具名獨立人員 review 與後續 gates 仍須另行完成。
+下一步是建立綁定 v2.42 effective implementation／source identities、exact command、
+batch、output 與資源窗口的新 operator reservation；不得沿用 v2.41 reservation。其後由
+真正具名且獨立的人員審查 exact reservation 與 implementation identities。只有正式
+review 無 blocking findings，才能建立 launch manifest candidate 並跑唯讀 preflight。
+目前仍沒有 v2.42 reservation、正式 review、launch candidate 或 identity freeze。
 
 ## V2.41 branch checkpoint
 

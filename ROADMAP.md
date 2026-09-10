@@ -10,7 +10,7 @@ for their internal checkpoints.
 | Track | Goal | Dependency | Can proceed now? |
 | --- | --- | --- | --- |
 | T0 — architecture and claims | freeze roles, phases, interfaces, threat model, and claim vocabulary | none | in progress |
-| T1 — PQ-RBBC core | legacy 18-tree relation/parent join has executable evidence; complete real unified-tree launch artifacts, production qualification, fork proof, backend, and benchmarks | v2.41 contracts, trusted artifact root, external operator/reviewer | yes; next bounded gate is reservation and human independent review |
+| T1 — PQ-RBBC core | legacy 18-tree relation/parent join has executable evidence; complete real unified-tree launch artifacts, production qualification, fork proof, backend, and benchmarks | v2.42 bounded recovery/provenance, trusted artifact root, external operator/reviewer | yes; next bounded gate is a new v2.42 reservation and human independent review |
 | T2 — federation authorization | specify FAC threshold issuer/configuration authorization and its evidence format | T0 | yes |
 | T3 — opening governance | specify case authorization, OA gate, robust shares, combine, and public audit evidence | T0; stable RBBC ticket digest | yes |
 | T4 — satellite access and PQ AKE | draft access codecs and transcript identities exist; select holder authenticator/PQ AKE and define the UE–FGS state machine, LEO/FLEO role, and session keys | T0; stable VerifyTicket interface | yes |
@@ -26,11 +26,14 @@ for their internal checkpoints.
 
 Continue under the authoritative Traditional Chinese handoff at
 [docs/roadmaps/PQ_RBBC_CURRENT_HANDOFF_zh-TW.md](docs/roadmaps/PQ_RBBC_CURRENT_HANDOFF_zh-TW.md).
-Provision the repository-external trusted artifact root, obtain a real operator
-reservation and external human independent review, then author a launch
-manifest candidate and run read-only preflight. Production remains forbidden
-without separate authorization. Do not change legacy tree-producer paths or
-historical artifact identities during the architecture reorganization.
+The v2.42 bounded corrective technical re-review has passed. Create a new
+operator reservation bound to the v2.42 effective implementation, source
+identities, exact command, batch, output, and resource window, then obtain a
+named external-human independent review. Only after both exist may the project
+author a launch-manifest candidate and run read-only preflight. The historical
+v2.41 reservation cannot be reused. Production remains forbidden without
+separate authorization. Do not change legacy tree-producer paths or historical
+artifact identities during the architecture reorganization.
 
 ### Lane B — system specification
 
