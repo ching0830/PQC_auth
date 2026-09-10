@@ -4,7 +4,59 @@
 
 > **模組範圍：**這是 PQ-RBBC 的操作交接，不是整篇論文 roadmap。專案級背景請先讀 [../../ARCHITECTURE_zh-TW.md](../../ARCHITECTURE_zh-TW.md)、[../../RESEARCH_STATUS_zh-TW.md](../../RESEARCH_STATUS_zh-TW.md) 與 [../../ROADMAP_zh-TW.md](../../ROADMAP_zh-TW.md)。
 
-日期：2026 年 9 月 10 日
+日期：2026 年 9 月 11 日
+
+## Issuance ZK backend interface-only preflight（獨立 branch checkpoint）
+
+2026-09-11 從 local `main` commit `6f6d8c8` 建立獨立 branch
+`codex/pq-rbbc-issuance-zk-backend-preflight`；未延續或修改 v2.43
+reservation-binding worktree。本 checkpoint 盤點既有 ticket-request relation、
+production-shape circuit、v2.25 manifests、v2.29 589,030,555-row replay evidence 與
+v2.37 unified statement ABI，並建立新的 issuance backend interface namespace。
+
+主要 finding 是 formal `R_issue` 的 public statement
+`(pp,ctx,sid,rid,beta)`／private witness `(M,r,rho,k_hold,e)` 與 legacy circuit 不同：
+legacy circuit 把完整payload公開，statement沒有`pp`或`sid`；v2.37雖有接近正式形狀的
+statement codec，其`sid` fixture不是fresh issuer-side `sid`，且尚未接入完整relation。
+因此v2.29 replay不是正式`pi_issue` relation，後續必須使用新relation/profile namespace，
+不得覆寫或升格historical evidence。
+
+新介面固定`Setup`、`ProveIssue`、`VerifyIssue`，以及public parameters、statement、
+private witness與proof的不同magic、versioned、ordered、length-prefixed canonical encoding；
+wrong version、reordered/unknown section、truncation與trailing bytes均拒絕。Statement綁定
+canonical PP digest，proof envelope綁定exact statement digest與
+`PQ-RBBC/ISSUE-PROOF/V1` transcript domain。
+
+Formal `rho` 固定採既有production CAP profile的1,036-byte canonical
+`CAPRandomness` serialization，不接受legacy test adapter的32-byte nonce；錯誤profile、
+tree count或非canonical GF(2^193) elements均拒絕。
+
+Production backend allowlist保持空集合。唯一替身明確命名為
+`InsecureTestOnlyIssueBackend`／`INSECURE-TEST-ONLY-PQ-RBBC-ISSUE`，不檢查relation、
+不提供PQ、ZK、knowledge extraction或simulation extraction，且只能在明確
+`production=False`下使用；三個production entry points皆在建立output前拒絕。
+
+保留完整current protocol claim時，simulation extractability確實是concurrent issuance
+與gated-CCA/GCCA hybrid的必要條件；stand-alone decoder safety雖可只用knowledge
+soundness，但本checkpoint未授權縮限claim。Aurora/libiop只列為後續reduced engineering
+baseline，Brakedown只列為performance comparator；沒有production backend被選定或整合。
+
+Bounded self-check為positive 1/1、negative 5/5 rejected、production entry points
+3/3 refused，replay rows與cryptographic proofs皆為0。Targeted 26 passed；完整baseline
+共714 tests，702 passed、12個既有optional external-artifact skips、0 failures/errors
+（737.706秒）。Path-free portable evidence為
+`artifacts/metadata/issuance_zk_backend_preflight_v1/pq_rbbc_issuance_zk_backend_preflight_evidence_v1.json`
+（3,164 bytes，SHA-256
+`b0939939ea64239e8694d0549b1af7865f140ce14f941f1e0a857ea7a2003294`）。完整候選比較、
+security requirements、ABI grammar與next gate見
+[artifact note](../artifacts/PQ_RBBC_ISSUANCE_ZK_BACKEND_PREFLIGHT_zh-TW.md)。
+
+目前`qualified_production_backend`、`formal_pi_issue_generated`、
+`safe_to_integrate_major_backend`、`safe_to_start_large_replay`、
+`safe_to_start_large_proving_run`、`Proof-closed`與`Production-closed`全部為false。
+下一個gate是先把formal statement/witness partition與fresh issuer-side `sid`接入新relation
+namespace，再對identity-pinned backend及exact PQ simulation-extractability theorem做
+reduced integration與獨立cryptographic review；大型proving仍需另行資源安排及授權。
 
 ## V2.42 recovery／provenance successor（已整合）
 
