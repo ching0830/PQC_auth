@@ -43,7 +43,7 @@ path-free portable evidence。
 | Artifact | Bytes | SHA-256 |
 | --- | ---: | --- |
 | `AI_TECHNICAL_RE_REVIEW_zh-TW.md` | 18,055 | `d232d1b5fa50e8c839aa883198c1f3909c003c33fa55eae6a0ea2f7259d36a0c` |
-| `findings.json` | 19,192 | `a190e31fc0787064c62c0040e28c226239c18a3ffe2508b86b555b88904e4b3c` |
+| `findings.json` | 19,192 | `a190e31fc0787064d6d1746a56c489776ea0ba26cc7171be738e063eef9b228d` |
 | `SHA256SUMS.txt` | 230,169 | `34b7c7b07ed6c8f0a23647f2ec529cba7416492b7add078c8107e5705af4f298` |
 
 ## Claim boundary 與下一個 gate

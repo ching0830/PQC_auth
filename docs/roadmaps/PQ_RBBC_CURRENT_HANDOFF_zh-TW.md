@@ -1,10 +1,48 @@
 [English](PQ_RBBC_CURRENT_HANDOFF.md)
 
-# PQ-RBBC 目前交接 — v2.42 recovery／provenance successor（已整合）
+# PQ-RBBC 目前交接 — v2.43 reservation-binding checkpoint
 
 > **模組範圍：**這是 PQ-RBBC 的操作交接，不是整篇論文 roadmap。專案級背景請先讀 [../../ARCHITECTURE_zh-TW.md](../../ARCHITECTURE_zh-TW.md)、[../../RESEARCH_STATUS_zh-TW.md](../../RESEARCH_STATUS_zh-TW.md) 與 [../../ROADMAP_zh-TW.md](../../ROADMAP_zh-TW.md)。
 
-日期：2026 年 9 月 10 日
+日期：2026 年 9 月 11 日
+
+## V2.43 reservation-binding checkpoint（待 exact-commit 技術審查）
+
+V2.42 corrective AI technical re-review 通過後，實際 machine contract 仍缺少可綁定
+`d6d3490` effective tree 的 reservation schema／validator；既有 v2.41 schema 固定
+`implementation_version = 2.41`，不得改名沿用。因此
+`codex/pq-rbbc-v2-43-reservation-binding` 從 integrated main `6f6d8c8` 建立新的
+closed-world successor。
+
+V2.43 固定 v2.42 reviewed commit／tree、三份 recovery／provenance source、兩份
+manifests、runtime I/O source、Git review 摘要、repository 外三份 raw review
+identities、本 contract source、production profile、trusted roots、approval、batch、
+window、resources、candidate locations 與 exact command。它另定義 named independent
+human review schema，使後續 reviewer 必須綁定 exact reservation bytes／SHA-256 與
+implementation identity，且 AI-only record 不合格。
+
+Real reservation 另強制綁定 tracked v2.43 contract-review status；status 必須對應 exact
+reviewed checkpoint commit／tree、contract source、manifest、四份 schemas 與新的
+external review delivery。Status 目前不存在，builder 因而 fail closed；不能只憑聊天
+結論越過這一步。
+
+建構時發現 Git 內 v2.42 review 摘要的 `findings.json` SHA-256 有一個轉錄錯字；raw
+reviewer output、operator archive 與 `SHA256SUMS.txt` 一致。本 branch 只更正摘要值為
+`a190e31fc0787064d6d1746a56c489776ea0ba26cc7171be738e063eef9b228d`，沒有改寫
+external evidence。
+
+本 checkpoint 仍未建立真實 approval／reservation、human review 或 launch manifest。
+Reservation 語義只表示 resources reserved；`authorizes_production_prefreeze = false`。
+Production API／CLI 一律 fail closed，沒有 production runner scale qualification、stream
+materialization、large replay／proving 或 security closure。詳細邊界與測試見
+[artifact note](../artifacts/PQ_RBBC_v2_43_RESERVATION_BINDING_zh-TW.md)。
+V2.43 focused 22 passed；相依 targeted 125 passed；完整 regression 為 698 passed、
+12 個既有 optional skips、0 failures／errors（共 710 tests）。
+
+下一步是先對 exact v2.43 commit 做唯讀 technical review；通過後先整合 exact status
+record，驗證通過才可在 repository 外建立 operator approval 與 v2.42-bound
+reservation。其後仍須具名且獨立的人員 review，
+再另建 launch-manifest authoring／preflight successor。不得先做 production。
 
 ## V2.42 recovery／provenance successor（已整合）
 
