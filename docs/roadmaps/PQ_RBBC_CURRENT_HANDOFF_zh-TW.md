@@ -6,6 +6,48 @@
 
 日期：2026 年 9 月 11 日
 
+## Formal issuance relation v1 bounded checkpoint（獨立 branch）
+
+2026-09-11 從 issuance ZK backend preflight commit `fc59ff0` 建立獨立 branch
+`codex/pq-rbbc-formal-issuance-relation-v1`。本 checkpoint 建立新的 candidate namespace
+`pq-rbbc/issuance/formal-relation/candidate/v1`，把 core proof 的 public statement
+`(pp,ctx,sid,rid,beta)`、private witness `(M,r,rho,k_hold,e)` 與 I1--I5 映射成可執行
+bounded structural evaluator。Ticket payload `M` 不再是 public statement 欄位。
+
+Relation parameters 使用獨立、versioned、ordered、length-prefixed canonical encoding，並
+綁定statement ABI、target production CAP profile、trace profile與test trace-key identity。
+Wrong version、reordered sections、truncation、trailing bytes、錯誤profile/key digest均拒絕；
+statement的`public_parameters_digest`綁定exact parameter bytes。
+
+Executable I3只使用明確命名的
+`INSECURE-TEST-ONLY-CAP-HASH-SHAPE-V1`。它以production-shaped 1,036-byte canonical
+`rho`測試partition與binding，但不是`CAP.Commit`或`H_RBBC`。I5使用deterministic
+`SystematicParityCheck` test matrix，不是certified Goppa key。因此production relation、
+production I3、certified trace key與qualified backend全部保持false，production evaluation
+在執行前拒絕。
+
+Fresh `sid` 已分離為issuer orchestration boundary：proof transcript未來必須綁定exact
+statement bytes，但global freshness需要issuer-side linearizable reservation。新增的
+`validate_issuer_sid_candidate`只做immutable snapshot的read-only check，明確回報
+`state_reserved=false`與`freshness_proved_by_relation=false`；production mode在沒有可信
+reservation handoff時拒絕。本工作不修改ticket lifecycle或`pq_sat_auth`。
+
+Bounded self-check為I1--I5 positive 1/1、4/4 mutations rejected、SID candidate positive、
+SID replay rejected、production entry points 2/2 refused，replay rows與cryptographic proofs
+皆為0。Targeted 27 passed；完整baseline共741 tests，729 passed、12個既有optional
+external-artifact skips、0 failures/errors（737.136秒）。Portable evidence：
+`artifacts/metadata/issuance_relation_v1/pq_rbbc_issuance_relation_portable_evidence_v1.json`
+（2,068 bytes，SHA-256
+`3830e35cb82c979b72e1760ff122caeb8cd5509abe19f2c61298875536bf3f85`）。完整protocol mapping、
+encoding、claim matrix與next gate見
+[artifact note](../artifacts/PQ_RBBC_ISSUANCE_RELATION_V1_zh-TW.md)。
+
+下一個gate不是large replay：先固定production common parameters/certified trace key，建立
+可消費formal `rho`的一般CAP-to-H_RBBC relation adapter，再把I1--I5降低到新namespace的
+reduced constraint prototype。完成該relation closure及獨立review後，才可接Aurora
+feasibility backend。`formal_pi_issue_generated`、`safe_to_start_large_replay`、
+`safe_to_start_large_proving_run`、`Proof-closed`與`Production-closed`皆維持false。
+
 ## Issuance ZK backend interface-only preflight（獨立 branch checkpoint）
 
 2026-09-11 從 local `main` commit `6f6d8c8` 建立獨立 branch
