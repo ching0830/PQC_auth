@@ -1,0 +1,153 @@
+{
+  "schema_id": "pqc_auth.threshold_tb0_repository_sources.v1",
+  "audit_date": "2026-09-13",
+  "main_base": "6f6d8c832c0f90d69d96ffe3abd0dcc8b8c562bb",
+  "source_audit_commit": "853cf2f20f914704ed9b001d0be87d57f04e2e8a",
+  "issuance_preflight_read_only_revision": "fc59ff0c7a8fba8bc443c488e37f9a148f238753",
+  "repository_sources": [
+    {
+      "revision": "6f6d8c832c0f90d69d96ffe3abd0dcc8b8c562bb",
+      "path": "src/pq_rbbc/opening/__init__.py",
+      "bytes": 591,
+      "sha256": "947eb4060506c2e3a69a1ca448e94a387fd0f2898f3701e49ff239ac2ce06a5a",
+      "git_blob": "955df22557a82f1664a14a577308a8f27aeb810e"
+    },
+    {
+      "revision": "6f6d8c832c0f90d69d96ffe3abd0dcc8b8c562bb",
+      "path": "src/pq_rbbc/opening/combiner.py",
+      "bytes": 5219,
+      "sha256": "39b8db9fec6044be933cddeb55916c2a8a513c04bc443ae6b71810f6aa60eb40",
+      "git_blob": "0d255161194639235873fd9af724f48aa3e14d82"
+    },
+    {
+      "revision": "6f6d8c832c0f90d69d96ffe3abd0dcc8b8c562bb",
+      "path": "src/pq_rbbc/opening/gate.py",
+      "bytes": 10310,
+      "sha256": "a45f2d8894710a030fe252a8c1b2a603beea03f2bd7c977ba6245d456e935126",
+      "git_blob": "a34fafa84d9f4f720812ce25b017edd901c9b372"
+    },
+    {
+      "revision": "6f6d8c832c0f90d69d96ffe3abd0dcc8b8c562bb",
+      "path": "src/pq_rbbc/opening/interfaces.py",
+      "bytes": 7144,
+      "sha256": "80ddc2287609f8c748e3a10fa901c6b3a09cc3f6982cb7baf944414cf3a13f2c",
+      "git_blob": "73ef6648c640a842b1a952bab0aaf442147a012e"
+    },
+    {
+      "revision": "6f6d8c832c0f90d69d96ffe3abd0dcc8b8c562bb",
+      "path": "src/pq_rbbc/opening/request.py",
+      "bytes": 11165,
+      "sha256": "89cac64e07350def61bc3a0d7ba1e9f9d61e6d80939c97a5d01198cb23b97d9f",
+      "git_blob": "1951c3b3b645c14125e91accb8659b3becf3cb13"
+    },
+    {
+      "revision": "6f6d8c832c0f90d69d96ffe3abd0dcc8b8c562bb",
+      "path": "src/pq_rbbc/opening/shares.py",
+      "bytes": 6324,
+      "sha256": "55c7dd0718cc60fcfc5bd7cef315d7b0caf554eef3941825689221127bd7159e",
+      "git_blob": "4520df9f63dbcb75a920a5c7c8212d2219b39e26"
+    },
+    {
+      "revision": "6f6d8c832c0f90d69d96ffe3abd0dcc8b8c562bb",
+      "path": "tests/system_modules/opening/__init__.py",
+      "bytes": 47,
+      "sha256": "5ca116cf63c706a7394194f0969f31d67b431b34c5398448fb8aadb88b09bf20",
+      "git_blob": "b70976dfccb97eff10c80aee0de5bdcafd2e56ad"
+    },
+    {
+      "revision": "6f6d8c832c0f90d69d96ffe3abd0dcc8b8c562bb",
+      "path": "tests/system_modules/opening/_fixtures.py",
+      "bytes": 12416,
+      "sha256": "903fcf59711c81ed2d69d39dc87eb8f7d11d5432ffe1bf1bae3e829833350e62",
+      "git_blob": "46385a1d4de7b440bf9fa44dc9b95fdc1efcfc25"
+    },
+    {
+      "revision": "6f6d8c832c0f90d69d96ffe3abd0dcc8b8c562bb",
+      "path": "tests/system_modules/opening/test_combiner.py",
+      "bytes": 7211,
+      "sha256": "54e310866898b39564f0aab4ded449c3be1bb3c9f4745efafc7faadc7c2c41c2",
+      "git_blob": "d18052ef0c4f84ce2f1a4d3205aaeecad6b9a142"
+    },
+    {
+      "revision": "6f6d8c832c0f90d69d96ffe3abd0dcc8b8c562bb",
+      "path": "tests/system_modules/opening/test_gate.py",
+      "bytes": 9350,
+      "sha256": "eebe52e54769b12ba9ebd674fc89ba79208dda381af9525a6be6308c2f9a5d8b",
+      "git_blob": "c651a73d6ab267f1af7764c50c86fe207118bb73"
+    },
+    {
+      "revision": "6f6d8c832c0f90d69d96ffe3abd0dcc8b8c562bb",
+      "path": "tests/system_modules/opening/test_manifest.py",
+      "bytes": 1638,
+      "sha256": "c647a609ca9b7f62e8e57481b752a35ed60e9c56035f07ce546eb170f4da0d84",
+      "git_blob": "f15334429a560403ada3bed9ad0e47f34617ab90"
+    },
+    {
+      "revision": "6f6d8c832c0f90d69d96ffe3abd0dcc8b8c562bb",
+      "path": "tests/system_modules/opening/test_request_and_share.py",
+      "bytes": 4695,
+      "sha256": "73b2c1759627f0319d05ccb3b72cb85450d83acc2f3769c5ca2fd120f4e3a84b",
+      "git_blob": "9535658c88bdbcd7916ec45491aed57d437227f6"
+    },
+    {
+      "revision": "6f6d8c832c0f90d69d96ffe3abd0dcc8b8c562bb",
+      "path": "docs/guides/PROTOCOL_TO_IMPLEMENTATION_GUIDE_zh-TW.md",
+      "bytes": 17194,
+      "sha256": "1c1dbee7695b04e715c66403b24be758a67ea7eb7c36b819f1918715ebf4001c",
+      "git_blob": "cdce6a9655c22adaab1ae8088298a1f238d314cd"
+    },
+    {
+      "revision": "6f6d8c832c0f90d69d96ffe3abd0dcc8b8c562bb",
+      "path": "docs/specs/ONE_TIME_TICKET_STATE_v0_1_zh-TW.md",
+      "bytes": 17193,
+      "sha256": "a1a72f0324c3b2f4844c8d53b16350436682869c2e1ceca4bf2cd6e344a5dad4",
+      "git_blob": "69dd9166b8bbb45c8c9a1d0f3f738b59c5ffd74d"
+    },
+    {
+      "revision": "6f6d8c832c0f90d69d96ffe3abd0dcc8b8c562bb",
+      "path": "manifests/pq_rbbc_conditional_opening_gate_v0_1.json",
+      "bytes": 1573,
+      "sha256": "79a73013e552125b530d0efe336dad8d76f64517d780a0a34e634f26d0e01ef2",
+      "git_blob": "059646a23744b266feffcafd9e53ade526dac6c4"
+    },
+    {
+      "revision": "fc59ff0c7a8fba8bc443c488e37f9a148f238753",
+      "path": "src/pq_rbbc_issuance_zk_backend_preflight.py",
+      "bytes": 47151,
+      "sha256": "00c0119596983b94bdfd1dcaffe58f0c2f847ca0092c5c53d8f073285092e836",
+      "git_blob": "847c02dca64c5f629504e3f749a7131a8d214813"
+    },
+    {
+      "revision": "fc59ff0c7a8fba8bc443c488e37f9a148f238753",
+      "path": "tests/test_pq_rbbc_issuance_zk_backend_preflight.py",
+      "bytes": 12803,
+      "sha256": "a92f55108c5f1eea019d2f0f7dc6f109b3079f3196f13e17f2311cdb5194c2c3",
+      "git_blob": "f073a2d52c9f06bc5be787e156549d406ae8d5ed"
+    },
+    {
+      "revision": "fc59ff0c7a8fba8bc443c488e37f9a148f238753",
+      "path": "docs/artifacts/PQ_RBBC_ISSUANCE_ZK_BACKEND_PREFLIGHT_zh-TW.md",
+      "bytes": 17762,
+      "sha256": "1d9b48208153b89f2cda3090232c67ee2111719386443567c44619d030465380",
+      "git_blob": "6ba6dab2b64fe79fb1a15fca115b10c0810bd43e"
+    },
+    {
+      "revision": "fc59ff0c7a8fba8bc443c488e37f9a148f238753",
+      "path": "manifests/pq_rbbc_issuance_zk_backend_preflight_manifest_v1.json",
+      "bytes": 10795,
+      "sha256": "07fc3fb24e129cfe15fdb1d8b3b414271bec906ae76ff071823de1f405ef2324",
+      "git_blob": "e9d0c5d348453bdf135fca3b3fc9fe17880e7e91"
+    },
+    {
+      "revision": "fc59ff0c7a8fba8bc443c488e37f9a148f238753",
+      "path": "artifacts/metadata/issuance_zk_backend_preflight_v1/pq_rbbc_issuance_zk_backend_preflight_evidence_v1.json",
+      "bytes": 3164,
+      "sha256": "b0939939ea64239e8694d0549b1af7865f140ce14f941f1e0a857ea7a2003294",
+      "git_blob": "86eebb4fcefa89999794d8b50a5ba97b0c60f4b1"
+    }
+  ],
+  "limitations": [
+    "Identities and interface inspection only; no cryptographic qualification.",
+    "Original attachment and canonical source identities remain in source_inventory_v1.json."
+  ]
+}
