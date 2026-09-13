@@ -6,6 +6,62 @@
 
 日期：2026 年 9 月 13 日
 
+## Issuance CAP576／1472 native-lowering preflight v1（獨立 branch）
+
+2026-09-13 從reduced issuance constraint commit `d3c08a9`建立獨立branch
+`codex/pq-rbbc-issuance-cap576-native-preflight-v1`。本checkpoint固定production child
+ports與formal 1,036-byte `rho` same-bytes handoff，並執行production-width／4-leaf／
+one-tree insecure test-only native shard；沒有啟動18-tree重建、589,030,555-row replay或
+formal proving。
+
+Production profile維持576-bit mask、1,472-bit appended signature、2,048-bit witness、
+2,450-bit tape及2 × 4,096／16 × 2,048 leaves。Frozen child ports包括256-bit message、
+43,128-bit commitment、576-bit derived mask、1,472-bit append base及576-bit request hash；
+parent native equality仍為`256 + 576 + 576 = 1,408` rows。Fresh issuance必須產生fresh
+port values。
+
+`rho` canonical serialization固定為magic、production profile、兩個salt、18組root pairs，
+共1,036 bytes。Future executor的identity、strict parsing及全部child inputs必須只消費同一
+immutable `RhoSnapshotV1.raw`，不得重開pathname。`rho`是per-issuance private witness，
+不是global external artifact，也不進入portable evidence。
+
+V2.29 historical evidence（5,695 bytes，SHA-256
+`1281afaee1d5d784390ee51c96c66ecc7f486ef4b4b7933590826a708f81b20e`）只能重用
+topology、wire intervals、row accounting、source identity及implementation semantics；
+assignment、witness、private `rho`、commitment/mask/request values與其他tree的observed
+`stream_bytes`全部禁止重用。589,030,555 rows仍只是historical fixture evidence，不是fresh
+issuance或`pi_issue`。
+
+Bounded shard為73,049 rows、53,032 wires、0 external assertions、0 verification failures，
+未物化assignment。不同`rho`維持相同row/spool topology digests但改變bound outputs。
+Historical shard selector對4-leaf shape錯落至既有2,048-leaf relation ID，因此本gate使用
+新test-only wrapper namespace並保持`engine_namespace_production_eligible=false`；正式
+implementation必須先建立fresh production relation identity，不能升格舊名稱。
+
+五份production external artifacts仍全部缺少：trace public key、certification、authenticated
+system initialization、canonical common parameters及independent review。Production entry
+在decode／CAP trace construction前fail closed；large replay及large proving exact command皆為
+`null`。Historical resource baseline為16 GB memory、64 GB free disk及8,000--12,000秒，
+必須重新reservation，不能視為目前授權。
+
+Targeted 17 tests全部通過；完整baseline共795 tests，783 passed、12個既有optional
+external-artifact skips、0 failures/errors（879.409秒）。Portable evidence位於
+`artifacts/metadata/issuance_cap576_native_preflight_v1/pq_rbbc_issuance_cap576_native_preflight_portable_evidence_v1.json`
+（1,747 bytes，SHA-256
+`c4d6b83b7bc9bd893617761c2424f5551acdcfa6229e778175a03304740caf9f`）；
+manifest為11,704 bytes／SHA-256
+`719dafa600716f53cd81b410c28b40e0d50c6921397dad4dbe7699f5f9480394`。
+
+Defined與bounded Instantiated／Implemented／Tested／Evidence-sealed為true；production
+Instantiated／Implemented、qualified PQ-SE backend、formal `pi_issue`、Proof-closed、
+Production-closed及large-run gates皆為false。沒有修改system architecture、ticket
+lifecycle或`pq_sat_auth`。詳細port表、`rho` byte layout、resource boundary與exact commands見
+[artifact note](../artifacts/PQ_RBBC_ISSUANCE_CAP576_NATIVE_PREFLIGHT_V1_zh-TW.md)。
+
+下一個gate是fresh production issuance CAP child namespace與staged executor contract：消除
+historical selector alias，固定CandidateSet／RhoSnapshot consumption、fresh cache/resume及
+per-tree output identities。External artifacts與獨立review未到齊前仍不得啟動18-tree replay。
+
 ## Issuance I1--I5 reduced constraint prototype v1（獨立 branch）
 
 2026-09-13 從production-input qualification commit `e7af82e`建立獨立branch
