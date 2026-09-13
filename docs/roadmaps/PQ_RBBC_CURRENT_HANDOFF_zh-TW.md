@@ -6,6 +6,52 @@
 
 日期：2026 年 9 月 13 日
 
+## Issuance I1--I5 reduced constraint prototype v1（獨立 branch）
+
+2026-09-13 從production-input qualification commit `e7af82e`建立獨立branch
+`codex/pq-rbbc-issuance-reduced-constraint-v1`。本checkpoint固定新test-only namespace
+`pq-rbbc/issuance/reduced-constraint/test-only/v1`，沒有啟動589,030,555-row replay或
+large proving。
+
+Public statement保持`(pp,ctx,sid,rid,beta)` production shape；private witness保持
+`(M,r,rho,k_hold,e)` partition。I1／I2／I4／I5使用既有characteristic-two helpers逐wire
+執行；I3改用既有88,282-row reduced CAP／`H_RBBC` native child，而非formal relation
+checkpoint的shape-only SHAKE adapter。`message`、`rho`、`derived_mask_prefix`與
+`request_hash`四組ports以2,022個in-memory `GF(2^193)` equality rows接合，honest
+fixture為0 failed rows及0 external assertions。
+
+本gate刻意使用32-bit insecure/test-only CAP mask，並要求72-byte `r`剩餘544 bits為0。
+因此它只驗證composition、field-lift及port ABI，不能替代production 576-bit mask／
+1472-bit appended-signature／18-tree relation。完整trace-key structural container已成為
+canonical reduced parameters input，並由`statement.pp`綁定exact bytes；fixture仍是
+deterministic matrix，不是certified Goppa key。
+
+Bounded accounting為1,600 public bits、11,622 private witness bits、576 internal bridge
+bits、2,969,180 parent rows、88,282 child rows、2,022 join rows，合計3,059,484 rows。
+Parent shape SHA-256為
+`1903f27ab2b6c2f5033aef51e8292cc12a48d8dfeaa10896418a66af8f44c773`。
+這些rows只在記憶體生成／驗證；沒有寫出或提交row stream、assignment或BR1CS。
+
+Targeted 18 tests全部通過，涵蓋canonical codecs、partition、positive relation、
+`beta`／error／mask-tail mutation、stale child port／assignment、wrong domain／profile／
+trace-key identity及production-before-decode refusal。完整baseline共778 tests，766 passed、
+12個既有optional external-artifact skips、0 failures/errors（861.258秒）。Manifest與
+portable evidence分別為4,517 bytes／SHA-256
+`15fd88aceadc138b43737b1a5bb665598f406f8377c5a539011a09e23ed78820`及
+2,200 bytes／SHA-256
+`d0c3d6a235dbe13ca8667f79bd434720e2eb9dcf0352e17d82be3d47ef6fd3fc`。
+
+Defined、reduced Instantiated／Implemented／Tested為true；production Instantiated、
+qualified PQ simulation-extractable backend、formal `pi_issue`、Proof-closed、
+Production-closed、large replay/proving authorization全部為false。沒有修改system
+architecture、ticket lifecycle或`pq_sat_auth`。
+
+下一個gate是production CAP576／1472 native-lowering preflight與bounded shard：先固定
+production child port intervals、formal 1,036-byte `rho` handoff、reuse v2.29 historical
+relation的方法、資源估算與exact commands；external production inputs及獨立review未
+到齊前不得直接啟動18-tree重建。詳細contract見
+[artifact note](../artifacts/PQ_RBBC_ISSUANCE_REDUCED_CONSTRAINT_V1_zh-TW.md)。
+
 ## Issuance production-input qualification v1（獨立 branch）
 
 2026-09-13 從 formal issuance relation commit `ff4341b` 建立獨立 branch
