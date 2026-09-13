@@ -4,7 +4,42 @@
 
 > **模組範圍：**這是 PQ-RBBC 的操作交接，不是整篇論文 roadmap。專案級背景請先讀 [../../ARCHITECTURE_zh-TW.md](../../ARCHITECTURE_zh-TW.md)、[../../RESEARCH_STATUS_zh-TW.md](../../RESEARCH_STATUS_zh-TW.md) 與 [../../ROADMAP_zh-TW.md](../../ROADMAP_zh-TW.md)。
 
-日期：2026 年 9 月 13 日
+日期：2026 年 9 月 14 日
+
+## Issuance native split lowerer checkpoint v1（獨立 branch）
+
+2026-09-14從split-runner commit `2d181da`建立獨立branch
+`codex/pq-rbbc-issuance-split-lowerer-v1`。本checkpoint保持既有native shard source bytes與
+73,049-row monolithic emitter不變，以受控test-only sink將rows分成`input-binding`、
+`tree-pre[0]`、`global-tail-phase-a`、`tree-post[0]`及`global-tail-phase-b`五個fragments。
+合併後逐row `label/left/right/output`與同一次existing monolithic emission完全相同，總計
+53,032 wires、52,136 nonlinear rows、20,913 linear rows、0 external assertions；existing
+stream SHA-256仍為
+`635c6efaf3aa25d6f2d787450987b08712de5aaacd21f3107a90f5db9599b0cd`。
+
+Global-A的386-bit consistency-point wire port identity固定為
+`6408b990cd7e49a09fd4019178834f5e93df5700289f270fe9f81e38fcbfd421`；tree-pre未引用point
+wires，tree-post逐一消費全部point wires。Fresh lower建立綁定captured stage payloads、
+invocation及final receipt的private canonical capsule；resume在exact capsule SHA-256與final
+receipt SHA-256核對後，不重新呼叫`split.build_stage_computations`或
+`shard.build_parallel_execution`，且與fresh結果相同。Capsule含private test fixture material，
+只可存在external root，未提交也未嵌入portable evidence。
+
+這是sink-level bounded relation fragmentation，不是independently invocable production
+fragment producers，也沒有materialize row archive或assignment。Formal I3 replay、large rows、
+proofs均為0；production execution、large replay/proving、Proof-closed與Production-closed均為
+false。五份external artifacts、independent review、trusted handoff、fragment publisher、
+PQ-SE backend、resource reservation及large-run authorization仍缺；沒有修改system
+architecture、ticket lifecycle或`pq_sat_auth`，也沒有使用其他tree的observed stream bytes。
+
+Targeted 17 tests全部通過；完整baseline共847 tests，835 passed、12個既有optional
+external-artifact skips、0 failed、0 errors（1160.994秒）。Manifest為6,048 bytes／SHA-256
+`ea0b9e889bc0c69643506363c4852518749578d05e60da481798c05676f3c084`；portable evidence為
+2,502 bytes／SHA-256
+`1ee9a00a96cd617c2540772e505b90f8d9873804084813ac6f31a694235bc7fc`。詳細contract、fragment
+identities、resource estimate與exact commands見
+[artifact note](../artifacts/PQ_RBBC_ISSUANCE_SPLIT_LOWERER_V1_zh-TW.md)。下一個gate是把這五個
+fragments提升為independently invocable bounded producers及append-only receipt publication。
 
 ## Issuance split runner／atomic publisher checkpoint v1（獨立 branch）
 
