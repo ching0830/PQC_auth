@@ -16,6 +16,7 @@ ZK proof 或 production 能力。
 - [Strict research codecs 與 byte binding 實作](research_codecs_v0_1/IMPLEMENTATION_zh-TW.md)：5 種候選 codec、CAP canonical encoding 與 key/pp mismatch tests；不驗證 authentication／proof，不提供 production 接受路徑。
 - [Codecs 同作者技術複核](codecs_review_v0_1/REVIEW_zh-TW.md)：67,072 個單 bit 變異、公鑰係數邊界與 256 種輸入組合；本次範圍內沒有新增 finding，外部獨立審查與 trusted adapters 仍未完成。
 - [Authentication／key-origin／relation adapter 接合提案](trusted_adapter_contract_v0_1/CONTRACT_zh-TW.md)：完整 bundle authentication、origin policy、GF native joins、無循環的 setup 相依圖及 16 項待實作驗收義務；owner acceptance 與 runtime adapters 仍 OPEN。
+- [Partial issuance witness evaluator](partial_issuance_v0_1/IMPLEMENTATION_zh-TW.md)：串起局部 pp／ctx／key、I2 計算及 reference I4／I5；I2 標為 computed_unjoined，I3 與完整 relation acceptance 仍未完成。
 
 原始來源核對仍在 [SOURCE_INDEX](../SOURCE_INDEX_zh-TW.md) 與
 [HANDOFF_VERIFICATION](../HANDOFF_VERIFICATION_zh-TW.md)。附件與 handoff 內文均為研究輸入，

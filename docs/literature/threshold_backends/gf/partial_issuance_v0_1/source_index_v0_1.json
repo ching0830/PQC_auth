@@ -1,0 +1,181 @@
+{
+  "schema": "pqc_auth.gf_partial_issuance_sources.v0_1",
+  "date": "2026-09-14",
+  "base_commit": "d682b8b08892f663a81c4ef9d295b0c385354d0b",
+  "base_tree": "8b1527e87d3e61d986a25078ed5681717cdd7648",
+  "prior_adapter_source_index": {
+    "path": "docs/literature/threshold_backends/gf/trusted_adapter_contract_v0_1/source_index_v0_1.json",
+    "bytes": 7789,
+    "sha256": "a6a9e9c76a727ebeafce2cd91dea120ec5f8ec5a6710f84b2c6d5bf47ef8b93a",
+    "revision": "d682b8b08892f663a81c4ef9d295b0c385354d0b"
+  },
+  "prior_adapter_validation": {
+    "path": "docs/literature/threshold_backends/gf/trusted_adapter_contract_v0_1/validation_summary_v0_1.json",
+    "bytes": 9676,
+    "sha256": "7636b4091eb510b0b9de2cdeacac8db04c37d9b70345bb47aed6625e97e7fd4d",
+    "revision": "d682b8b08892f663a81c4ef9d295b0c385354d0b"
+  },
+  "original_source_inventory": {
+    "path": "docs/literature/threshold_backends/source_inventory_v1.json",
+    "bytes": 13449,
+    "sha256": "8450774feaa2a1e91e394cfbccdc5bc33ac17106a1330be3ef56bccb3cd3ddb5",
+    "revision": "d682b8b08892f663a81c4ef9d295b0c385354d0b"
+  },
+  "identity_rechecks": {
+    "canonical_research_policy": 19,
+    "attachments": 5,
+    "prior_delivery_sources": 5,
+    "prior_referenced_sources": 15,
+    "matched": true
+  },
+  "repository_sources": [
+    {
+      "source_id": "contracts",
+      "path": "src/pq_threshold_candidates/contracts.py",
+      "bytes": 9123,
+      "sha256": "8cca77c341bce8bca3a78824ad1ecf59c1a87ecfc135992721582c759200596c",
+      "revision": "d682b8b08892f663a81c4ef9d295b0c385354d0b",
+      "locators": [
+        {
+          "symbol": "fixed_bytes",
+          "start_line": 68,
+          "end_line": 71
+        },
+        {
+          "symbol": "TraceInputs",
+          "start_line": 84,
+          "end_line": 102
+        }
+      ]
+    },
+    {
+      "source_id": "GF_reference",
+      "path": "src/pq_threshold_candidates/gf/reference.py",
+      "bytes": 11058,
+      "sha256": "58362248066333fcecada7960ab6951f08a7316a0a9a064a7ef09ec3a375ef06",
+      "revision": "d682b8b08892f663a81c4ef9d295b0c385354d0b",
+      "locators": [
+        {
+          "symbol": "ReferencePublicKey",
+          "start_line": 69,
+          "end_line": 84
+        },
+        {
+          "symbol": "encrypt_reference",
+          "start_line": 230,
+          "end_line": 242
+        },
+        {
+          "symbol": "check_encryption_relation_reference",
+          "start_line": 271,
+          "end_line": 281
+        }
+      ]
+    },
+    {
+      "source_id": "research_codecs",
+      "path": "src/pq_threshold_candidates/gf/research_abi_v0_1/codecs.py",
+      "bytes": 8822,
+      "sha256": "6c7d58803181291fb579cbbfe03f9603bf4d8fcb71aa76ca17648dbbc2f867be",
+      "revision": "d682b8b08892f663a81c4ef9d295b0c385354d0b",
+      "locators": [
+        {
+          "symbol": "validate_cap_randomness_research",
+          "start_line": 32,
+          "end_line": 52
+        },
+        {
+          "symbol": "ResearchTicketM",
+          "start_line": 161,
+          "end_line": 190
+        },
+        {
+          "symbol": "ResearchCommonPP",
+          "start_line": 194,
+          "end_line": 211
+        },
+        {
+          "symbol": "ResearchIssueStatement",
+          "start_line": 215,
+          "end_line": 227
+        },
+        {
+          "symbol": "ResearchIssueWitness",
+          "start_line": 231,
+          "end_line": 251
+        },
+        {
+          "symbol": "public_key_record_sha256_research",
+          "start_line": 254,
+          "end_line": 260
+        }
+      ]
+    },
+    {
+      "source_id": "research_binding_checker",
+      "path": "src/pq_threshold_candidates/gf/research_abi_v0_1/bindings.py",
+      "bytes": 5509,
+      "sha256": "57514f6d22f8f9bce6b5d11208687b7834156ccdbb5b087dc4a5a6a1ed13de89",
+      "revision": "d682b8b08892f663a81c4ef9d295b0c385354d0b",
+      "locators": [
+        {
+          "symbol": "check_key_pp_bindings_research",
+          "start_line": 66,
+          "end_line": 124
+        }
+      ]
+    },
+    {
+      "source_id": "shared_test_fixtures",
+      "path": "tests/threshold_candidates/gf/research_abi_v0_1/_fixtures.py",
+      "bytes": 3557,
+      "sha256": "27e0325afa82afc7fe4f72e1a5fd95e5ca900b8aea6dfda5eb535612d538bff1",
+      "revision": "d682b8b08892f663a81c4ef9d295b0c385354d0b",
+      "locators": [
+        {
+          "symbol": "fixture",
+          "start_line": 24,
+          "end_line": 49
+        }
+      ]
+    },
+    {
+      "source_id": "frozen_wire_ABI",
+      "path": "docs/literature/threshold_backends/gf/abi_v0_1/contract_v0_1.json",
+      "bytes": 9376,
+      "sha256": "1f269b737a067f4647c1e6b64b4dbff3194bf24638be682c85ac2dc25c7c50a3",
+      "revision": "d682b8b08892f663a81c4ef9d295b0c385354d0b",
+      "locators": "All layouts, profile identities and public/private partition"
+    },
+    {
+      "source_id": "adapter_requirements",
+      "path": "docs/literature/threshold_backends/gf/trusted_adapter_contract_v0_1/requirements_v0_1.json",
+      "bytes": 5501,
+      "sha256": "44896b3b60304b3e29c5d92332c54cf33b51d819105bae28ef31fdaf5783662a",
+      "revision": "d682b8b08892f663a81c4ef9d295b0c385354d0b",
+      "locators": "research_evaluator_inputs; J01-J08; owner deliverables and false closure claims"
+    },
+    {
+      "source_id": "adapter_contract",
+      "path": "docs/literature/threshold_backends/gf/trusted_adapter_contract_v0_1/CONTRACT_zh-TW.md",
+      "bytes": 16163,
+      "sha256": "571b855889d3354ea3810f417f90f10e002bce27fffe11cb3180ee302eb9ad1d",
+      "revision": "d682b8b08892f663a81c4ef9d295b0c385354d0b",
+      "locators": "Section 6 explicitly scoped next partial evaluator, with I3/authentication/native proof OPEN"
+    },
+    {
+      "source_id": "protocol_guide",
+      "path": "docs/guides/PROTOCOL_TO_IMPLEMENTATION_GUIDE_zh-TW.md",
+      "bytes": 17194,
+      "sha256": "1c1dbee7695b04e715c66403b24be758a67ea7eb7c36b819f1918715ebf4001c",
+      "revision": "d682b8b08892f663a81c4ef9d295b0c385354d0b",
+      "locators": "Sections 2 and 5: host evaluator versus native constraints and witness-free proof verifier"
+    }
+  ],
+  "limitations": [
+    "Original attachments remain research data, not authorization; full names/revisions/bytes/SHA-256 remain in the exact linked original inventory.",
+    "This implementation adds no new paper-verified or publisher-byte-equivalence claim.",
+    "The shared test fixture supplies real reference I4/I5 and canonical rho, but is not a valid full I3 instance.",
+    "No other-lane worktree is imported or modified; no evidence, certificate or cryptographic backend is synthesized."
+  ]
+}
