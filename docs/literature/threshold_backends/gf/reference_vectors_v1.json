@@ -1,0 +1,14 @@
+{
+  "schema": "pq-th-gf-reference-public-digests-v1",
+  "fixture": "test_reference.ReferenceTests.setUpClass; public test-only inputs defined in test source",
+  "origin": "locally generated regression anchors; not paper or upstream KATs",
+  "profile_descriptor_sha256": "3077ddb7e9f90c2a551c0fccff8719655b5e852394aa4e9326c9a7801225a9b7",
+  "public_key_record_sha256": "06274d97f469d512758f2dbfe765c6a4673d96de67650c3b462376da0d555e3f",
+  "ciphertext_record_sha256": "7221eac5dfb5e8d18969805b0953471fb1327e76a4588cc4b462c8ece15caf48",
+  "independent_checks": [
+    "key generation equation via direct coefficient formula",
+    "Pompeii encryption via rational rounding and separate bit packing",
+    "Hybrid2 domains and OTP via literal framing"
+  ],
+  "contains_secret_key_or_witness_bytes": false
+}
