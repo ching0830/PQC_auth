@@ -1,0 +1,259 @@
+{
+  "schema": "pqc_auth.gf_trusted_adapter_validation.v0_1",
+  "date": "2026-09-14",
+  "branch": "codex/threshold-gf-trusted-adapter-contract-v0-1",
+  "base_commit": "00ec5c66c0238e12b4f43b0a5842f529713a9c58",
+  "base_tree": "96c0ff8524ff78d08d6f498e9f89b672e18ee0eb",
+  "environment": {
+    "python": "3.12.9",
+    "platform": "Linux",
+    "machine": "x86_64"
+  },
+  "source_identities": [
+    {
+      "path": "docs/literature/threshold_backends/gf/trusted_adapter_contract_v0_1/requirements_v0_1.json",
+      "bytes": 5501,
+      "sha256": "44896b3b60304b3e29c5d92332c54cf33b51d819105bae28ef31fdaf5783662a"
+    },
+    {
+      "path": "docs/literature/threshold_backends/gf/trusted_adapter_contract_v0_1/check_contract_v0_1.py",
+      "bytes": 13134,
+      "sha256": "a3e676443ce53d7d61df7d717166031590e482c5a229d5c4b4e9377b40b1b0b4"
+    },
+    {
+      "path": "docs/literature/threshold_backends/gf/trusted_adapter_contract_v0_1/CONTRACT_zh-TW.md",
+      "bytes": 16163,
+      "sha256": "571b855889d3354ea3810f417f90f10e002bce27fffe11cb3180ee302eb9ad1d"
+    },
+    {
+      "path": "docs/literature/threshold_backends/gf/trusted_adapter_contract_v0_1/source_index_v0_1.json",
+      "bytes": 7789,
+      "sha256": "a6a9e9c76a727ebeafce2cd91dea120ec5f8ec5a6710f84b2c6d5bf47ef8b93a"
+    },
+    {
+      "path": "docs/literature/threshold_backends/gf/README_zh-TW.md",
+      "bytes": 2858,
+      "sha256": "396d545c7244367f6148adf56634bc8e4e3b0d39d8a9fd66fc92c40470c89ce2"
+    }
+  ],
+  "document_check": {
+    "command": "PYTHONDONTWRITEBYTECODE=1 python docs/literature/threshold_backends/gf/trusted_adapter_contract_v0_1/check_contract_v0_1.py",
+    "result": {
+      "schema": "pqc_auth.gf_adapter_document_check.v0_1",
+      "proposal_contract_sha256": "bbb395352135c4c079895bd035fb1e38999793f5604bb0899dcbbdbd0fb41359",
+      "positive_document_cases": 3,
+      "negative_document_cases": 30,
+      "malformed_JSON_rejected": 5,
+      "rejected_mutations": [
+        "unknown_field",
+        "bool_role",
+        "wrong_role",
+        "production_purpose",
+        "promoted_production",
+        "config_only_auth",
+        "wrong_auth_domain",
+        "old_M_size",
+        "old_trace_witness",
+        "wrong_CAP_count",
+        "wrong_CAP_profile",
+        "missing_CAP_mask",
+        "missing_CAP_parent_join",
+        "public_d_M",
+        "missing_private_u",
+        "witness_in_verifier",
+        "setup_metadata_leak",
+        "origin_missing_epoch",
+        "request_anchor_override",
+        "private_setup_node",
+        "unknown_dependency",
+        "duplicate_dependency",
+        "self_cycle",
+        "origin_to_final_pp_cycle",
+        "relation_to_final_pp_cycle",
+        "backend_to_envelope_cycle",
+        "missing_key_origin_dependency",
+        "authentication_delayed",
+        "forged_owner_acceptance",
+        "forged_proof_closure"
+      ],
+      "construction_order": [
+        "key_material",
+        "profiles",
+        "configuration",
+        "key_origin_evidence",
+        "trace_binding",
+        "gf_relation_manifest",
+        "issue_backend_pp",
+        "common_pp",
+        "initialization_bundle",
+        "authenticated_initialization"
+      ],
+      "adapter_cryptography_executed": false,
+      "owner_acceptance_verified": false,
+      "production_qualified": false
+    },
+    "report_identity": {
+      "path": "/tmp/pqc-gf-trusted-adapter-document-check.json",
+      "bytes": 1448,
+      "sha256": "3800ae5db7e1fa3c1f28608b19b9ffe6bf40acf68752839ef8463d4a6503f554"
+    }
+  },
+  "threshold_tests": {
+    "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python -m unittest discover -s tests/threshold_candidates -v",
+    "total": 90,
+    "passed": 90,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "elapsed_seconds": 12.794,
+    "log_identity": {
+      "path": "/tmp/pqc-gf-trusted-adapter-targeted.log",
+      "bytes": 13444,
+      "sha256": "9ed3205609cab7261dbf6bf81a412d86b4f8953cdb86ae8c83b906c08931e45f"
+    }
+  },
+  "initialization_tests": {
+    "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python -m unittest discover -s tests/system_modules/governance -p test_system_init.py -v",
+    "total": 15,
+    "passed": 15,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "elapsed_seconds": 0.002,
+    "log_identity": {
+      "path": "/tmp/pqc-gf-trusted-adapter-system-init.log",
+      "bytes": 2264,
+      "sha256": "8ad3aa647864cf00ba225bf220c08a4364ad2fa9640720b9ba5191a7a814cc98"
+    }
+  },
+  "prior_full_regression": {
+    "rerun_in_this_task": false,
+    "source_revision": "8782d8ccd6bd77b52dd1b54d69fc1ff37d53a048",
+    "source_summary": {
+      "path": "docs/literature/threshold_backends/gf/research_codecs_v0_1/validation_summary_v0_1.json",
+      "bytes": 7774,
+      "sha256": "859257dd2f0590ef251c85b3e1922554723f7350fc9acbd61df33edd5734977d"
+    },
+    "result": {
+      "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python -m unittest discover -s tests -v",
+      "total": 778,
+      "passed": 766,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 12,
+      "elapsed_seconds": 759.285,
+      "log_identity": {
+        "bytes": 132427,
+        "sha256": "7d2fec111677697dd363ebe4cc761de44e10bdd428523f3110046b5d4d4cc3a4"
+      },
+      "skip_reasons": {
+        "trusted external v2.19 recovery artifacts are not installed": 1,
+        "external v2.20 global-tail archive is not installed": 1,
+        "external v2.15 relocation assignment is not installed": 1,
+        "external v2.13 tree-0 assignment is not installed": 1,
+        "external v2.13 tree-0 execution cache is not installed": 1,
+        "external v2.14 replay artifacts are not installed": 1,
+        "external v2.14 tree-2 assignment is not installed": 1,
+        "external v2.22 tree-1 artifacts are not installed": 1,
+        "external v2.21 tree-2 artifacts are not installed": 1,
+        "external v2.23 tree-3 artifacts are not installed": 1,
+        "external v2.24 tree-4 artifacts are not installed": 1,
+        "external v2.25 batch artifacts are not installed": 1
+      }
+    },
+    "reason": "Documentation-only proposal and standalone document checker; src/tests unchanged from the cited full baseline. No current-worktree full test claim."
+  },
+  "dependency_findings": [
+    {
+      "id": "TA-D01",
+      "stage": "S-AUTH",
+      "status": "OPEN",
+      "kind": "integration_dependency_not_new_source_bug",
+      "sources": [
+        "system_auth",
+        "system_auth_tests"
+      ],
+      "finding": "Canonical complete-bundle authentication control flow exists; concrete qualified signature/key-resolution backend is not delivered by these sources."
+    },
+    {
+      "id": "TA-D02",
+      "stage": "T-ORIGIN",
+      "status": "OPEN",
+      "kind": "integration_dependency_not_new_source_bug",
+      "sources": [
+        "binding_spec",
+        "research_bindings",
+        "GF_reference"
+      ],
+      "finding": "Research code checks opaque evidence digest only; origin model, evidence codec/domain, certifier policy and actual verifier are not defined by that implementation."
+    },
+    {
+      "id": "TA-D03",
+      "stage": "B-QUAL/B-EVAL/B-VERIFY",
+      "status": "OPEN",
+      "kind": "integration_dependency_not_new_source_bug",
+      "sources": [
+        "B_formal_relation",
+        "B_production_inputs",
+        "CAP_request"
+      ],
+      "finding": "Pinned B inputs/evaluator are NIED-specific; I3 needs CAP-derived r and full parent join. Legacy18 execution and full GF native/proof adapters are unavailable."
+    },
+    {
+      "id": "TA-D04",
+      "stage": "ticket/opening",
+      "status": "OPEN",
+      "kind": "integration_dependency_not_new_source_bug",
+      "sources": [
+        "ticket_verification",
+        "opening_interfaces"
+      ],
+      "finding": "Pinned ticket path uses 368-byte NIED M and opening view lacks h/AD. No GF ticket dispatch or changed digest semantics is implied."
+    }
+  ],
+  "scope": {
+    "runtime_source_changed": false,
+    "existing_tests_changed": false,
+    "frozen_wire_ABI_changed": false,
+    "root_canonical_changed": false,
+    "other_worktrees_modified": false
+  },
+  "claims": {
+    "adapter_requirements_defined": true,
+    "adapter_requirements_owner_accepted": false,
+    "authentication_adapter_implemented": false,
+    "key_origin_verifier_implemented": false,
+    "GF_full_relation_integrated": false,
+    "witness_free_proof_verifier_implemented": false,
+    "acceptance_matrix_cryptographically_tested": false,
+    "external_independent_review": false,
+    "evidence_sealed": false,
+    "proof_closed": false,
+    "production_closed": false
+  },
+  "next_T_bounded_implementation": {
+    "name": "GF partial issuance witness evaluator",
+    "implemented_in_this_task": false,
+    "included": [
+      "strict pp/ctx consistency",
+      "full-M I2 digest",
+      "I4 holder binding",
+      "GF reference I5"
+    ],
+    "unresolved": [
+      "I3 full CAP/H_RBBC",
+      "configuration authentication",
+      "key-origin qualification",
+      "native constraints",
+      "proof verification"
+    ],
+    "may_report_full_relation_accept": false
+  },
+  "limitations": [
+    "Document conformance tests do not execute TA01-TA16 adapter cryptographic acceptance cases.",
+    "The dependency graph is a proposed construction order; it neither adds existing wire fields nor proves all semantic obligations.",
+    "Existing initialization tests use a deterministic test verifier, not a qualified signature backend.",
+    "Owner acceptance, authentication, certification, GF full relation and production closure remain false.",
+    "No raw input packets, secrets, PDFs, downloaded artifacts or logs are committed."
+  ]
+}
