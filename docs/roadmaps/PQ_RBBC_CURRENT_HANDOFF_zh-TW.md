@@ -6,6 +6,54 @@
 
 日期：2026 年 9 月 13 日
 
+## Issuance CAP child staged-executor checkpoint v1（獨立 branch）
+
+2026-09-13從CAP576 native preflight commit `7898697`建立獨立branch
+`codex/pq-rbbc-issuance-cap-child-executor-v1`。本checkpoint建立fresh production relation
+namespace `pq-rbbc/issuance/cap576-native/production-child/candidate/v1`，並固定42-stage
+dependency order：snapshot validation、invocation binding、18個`tree-pre`、global phase A、
+18個`tree-post`、global phase B、parent native join及final seal。沒有啟動18-tree replay、
+589,030,555-row replay或formal proving。
+
+18棵tree各有fresh child ID、planned intervals、`rho` root byte ranges與四個output ports。
+所有fresh output digest、observed `stream_bytes`及assignment identity均為`null`；只重用
+historical topology／interval／accounting，沒有沿用其他tree或v2.29的observed values、
+assignment、private witness或stream identity。舊monolithic runner不能直接處理global phase A
+位於tree pre/post之間的dependency，所以`fresh_split_pre_post_executor_required=true`。
+
+Future production preflight必須消費caller已capture的同一`CandidateSet`與
+`InvocationSnapshotV1`；statement、witness及1,036-byte `RhoSnapshotV1.raw`的identity、strict
+parse與binding不得重開pathname。Cache/resume採closed-world canonical JSON、exact cache
+identity、contiguous stage prefix與domain-separated result chain；per-stage output identity綁定
+relation/profile/plan/invocation/stage、rows/wires/stream及ordered port digests。Production atomic
+publisher與durable resume仍未實作，state不得提交Git。
+
+Bounded wrapper
+`pq-rbbc/issuance/cap576-native/staged-4leaf-insecure-test-only/v1`已執行fresh及中斷後resume：
+73,049 rows、53,032 wires、0 external assertions、0 verification failures、未物化assignment；
+state mutation、trailing bytes、wrong invocation及wrong execution domain均拒絕。Formal fixture
+mask不等於4-leaf child derived mask，因此`full_i3_relation_claimed=false`，不能升格為完整I3、
+production relation或`pi_issue`。
+
+Production plan SHA-256為
+`ececfbf8421dc6593498bf0da8d5b1f9aed61ceee041ca7af0ebf19f594c0943`。Targeted 17 tests
+全部通過；完整baseline共812 tests，800 passed、12個既有optional external-artifact skips、
+0 failures/errors（900.813秒）。Manifest為35,544 bytes／SHA-256
+`72ca9390f78c03d31bf4e45e25da3a5cf821d31259782df95e54a3e7c2d4d5e4`；portable evidence為
+3,163 bytes／SHA-256
+`96c6c6732a11126435c2b6dd94a2e5788a1177a60e4754ff76c1d3187f3787c3`。
+
+五份external artifacts、trusted handoff、independent review、fresh production runner、atomic
+publisher/resume qualification、PQ-SE backend、resource reservation及large-run authorization
+仍未關閉。Production execution、large replay/proving commands為`null`；Defined及bounded
+Instantiated／Implemented／Tested／Evidence-sealed為true，production Instantiated／
+Implemented、Proof-closed與Production-closed皆為false。沒有修改system architecture、ticket
+lifecycle或`pq_sat_auth`。詳細contract、resource estimate與exact bounded commands見
+[artifact note](../artifacts/PQ_RBBC_ISSUANCE_CAP_CHILD_EXECUTOR_V1_zh-TW.md)。
+
+下一個gate是fresh split `tree-pre`／`tree-post` runner與atomic stage-output publisher的bounded
+crash-safe qualification；external artifacts與review到齊前仍不得啟動production replay。
+
 ## Issuance CAP576／1472 native-lowering preflight v1（獨立 branch）
 
 2026-09-13 從reduced issuance constraint commit `d3c08a9`建立獨立branch
