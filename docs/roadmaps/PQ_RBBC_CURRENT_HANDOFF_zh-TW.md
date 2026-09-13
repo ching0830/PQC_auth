@@ -4,7 +4,59 @@
 
 > **模組範圍：**這是 PQ-RBBC 的操作交接，不是整篇論文 roadmap。專案級背景請先讀 [../../ARCHITECTURE_zh-TW.md](../../ARCHITECTURE_zh-TW.md)、[../../RESEARCH_STATUS_zh-TW.md](../../RESEARCH_STATUS_zh-TW.md) 與 [../../ROADMAP_zh-TW.md](../../ROADMAP_zh-TW.md)。
 
-日期：2026 年 9 月 11 日
+日期：2026 年 9 月 13 日
+
+## Issuance production-input qualification v1（獨立 branch）
+
+2026-09-13 從 formal issuance relation commit `ff4341b` 建立獨立 branch
+`codex/pq-rbbc-issuance-production-inputs-v1`。本 checkpoint 固定
+`pq-rbbc/issuance/production-inputs/preflight/v1`，不啟動589M replay或large proving。
+
+新contract定義6,688/5,024/128 trace profile的canonical systematic
+`H=(I_R|T)` public-key container。`T`以1,664列、每列628 bytes、byte內LSB-first編碼；
+完整container為1,045,216 bytes。Strict parser拒絕wrong magic/version/order/length、
+truncation、trailing bytes與錯誤profile。Parser只驗證shape及bytes，不能證明任意矩陣來自
+binary Goppa key generation；既有deterministic `SystematicParityCheck`仍是test fixture。
+
+Production issuance common-parameter encoding綁定formal relation manifest、statement
+ABI、legacy 18-tree CAP relation/profile、`H_RBBC` relation/profile、trace profile、trace
+key/certification identities及issuer verification public-key digest。Authenticated system
+initialization再綁定exact common-parameter SHA-256，避免只靠名稱或未驗證JSON升格。
+
+新增`CAPToHRBBCAdapterV1` strict decode一般canonical salt/root `rho`、呼叫既有
+`execute_cap_commit`，要求formal `r`等於CAP-derived mask，再直接計算
+`beta = r XOR H_RBBC(m,c_r)`。Bounded qualification使用相同2,048-bit witness width與
+實際CAP/H_RBBC code paths，但tiny tree profile明確為insecure/test-only；兩組不同`rho`
+均可處理。Production profile在本checkpoint中無條件於18-tree execution前拒絕，不能以
+caller boolean啟用。
+
+External inventory確認缺少五份真實輸入：trace public key、trace-key certification、
+authenticated system initialization、canonical common parameters及independent review。
+即使schema/identity結構完整，trusted producer/reviewer handoff與authentication verifier未
+整合前仍回報`safe_to_instantiate_production_relation=false`。Checker沿用single-open、
+single bounded-read snapshot contract；future executor必須消費同一snapshots，不得重開
+pathname。Filesystem writer quiescence與owner/mode/ACL/writable-FD/mount controls仍為部署
+前提。
+
+Targeted為19 passed；完整baseline共760 tests，748 passed、12個既有optional
+external-artifact skips、0 failures/errors（779.954秒）。Path-free portable evidence位於
+`artifacts/metadata/issuance_production_inputs_v1/pq_rbbc_issuance_production_inputs_portable_evidence_v1.json`
+（1,528 bytes，SHA-256
+`fe7cffbb0037b6bbbea6a262711bb0d803b625771ae3c23b9e19ef6672371721`）。Frozen manifest為
+5,728 bytes，SHA-256
+`76272df2d70e2a42d4a7acaf18eea54160f7bb3fb272ffe21d296c7d4bb4e752`。
+詳細encoding、external requirements、exact command與claim matrix見
+[artifact note](../artifacts/PQ_RBBC_ISSUANCE_PRODUCTION_INPUTS_V1_zh-TW.md)。
+
+本gate的Defined、Implemented、Tested、Evidence-sealed為true；Instantiated、
+Proof-closed、Production-closed、certified trace key、production relation、正式
+`pi_issue`、large replay/proving authorization全部為false。沒有修改system architecture、
+ticket lifecycle或`pq_sat_auth`，也沒有建立或提交assignment、BR1CS、pickle/cache、
+checkpoint/resume、log或proof output。
+
+下一個安全gate是把I1--I5及本次general CAP/H_RBBC adapter降低到新namespace的reduced
+constraint prototype，固定trace-key input ABI與public/private wire partition；在真實external
+inputs與獨立review完成前，該prototype仍須拒絕production configuration。
 
 ## Formal issuance relation v1 bounded checkpoint（獨立 branch）
 
