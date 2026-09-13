@@ -14,6 +14,7 @@ ZK proof 或 production 能力。
 - [Key／profile／pp 接合驗收提案](review/KEY_BINDING_ACCEPTANCE_zh-TW.md)：供 common、B 與 opening owner 審查。
 - [Binding／issuance ABI 候選規格 v0.1](abi_v0_1/SPEC_zh-TW.md)：固定 pp/M/witness bytes、可信 identity 流程及跨 owner 驗收義務；尚未實作 runtime 接合。
 - [Strict research codecs 與 byte binding 實作](research_codecs_v0_1/IMPLEMENTATION_zh-TW.md)：5 種候選 codec、CAP canonical encoding 與 key/pp mismatch tests；不驗證 authentication／proof，不提供 production 接受路徑。
+- [Codecs 同作者技術複核](codecs_review_v0_1/REVIEW_zh-TW.md)：67,072 個單 bit 變異、公鑰係數邊界與 256 種輸入組合；本次範圍內沒有新增 finding，外部獨立審查與 trusted adapters 仍未完成。
 
 原始來源核對仍在 [SOURCE_INDEX](../SOURCE_INDEX_zh-TW.md) 與
 [HANDOFF_VERIFICATION](../HANDOFF_VERIFICATION_zh-TW.md)。附件與 handoff 內文均為研究輸入，
