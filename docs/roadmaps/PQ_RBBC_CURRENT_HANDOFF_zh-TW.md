@@ -6,6 +6,42 @@
 
 日期：2026 年 9 月 14 日
 
+## Issuance independent fragment producers checkpoint v1（獨立 branch）
+
+2026-09-14從native split lowerer commit `cad06ae`建立獨立branch
+`codex/pq-rbbc-issuance-fragment-producers-v1`。本checkpoint將五個bounded fragments提升為真正
+可分別呼叫的producer；每段只接受同一invocation/capsule的explicit import state及exact port
+identity，並從前段輸出的absolute `next_wire`開始。五段各自及合併後逐row均與既有emitter相同：
+73,049 rows、53,032 wires，existing stream SHA-256仍為
+`635c6efaf3aa25d6f2d787450987b08712de5aaacd21f3107a90f5db9599b0cd`；Global-A point port
+identity仍為`6408b990cd7e49a09fd4019178834f5e93df5700289f270fe9f81e38fcbfd421`。
+
+External-only append-only publisher固定genesis、五個fragment artifacts、五個receipts及complete，
+共12 files。受控中斷在ordinal 2 artifact link後發生；exact-checkpoint resume未重跑前兩個已
+完成producers，只重算next orphan一次且逐byte相同後原位採納，orphan inode未替換，invocation
+counts為`[1, 1, 2, 1, 1]`。Final receipt SHA-256為
+`044e75a7c835a542ae9162947a1887dab2996a5baddb58efff3a243c81fdbead`。
+
+Runtime fragment states含private tape/wire fixture，只存在私有external root，未提交或嵌入
+portable evidence。Snapshot contract仍是single-open、single bounded read；metadata不能證明
+capture期間沒有writer，trusted handoff、writer quiescence、owner/mode/ACL、既有writable FD、
+mount namespace及filesystem/fsync語意仍是外部部署前提。Future executor必須消費已驗證的相同
+snapshots，不能重開pathname。
+
+本gate沒有materialize assignment、row archive、BR1CS或proof，也沒有執行formal I3、18-tree或
+589,030,555-row replay。五份production external artifacts、independent review、PQ-SE backend、
+production scale qualification、resource reservation及execution authorization仍缺；production、
+Proof-closed、Production-closed及large-run gates全部為false。詳細contract、frozen identities、
+resource boundary與exact commands見
+[artifact note](../artifacts/PQ_RBBC_ISSUANCE_FRAGMENT_PRODUCERS_V1_zh-TW.md)。下一個gate是
+production 42-stage producer ABI的read-only pre-freeze，不啟動production row materialization。
+
+Targeted 14 tests全部通過；完整baseline共861 tests，849 passed、12個既有optional
+external-artifact skips、0 failed、0 errors（1220.684秒）。Manifest為7,575 bytes／SHA-256
+`587e5c6ebf78f8c4d0c74363373b4b8ac68f69171dfa6b53a4166019b4288741`；portable evidence為
+3,709 bytes／SHA-256
+`0495eab9092e896f59672eb7facf0533bc01f9a7721158649ecc2db04d54ca52`。
+
 ## Issuance native split lowerer checkpoint v1（獨立 branch）
 
 2026-09-14從split-runner commit `2d181da`建立獨立branch
