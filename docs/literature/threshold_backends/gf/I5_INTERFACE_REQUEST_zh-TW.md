@@ -15,8 +15,11 @@ Profile：`gf-hybrid2-pompeii-d4-shake256-otp-ref-v1`。
 `check_encryption_relation_reference(pk, inputs, C, witness)` 重新計算本 profile 的完整
 `c1||c2||c3||c4`，與 C 比較。TraceInputs 固定 `rid[32],sn[16],ctx[32],h[32]`，由同一 sn
 同時導出 plaintext=`rid||sn` 與 AD=`ctx||sn||h`。
-它能拒絕錯誤 pk、u、rid、sn、ctx、h 或 C；不驗證 holder preimage、其他 I1–I4、authorization
-或任何 ZK proof，也不能作只拿 statement/proof 的 `VerifyIssue`。
+它檢查給定 pk、u、rid、sn、ctx、h 與 C 是否滿足此加密關係；不驗證 holder preimage、其他
+I1–I4、authorization 或任何 ZK proof，也不能作只拿 statement/proof 的 `VerifyIssue`。
+關係成立之外仍須驗證 tpk 身分：例如合法 witness `u=0` 導致 Pompeii c1 為零，完整 Hybrid2
+密文對不同 pk 相同，兩把對應私鑰都可解出它。這個 reference 不檢查 ctx／可信設定／pp
+是否指向該 pk。此反例與處置見 [GFR-01 審查紀錄](review/REVIEW_zh-TW.md)。
 
 ## CR-GF-01：真正 reference profile 的註冊
 
@@ -35,13 +38,16 @@ error vector 836、M payload 368 bytes。本 profile 的 u payload 128、raw C 2
 
 | 接點 | 此候選的具體輸入 | 尚待整合 |
 | --- | --- | --- |
-| Profile／tpk | 此 profile ID、descriptor SHA-256、public-key record | 進入 B PP／relation manifest identity 的 grammar |
+| Profile／tpk | 此 profile ID、descriptor SHA-256、public-key record | 可信設定驗證 key ID／epoch／用途並對上同一份 pp 的 tpk digest；不能以重加密成功代替身分綁定 |
 | Witness slot | secret u，128-byte payload；candidate record 190 bytes | 選擇 payload 或 record 的唯一 grammar、bounds、版本 |
 | Ciphertext slot | raw c1/c2/c3/c4 合計 2848；record 2910 | canonical M 是否含 record、profile identity 所在處、新 M 長度 |
 | I5 relation | 相同 u 導出 Pompeii、H/H'/H''/G、AD 與 rid/sn | 完整 constraints、同一 M/rid/sn/h wires 與 I1–I4 join |
 | Public partition | canonical `pp,ctx,sid,rid,beta` | M／u 留在 private witness；Verify 不取得它們 |
 
 Reference evaluator 不提供 row streams／BR1CS／proof；不能把 Python 回傳 True 當成 constraint。
+接受流程需從同一份已驗證 pp／設定取得 tpk，並核對 profile／公鑰 record identity，再做 I5。
+測試須包含 u=0 的跨 key 反例：I5 關係可成立，但 expected-key mismatch 必須由整合層拒絕。
+這個要求已有 canonical ctx 的 OA key ID 綁定方向；GF adapter 尚未實作。
 SHAKE256 的多次不同輸出長度、integer rounding、q/p centered lift、負係數、packing、
 reencryption 對應的 circuit 成本與 witness topology 都未量測。
 

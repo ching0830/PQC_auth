@@ -10,6 +10,8 @@ ZK proof 或 production 能力。
 - [TB2 checkpoint](checkpoint_TB2_GF_zh-TW.md)：驗證、實測、狀態與下一關。
 - [機器可讀 profile](reference_profile_v1.json) 與 [公開回歸 digests](reference_vectors_v1.json)。
 - [來源與驗證摘要](tb2_evidence_summary_v1.json)：code/input identities、tests、bounded measurement；不是 proof seal。
+- [TB2 技術複核](review/REVIEW_zh-TW.md)：第二套解密計算、GFR-01 跨 key 反例及審查界線。
+- [Key／profile／pp 接合驗收提案](review/KEY_BINDING_ACCEPTANCE_zh-TW.md)：供 common、B 與 opening owner 審查。
 
 原始來源核對仍在 [SOURCE_INDEX](../SOURCE_INDEX_zh-TW.md) 與
 [HANDOFF_VERIFICATION](../HANDOFF_VERIFICATION_zh-TW.md)。附件與 handoff 內文均為研究輸入，
