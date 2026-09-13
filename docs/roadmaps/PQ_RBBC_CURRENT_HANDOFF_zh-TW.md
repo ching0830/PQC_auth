@@ -6,6 +6,49 @@
 
 日期：2026 年 9 月 13 日
 
+## Issuance split runner／atomic publisher checkpoint v1（獨立 branch）
+
+2026-09-13從child-executor commit `b88714d`建立獨立branch
+`codex/pq-rbbc-issuance-split-runner-v1`。本checkpoint將production-width／one-tree／4-leaf
+insecure test-only CAP value computation真正拆成`tree-pre → global-A → tree-post → global-B`：
+tree-pre不消費global points，global-A從全部pre outputs產生points，tree-post再計算xi masks，
+global-B最後產生commitment、derived mask、append base及request hash。Split結果與既有direct
+CAP reference逐值相同，但尚未把native constraint row stream分割。
+
+新增的external-only publisher在私有artifact root下發布genesis、六個stage、六個stage
+receipts及complete，共14個immutable canonical JSON files。每個檔案使用Linux
+`O_TMPFILE`、file fsync、exclusive `linkat`與directory fsync；stage/receipt pair間的中斷由
+exact orphan recomputation/adoption處理。Resume在output lock內先核對caller提供的latest
+receipt SHA-256，再重算及驗證其他captured artifacts。Fresh/resume/repeated resume完全一致，
+orphan inode不被替換；mutation、trailing、wrong invocation/checkpoint、unknown、gap、missing、
+dangling symlink及existing output均拒絕，two-process fresh race恰有一個winner。
+
+這只是bounded cooperative-writer及controlled crash-window qualification，不證明stage＋
+receipt為單一filesystem transaction，也未測實體斷電、kernel crash、remount或production
+scale。`flock`與metadata不能排除malicious same-credential writer；trusted handoff、writer
+quiescence、owner/mode/ACL、writable FD、mount及filesystem/fsync語義仍是部署前提。
+
+Bounded plan SHA-256為
+`5655cbb5f751618fa3acf0a7839ebd540103fcfd037f0ae43aec5fc595d442b6`；complete identity為
+`34d1aecd0358b37c57ff11d81eb5422ef3ef73606c6b05f72a8b10e7f6e16c07`。Targeted 18 tests
+全部通過；完整baseline共830 tests，818 passed、12個既有optional external-artifact skips、
+0 failed、0 errors（1103.658秒）。Manifest為8,334 bytes／SHA-256
+`6031d3cc949b0202ba6eb35fcad6688dee864d6a7971d4381c94c5b29a3b0b84`；portable evidence為
+2,243 bytes／SHA-256
+`6d65c0808a32b6871a8b07559a81911368306c55c238a3040a10857be72abbd5`。
+
+Runtime stage files含private test fixture material，只能放在external root且未提交。Large rows
+replayed為0，未建立assignment、row archive、BR1CS、pickle、tracked cache/resume或proof。
+Formal fixture mask不等於bounded derived mask，所以完整I3、formal `pi_issue`、Proof-closed、
+Production-closed及production constraint split runner全部為false。五份external artifacts、
+independent review、trusted handoff、resource reservation與large-run authorization仍缺；
+production/large commands保持`null`。沒有修改system architecture、ticket lifecycle或
+`pq_sat_auth`。詳細contract與exact commands見
+[artifact note](../artifacts/PQ_RBBC_ISSUANCE_SPLIT_RUNNER_V1_zh-TW.md)。
+
+下一個gate是bounded native constraint-stream split lowerer：真正拆開tree-pre/tree-post row
+fragments並固定global-A point wire handoff；未關閉external blockers前仍不得啟動18-tree replay。
+
 ## Issuance CAP child staged-executor checkpoint v1（獨立 branch）
 
 2026-09-13從CAP576 native preflight commit `7898697`建立獨立branch
