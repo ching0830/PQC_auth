@@ -1,0 +1,132 @@
+{
+  "schema": "pqc_auth.gf_research_codecs_sources.v0_1",
+  "date": "2026-09-14",
+  "base_commit": "1eb44e912cee6f69c77b859cebae748fd12131c1",
+  "base_tree": "779f2ea70398c4c9fcac97784753dc0c7bbad4c9",
+  "canonical_main_at_start": "6f6d8c832c0f90d69d96ffe3abd0dcc8b8c562bb",
+  "prior_source_index": {
+    "path": "docs/literature/threshold_backends/gf/abi_v0_1/source_index_v0_1.json",
+    "bytes": 13532,
+    "sha256": "83f1173b5f2fe11ba2a1750050d3ae0ec1957dcecf7f3de0d3d322a6e5e49017"
+  },
+  "prior_inventory": {
+    "path": "docs/literature/threshold_backends/source_inventory_v1.json",
+    "bytes": 13449,
+    "sha256": "8450774feaa2a1e91e394cfbccdc5bc33ac17106a1330be3ef56bccb3cd3ddb5"
+  },
+  "attachments_rechecked": 5,
+  "canonical_research_policy_identities_rechecked": 19,
+  "repository_sources": [
+    {
+      "source_id": "frozen_abi",
+      "path": "docs/literature/threshold_backends/gf/abi_v0_1/contract_v0_1.json",
+      "revision": "1eb44e912cee6f69c77b859cebae748fd12131c1",
+      "bytes": 9376,
+      "sha256": "1f269b737a067f4647c1e6b64b4dbff3194bf24638be682c85ac2dc25c7c50a3",
+      "locators": "Complete normative layouts and canonical ABI fingerprint input"
+    },
+    {
+      "source_id": "specification",
+      "path": "docs/literature/threshold_backends/gf/abi_v0_1/SPEC_zh-TW.md",
+      "revision": "1eb44e912cee6f69c77b859cebae748fd12131c1",
+      "bytes": 12924,
+      "sha256": "6545058672be4bbc2f1c55a2cae7511e16de31b9f170eb62da2f4ae9d77df724",
+      "locators": "Sections 2-4 exact grammar, pinned input identity, private partition"
+    },
+    {
+      "source_id": "acceptance",
+      "path": "docs/literature/threshold_backends/gf/abi_v0_1/ACCEPTANCE_zh-TW.md",
+      "revision": "1eb44e912cee6f69c77b859cebae748fd12131c1",
+      "bytes": 5883,
+      "sha256": "f79d7d7813bad93b21bed74acd683cd0cc77d4d5f22eea77281df9aeef713160",
+      "locators": "A01-A24; implementation scope mapping"
+    },
+    {
+      "source_id": "historical_validation",
+      "path": "docs/literature/threshold_backends/gf/abi_v0_1/validation_summary_v0_1.json",
+      "revision": "1eb44e912cee6f69c77b859cebae748fd12131c1",
+      "bytes": 5603,
+      "sha256": "a0fe677bfa6d067312820f9a08be775e00be710980003f880829566663b849fe",
+      "locators": "Frozen synthetic vector identities; not cryptographic KATs"
+    },
+    {
+      "source_id": "common_research",
+      "path": "src/pq_threshold_candidates/contracts.py",
+      "revision": "1eb44e912cee6f69c77b859cebae748fd12131c1",
+      "bytes": 9123,
+      "sha256": "8cca77c341bce8bca3a78824ad1ecf59c1a87ecfc135992721582c759200596c",
+      "locators": "L62-71 strict bytes/uint; L183-232 unchanged unavailable backends"
+    },
+    {
+      "source_id": "gf_profile",
+      "path": "src/pq_threshold_candidates/gf/profile.py",
+      "revision": "1eb44e912cee6f69c77b859cebae748fd12131c1",
+      "bytes": 3064,
+      "sha256": "b487267210e80b9424b269d75772ff49668d73ccef80127753b59841604a47b0",
+      "locators": "Parameters and canonical compact JSON descriptor"
+    },
+    {
+      "source_id": "gf_reference",
+      "path": "src/pq_threshold_candidates/gf/reference.py",
+      "revision": "1eb44e912cee6f69c77b859cebae748fd12131c1",
+      "bytes": 11058,
+      "sha256": "58362248066333fcecada7960ab6951f08a7316a0a9a064a7ef09ec3a375ef06",
+      "locators": "L34-126 full canonical key/C/u records; L230-281 reference encryption/decryption/I5"
+    },
+    {
+      "source_id": "system_bundle",
+      "path": "src/pq_rbbc/contracts/system.py",
+      "revision": "1eb44e912cee6f69c77b859cebae748fd12131c1",
+      "bytes": 14030,
+      "sha256": "4063a8ef0ad45e74f52abe4423c396b1668176d2f9ada4b24bea2724af17c4fc",
+      "locators": "SystemConfiguration; KeyRole; SystemInitializationBundle.decode and role separation; no authentication claim"
+    },
+    {
+      "source_id": "system_auth",
+      "path": "src/pq_rbbc/governance/system_init.py",
+      "revision": "1eb44e912cee6f69c77b859cebae748fd12131c1",
+      "bytes": 7610,
+      "sha256": "d31867c4520ba9ba28fcac5578b53c147245270f3645a05cb5d03991e4e93df2",
+      "locators": "Authenticated wrapper and verifier explicitly remain separate; not called by new research checker"
+    },
+    {
+      "source_id": "cap_serializer",
+      "path": "src/pq_rbbc_cap_commit.py",
+      "revision": "1eb44e912cee6f69c77b859cebae748fd12131c1",
+      "bytes": 32526,
+      "sha256": "be3a2a767561f009acc2a274a85410ae6e02e23abd24145aa1d61883dd2dceee",
+      "locators": "L122-133 legacy18; L335-353 CAPRandomness.serialize"
+    },
+    {
+      "source_id": "cap_field",
+      "path": "src/pq_rbbc_anemoi_f193.py",
+      "revision": "1eb44e912cee6f69c77b859cebae748fd12131c1",
+      "bytes": 30852,
+      "sha256": "3e402afd4ce5544e141146593603ffc0edb39363a5593c0c627325c12bcdc54f",
+      "locators": "L43-49 GF(2^193), 25-byte field encoding"
+    },
+    {
+      "source_id": "blind_request",
+      "path": "src/pq_rbbc_blind_uov_abi.py",
+      "revision": "1eb44e912cee6f69c77b859cebae748fd12131c1",
+      "bytes": 47227,
+      "sha256": "575de440a2477e24e562ceb0f3049a13deff6031f3aa434609b7752b631491a2",
+      "locators": "L151-172 MESSAGE/MASK/TARGET widths and raw masked_target encoding"
+    },
+    {
+      "source_id": "B_preflight",
+      "path": "src/pq_rbbc_issuance_zk_backend_preflight.py",
+      "revision": "ff4341bfa18f4cd77c2811e26a7753397cfe7fe8",
+      "bytes": 47151,
+      "sha256": "00c0119596983b94bdfd1dcaffe58f0c2f847ca0092c5c53d8f073285092e836",
+      "locators": "L214-245 exact legacy CAP salt/root canonical parser; read-only snapshot, never imported or edited",
+      "access": "read_only; other-lane source not edited or imported"
+    }
+  ],
+  "limitations": [
+    "Attachment names/revisions/bytes/SHA-256 remain in the exact linked prior index; this run rechecks identities only.",
+    "All attachment instructions remain research data, not authorization.",
+    "No new paper-verified, publisher byte-equivalence or independent review claim.",
+    "New codecs and byte-equality checks are project implementation, not proof closure."
+  ]
+}
