@@ -85,8 +85,8 @@ zero-knowledge verifier 只能取得 public statement 與 proof bytes。
 | System initialization | FAC、issuer、OA keys、public configuration／parameters | `src/pq_rbbc/contracts/system.py`、`governance/system_init.py`；production primitive adapters仍缺 | system-initialization artifact、project status |
 | Issuer authorization | epoch／policy／quota-bound authorization | `src/pq_rbbc/governance/issuer_authorization.py`；production FAC signature／distributed quota仍缺 | issuer-authorization artifact、project status |
 | Enrollment／offline issuance | authenticated `rid` → blind response → ticket `T` | `src/pq_rbbc_*.py`、`tests/test_pq_rbbc_*.py`、manifests、proof | RBBC current handoff |
-| Satellite access | ticket＋freshness／key shares → session | `src/pq_sat_auth/access.py`、`framing.py` | one-time ticket spec、system tests |
-| One-time consumption | `UNSEEN → RESERVED → CONSUMED` | `src/pq_sat_auth/identities.py`、`replay.py` | one-time ticket spec、system tests |
+| Satellite access | V1 challenge flow；V2 ticket＋`pi_access`＋UE ephemeral KEM key → authenticated grant | V1 `access.py`／`framing.py`；V2 `access_v2.py`／`framing_v2.py`（待實作） | satellite-access／one-time ticket specs、system tests |
+| One-time consumption | V1 `UNSEEN → RESERVED → CONSUMED`；V2另分pending-confirm／active | `src/pq_sat_auth/identities.py`、V1 `replay.py`、V2 state model（待實作） | versioned one-time ticket specs、system tests |
 | Handover | existing session → new serving context | 尚待 specification／implementation | `ROADMAP_zh-TW.md` T6 |
 | Conditional opening | authorized case＋ticket → threshold shares → identity | `src/pq_rbbc/opening/` bounded gate／combiner；production threshold primitive仍缺 | conditional-opening artifact、project status |
 | Evaluation | communication、time、memory、storage、latency | instrumentation 與 experiment records | `experiments.md` |
@@ -201,12 +201,20 @@ T     <- (M, sigma)
 
 ## 6. Satellite access：逐行對應
 
-Protocol 概念：
+### 6.1 V1 已實作的四訊息 reference
+
+實際 V1 wire flow：
 
 ```text
-UE  -> FGS: ticket, UE freshness, serving context, UE key share, holder authenticator
-FGS -> UE : FGS freshness, FGS key share, key confirmation, access result
+UE  -> FGS: AccessInitV1(ticket, UE nonce, UE key share)
+FGS -> UE : AccessChallengeV1(FGS nonce, FGS key share, cookie)
+UE  -> FGS: AccessFinishV1(holder authenticator, UE key confirmation)
+FGS -> UE : AccessAcceptV1(FGS key confirmation, access result)
 ```
+
+這是四個wire messages／約兩趟UE–FGS往返。過去版本在本節畫的兩個方向只是把同一
+方向的payload概念聚合，卻同時列出四個objects，容易被誤讀成兩訊息實作；上圖才是
+V1 objects的一對一對應。
 
 工程對應：
 
@@ -227,6 +235,45 @@ FGS -> UE : FGS freshness, FGS key share, key confirmation, access result
 目前 reference access code 使用 test-only suite boundary。Codec／state tests 成功只
 表示資料與狀態語意可執行；不表示 holder authenticator、PQ AKE 或 distributed
 durable replay store 已 production-closed。
+
+### 6.2 V2 一趟往返 candidate
+
+V2 protocol concept：
+
+```text
+UE  -> FGS: AccessRequestV2(
+               ticket, time/epoch freshness, target FGS,
+               serving/service/channel context,
+               UE ephemeral KEM public key, pi_access)
+
+FGS -> UE : AccessAcceptV2(
+               KEM ciphertext to UE, FGS authentication,
+               server key confirmation, session/grant result)
+
+UE  -> FGS: first protected application packet + client Finished
+           # session activation；不是另一輪access authorization
+```
+
+`pi_access`是新relation：證明UE知道ticket中`h=H_hold(k_hold)`對應的holder secret，
+並綁定第一則request core。它不是`pi_issue`，不攜帶registered identity、blind mask、
+CAP randomness或trace witness。
+
+V2的責任分工：
+
+| 元素 | 責任 | 不能推論 |
+| --- | --- | --- |
+| time／epoch／UE nonces | 限制stale request window、區分holder的新attempt | 不阻止完整M1 bitwise replay |
+| `pi_access` | holder possession與request authorization | 不提供atomic one-use或FGS identity authentication |
+| FGS KEM ciphertext | fresh per-session shared secret | MAC本身不證明發送者是authorized FGS |
+| FGS authentication | 把合法FGS identity／key綁入transcript | 不證明UE已收到M2 |
+| server Finished | UE取得FGS對final key的confirmation | 不提供FGS所需的client final-key confirmation |
+| authoritative store | 同一ticket跨FGS／V1／V2最多一個grant | 不能保證partition／jamming下availability |
+| first protected packet | client Finished與session activation | 若M2是final grant，不能倒轉先前ticket consumption |
+
+Exact V2 bytes與acceptance events見
+`docs/specs/SATELLITE_ACCESS_v0_2_zh-TW.md`；state／retry／early-burn見
+`docs/specs/ONE_TIME_TICKET_STATE_v0_2_zh-TW.md`。在code、tests與concrete suite尚未
+完成前，V2只達Defined。
 
 ## 7. Conditional opening：逐行對應
 

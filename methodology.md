@@ -1,6 +1,6 @@
 # 研究方法（Methodology）
 
-> 最後更新：2026-09-10
+> 最後更新：2026-09-14
 > 用途：記錄研究設計、威脅模型、決策理由、評估方法及尚未決定事項。文件權責見 `docs/DOCUMENTATION_POLICY_zh-TW.md`。
 
 ## 研究方法概覽
@@ -53,6 +53,7 @@
 | D-005 | SE-NIZK backend | 合格 PQ backend 候選 | 待研究 | RBBC proof closure |
 | D-006 | Launch artifact snapshot boundary | 同一 immutable captured bytes；filesystem 強不可變性列為部署前提 | 已決定（2026-09-09） | unified-tree launch／execution handoff |
 | D-007 | Append-only recovery durability ordering | external digest先驗；same capture驗證；既存entries依相依順序補directory fsync | 已決定（2026-09-10） | unified-tree production-scale qualification |
+| D-008 | Satellite access message topology | V2採兩個access messages；client Finished併入第一個受保護packet | 已決定（2026-09-14） | access V2 reference、PQ suite、state review |
 
 ### D-001 — System profile v0.1 採 strictly one-use ticket
 
@@ -95,6 +96,28 @@
 - **claim boundary：**fault injection、process death及syscall ordering支持bounded recovery
   contract，但不等於實體斷電、kernel crash、remount、跨主機durability或production-scale
   qualification。
+
+### D-008 — Satellite access V2 採一趟往返 final-grant profile
+
+- **決定日期：**2026-09-14。
+- **選擇：**保留V1四訊息reference不動，另建`AccessRequestV2 -> AccessAcceptV2`。
+  UE第一則攜帶獨立`pi_access`及ephemeral KEM public key；FGS第二則提供獨立FGS
+  authentication、fresh KEM ciphertext及server key confirmation。逐次`fgs_nonce`不再是
+  V2輸入。
+- **Acceptance分層：**FGS在發布final M2前durable consume ticket並進入
+  `CONSUMED_PENDING_CONFIRM`；UE驗證M2後於1 RTT得到grant。第一個受保護application
+  packet提供client Finished，FGS驗證且atomic activate後才可執行side effect。
+- **理由：**把holder-secret possession直接綁定ticket、target FGS、serving／service
+  context、time／epoch與UE key material，可移除逐次challenge造成的一趟衛星往返；
+  server KEM response仍提供fresh per-session key material。
+- **不可同時滿足的性質：**M2若是final accept，就不能又在未收到client Finished時安全
+  釋放ticket。完整M1搶先轉送可能提早消耗ticket；exact retry／stored M2防止第二個
+  session並允許合法UE恢復，但不保證active-jamming下availability。若要避免early burn，
+  必須使用另一個provisional-grant profile並延後正式acceptance。
+- **共用identity：**V1／V2沿用`PQ-SAT/USE-KEY/v1`，避免同票跨版本各用一次。
+- **claim boundary：**這是Defined protocol decision。D-002的concrete PQ KEM／FGS
+  signature／KDF／MAC與access-NIZK backend仍待選定，distributed store、wallet、proof、
+  benchmark及production closure均未完成。
 
 ## 驗證與評估方法
 
