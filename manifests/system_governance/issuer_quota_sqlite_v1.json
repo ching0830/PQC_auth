@@ -19,7 +19,18 @@
   "issuer_sid_max_bytes": 65536,
   "journal_mode": "WAL",
   "quota_encoding": "u64le-blob",
+  "schema_digest_source": "canonical-actual-sqlite_schema-create-table-sql",
   "schema_sha256": "2b44361c39fd4c8e605b802a6c1c2f3448ece480ac02af56aa79a73332444e87",
+  "schema_validation": {
+    "actual_create_sql_digest_verified": true,
+    "canonical_create_sql_verified": true,
+    "check_constraints_verified": true,
+    "columns_defaults_pk_and_hidden_verified": true,
+    "extra_tables_indexes_triggers_views_rejected": true,
+    "foreign_key_definitions_and_actions_verified": true,
+    "strict_tables_verified": true
+  },
+  "schema_validation_profile": "PQRBBC-SQLITE-SCHEMA-VALIDATION-V1",
   "schema_version": 1,
   "sqlite_application_id": 1347503921,
   "synchronous": "FULL",

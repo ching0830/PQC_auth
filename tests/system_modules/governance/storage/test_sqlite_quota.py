@@ -29,6 +29,63 @@ def _digest(label: bytes) -> bytes:
     return hashlib.sha256(b"PQRBBC/sqlite-quota-test/" + label).digest()
 
 
+def _forge_schema_with_expected_metadata(
+    database_path: str,
+    replacements: dict[str, str],
+    *,
+    extra_statements: tuple[str, ...] = (),
+) -> None:
+    """Replace canonical DDL while retaining the advertised expected digest."""
+
+    known_tables = {
+        "quota_store_metadata",
+        "issuer_grants",
+        "consumed_issuer_sids",
+    }
+    if not replacements.keys() <= known_tables:
+        raise ValueError("unknown forged table")
+    SQLiteIssuerQuotaStore(database_path)
+    connection = sqlite3.connect(database_path, isolation_level=None)
+    try:
+        connection.execute("PRAGMA foreign_keys = OFF")
+        connection.execute("BEGIN IMMEDIATE")
+        for table in (
+            "consumed_issuer_sids",
+            "issuer_grants",
+            "quota_store_metadata",
+        ):
+            if table in replacements:
+                connection.execute(f"DROP TABLE {table}")
+        for table in (
+            "quota_store_metadata",
+            "issuer_grants",
+            "consumed_issuer_sids",
+        ):
+            if table in replacements:
+                connection.execute(replacements[table])
+        for statement in extra_statements:
+            connection.execute(statement)
+        manifest = sqlite_quota_store_manifest()
+        connection.execute(
+            """
+            INSERT OR REPLACE INTO quota_store_metadata(
+                singleton, format, schema_version, schema_sha256
+            ) VALUES (?, ?, ?, ?)
+            """,
+            (
+                1,
+                "PQRBBC-ISSUER-QUOTA-SQLITE-V1",
+                manifest["schema_version"],
+                manifest["schema_sha256"],
+            ),
+        )
+        connection.commit()
+    finally:
+        if connection.in_transaction:
+            connection.rollback()
+        connection.close()
+
+
 def _consume_worker(
     database_path: str,
     grant_digest: bytes,
@@ -379,6 +436,202 @@ class SQLiteQuotaFailureTests(unittest.TestCase):
                 connection.execute("CREATE TABLE unexpected(value INTEGER)")
             finally:
                 connection.close()
+            with self.assertRaises(SQLiteQuotaStoreSchemaError):
+                SQLiteIssuerQuotaStore(database_path)
+
+    def test_forged_metadata_cannot_hide_fully_weakened_schema(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            database_path = str(Path(temporary_directory) / "quota.sqlite3")
+            existing_store = SQLiteIssuerQuotaStore(database_path)
+            _forge_schema_with_expected_metadata(
+                database_path,
+                {
+                    "quota_store_metadata": """
+                        CREATE TABLE quota_store_metadata (
+                            singleton INTEGER PRIMARY KEY,
+                            format TEXT NOT NULL,
+                            schema_version INTEGER NOT NULL,
+                            schema_sha256 TEXT NOT NULL
+                        )
+                    """,
+                    "issuer_grants": """
+                        CREATE TABLE issuer_grants (
+                            grant_digest BLOB PRIMARY KEY,
+                            initial_quota BLOB NOT NULL,
+                            remaining_quota BLOB NOT NULL
+                        )
+                    """,
+                    "consumed_issuer_sids": """
+                        CREATE TABLE consumed_issuer_sids (
+                            grant_digest BLOB NOT NULL,
+                            issuer_sid BLOB NOT NULL,
+                            PRIMARY KEY (grant_digest, issuer_sid)
+                        )
+                    """,
+                },
+            )
+            with self.assertRaises(SQLiteQuotaStoreSchemaError):
+                SQLiteIssuerQuotaStore(database_path)
+            with self.assertRaises(SQLiteQuotaStoreSchemaError):
+                existing_store.consume(_digest(b"weakened-schema"), b"sid", 1)
+
+    def test_forged_metadata_cannot_hide_missing_strict(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            database_path = str(Path(temporary_directory) / "quota.sqlite3")
+            _forge_schema_with_expected_metadata(
+                database_path,
+                {
+                    "issuer_grants": """
+                        CREATE TABLE issuer_grants (
+                            grant_digest BLOB PRIMARY KEY
+                                CHECK (
+                                    typeof(grant_digest) = 'blob'
+                                    AND length(grant_digest) = 32
+                                ),
+                            initial_quota BLOB NOT NULL
+                                CHECK (
+                                    typeof(initial_quota) = 'blob'
+                                    AND length(initial_quota) = 8
+                                ),
+                            remaining_quota BLOB NOT NULL
+                                CHECK (
+                                    typeof(remaining_quota) = 'blob'
+                                    AND length(remaining_quota) = 8
+                                )
+                        )
+                    """,
+                },
+            )
+            with self.assertRaises(SQLiteQuotaStoreSchemaError):
+                SQLiteIssuerQuotaStore(database_path)
+
+    def test_forged_metadata_cannot_hide_modified_check(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            database_path = str(Path(temporary_directory) / "quota.sqlite3")
+            _forge_schema_with_expected_metadata(
+                database_path,
+                {
+                    "issuer_grants": """
+                        CREATE TABLE issuer_grants (
+                            grant_digest BLOB PRIMARY KEY
+                                CHECK (
+                                    typeof(grant_digest) = 'blob'
+                                    AND length(grant_digest) = 31
+                                ),
+                            initial_quota BLOB NOT NULL
+                                CHECK (
+                                    typeof(initial_quota) = 'blob'
+                                    AND length(initial_quota) = 8
+                                ),
+                            remaining_quota BLOB NOT NULL
+                                CHECK (
+                                    typeof(remaining_quota) = 'blob'
+                                    AND length(remaining_quota) = 8
+                                )
+                        ) STRICT
+                    """,
+                },
+            )
+            with self.assertRaises(SQLiteQuotaStoreSchemaError):
+                SQLiteIssuerQuotaStore(database_path)
+
+    def test_forged_metadata_cannot_hide_removed_foreign_key(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            database_path = str(Path(temporary_directory) / "quota.sqlite3")
+            _forge_schema_with_expected_metadata(
+                database_path,
+                {
+                    "consumed_issuer_sids": """
+                        CREATE TABLE consumed_issuer_sids (
+                            grant_digest BLOB NOT NULL
+                                CHECK (
+                                    typeof(grant_digest) = 'blob'
+                                    AND length(grant_digest) = 32
+                                ),
+                            issuer_sid BLOB NOT NULL
+                                CHECK (
+                                    typeof(issuer_sid) = 'blob'
+                                    AND length(issuer_sid) BETWEEN 1 AND 65536
+                                ),
+                            PRIMARY KEY (grant_digest, issuer_sid)
+                        ) STRICT
+                    """,
+                },
+            )
+            with self.assertRaises(SQLiteQuotaStoreSchemaError):
+                SQLiteIssuerQuotaStore(database_path)
+
+    def test_forged_metadata_cannot_hide_changed_foreign_key_actions(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            database_path = str(Path(temporary_directory) / "quota.sqlite3")
+            _forge_schema_with_expected_metadata(
+                database_path,
+                {
+                    "consumed_issuer_sids": """
+                        CREATE TABLE consumed_issuer_sids (
+                            grant_digest BLOB NOT NULL
+                                CHECK (
+                                    typeof(grant_digest) = 'blob'
+                                    AND length(grant_digest) = 32
+                                ),
+                            issuer_sid BLOB NOT NULL
+                                CHECK (
+                                    typeof(issuer_sid) = 'blob'
+                                    AND length(issuer_sid) BETWEEN 1 AND 65536
+                                ),
+                            PRIMARY KEY (grant_digest, issuer_sid),
+                            FOREIGN KEY (grant_digest)
+                                REFERENCES issuer_grants(grant_digest)
+                                ON UPDATE CASCADE ON DELETE CASCADE
+                        ) STRICT
+                    """,
+                },
+            )
+            with self.assertRaises(SQLiteQuotaStoreSchemaError):
+                SQLiteIssuerQuotaStore(database_path)
+
+    def test_forged_metadata_cannot_hide_changed_primary_key(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            database_path = str(Path(temporary_directory) / "quota.sqlite3")
+            _forge_schema_with_expected_metadata(
+                database_path,
+                {
+                    "consumed_issuer_sids": """
+                        CREATE TABLE consumed_issuer_sids (
+                            grant_digest BLOB NOT NULL
+                                CHECK (
+                                    typeof(grant_digest) = 'blob'
+                                    AND length(grant_digest) = 32
+                                ),
+                            issuer_sid BLOB NOT NULL
+                                CHECK (
+                                    typeof(issuer_sid) = 'blob'
+                                    AND length(issuer_sid) BETWEEN 1 AND 65536
+                                ),
+                            PRIMARY KEY (issuer_sid, grant_digest),
+                            FOREIGN KEY (grant_digest)
+                                REFERENCES issuer_grants(grant_digest)
+                                ON UPDATE RESTRICT ON DELETE RESTRICT
+                        ) STRICT
+                    """,
+                },
+            )
+            with self.assertRaises(SQLiteQuotaStoreSchemaError):
+                SQLiteIssuerQuotaStore(database_path)
+
+    def test_forged_metadata_cannot_hide_extra_index(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            database_path = str(Path(temporary_directory) / "quota.sqlite3")
+            _forge_schema_with_expected_metadata(
+                database_path,
+                {},
+                extra_statements=(
+                    """
+                    CREATE INDEX forged_remaining_quota_index
+                    ON issuer_grants(remaining_quota)
+                    """,
+                ),
+            )
             with self.assertRaises(SQLiteQuotaStoreSchemaError):
                 SQLiteIssuerQuotaStore(database_path)
 

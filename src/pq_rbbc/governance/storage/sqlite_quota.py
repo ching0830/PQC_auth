@@ -68,25 +68,73 @@ _SCHEMA_STATEMENTS = (
     """,
 )
 
-SCHEMA_SHA256 = hashlib.sha256(
-    b"\x00".join(statement.strip().encode("utf-8") for statement in _SCHEMA_STATEMENTS)
-).hexdigest()
+_SCHEMA_TABLES = (
+    ("quota_store_metadata", _SCHEMA_STATEMENTS[0]),
+    ("issuer_grants", _SCHEMA_STATEMENTS[1]),
+    ("consumed_issuer_sids", _SCHEMA_STATEMENTS[2]),
+)
+
+
+def _schema_sql_digest(schema_sql: tuple[str, ...]) -> str:
+    return hashlib.sha256(
+        b"\x00".join(sql.strip().encode("utf-8") for sql in schema_sql)
+    ).hexdigest()
+
+
+SCHEMA_SHA256 = _schema_sql_digest(
+    tuple(statement for _, statement in _SCHEMA_TABLES)
+)
+
+_EXPECTED_SCHEMA_RECORDS = tuple(
+    sorted(
+        (
+            "table",
+            table,
+            table,
+            statement.strip(),
+        )
+        for table, statement in _SCHEMA_TABLES
+    )
+)
 
 _EXPECTED_TABLE_COLUMNS = {
     "quota_store_metadata": (
-        ("singleton", "INTEGER", 1),
-        ("format", "TEXT", 0),
-        ("schema_version", "INTEGER", 0),
-        ("schema_sha256", "TEXT", 0),
+        (0, "singleton", "INTEGER", 0, None, 1, 0),
+        (1, "format", "TEXT", 1, None, 0, 0),
+        (2, "schema_version", "INTEGER", 1, None, 0, 0),
+        (3, "schema_sha256", "TEXT", 1, None, 0, 0),
     ),
     "issuer_grants": (
-        ("grant_digest", "BLOB", 1),
-        ("initial_quota", "BLOB", 0),
-        ("remaining_quota", "BLOB", 0),
+        (0, "grant_digest", "BLOB", 1, None, 1, 0),
+        (1, "initial_quota", "BLOB", 1, None, 0, 0),
+        (2, "remaining_quota", "BLOB", 1, None, 0, 0),
     ),
     "consumed_issuer_sids": (
-        ("grant_digest", "BLOB", 1),
-        ("issuer_sid", "BLOB", 2),
+        (0, "grant_digest", "BLOB", 1, None, 1, 0),
+        (1, "issuer_sid", "BLOB", 1, None, 2, 0),
+    ),
+}
+
+_EXPECTED_TABLE_PROPERTIES = {
+    "quota_store_metadata": ("table", 4, 0, 1),
+    "issuer_grants": ("table", 3, 0, 1),
+    "consumed_issuer_sids": ("table", 2, 0, 1),
+}
+
+_EXPECTED_FOREIGN_KEYS = {
+    "quota_store_metadata": (),
+    "issuer_grants": (),
+    "consumed_issuer_sids": (
+        (
+            0,
+            0,
+            "issuer_grants",
+            "grant_digest",
+            "grant_digest",
+            "RESTRICT",
+            "RESTRICT",
+            "NONE",
+        ),
     ),
 }
 
@@ -196,6 +244,25 @@ class SQLiteIssuerQuotaStore:
         ).fetchall()
         return tuple((str(row[0]), str(row[1])) for row in rows)
 
+    @staticmethod
+    def _user_schema_records(
+        connection: sqlite3.Connection,
+    ) -> tuple[tuple[str, str, str, str], ...]:
+        rows = connection.execute(
+            """
+            SELECT type, name, tbl_name, sql
+            FROM sqlite_schema
+            WHERE name NOT LIKE 'sqlite_%'
+            ORDER BY type, name
+            """
+        ).fetchall()
+        if any(not all(isinstance(value, str) for value in row) for row in rows):
+            raise SQLiteQuotaStoreSchemaError("non-text SQLite schema record")
+        return tuple(
+            (str(row[0]), str(row[1]), str(row[2]), str(row[3]).strip())
+            for row in rows
+        )
+
     @classmethod
     def _is_unclaimed_empty(cls, connection: sqlite3.Connection) -> bool:
         return cls._database_identity(connection) == (0, 0) and not cls._user_objects(
@@ -218,14 +285,65 @@ class SQLiteIssuerQuotaStore:
         )
         if cls._user_objects(connection) != expected_objects:
             raise SQLiteQuotaStoreSchemaError("unexpected SQLite schema objects")
+
+        schema_records = cls._user_schema_records(connection)
+        if schema_records != _EXPECTED_SCHEMA_RECORDS:
+            raise SQLiteQuotaStoreSchemaError(
+                "SQLite CREATE statements do not match canonical schema"
+            )
+        schema_sql_by_table = {record[1]: record[3] for record in schema_records}
+        actual_schema_sha256 = _schema_sql_digest(
+            tuple(schema_sql_by_table[table] for table, _ in _SCHEMA_TABLES)
+        )
+        if actual_schema_sha256 != SCHEMA_SHA256:
+            raise SQLiteQuotaStoreSchemaError("actual SQLite schema digest mismatch")
+
+        table_properties = {
+            str(row[1]): (str(row[2]), int(row[3]), int(row[4]), int(row[5]))
+            for row in connection.execute("PRAGMA main.table_list").fetchall()
+            if str(row[0]) == "main" and not str(row[1]).startswith("sqlite_")
+        }
+        if table_properties != _EXPECTED_TABLE_PROPERTIES:
+            raise SQLiteQuotaStoreSchemaError(
+                "SQLite table properties, including STRICT, do not match"
+            )
+
         for table, expected_columns in _EXPECTED_TABLE_COLUMNS.items():
-            rows = connection.execute(f"PRAGMA table_info({table})").fetchall()
+            rows = connection.execute(f"PRAGMA main.table_xinfo({table})").fetchall()
             actual_columns = tuple(
-                (str(row[1]), str(row[2]).upper(), int(row[5])) for row in rows
+                (
+                    int(row[0]),
+                    str(row[1]),
+                    str(row[2]).upper(),
+                    int(row[3]),
+                    row[4],
+                    int(row[5]),
+                    int(row[6]),
+                )
+                for row in rows
             )
             if actual_columns != expected_columns:
                 raise SQLiteQuotaStoreSchemaError(
                     f"unexpected SQLite columns for {table}"
+                )
+            actual_foreign_keys = tuple(
+                (
+                    int(row[0]),
+                    int(row[1]),
+                    str(row[2]),
+                    str(row[3]),
+                    str(row[4]),
+                    str(row[5]),
+                    str(row[6]),
+                    str(row[7]),
+                )
+                for row in connection.execute(
+                    f"PRAGMA main.foreign_key_list({table})"
+                ).fetchall()
+            )
+            if actual_foreign_keys != _EXPECTED_FOREIGN_KEYS[table]:
+                raise SQLiteQuotaStoreSchemaError(
+                    f"unexpected SQLite foreign keys for {table}"
                 )
         metadata = connection.execute(
             """
@@ -234,7 +352,9 @@ class SQLiteIssuerQuotaStore:
             WHERE singleton = 1
             """
         ).fetchall()
-        expected_metadata = [(STORE_FORMAT, SQLITE_SCHEMA_VERSION, SCHEMA_SHA256)]
+        expected_metadata = [
+            (STORE_FORMAT, SQLITE_SCHEMA_VERSION, actual_schema_sha256)
+        ]
         if metadata != expected_metadata:
             raise SQLiteQuotaStoreSchemaError("SQLite schema metadata mismatch")
         if connection.execute("PRAGMA foreign_key_check").fetchall():
@@ -428,6 +548,8 @@ def sqlite_quota_store_manifest() -> dict[str, object]:
         "schema_version": SQLITE_SCHEMA_VERSION,
         "sqlite_application_id": SQLITE_APPLICATION_ID,
         "schema_sha256": SCHEMA_SHA256,
+        "schema_digest_source": "canonical-actual-sqlite_schema-create-table-sql",
+        "schema_validation_profile": "PQRBBC-SQLITE-SCHEMA-VALIDATION-V1",
         "journal_mode": "WAL",
         "synchronous": "FULL",
         "transaction_begin": "IMMEDIATE",
@@ -436,6 +558,15 @@ def sqlite_quota_store_manifest() -> dict[str, object]:
         "issuer_sid_max_bytes": MAX_ISSUER_SID_BYTES,
         "quota_encoding": "u64le-blob",
         "default_busy_timeout_ms": DEFAULT_BUSY_TIMEOUT_MS,
+        "schema_validation": {
+            "actual_create_sql_digest_verified": True,
+            "canonical_create_sql_verified": True,
+            "check_constraints_verified": True,
+            "columns_defaults_pk_and_hidden_verified": True,
+            "extra_tables_indexes_triggers_views_rejected": True,
+            "foreign_key_definitions_and_actions_verified": True,
+            "strict_tables_verified": True,
+        },
         "claim_boundary": {
             "single_host_multi_process_store_implemented": True,
             "restart_persistence_implemented": True,

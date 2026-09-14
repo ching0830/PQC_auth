@@ -56,7 +56,15 @@ blind-signing response，也不代表完整 issuance transaction 已完成。
 ### 3.2 Schema 與 lifecycle
 
 - SQLite application id：`0x50514731`（`PQG1`）；schema version：1；
-- exact schema objects／columns、singleton metadata 與 schema SHA-256 都會驗證；
+- 從實際 `sqlite_schema.sql` 取得 canonical `CREATE TABLE` bytes 並重算 schema
+  SHA-256；metadata row 必須等於這個實際 digest，不能以 forged self-report 取代；
+- `sqlite_schema` object set 必須精確，任何額外 table/index/trigger/view 都拒絕；
+- `PRAGMA table_list` 必須證明三張表皆為 `STRICT` 且不是 `WITHOUT ROWID`；
+- `PRAGMA table_xinfo` 必須匹配 columns、types、`NOT NULL`、defaults、PK ordinal 與
+  hidden/generated flags；
+- canonical DDL digest／exact DDL 驗證涵蓋全部 `CHECK` expressions；
+- `PRAGMA foreign_key_list` 必須匹配 FK source/target、column mapping、`MATCH` 與
+  `ON UPDATE/DELETE RESTRICT` actions，另執行 `foreign_key_check` 驗證現存資料；
 - quota 以 canonical 8-byte `u64le` BLOB 保存，避免 SQLite signed integer 截斷；
 - `issuer_grants` 保存 initial/remaining quota；`consumed_issuer_sids` 以
   `(grant_digest, issuer_sid)` 為 primary key；
@@ -75,15 +83,29 @@ blind-signing response，也不代表完整 issuance transaction 已完成。
   parent directory 由部署者先建立並施加權限、備份與容量政策；
 - 所有程序必須指向同一個絕對 database path，且底層是正確支援 SQLite locking、
   atomic write 與 fsync 的本機 filesystem；網路檔案系統與跨主機不在能力範圍；
-- constructor 做 `quick_check(1)`，每個 transaction 驗證 identity、schema metadata、
-  columns/objects 與 foreign keys；未知 version、schema drift、錯誤 application id、
-  corrupt/non-database bytes 都拒絕；
+- constructor 做 `quick_check(1)`，每個 transaction 重新驗證 identity、實際 schema
+  digest/canonical DDL、STRICT、完整 column/PK properties、CHECK/FK definitions/actions、
+  metadata 與 foreign-key data consistency；未知 version、schema drift、錯誤
+  application id、corrupt/non-database bytes 都拒絕；
 - 真實測試涵蓋程序在 commit 前／後被 kill 及重新開啟；**沒有**做實體斷電、控制器
   write-cache、filesystem fault injection 或所有硬體 power-loss qualification。
 
 Commit 已持久化但 caller 未取得回覆時，相同 tuple 的下一次呼叫依既有 API 回報
 `REPLAY`。backend 不知道 blind-signing response，因此不會退 quota 或刪 SID；需要
 成功回覆重取時，必須由 B／主整合線另定 versioned issuance transaction protocol。
+
+### 3.4 2026-09-15 schema-validation corrective
+
+`ff08c53` 的初版只檢查 object names、`table_info`、metadata 自述 digest 與
+`foreign_key_check`。後者只能檢查已定義 FK 的現存資料，不能證明 FK 定義、actions、
+`STRICT` 或 `CHECK` 存在；因此 forged expected metadata 可掩蓋弱化 DDL。
+
+Corrective validation profile `PQRBBC-SQLITE-SCHEMA-VALIDATION-V1` 改為從實際
+`sqlite_schema.sql` 讀取三張表的 canonical DDL、依固定 table order 重算 digest，並
+要求 actual digest、compiled expected digest 與 metadata 三者一致；另以
+`table_list`、`table_xinfo`、`foreign_key_list` 交叉驗證語意。On-disk DDL 沒有改變，
+所以 store schema version 與 schema SHA-256 維持 1／原值；改變的是 fail-closed
+validator，不是資料遷移或 protocol semantic。
 
 ## 4. 實作與測試證據
 
@@ -101,6 +123,8 @@ Commit 已持久化但 caller 未取得回覆時，相同 tuple 的下一次呼�
 - 真實 child process 在 commit 前或 commit 後、回覆前終止；
 - reopen 後 remaining quota 與 SID 仍存在；
 - writer busy/locked、corrupt bytes、unknown version、schema drift、wrong app id；
+- forged expected metadata 搭配全弱化 schema，以及逐項缺 STRICT、改 CHECK、移除
+  FK、改 FK actions、改 PK ordinal、加入額外 index；
 - connection 關閉／writer lock 釋放與 full-u64 quota；
 - 透過既有 `authorize_issuance()` 的全部 validation-before-consumption 控制流。
 
@@ -108,14 +132,14 @@ Targeted command：
 
 ```text
 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python -m unittest discover -s tests/system_modules/governance/storage -v
-Ran 20 tests in 1.546s — passed 20, failures 0, errors 0, skipped 0
+Ran 27 tests in 1.918s — passed 27, failures 0, errors 0, skipped 0
 ```
 
 完整 baseline command：
 
 ```text
 PYTHONPATH=src python -m unittest discover -s tests -v
-Ran 708 tests in 739.909s — passed 696, failures 0, errors 0, skipped 12
+Ran 715 tests in 754.689s — passed 703, failures 0, errors 0, skipped 12
 ```
 
 12 個 skips 都是既有 optional external artifacts 未安裝。Targeted／baseline pass 只支持
