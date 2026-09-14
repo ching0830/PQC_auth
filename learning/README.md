@@ -21,6 +21,7 @@
 | [第九堂：共同設定與發行授權](lessons/09_CONFIGURATION_AND_ISSUER_AUTH_zh-TW.md) | 理解信任起點、共同設定、發行授權與兩種使用額度的不同責任 |
 | [第十堂：一次發行中的公開輸入、秘密與 NIZK](lessons/10_ISSUANCE_DATA_FLOW_zh-TW.md) | 沿一次申請對照資料可見性、I1–I5、簽署回應與本機關係檢查 |
 | [第十一堂：持票透過衛星接入地面站](lessons/11_SATELLITE_ACCESS_FLOW_zh-TW.md) | 沿四種接入訊息理解驗票、持票者認證、新鮮值、金鑰確認與接受時點 |
+| [第十一堂補充：NIZK 與接入延遲](notes/ACCESS_LATENCY_AND_NIZK_zh-TW.md) | 更正四訊息並非必然；記錄低延遲動機，評估首則認證、防重放與預先金鑰的取捨 |
 
 課程按概念相依順序進行。第一堂從研究問題開始；角色名稱與新術語先解釋用途，再進入公式、程式與測試。
 先前對話曾提前介紹 replay；該次介紹不代表學習者已理解或完成相應單元。
