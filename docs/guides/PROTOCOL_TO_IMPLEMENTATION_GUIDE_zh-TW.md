@@ -272,8 +272,25 @@ V2的責任分工：
 
 Exact V2 bytes與acceptance events見
 `docs/specs/SATELLITE_ACCESS_v0_2_zh-TW.md`；state／retry／early-burn見
-`docs/specs/ONE_TIME_TICKET_STATE_v0_2_zh-TW.md`。在code、tests與concrete suite尚未
-完成前，V2只達Defined。
+`docs/specs/ONE_TIME_TICKET_STATE_v0_2_zh-TW.md`。
+
+目前工程對應：
+
+- `src/pq_sat_auth/v2/framing.py`：`FrameV2`與strict frame／opaque parsing；
+- `src/pq_sat_auth/v2/access.py`：`AccessRequestV2`、`AccessAcceptV2`、
+  `SessionActivateV2`、core／full digests與flow binding；
+- `src/pq_sat_auth/v2/proof.py`：`x_access` codec、holder-binding derivation與direct
+  relation evaluator；
+- `src/pq_sat_auth/v2/backends.py`：NIZK／KEM／FGS authentication／key schedule的
+  abstract interfaces及production fail-closed guard；
+- `src/pq_sat_auth/v2/replay.py`：process-local `RESERVED ->
+  CONSUMED_PENDING_CONFIRM -> CONSUMED_ACTIVE／EXPIRED` reference model；
+- `tests/system/test_pq_sat_auth_*_v2.py`：canonical vectors、truncation、mutation、
+  binding、retry、race、activation與test-only production rejection。
+
+這只使V2的bounded byte／relation／state boundary達Implemented／Tested。完整FGS
+processing pipeline、concrete suite、真實proof／AKE、wallet及durable／distributed store
+仍未完成。
 
 ## 7. Conditional opening：逐行對應
 

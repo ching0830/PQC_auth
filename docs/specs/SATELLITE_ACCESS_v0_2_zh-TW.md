@@ -1,6 +1,6 @@
 # Satellite Access 與 PQ AKE 規格 v0.2
 
-> 狀態：Defined；尚未 Instantiated／Implemented／Tested／Proof-closed／Production-closed
+> 狀態：Defined；bounded reference codecs／relation／interfaces 已 Implemented／Tested；尚未 Instantiated／Proof-closed／Production-closed
 > 日期：2026-09-14
 > 所屬模組：M5 Satellite authentication、M6 Anti-replay／revocation／handover
 > State companion：`docs/specs/ONE_TIME_TICKET_STATE_v0_2_zh-TW.md`
@@ -209,6 +209,22 @@ FGS 必須從 authenticated configuration 與收到的 exact request 自行建�
 `x_access`；不得接受 UE 另傳且未核對的 statement interpretation。Relation／circuit
 必須實際約束 `request_core_digest`，不能讓 compiler 將它當 unused public input 移除。
 
+Bounded reference將statement bytes固定為：
+
+```text
+Encode(x_access) =
+    magic[8]       # ASCII "PQSAT-X2"
+ || version_u16be # 0x0002
+ || access_profile_digest[32]
+ || access_pp_digest[32]
+ || h[32]
+ || request_core_digest[32]
+ || holder_binding_tag[32]
+```
+
+Production proof backend若需要不同outer envelope，必須保留上述tuple的唯一canonical
+mapping並以versioned profile明定，不得默默重排或省略public inputs。
+
 此 relation 證明 holder secret possession 並授權 `request_core`，但不在 circuit 內
 重驗 Blind-UOV signature；ticket validity 由外部 `Core.VerifyTicket(T)` 負責。Proof
 backend 的 composition theorem 必須說明這兩個 verifier 如何共同形成 acceptance
@@ -232,7 +248,8 @@ attempt_id = SHAKE256(
 ```
 
 `request_digest` 包含 `holder_binding_tag` 與 `access_nizk`。只有完整 bytes 相同的
-request 才是同 attempt retry。UE 不得在 retry 時重抽 nonce、KEM key 或 proof；若
+request 才是同 attempt retry；此處`Encode(AccessRequestV2)`包含完整FrameV2 header及
+body。UE 不得在 retry 時重抽 nonce、KEM key 或 proof；若
 重建成不同 bytes，即為 competing attempt。
 
 ### 5.4 Freshness
@@ -361,6 +378,8 @@ response_digest = SHAKE256(
 )
 ```
 
+此處`Encode(AccessAcceptV2)`包含完整FrameV2 header及body。
+
 FGS 必須在送出 response 前，將 exact response 或足以重建相同 response 的 sealed
 state，連同 consumption decision 放入同一 durability boundary。Retry 不得重新執行
 KEM encapsulation或產生第二個 session ID。
@@ -393,6 +412,20 @@ client_key_confirmation = MAC(
     "PQ-SAT/CLIENT-FINISHED/v2" || response_digest
 )
 ```
+
+獨立frame形式的reference identity為：
+
+```text
+activation_digest = SHAKE256(
+    "PQ-SAT/SESSION-ACTIVATE/v2"
+    || Encode(SessionActivateV2),
+    256
+)
+```
+
+其中`Encode(SessionActivateV2)`包含完整FrameV2 header及body。若部署把client Finished
+併入第一個application AEAD，必須以suite-defined方式把等價五個fixed fields與
+confirmation綁進record header／AAD。
 
 它可以是獨立 frame，也可以作為第一個 application AEAD record 的 authenticated
 header。FGS 必須在 atomic activation commit 後才執行該 record 的 application side
@@ -488,3 +521,22 @@ KEM mode 的限制。這些標準只作設計依據，不等於本 composition �
 
 只有第 1–6 項完成也只能宣稱 bounded reference implementation／tests，不得宣稱
 production PQ AKE、proof closure或 production closure。
+
+### 13.1 2026-09-14 bounded implementation checkpoint
+
+目前已完成第1、2、3、5、6項的process-local reference範圍：
+
+- `src/pq_sat_auth/v2/framing.py`：V2 frame／opaque canonical codec；
+- `src/pq_sat_auth/v2/access.py`：三個objects、core／full encodings、digests與跨訊息
+  binding；
+- `src/pq_sat_auth/v2/proof.py`：verifier-owned statement codec與`R_access` direct
+  evaluator；
+- `src/pq_sat_auth/v2/backends.py`：abstract crypto contracts與test-only suite的
+  production拒絕邊界；
+- `src/pq_sat_auth/v2/replay.py`：process-local reservation、durable-commit語意模型、
+  pending／active／expired、exact retry與race handling。
+
+定向39項與repository-wide 727項tests已通過；後者含12項既有optional skips。這個
+checkpoint沒有實作第4項的cryptographic test adapter，也沒有實作FGS完整processing
+pipeline、ticket verifier integration、實際NIZK／KEM／FGS-auth／KDF／MAC、wallet、
+crash persistence或distributed store。`production_ready`維持false。

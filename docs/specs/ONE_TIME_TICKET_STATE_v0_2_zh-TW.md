@@ -1,6 +1,6 @@
 # One-Time Ticket 狀態與 1-RTT Access 邊界規格 v0.2
 
-> 狀態：Defined；尚未 Implemented／Tested／Production-closed
+> 狀態：Defined；process-local reference model 已 Implemented／Tested；尚未 durable／distributed／Production-closed
 > 日期：2026-09-14
 > Access companion：`docs/specs/SATELLITE_ACCESS_v0_2_zh-TW.md`
 > Historical predecessor：`docs/specs/ONE_TIME_TICKET_STATE_v0_1_zh-TW.md`
@@ -274,3 +274,10 @@ Reference state-model tests只能支持 transition／idempotency／race wiring�
 distributed linearizability、filesystem durability、wallet security、cryptographic AKE、
 access-NIZK soundness或 availability。Production claims必須另外取得 concrete backend、
 fault/recovery evidence、security proof、independent review與 satellite-path benchmark。
+
+2026-09-14 checkpoint已在`src/pq_sat_auth/v2/replay.py`建立加鎖的process-local model，
+並測試distinct／same-attempt reservation races、competing M2 commit、exact response retry、
+activation idempotency、wrong／late／cross-session rejection、expiration、termination、abort
+evidence shape與跨版本共用identity namespace。它明確標記`durable = false`、
+`distributed = false`及`production_ready = false`；不應被解讀為§5的真實durability
+boundary或§11的多FGS authoritative store已完成。

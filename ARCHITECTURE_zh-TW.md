@@ -109,6 +109,9 @@ request replay仍由atomic one-time state處理。
 side effect。Exact bytes、relation與state semantics見
 [docs/specs/SATELLITE_ACCESS_v0_2_zh-TW.md](docs/specs/SATELLITE_ACCESS_v0_2_zh-TW.md)及
 [docs/specs/ONE_TIME_TICKET_STATE_v0_2_zh-TW.md](docs/specs/ONE_TIME_TICKET_STATE_v0_2_zh-TW.md)。
+V2 frame／request／accept／activation codecs、direct relation evaluator、abstract crypto
+contracts及process-local state model已建立並通過bounded tests；尚未建立完整FGS processor
+或接入真實ticket／NIZK／AKE backends。
 具體NIZK／KEM／FGS-auth／KDF／MAC composition、channel exporter、forward-secrecy games
 與成本仍未Instantiated／Proof-closed；本模組必須維持FLEO／LEO低運算與低通訊負擔。
 
@@ -122,6 +125,8 @@ System profile 使用 short-lived、strictly one-use ticket。FGS 維護具 epoc
 V2一趟往返candidate延用同一`use_key`，並區分`CONSUMED_PENDING_CONFIRM`與
 `CONSUMED_ACTIVE`。此模組亦負責revocation distribution、wallet／server failure
 recovery、handover authorization與availability；這些功能不屬於RBBC core。
+目前V2只有加鎖的process-local reference model；它不具durability、跨程序或跨FGS
+linearizability，不能作為production authoritative store。
 
 ## 協定階段
 

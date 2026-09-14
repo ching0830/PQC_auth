@@ -12,8 +12,8 @@
 | T1 — PQ-RBBC core | legacy 18-tree relation／parent join 已有 executable evidence；完成 unified-tree 真實 launch artifacts、production qualification、fork proof、backend 與 benchmarks | v2.42 bounded recovery／provenance、可信 artifact root、外部 operator／reviewer | 可以；下一個 bounded gate 是新的 v2.42 reservation 與 human independent review |
 | T2 — Federation authorization | 定義 FAC threshold issuer／configuration authorization 與 evidence format | T0 | 可以 |
 | T3 — Opening governance | 定義 case authorization、OA gate、robust shares、combine 與 public audit evidence | T0；穩定 RBBC ticket digest | 可以 |
-| T4 — Satellite access 與 PQ AKE | V1四訊息reference已建立；V2一趟往返message／`pi_access`／abstract AKE與acceptance semantics已Defined，下一步實作bounded reference並選定concrete suite | T0；穩定 VerifyTicket interface | 可以；先做V2 codecs／relation／transcript |
-| T5 — Replay 與 lifecycle | V1 reference保留；V2跨版本`use_key`、pending-confirm／active與early-burn semantics已Defined，下一步實作state model再review production store／wallet | T0；T4 V2 interface | 可以；先做V2 reference state與race tests |
+| T4 — Satellite access 與 PQ AKE | V1四訊息reference保留；V2 codecs／`pi_access` direct relation／abstract backend contracts已建立，下一步接VerifyTicket boundary並選定concrete suite | T0；穩定 VerifyTicket interface；D-002 | 可以；先做完整FGS pure-check processor與PQ suite研究 |
+| T5 — Replay 與 lifecycle | V1 reference保留；V2 process-local pending-confirm／active state與race tests已建立，下一步做crash／wallet model及durable distributed store design | T0；T4 V2 interface | 可以；先做fault model與authoritative store contract |
 | T6 — Handover | 定義 serving-context transition 與 continuous authentication | T4；T5 | 可先做 specification |
 | T7 — Security proof composition | 將各模組 games 組合成 end-to-end theorems | 穩定 T1–T6 semantics | 稍後 |
 | T8 — Evaluation | communication、computation、storage、latency、throughput、jitter 與 baselines | executable modules | 可先做 instrumentation |

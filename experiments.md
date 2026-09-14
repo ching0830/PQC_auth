@@ -1,6 +1,6 @@
 # 實驗紀錄（Experiments）
 
-> 最後更新：2026-09-10
+> 最後更新：2026-09-14
 > 用途：保存可重現的實驗環境、命令、結果、artifact identity 與結論。不得只寫「測試通過」。文件權責見 `docs/DOCUMENTATION_POLICY_zh-TW.md`。
 
 ## 記錄規範
@@ -196,6 +196,45 @@ PYTHONPATH=src python -m unittest discover -s tests -v
 - 下一步：建立綁定v2.42 effective implementation、source identities、exact command、
   batch、output與資源窗口的新operator reservation，再取得具名human independent
   review；通過後才建立launch manifest candidate並執行唯讀preflight。
+
+### EXP-20260914-01 — Satellite access v0.2 bounded reference
+
+- 研究問題／假設：保留V1 bytes不動時，能否把兩訊息access candidate的canonical
+  messages、`R_access` holder binding、backend fail-closed boundary及pending-confirm
+  one-time state降成可執行reference，並拒絕truncation、binding mutation、competing
+  attempts／grants與錯誤activation。
+- 日期與時區：2026-09-14，Asia/Taipei。
+- Git commit／branch／dirty state：branch `codex/satellite-access-v0-2`；formal spec
+  checkpoint `1f872d10e5e776d947c05f25fd40c252b261e85c`；測試時含尚未commit的
+  `src/pq_sat_auth/v2/`、五份V2 tests及本次status／experiment更新。
+- 環境：Linux 6.8.0-138-generic x86_64；AMD Ryzen 5 7600X（6 cores／12 logical
+  CPUs）；30 GiB RAM；Python 3.12.9。
+- 外部輸入：無；未啟動production、large replay或proving，未建立大型artifact。
+- 實作：V2 frame／opaque、`AccessRequestV2`／`AccessAcceptV2`／
+  `SessionActivateV2` codecs與frozen digests；verifier-owned `x_access` codec、canonical
+  `H_hold`與holder-binding direct evaluator；NIZK／PQ KEM／FGS authentication／key
+  schedule abstract contracts及reference-suite production rejection；process-local
+  reservation／grant／activation／expiry state model。
+- focused command：
+  `PYTHONPATH=src python -m unittest -q tests.system.test_pq_sat_auth_backends_v2 tests.system.test_pq_sat_auth_framing_v2 tests.system.test_pq_sat_auth_access_v2 tests.system.test_pq_sat_auth_access_proof_v2 tests.system.test_pq_sat_auth_replay_v2`
+- focused結果：`Ran 39 tests in 0.014s`；39 passed、0 failures／errors／skips，exit 0。
+- full command：
+  `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python -m unittest discover -s tests -v`
+- full結果：`Ran 727 tests in 744.079s`；715 passed、12 skipped、0 failures／errors，
+  exit 0。12 skips均為既有optional v2.13–v2.25 external artifacts未安裝。
+- coverage：三個objects round-trip與frozen vectors；所有三個body的每一個strict prefix
+  truncation；unknown version／type／suite／channel mode、trailing fields與suite bounds；
+  request／response／activation substitution；holder hash／secret／request-core mutations；
+  24-way distinct/same-attempt reservation、24-way competing-grant commit與24-way
+  idempotent activation races；wrong／late／expired／terminated／abort paths；V1／V2共用
+  `PQ-SAT/USE-KEY/v1` namespace。
+- 結論：支持V2 bounded canonical byte boundary、direct relation及process-local state
+  wiring已Implemented／Tested，且V1 regression維持；不支持真實NIZK soundness、PQ AKE
+  authentication、完整FGS acceptance pipeline、durability、distributed linearizability、
+  wallet recovery、Proof-closed或Production-closed宣稱。
+- 下一步：先把stable `VerifyTicket` adapter、authenticated configuration／time／
+  revocation pure checks接成fail-closed FGS processor；平行研究D-002 concrete PQ suite。
+  Durable store與wallet crash model須使用獨立checkpoint及fault-injection evidence。
 
 ## 實驗模板
 

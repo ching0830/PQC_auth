@@ -115,9 +115,12 @@
   session並允許合法UE恢復，但不保證active-jamming下availability。若要避免early burn，
   必須使用另一個provisional-grant profile並延後正式acceptance。
 - **共用identity：**V1／V2沿用`PQ-SAT/USE-KEY/v1`，避免同票跨版本各用一次。
-- **claim boundary：**這是Defined protocol decision。D-002的concrete PQ KEM／FGS
-  signature／KDF／MAC與access-NIZK backend仍待選定，distributed store、wallet、proof、
-  benchmark及production closure均未完成。
+- **bounded implementation：**V2 canonical codecs、direct `R_access` evaluator、abstract
+  cryptographic contracts與process-local replay／activation model已於2026-09-14實作並
+  通過定向與repository-wide tests；V1 bytes未修改。
+- **claim boundary：**D-002的concrete PQ KEM／FGS signature／KDF／MAC與access-NIZK
+  backend仍待選定；完整FGS processor、distributed store、wallet、proof、benchmark及
+  production closure均未完成。
 
 ## 驗證與評估方法
 
