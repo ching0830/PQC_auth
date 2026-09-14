@@ -6,6 +6,33 @@
 
 日期：2026 年 9 月 14 日
 
+## Issuance private tree-post publication／restart v1（獨立 branch）
+
+最新 bounded gate 位於 branch `codex/pq-rbbc-issuance-tree-post-restart-v1`，基線為
+`e2fd55bdecab06bda4a3424a7d47564d36950869`。它為上一 gate 的 independently invocable
+tree-post 加上 private append-only publication、SHA-256 chained journal、externally pinned
+resume 與 completed-result consumer。可恢復邊界明確從
+`0001-inputs-committed.private.json` 開始；不完整 input publication fail closed，必須換新
+trusted root，不能猜測缺失 private bytes。
+
+Bounded tree 0 實際重播 3,576 rows／配置 2,412 wires。Fresh 與另一程序 restart 的全部
+private artifacts byte-identical；受控 process death 已覆蓋 result payload、receipt、result
+checkpoint 與 complete checkpoint 發布後四個邊界。Private result 為 121,721 bytes，SHA-256
+`86b8b9e55e8b31f2dc85674521e47e42208d4a525f77bc8ca934c12ae04b65f3`；portable evidence
+只含 metadata，不含 continuation、spool、assignment、result 或 receipt raw。
+
+這不是 full-session restore、global-tail continuation、production durable resume 或完整
+legacy18 provider。Production、PQ-SE backend、正式 `pi_issue`、Proof-closed、
+Production-closed、large replay/proving flags 仍全部為 false；五份 production external
+artifacts 仍未 provision。Trusted producer handoff、writer quiescence、owner/mode/ACL、既有
+writable FD、mount namespace、filesystem/fsync semantics 與 confidentiality 仍是外部前提。
+
+此 gate 完成後可安全分成三個互斥 lane：global-tail A/B continuation、bounded multi-tree
+restart scheduler、publication/crash security re-review。完整 legacy18 provider 仍被
+global-tail serial dependency 阻擋；critical path 下一步是 global-tail phase A/B read-only
+continuation preflight。詳細 contract 與 identities 見
+`docs/artifacts/PQ_RBBC_ISSUANCE_TREE_POST_RESTART_V1_zh-TW.md`。
+
 ## Issuance bounded independent tree-post／continuation contract v1（獨立 branch）
 
 從 `0e4e2d7` 建立 `codex/pq-rbbc-issuance-tree-post-continuation-v1`。仍屬 offline
