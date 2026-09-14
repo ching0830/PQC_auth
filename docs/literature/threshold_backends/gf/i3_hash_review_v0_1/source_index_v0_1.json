@@ -1,0 +1,486 @@
+{
+  "schema": "pqc_auth.gf_i3_hash_review_sources.v0_1",
+  "date": "2026-09-14",
+  "review_target_commit": "2289fb2e5eee25ed12574f70b7f1831b3fa682a0",
+  "review_target_tree": "f8e675b142d9c0edce564b80878e1d124f57bbab",
+  "original_inventory": {
+    "path": "docs/literature/threshold_backends/source_inventory_v1.json",
+    "revision": "2289fb2e5eee25ed12574f70b7f1831b3fa682a0",
+    "bytes": 13449,
+    "sha256": "8450774feaa2a1e91e394cfbccdc5bc33ac17106a1330be3ef56bccb3cd3ddb5"
+  },
+  "original_inventory_scope": "All attachment filenames/revision attribution/bytes/SHA-256 and original paper locators remain in this exact inventory.",
+  "identity_rechecks": {
+    "canonical_research_policy": 19,
+    "attachments": 5,
+    "target_delivery_sources": 7,
+    "target_referenced_repository_sources": 13,
+    "other_lane_committed_sources": 3,
+    "additional_review_builder_sources": 2,
+    "historical_full_log": 1,
+    "all_matched": true
+  },
+  "target_sources": [
+    {
+      "path": "src/pq_threshold_candidates/gf/i3_hash_join_v0_1/__init__.py",
+      "bytes": 316,
+      "sha256": "b94b1c79b6e9b6f5761879b93d1190e4d5466a7dbb2da97bd9cc8a139ec45282",
+      "revision": "2289fb2e5eee25ed12574f70b7f1831b3fa682a0"
+    },
+    {
+      "path": "src/pq_threshold_candidates/gf/i3_hash_join_v0_1/evaluator.py",
+      "bytes": 7775,
+      "sha256": "a7c903e701e0db493dc25a6548a7601dc2c1e9624b696a3043349afdca6fa447",
+      "revision": "2289fb2e5eee25ed12574f70b7f1831b3fa682a0"
+    },
+    {
+      "path": "tests/threshold_candidates/gf/i3_hash_join_v0_1/__init__.py",
+      "bytes": 77,
+      "sha256": "2adca385e3beccaf4ed6f1229f3e02f3c2064111d48938a312fc857469b24832",
+      "revision": "2289fb2e5eee25ed12574f70b7f1831b3fa682a0"
+    },
+    {
+      "path": "tests/threshold_candidates/gf/i3_hash_join_v0_1/test_evaluator.py",
+      "bytes": 19307,
+      "sha256": "69aee682722b093705b88f3fefc495ccf8d76d72eca2554216f6b94aa57b2f32",
+      "revision": "2289fb2e5eee25ed12574f70b7f1831b3fa682a0"
+    },
+    {
+      "path": "docs/literature/threshold_backends/gf/i3_hash_join_v0_1/IMPLEMENTATION_zh-TW.md",
+      "bytes": 11128,
+      "sha256": "132ea3499dd2a852688e4d8383db5f4bd958dac22c5a081fbde66fa19f0dba44",
+      "revision": "2289fb2e5eee25ed12574f70b7f1831b3fa682a0"
+    },
+    {
+      "path": "docs/literature/threshold_backends/gf/i3_hash_join_v0_1/source_index_v0_1.json",
+      "bytes": 12221,
+      "sha256": "6456443ef4be06798d598d2b2f9b9176568d3d461693a1933a65d92d3e8e9ca1",
+      "revision": "2289fb2e5eee25ed12574f70b7f1831b3fa682a0"
+    },
+    {
+      "path": "docs/literature/threshold_backends/gf/README_zh-TW.md",
+      "bytes": 3599,
+      "sha256": "43acbcad775231b7b15bda780abf10caa90b2bdd730d811df834b8bd34d1f253",
+      "revision": "2289fb2e5eee25ed12574f70b7f1831b3fa682a0"
+    },
+    {
+      "path": "docs/literature/threshold_backends/gf/i3_hash_join_v0_1/validation_summary_v0_1.json",
+      "revision": "2289fb2e5eee25ed12574f70b7f1831b3fa682a0",
+      "bytes": 8218,
+      "sha256": "fe5b67ad06a418153512eefe01f8b72a4b3da9514336f7257fff295d9b7e5a9a"
+    }
+  ],
+  "target_evaluator_locators": {
+    "path": "src/pq_threshold_candidates/gf/i3_hash_join_v0_1/evaluator.py",
+    "revision": "2289fb2e5eee25ed12574f70b7f1831b3fa682a0",
+    "bytes": 7775,
+    "sha256": "a7c903e701e0db493dc25a6548a7601dc2c1e9624b696a3043349afdca6fa447",
+    "locators": [
+      {
+        "symbol": "ResearchI3HashStatus",
+        "start_line": 26,
+        "end_line": 36
+      },
+      {
+        "symbol": "ResearchI3HashEvaluation",
+        "start_line": 50,
+        "end_line": 100
+      },
+      {
+        "symbol": "_check_profiles",
+        "start_line": 103,
+        "end_line": 107
+      },
+      {
+        "symbol": "_parse_candidate",
+        "start_line": 110,
+        "end_line": 122
+      },
+      {
+        "symbol": "evaluate_i3_hash_candidate_research",
+        "start_line": 125,
+        "end_line": 179
+      }
+    ]
+  },
+  "repository_references": [
+    {
+      "path": "src/pq_threshold_candidates/contracts.py",
+      "revision": "bcefd1b2cb92673bb278e0d9099a38f3816d1a87",
+      "bytes": 9123,
+      "sha256": "8cca77c341bce8bca3a78824ad1ecf59c1a87ecfc135992721582c759200596c",
+      "locators": [
+        {
+          "symbol": "fixed_bytes",
+          "start_line": 68,
+          "end_line": 71
+        }
+      ]
+    },
+    {
+      "path": "src/pq_threshold_candidates/gf/partial_issuance_v0_1/evaluator.py",
+      "revision": "bcefd1b2cb92673bb278e0d9099a38f3816d1a87",
+      "bytes": 6763,
+      "sha256": "704f948888b775fb726215aa57e4e9b27f5f77029fdc1d39a14360e08cc9d331",
+      "locators": [
+        {
+          "symbol": "ResearchPartialIssuanceEvaluation",
+          "start_line": 46,
+          "end_line": 96
+        },
+        {
+          "symbol": "evaluate_partial_issuance_research",
+          "start_line": 103,
+          "end_line": 170
+        }
+      ]
+    },
+    {
+      "path": "src/pq_threshold_candidates/gf/research_abi_v0_1/codecs.py",
+      "revision": "bcefd1b2cb92673bb278e0d9099a38f3816d1a87",
+      "bytes": 8822,
+      "sha256": "6c7d58803181291fb579cbbfe03f9603bf4d8fcb71aa76ca17648dbbc2f867be",
+      "locators": [
+        {
+          "symbol": "validate_cap_randomness_research",
+          "start_line": 32,
+          "end_line": 52
+        },
+        {
+          "symbol": "ResearchTicketM",
+          "start_line": 161,
+          "end_line": 190
+        },
+        {
+          "symbol": "ResearchIssueStatement",
+          "start_line": 215,
+          "end_line": 227
+        },
+        {
+          "symbol": "ResearchIssueWitness",
+          "start_line": 231,
+          "end_line": 251
+        }
+      ]
+    },
+    {
+      "path": "src/pq_rbbc_cap_commit.py",
+      "revision": "bcefd1b2cb92673bb278e0d9099a38f3816d1a87",
+      "bytes": 32526,
+      "sha256": "be3a2a767561f009acc2a274a85410ae6e02e23abd24145aa1d61883dd2dceee",
+      "locators": [
+        {
+          "symbol": "CAPRandomness",
+          "start_line": 337,
+          "end_line": 352
+        },
+        {
+          "symbol": "serialize_commitment",
+          "start_line": 503,
+          "end_line": 523
+        },
+        {
+          "symbol": "execute_cap_commit",
+          "start_line": 526,
+          "end_line": 685
+        },
+        {
+          "symbol": "profile_dict",
+          "start_line": 688,
+          "end_line": 732
+        },
+        {
+          "symbol": "profile_fingerprint",
+          "start_line": 735,
+          "end_line": 739
+        },
+        {
+          "symbol": "commitment_bytes",
+          "start_line": 742,
+          "end_line": 762
+        }
+      ]
+    },
+    {
+      "path": "src/pq_rbbc_cap_straightline_extractor.py",
+      "revision": "bcefd1b2cb92673bb278e0d9099a38f3816d1a87",
+      "bytes": 22275,
+      "sha256": "67d4fb74d1e5ec3d8600ac9da89fa9b04b6ef2bceba104fb75b3b4d8a9de47f6",
+      "locators": [
+        {
+          "symbol": "ParsedCommitment",
+          "start_line": 42,
+          "end_line": 47
+        },
+        {
+          "symbol": "parse_commitment",
+          "start_line": 189,
+          "end_line": 260
+        }
+      ]
+    },
+    {
+      "path": "src/pq_rbbc_anemoi_sponge.py",
+      "revision": "bcefd1b2cb92673bb278e0d9099a38f3816d1a87",
+      "bytes": 25336,
+      "sha256": "6d4e604cd937357cd76f9c127fa9fe94392bbc89b1a0b7972196545ab36424ec",
+      "locators": [
+        {
+          "symbol": "encode_transcript",
+          "start_line": 77,
+          "end_line": 89
+        },
+        {
+          "symbol": "evaluate_sponge",
+          "start_line": 156,
+          "end_line": 181
+        },
+        {
+          "symbol": "hash_request_binding",
+          "start_line": 184,
+          "end_line": 191
+        },
+        {
+          "symbol": "profile_fingerprint",
+          "start_line": 218,
+          "end_line": 222
+        }
+      ]
+    },
+    {
+      "path": "src/pq_rbbc_anemoi_f193.py",
+      "revision": "bcefd1b2cb92673bb278e0d9099a38f3816d1a87",
+      "bytes": 30852,
+      "sha256": "3e402afd4ce5544e141146593603ffc0edb39363a5593c0c627325c12bcdc54f",
+      "locators": "derive_parameters; evaluate_permutation; frozen field and permutation identities"
+    },
+    {
+      "path": "src/pq_threshold_candidates/gf/reference.py",
+      "revision": "bcefd1b2cb92673bb278e0d9099a38f3816d1a87",
+      "bytes": 11058,
+      "sha256": "58362248066333fcecada7960ab6951f08a7316a0a9a064a7ef09ec3a375ef06",
+      "locators": [
+        {
+          "symbol": "ReferencePublicKey",
+          "start_line": 69,
+          "end_line": 84
+        },
+        {
+          "symbol": "check_encryption_relation_reference",
+          "start_line": 271,
+          "end_line": 281
+        }
+      ]
+    },
+    {
+      "path": "tests/threshold_candidates/gf/research_abi_v0_1/_fixtures.py",
+      "revision": "bcefd1b2cb92673bb278e0d9099a38f3816d1a87",
+      "bytes": 3557,
+      "sha256": "27e0325afa82afc7fe4f72e1a5fd95e5ca900b8aea6dfda5eb535612d538bff1",
+      "locators": [
+        {
+          "symbol": "fixture",
+          "start_line": 24,
+          "end_line": 49
+        }
+      ]
+    },
+    {
+      "path": "docs/literature/threshold_backends/gf/abi_v0_1/contract_v0_1.json",
+      "revision": "bcefd1b2cb92673bb278e0d9099a38f3816d1a87",
+      "bytes": 9376,
+      "sha256": "1f269b737a067f4647c1e6b64b4dbff3194bf24638be682c85ac2dc25c7c50a3",
+      "locators": "bridge; layouts; profile digests; private/public partition"
+    },
+    {
+      "path": "docs/literature/threshold_backends/gf/trusted_adapter_contract_v0_1/CONTRACT_zh-TW.md",
+      "revision": "bcefd1b2cb92673bb278e0d9099a38f3816d1a87",
+      "bytes": 16163,
+      "sha256": "571b855889d3354ea3810f417f90f10e002bce27fffe11cb3180ee302eb9ad1d",
+      "locators": "B-QUAL J03-J05; B-EVAL scope; owner acceptance remains OPEN"
+    },
+    {
+      "path": "docs/literature/threshold_backends/gf/partial_issuance_review_v0_1/REVIEW_zh-TW.md",
+      "revision": "bcefd1b2cb92673bb278e0d9099a38f3816d1a87",
+      "bytes": 8907,
+      "sha256": "4b0fa5c894dce0719cd9f9647e0dc24432d0a9b5303a610e2abbb20ae3e2ebe6",
+      "locators": "Sections 3-4, data-flow observations and remaining I3 dependency"
+    },
+    {
+      "path": "docs/guides/PROTOCOL_TO_IMPLEMENTATION_GUIDE_zh-TW.md",
+      "revision": "bcefd1b2cb92673bb278e0d9099a38f3816d1a87",
+      "bytes": 17194,
+      "sha256": "1c1dbee7695b04e715c66403b24be758a67ea7eb7c36b819f1918715ebf4001c",
+      "locators": "Sections 2 and 5, host evaluation versus native relation and proof"
+    }
+  ],
+  "historically_pinned_other_lane_references": [
+    {
+      "path": "src/pq_rbbc_issuance_production_inputs_v1.py",
+      "revision": "e7af82e1e2c176485c03e08dad0e221adf0ee1e9",
+      "bytes": 40304,
+      "sha256": "7f57417efcea41bc94f477966dfaf629475b39b0ed1c0a4e389d4de10657357f",
+      "locators": [
+        {
+          "symbol": "CAPToHRBBCAdapterV1",
+          "start_line": 462,
+          "end_line": 504
+        }
+      ],
+      "access": "read_only_exact_committed_source; not imported, cherry-picked, modified or executed"
+    },
+    {
+      "path": "src/pq_rbbc_issuance_cap_child_executor_v1.py",
+      "revision": "47cfd584b4fa1ace9db79a84ccd1be33a3775fd3",
+      "bytes": 51223,
+      "sha256": "930e98f647a7539f9124515931df979cbfe8fb10c4ecda731e6987fcbd15033c",
+      "locators": [
+        {
+          "symbol": "execute_production_child",
+          "start_line": 477,
+          "end_line": 480
+        }
+      ],
+      "access": "read_only_exact_committed_source; not imported, cherry-picked, modified or executed"
+    },
+    {
+      "path": "docs/roadmaps/PQ_RBBC_CURRENT_HANDOFF_zh-TW.md",
+      "revision": "47cfd584b4fa1ace9db79a84ccd1be33a3775fd3",
+      "bytes": 61615,
+      "sha256": "c7166d9beb6b948ddea89147ce137f6e1bd72f7131c6319461e1b6238ac31059",
+      "locators": "Lines 9-38, production ABI pre-freeze and external dependencies; this exact committed snapshot only",
+      "access": "read_only_exact_committed_source; not imported, cherry-picked, modified or executed"
+    }
+  ],
+  "reused_review_sources": [
+    {
+      "path": "docs/literature/threshold_backends/gf/partial_issuance_review_v0_1/check_review_v0_1.py",
+      "revision": "2289fb2e5eee25ed12574f70b7f1831b3fa682a0",
+      "bytes": 18882,
+      "sha256": "ce8e5f95e5bb9ca0a4f12d0959cb8aa2139e673fc58115ae34f5ee8e083cb2b3",
+      "locators": [
+        {
+          "symbol": "packet",
+          "start_line": 63,
+          "end_line": 78
+        },
+        {
+          "symbol": "Inputs",
+          "start_line": 86,
+          "end_line": 113
+        },
+        {
+          "symbol": "synthetic_public_key",
+          "start_line": 121,
+          "end_line": 124
+        },
+        {
+          "symbol": "fixture",
+          "start_line": 127,
+          "end_line": 146
+        },
+        {
+          "symbol": "safe_result",
+          "start_line": 187,
+          "end_line": 203
+        }
+      ]
+    },
+    {
+      "path": "tests/threshold_candidates/gf/review/oracle.py",
+      "revision": "2289fb2e5eee25ed12574f70b7f1831b3fa682a0",
+      "bytes": 6729,
+      "sha256": "50154f310180b93f8b38d262ededd71a46e9869b72b2e5ce130c440e8db5dc52",
+      "locators": [
+        {
+          "symbol": "pack",
+          "start_line": 37,
+          "end_line": 39
+        },
+        {
+          "symbol": "record",
+          "start_line": 57,
+          "end_line": 60
+        },
+        {
+          "symbol": "encrypt",
+          "start_line": 120,
+          "end_line": 128
+        }
+      ]
+    }
+  ],
+  "review_program": {
+    "path": "docs/literature/threshold_backends/gf/i3_hash_review_v0_1/check_review_v0_1.py",
+    "revision": "New file in enclosing review commit; exact bytes identified here",
+    "bytes": 15632,
+    "sha256": "d0a60c52e5d7b3a00388b3115f4b0806b84b11cad324210dbdbfe74cf9b410b3",
+    "locators": [
+      {
+        "symbol": "candidate",
+        "start_line": 48,
+        "end_line": 57
+      },
+      {
+        "symbol": "grammar",
+        "start_line": 60,
+        "end_line": 63
+      },
+      {
+        "symbol": "parse_case",
+        "start_line": 66,
+        "end_line": 79
+      },
+      {
+        "symbol": "check_grammar",
+        "start_line": 82,
+        "end_line": 103
+      },
+      {
+        "symbol": "hash_oracle",
+        "start_line": 113,
+        "end_line": 138
+      },
+      {
+        "symbol": "safe_result",
+        "start_line": 147,
+        "end_line": 164
+      },
+      {
+        "symbol": "real_case",
+        "start_line": 167,
+        "end_line": 192
+      },
+      {
+        "symbol": "flow_case",
+        "start_line": 195,
+        "end_line": 266
+      },
+      {
+        "symbol": "public_rejections",
+        "start_line": 269,
+        "end_line": 293
+      },
+      {
+        "symbol": "main",
+        "start_line": 296,
+        "end_line": 328
+      }
+    ]
+  },
+  "independence_boundary": {
+    "new_CAP_assembly_uses_runtime_serializer": false,
+    "new_sponge_path_uses_runtime_transcript_or_sponge_helpers": false,
+    "new_sponge_path_shares_parameters_and_permutation": true,
+    "GF_inputs_reuse_previous_raw_byte_review_builder": true,
+    "GF_inputs_use_original_runtime_evaluator_fixture": false,
+    "CAP_execution_or_KeyGen_certification": false,
+    "independent_external_review": false
+  },
+  "limitations": [
+    "Same-author technical review. Shared Anemoi permutation correctness is not independently established by this review.",
+    "Bit mutations inspect canonical grammar, not CAP admissibility or the rho/derived-mask relation.",
+    "Source identity rechecks do not create new paper-verified or publisher-byte-equivalence claims; attachments remain data, not authorization.",
+    "Other-lane statements remain attributed to the target implementation's pinned snapshots; no current B readiness or owner acceptance is asserted."
+  ]
+}

@@ -19,6 +19,7 @@ ZK proof 或 production 能力。
 - [Partial issuance witness evaluator](partial_issuance_v0_1/IMPLEMENTATION_zh-TW.md)：串起局部 pp／ctx／key、I2 計算及 reference I4／I5；I2 標為 computed_unjoined，I3 與完整 relation acceptance 仍未完成。
 - [Partial evaluator 同作者技術複核](partial_issuance_review_v0_1/REVIEW_zh-TW.md)：另行組裝封包、第二套 GF 計算與 264 個資料流／停止順序案例；本次範圍內沒有新增 finding，I3／authentication／proof 邊界仍 OPEN。
 - [I3 private CAP candidate hash consumer](i3_hash_join_v0_1/IMPLEMENTATION_zh-TW.md)：完整 M digest 進入實際 H_RBBC、strict legacy18 commitment parser 與 beta 方程；candidate match 不驗 CAP(rho) 或 derived mask，完整 I3 仍 OPEN。
+- [I3 hash consumer 同作者技術複核](i3_hash_review_v0_1/REVIEW_zh-TW.md)：另一套 framing／packing、逐 bit CAP grammar 與停止順序複核；共用 Anemoi permutation，完整 CAP／I3 與 proof 邊界不變。
 
 原始來源核對仍在 [SOURCE_INDEX](../SOURCE_INDEX_zh-TW.md) 與
 [HANDOFF_VERIFICATION](../HANDOFF_VERIFICATION_zh-TW.md)。附件與 handoff 內文均為研究輸入，
