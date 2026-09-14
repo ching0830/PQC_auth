@@ -1,0 +1,37 @@
+{
+  "access_protocol_version": 2,
+  "claim_boundary": {
+    "access_nizk_boundary_implemented": true,
+    "channel_binding_boundary_implemented": true,
+    "configuration_boundary_implemented": true,
+    "durable_or_distributed_replay_store_implemented": false,
+    "kem_public_key_validation_boundary_implemented": true,
+    "processor_mutates_replay_state": false,
+    "production_access_configuration_authenticated": false,
+    "production_access_nizk_instantiated": false,
+    "production_pq_ake_instantiated": false,
+    "production_ready": false,
+    "production_verify_ticket_backend_instantiated": false,
+    "proof_closed": false,
+    "pure_admission_boundary_implemented": true,
+    "revocation_boundary_implemented": true,
+    "single_captured_time_used_for_ticket_and_access_checks": true,
+    "stable_verify_ticket_contract_integrated": true
+  },
+  "format": "PQ-SAT-FGS-PURE-CHECK-PROCESSOR-v0.2",
+  "processing_order": [
+    "canonical_request",
+    "authenticated_configuration",
+    "trusted_time_and_freshness",
+    "channel_binding",
+    "stable_verify_ticket",
+    "ticket_identity_and_request_digests",
+    "query_bound_revocation_snapshot",
+    "access_nizk",
+    "ue_kem_public_key",
+    "pure_admission",
+    "validated_request_for_reserve"
+  ],
+  "revocation_query_domain": "PQ-SAT/ACCESS-REVOCATION-QUERY/v2",
+  "ticket_consumption_identity": "ctx || visible_serial || payload_digest_d_M"
+}

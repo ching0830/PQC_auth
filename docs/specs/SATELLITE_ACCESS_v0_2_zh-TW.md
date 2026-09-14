@@ -265,6 +265,8 @@ v0.2 不使用 per-attempt `fgs_nonce`。FGS 必須共同檢查：
 
 時間、epoch 與 nonce 只限制 stale replay window；它們不取代 atomic one-time
 consumption。完整複製尚未消耗的 request 仍可能通過 pure cryptographic checks。
+第4項是UE生成器及部署要求；FGS從單一request只能檢查exact length並排除全零sentinel，
+不能由收到的值本身證明CSPRNG entropy。
 
 ### 5.5 Channel binding
 
@@ -540,3 +542,19 @@ production PQ AKE、proof closure或 production closure。
 checkpoint沒有實作第4項的cryptographic test adapter，也沒有實作FGS完整processing
 pipeline、ticket verifier integration、實際NIZK／KEM／FGS-auth／KDF／MAC、wallet、
 crash persistence或distributed store。`production_ready`維持false。
+
+### 13.2 FGS pure-check processor checkpoint
+
+後續checkpoint已新增`src/pq_sat_auth/v2/processor.py`，依§6順序完成strict parse、
+authenticated configuration provider、single-sample trusted time、freshness／nonce、
+channel exporter、stable `VerifyTicket`、`TicketUseIdentity(ctx,sn,d_M)`、query-bound
+revocation snapshot、`pi_access`、UE KEM public-key validation及pure admission。成功只
+回傳`ValidatedAccessRequestV2`，不呼叫`Reserve`或建立session／M2。
+
+其中`SystemAccessTicketVerifierV2`已接上versioned PQ-RBBC `verify_ticket()` contract，
+但issuer authentication仍是abstract backend。System Initialization v0.1尚未包含FGS
+authentication key／access suite extension，所以authenticated access configuration仍是
+明確provider boundary；test adapters不構成production cryptography。Exact處理順序、
+測試及claim boundary見
+`docs/artifacts/SATELLITE_ACCESS_v0_2_FGS_PURE_CHECK_PROCESSOR_zh-TW.md`與
+`manifests/pq_sat_auth_fgs_pure_check_v0_2.json`。
