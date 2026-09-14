@@ -1,0 +1,28 @@
+{
+  "claim_boundary": {
+    "atomic_replay_quota_sid_transaction_implemented": true,
+    "blind_signing_response_produced": false,
+    "cross_host_consistency_implemented": false,
+    "fac_authentication_instantiated": false,
+    "physical_power_loss_qualified": false,
+    "production_issuance_complete": false,
+    "restart_persistence_implemented": true,
+    "single_host_multi_process_store_implemented": true
+  },
+  "consumption_identity": [
+    "grant_digest",
+    "issuer_sid"
+  ],
+  "default_busy_timeout_ms": 5000,
+  "format": "PQRBBC-SYSTEM-GOVERNANCE-SQLITE-QUOTA-STORE-1",
+  "grant_digest_bytes": 32,
+  "issuer_sid_max_bytes": 65536,
+  "journal_mode": "WAL",
+  "quota_encoding": "u64le-blob",
+  "schema_sha256": "2b44361c39fd4c8e605b802a6c1c2f3448ece480ac02af56aa79a73332444e87",
+  "schema_version": 1,
+  "sqlite_application_id": 1347503921,
+  "synchronous": "FULL",
+  "system_profile": "0.1",
+  "transaction_begin": "IMMEDIATE"
+}
