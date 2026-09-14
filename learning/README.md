@@ -23,6 +23,7 @@
 | [第十一堂：持票透過衛星接入地面站](lessons/11_SATELLITE_ACCESS_FLOW_zh-TW.md) | 沿四種接入訊息理解驗票、持票者認證、新鮮值、金鑰確認與接受時點 |
 | [第十一堂補充：NIZK 與接入延遲](notes/ACCESS_LATENCY_AND_NIZK_zh-TW.md) | 更正四訊息並非必然；記錄低延遲動機，評估首則認證、防重放與預先金鑰的取捨 |
 | [第十二堂：一次性票券的狀態、並行與失敗恢復](lessons/12_ONE_TIME_TICKET_STATE_zh-TW.md) | 理解 `UNSEEN`、`RESERVED`、`CONSUMED`，以及競爭、重試、回應遺失與中斷恢復 |
+| [第十三堂：過期、撤銷、已消耗與換手](lessons/13_EXPIRY_REVOCATION_HANDOVER_zh-TW.md) | 區分三種拒絕原因、撤銷競爭與保存期限，理解 handover 不能重用已消耗票券 |
 
 課程按概念相依順序進行。第一堂從研究問題開始；角色名稱與新術語先解釋用途，再進入公式、程式與測試。
 先前對話曾提前介紹 replay；該次介紹不代表學習者已理解或完成相應單元。

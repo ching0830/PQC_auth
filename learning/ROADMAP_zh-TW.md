@@ -95,6 +95,7 @@ checkout 補出「概念 → 檔案 → 函式 → 測試 → 目前限制」的
 | [第十堂：一次發行中的公開輸入、秘密與 NIZK](lessons/10_ISSUANCE_DATA_FLOW_zh-TW.md) | 階段 3；能沿申請指出 HNCC 已知與裝置保留的資料，解釋證明如何綁定同一份票券及已認證身分 |
 | [第十一堂：持票透過衛星接入地面站](lessons/11_SATELLITE_ACCESS_FLOW_zh-TW.md) | 階段 3；能沿四訊息草稿說明衛星中繼、持票者認證、接入綁定與連線建立，辨認格式與認證的差別 |
 | [第十二堂：一次性票券的狀態、並行與失敗恢復](lessons/12_ONE_TIME_TICKET_STATE_zh-TW.md) | 階段 3；能說明三個使用狀態、不同 attempt 的唯一 winner、同 attempt 重試，以及 commit 前後中斷的恢復差異 |
+| [第十三堂：過期、撤銷、已消耗與換手](lessons/13_EXPIRY_REVOCATION_HANDOVER_zh-TW.md) | 階段 3；能區分時間條件、撤銷政策與使用狀態，說明撤銷／消耗競爭及以原 session 授權換手的邊界 |
 
 目前單元與理解狀態只在 [學習進度](PROGRESS_zh-TW.md) 更新。第二至七堂已提供必要概念的
 入門說明；第八堂已開始階段 3 的完整生命週期，後續依序深入共同設定與發行授權、票券

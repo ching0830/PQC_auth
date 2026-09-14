@@ -82,6 +82,11 @@
 | 預留（reservation） | 已驗證的唯一 attempt 暫時取得建立 session 的資格 | `RESERVED` 尚未等於成功；另一個 attempt 不能接手，同一 attempt 可安全重試 |
 | 冪等性（idempotency） | 同一項操作重做，系統仍回到同一個邏輯結果 | 同 attempt 重試可恢復原 session／回應，不代表允許同票券建立新 session |
 | 持久性（durability） | 已提交的狀態在程式或機器中斷後仍可被可靠恢復 | 記憶體 reference store 不具此能力；通過並行測試不等於通過 crash recovery |
+| 時鐘誤差（clock skew） | 兩個時鐘對同一時刻顯示的時間差 | 票券效期與保存期限需要部署規則固定容許範圍，不能假設所有 FGS 時鐘完全相同 |
+| 撤銷（revocation） | 票券或相關金鑰原本可能有效，後來由受治理政策禁止繼續接受 | 與過期、已消耗不同；撤銷資料的認證、散布與既有 session 政策仍須另外定義 |
+| 撤銷快照／版本（revocation snapshot／generation） | FGS 某次檢查所依據的撤銷資料內容及其版本 | Reserve／Commit 時須防止沿用競爭期間已過時的結果；版本號本身不會證明來源可信 |
+| 可序列化順序（serializable order） | 多項交易的最終效果等同某個逐一執行順序 | 用於裁定撤銷與消耗競爭；與單一操作的線性一致性相關但著重整組交易結果 |
+| 一般拒絕（generic reject） | 對外不細分無效、過期、撤銷或已消耗原因的拒絕結果 | 可減少直接狀態探測，但 timing、大小與流量差異仍需量測；內部可保存受控 reason code |
 
 專案用語依 [架構](../ARCHITECTURE_zh-TW.md) 與
 [研究方法](../methodology.md) 解釋；本表不替代各模組正式規格。
