@@ -6,6 +6,37 @@
 
 日期：2026 年 9 月 14 日
 
+## Issuance bounded private-spool codec／snapshot handoff v1（獨立 branch）
+
+從 `c1c2b5d` 建立 `codex/pq-rbbc-issuance-private-spool-handoff-v1`。仍屬 offline issuance
+I3 的 bounded CAP child，不改 protocol messages、production profile 或 ticket lifecycle。
+新增 fixed private binary spool、唯讀 five-snapshot capture、exact-digest adoption，以及
+只從 accepted snapshots 消費 private spool 的 native tree-post successor。
+
+兩棵各 4 leaves／degree 3／security bits 0 的 fixture 不變。每棵 spool 為 79,423 bytes，
+五份 private snapshots 合計 161,908 bytes，19,472 個 unique selected wire/value bindings
+全部核對；完整 bounded native run 仍為 185,743 rows、123,798 wires、0 failures，三個
+native stream identities 各自與 unchanged legacy generators 相同，沒有借用其他 tree bytes。
+
+Identity、decode、binding 與 post consumer 都使用同一 immutable raw；受控同 inode／
+同長度／stale metadata 原地改寫 regression 接受已完整 capture 的舊 bytes，後續 pathname
+不會取代該 snapshot。Metadata 不證明沒有 writer，trusted producer handoff、writer
+quiescence、owner/mode/ACL、既有 writable FD、mount namespace 與 durability 仍是部署前提。
+
+這是 live-session private-input handoff，不是 full-session restore：allocator、assignment、
+tail coroutine、groups／counters／prefix hash state 仍在原程序；沒有 pickle／generator／hash
+state serialization、durable publisher 或 crash-safe resume。Private payloads 不進 Git。
+Production、PQ-SE backend、正式 `pi_issue`、Proof-closed、Production-closed 與 large-run
+claims 仍為 false，五份 production inputs／independent review／reservation／大型授權仍缺。
+
+Targeted 11 passed、0 failures/errors/skips（35.783 秒）；full baseline 902 tests，890 passed、
+0 failures/errors、12 既有 optional skips（1,309.974 秒）。v2.38／v2.39 的 19 份 historical
+identities 均未改變。Exact encoding、commands、
+resources 與 frozen identities 見
+[artifact note](../artifacts/PQ_RBBC_ISSUANCE_PRIVATE_SPOOL_HANDOFF_V1_zh-TW.md)。
+下一 gate 是 bounded independently invocable tree-post consumer 與 explicit continuation
+state contract，之後才進入 private publication／process restart／crash recovery qualification。
+
 ## Issuance bounded multi-tree adapter／per-owner allocator v1（獨立 branch）
 
 從 `47cfd58` 建立 `codex/pq-rbbc-issuance-bounded-multitree-adapter-v1`。本 gate 實際驗證
