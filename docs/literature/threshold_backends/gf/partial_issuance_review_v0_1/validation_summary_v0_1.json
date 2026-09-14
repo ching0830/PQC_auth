@@ -1,0 +1,186 @@
+{
+  "schema": "pqc_auth.gf_partial_issuance_review_validation.v0_1",
+  "date": "2026-09-14",
+  "branch": "codex/threshold-gf-partial-issuance-review-v0-1",
+  "review_target_commit": "d820d61c6f62afc7c1a4992ac77d60d5346eafc8",
+  "review_target_tree": "f872a5cf35fee881c7d0109ca17b03225a6a9884",
+  "environment": {
+    "python": "3.12.9",
+    "platform": "Linux",
+    "machine": "x86_64"
+  },
+  "review_experiment": {
+    "command": "PYTHONDONTWRITEBYTECODE=1 python docs/literature/threshold_backends/gf/partial_issuance_review_v0_1/check_review_v0_1.py",
+    "exit_code": 0,
+    "elapsed_seconds": 14.392,
+    "report_matches_pre_guard_run": true,
+    "optimized_execution_rejected": true,
+    "optimized_exit_code": 1,
+    "report_identity": {
+      "path": "/tmp/pqc-gf-partial-review-experiment.json",
+      "bytes": 1182,
+      "sha256": "c8d83af05f27a4e98d204d1e14986258e2506eb8b22e2f16b0a491ec1767daa2"
+    },
+    "result": {
+      "I5_status_counts_for_diagnostics": {
+        "error": 6,
+        "failed": 43,
+        "not_evaluated": 53,
+        "passed": 72
+      },
+      "abi_sha256": "97e97589fdcb293101e866a3233b38e1f48c9bdbe5ad9ddc1daabe5f2b410158",
+      "call_order_disagreements": 0,
+      "cases": {
+        "binding_error_combinations": 32,
+        "ciphertext_component_mutations": 12,
+        "computation_bad_return_types": 12,
+        "computation_fault_combinations": 16,
+        "holder_only_mismatch": 1,
+        "identity_failure_precedes_all_faults": 1,
+        "production_preparse_rejections": 56,
+        "purpose_type_rejections": 6,
+        "recomputed_ciphertext_field_combinations": 32,
+        "separately_assembled_positive": 12,
+        "structural_rejections": 28,
+        "unimplemented_semantic_slots": 46,
+        "untrusted_metadata_repointed": 8,
+        "zero_u_coherent_rekey": 1,
+        "zero_u_wrong_key": 1
+      },
+      "full_I3_executed": false,
+      "independent_external_review": false,
+      "model_status_disagreements": 0,
+      "production_closed": false,
+      "proof_closed": false,
+      "raw_input_or_private_digest_emitted": false,
+      "schema": "pqc_auth.gf_partial_issuance_review_experiment.v0_1",
+      "synthetic_keys_are_KeyGen_certified": false,
+      "total_cases": 264
+    }
+  },
+  "optimization_guard": {
+    "command": "PYTHONOPTIMIZE=1 PYTHONDONTWRITEBYTECODE=1 python docs/literature/threshold_backends/gf/partial_issuance_review_v0_1/check_review_v0_1.py",
+    "expected_nonzero_exit": true,
+    "actual_exit_code": 1,
+    "stdout_empty": true,
+    "log_identity": {
+      "path": "/tmp/pqc-gf-partial-review-optimization.log",
+      "bytes": 358,
+      "sha256": "ec68cdbd3f88ebe357cacbe37d170bb7553509472f7b75daae7a8b2e6f47ad56"
+    },
+    "assertions_disabled_cannot_emit_success": true
+  },
+  "targeted_tests": {
+    "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python -m unittest discover -s tests/threshold_candidates -v",
+    "executed_this_review": true,
+    "total": 117,
+    "passed": 117,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "elapsed_seconds": 18.875,
+    "log_identity": {
+      "path": "/tmp/pqc-gf-partial-review-targeted.log",
+      "bytes": 18242,
+      "sha256": "56b1e99bf05574e6e994dfaffb014dedf84dc6900572c0767571bc70d97dc99f"
+    }
+  },
+  "historical_full_regression": {
+    "executed_this_review": false,
+    "recorded_for_target_commit": "d820d61c6f62afc7c1a4992ac77d60d5346eafc8",
+    "historical_summary": {
+      "path": "docs/literature/threshold_backends/gf/partial_issuance_v0_1/validation_summary_v0_1.json",
+      "bytes": 8682,
+      "sha256": "3b4261d771a6fa1b18af3799598508e6f2b8cab03f032f56c57ca42242b02ff6",
+      "revision": "d820d61c6f62afc7c1a4992ac77d60d5346eafc8"
+    },
+    "log_bytes_and_sha256_rechecked": true,
+    "result": {
+      "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python -m unittest discover -s tests -v",
+      "total": 805,
+      "passed": 793,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 12,
+      "elapsed_seconds": 760.788,
+      "log_identity": {
+        "path": "/tmp/pqc-gf-partial-full.log",
+        "bytes": 137791,
+        "sha256": "46510f1fc63ea4327f2001d5befd93913b0b690bd120a747f58908813c645849"
+      },
+      "skip_reasons": {
+        "trusted external v2.19 recovery artifacts are not installed": 1,
+        "external v2.20 global-tail archive is not installed": 1,
+        "external v2.15 relocation assignment is not installed": 1,
+        "external v2.13 tree-0 assignment is not installed": 1,
+        "external v2.13 tree-0 execution cache is not installed": 1,
+        "external v2.14 replay artifacts are not installed": 1,
+        "external v2.14 tree-2 assignment is not installed": 1,
+        "external v2.22 tree-1 artifacts are not installed": 1,
+        "external v2.21 tree-2 artifacts are not installed": 1,
+        "external v2.23 tree-3 artifacts are not installed": 1,
+        "external v2.24 tree-4 artifacts are not installed": 1,
+        "external v2.25 batch artifacts are not installed": 1
+      }
+    },
+    "reuse_reason": "Review adds only literature review source/docs/index/summary; all src/ and tests/ bytes match the target commit. Related threshold tests were rerun."
+  },
+  "new_findings": [],
+  "retained_open_observation": {
+    "id": "GFR-01",
+    "new_finding": false,
+    "this_review_uses_synthetic_canonical_public_matrices": true,
+    "interpretation": "u=0 with whole self-consistent key/pp replacement may satisfy local I5; authentication, origin and complete acceptance remain false."
+  },
+  "source_identities": [
+    {
+      "path": "docs/literature/threshold_backends/gf/partial_issuance_review_v0_1/check_review_v0_1.py",
+      "bytes": 18882,
+      "sha256": "ce8e5f95e5bb9ca0a4f12d0959cb8aa2139e673fc58115ae34f5ee8e083cb2b3"
+    },
+    {
+      "path": "docs/literature/threshold_backends/gf/partial_issuance_review_v0_1/REVIEW_zh-TW.md",
+      "bytes": 8907,
+      "sha256": "4b0fa5c894dce0719cd9f9647e0dc24432d0a9b5303a610e2abbb20ae3e2ebe6"
+    },
+    {
+      "path": "docs/literature/threshold_backends/gf/README_zh-TW.md",
+      "bytes": 3348,
+      "sha256": "f83e9dbbd48db62e74a5a1dac19806561dd0c0d926d00009f0cd1311a760d126"
+    },
+    {
+      "path": "docs/literature/threshold_backends/gf/partial_issuance_review_v0_1/source_index_v0_1.json",
+      "bytes": 11684,
+      "sha256": "ca08f31ee199379a79bd71b44b53e9fd05029992d452389ac4c2166eb0d62047"
+    }
+  ],
+  "scope_checks": {
+    "runtime_and_tests_match_target_commit": true,
+    "runtime_or_regression_fix_required": false,
+    "root_canonical_edited": false,
+    "other_owner_worktree_edited": false,
+    "large_or_private_artifacts_added": false,
+    "merge_or_push_performed": false
+  },
+  "claims": {
+    "same_author_technical_review_completed": true,
+    "bounded_differential_cases_passed": true,
+    "I2_preimage_observed_when_evaluated": true,
+    "I2_to_I3_join_verified": false,
+    "I3_CAP_H_RBBC_evaluated": false,
+    "configuration_authentication_verified": false,
+    "key_origin_certification_verified": false,
+    "backend_qualification_verified": false,
+    "issuer_identity_session_authorization_verified": false,
+    "witness_freshness_verified": false,
+    "native_constraints_integrated": false,
+    "full_relation_verified": false,
+    "witness_free_proof_verifier_implemented": false,
+    "threshold_implemented": false,
+    "external_independent_review": false,
+    "paper_verified_full_instantiation": false,
+    "evidence_sealed": false,
+    "proof_closed": false,
+    "production_closed": false
+  }
+}
