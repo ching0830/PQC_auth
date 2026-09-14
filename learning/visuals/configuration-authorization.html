@@ -1,0 +1,62 @@
+<div id="pqc-learning-config-auth" role="img" aria-label="以預先信任的聯盟金鑰核驗共同設定，再分別供地面站驗票及發行端核驗發行授權。">
+  <style>
+    #pqc-learning-config-auth { width: 100%; color: var(--foreground); }
+    #pqc-learning-config-auth .trust-diagram { display: block; width: 100%; overflow: visible; }
+    #pqc-learning-config-auth .trust-diagram text { fill: var(--foreground); font-family: inherit; }
+    #pqc-learning-config-auth .trust-diagram .node { fill: color-mix(in srgb, var(--viz-series-1) 9%, transparent); stroke: var(--border); }
+    #pqc-learning-config-auth .trust-diagram .edge { fill: none; stroke: var(--muted-foreground); stroke-width: 1.5; }
+  </style>
+  <svg class="trust-diagram" xmlns="http://www.w3.org/2000/svg" aria-labelledby="pqc-config-title pqc-config-desc">
+    <title id="pqc-config-title">共同設定與發行授權的信任關係</title>
+    <desc id="pqc-config-desc">先以預先信任的聯盟金鑰核驗 FAC 認證的共同設定；FGS 依可信設定驗票，HNCC 依可信設定核驗發行授權及其期間、額度和適用對象。</desc>
+  </svg>
+  <script>
+    (() => {
+      const root = document.getElementById('pqc-learning-config-auth');
+      const svg = root.querySelector('.trust-diagram');
+      const ns = 'http://www.w3.org/2000/svg';
+      function element(name, attrs, parent) {
+        const item = document.createElementNS(ns, name);
+        for (const [key, value] of Object.entries(attrs)) item.setAttribute(key, String(value));
+        parent.appendChild(item);
+        return item;
+      }
+      function draw() {
+        const old = svg.querySelector('[data-drawing]');
+        if (old) old.remove();
+        const width = Math.max(280, Math.round(root.getBoundingClientRect().width));
+        const height = 350;
+        svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+        svg.setAttribute('height', String(height));
+        const group = element('g', { 'data-drawing': '' }, svg);
+        const centralWidth = Math.min(290, width - 16);
+        const branchWidth = Math.min(264, (width - 32) / 2);
+        const middle = width / 2;
+        const left = width / 4;
+        const right = width * 3 / 4;
+        function arrow(path, x, y) {
+          element('path', { d: path, class: 'edge' }, group);
+          element('path', { d: `M ${x-4} ${y-6} L ${x} ${y} L ${x+4} ${y-6}`, class: 'edge' }, group);
+        }
+        function node(x, y, w, h, title, lines) {
+          element('rect', { x: x-w/2, y, width: w, height: h, rx: 8, class: 'node' }, group);
+          const heading = element('text', { x, y: y+27, 'text-anchor': 'middle', 'font-weight': 500 }, group);
+          heading.textContent = title;
+          lines.forEach((line, index) => {
+            const label = element('text', { x, y: y+49+index*20, 'text-anchor': 'middle', class: 'text-small' }, group);
+            label.textContent = line;
+          });
+        }
+        arrow(`M ${middle} 78 L ${middle} 113`, middle, 113);
+        arrow(`M ${middle} 180 L ${middle} 214 L ${left} 214 L ${left} 247`, left, 247);
+        arrow(`M ${middle} 214 L ${right} 214 L ${right} 247`, right, 247);
+        node(middle, 10, centralWidth, 68, '預先信任的聯盟金鑰', ['信任起點']);
+        node(middle, 113, centralWidth, 67, '核驗 FAC 認證的共同設定', ['金鑰參照・政策・期間']);
+        node(left, 247, branchWidth, 88, 'FGS 地面站', ['依可信設定驗票', '公鑰對應・政策・ctx']);
+        node(right, 247, branchWidth, 88, 'HNCC 發行端', ['核驗發行授權', '對象・期間・額度']);
+      }
+      new ResizeObserver(draw).observe(root);
+      draw();
+    })();
+  </script>
+</div>
