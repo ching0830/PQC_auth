@@ -6,6 +6,38 @@
 
 日期：2026 年 9 月 14 日
 
+## Issuance bounded independent tree-post／continuation contract v1（獨立 branch）
+
+從 `0e4e2d7` 建立 `codex/pq-rbbc-issuance-tree-post-continuation-v1`。仍屬 offline
+issuance I3 的 bounded CAP child；不修改 protocol messages、production profile、system
+architecture、ticket lifecycle、`pq_sat_auth` 或 legacy evidence。
+
+本 gate 將兩棵 4-leaf／degree-3／security-bits-0 fixture 的 tree-post 從 live Python
+generator 分離。新的 standalone consumer 只消費同一 CandidateSet 內的 private spool、
+global-A points／receipt 與 tree-specific canonical continuation snapshot，不重跑 tree-pre、
+不重建 CAP，也不重開 pathname。兩棵各執行 3,576 rows、配置 2,412 個 post wires；ordered
+native group identities、xi output port 與全部 post-owned values 均與 unchanged live emitter
+一致，合計 7,152 rows、0 failures、0 external assertions。
+
+Continuation 明確記錄 absolute interval、owner cursor、pre-group identities、native prefix
+commitment、receipt chain、dependency identities、selected pre-wire/value 與 output layout；同時
+明確排除 generator frame、allocator object、full assignment、tree/tail hash internal state 與
+global-tail continuation。Prefix digest 只是 commitment，不是可恢復 SHA-256 state；composition
+以 ordered group identities、absolute wires 與 receipt chain 驗證，不能宣稱延續 legacy
+monolithic stream hash。
+
+Targeted 15 passed、0 failures/errors/skips（54.441 秒）；完整 baseline 917 tests，905 passed、
+12 個既有 optional external-artifact skips、0 failures/errors（1,339.203 秒）。V2.38／v2.39
+的 19 份 historical identities 不變。Private continuation、spool、receipt 與 post assignment
+bytes 不進 Git。Production、legacy18 provider、full-session restore、durable resume、PQ-SE
+backend、正式 `pi_issue`、Proof-closed、Production-closed 與 large-run flags全部維持 false。
+詳細 contract、identities、resources 與 exact commands 見
+[artifact note](../artifacts/PQ_RBBC_ISSUANCE_TREE_POST_CONTINUATION_V1_zh-TW.md)。
+
+下一 gate 是 private append-only continuation/result publication 與 one-tree process
+restart／controlled crash recovery qualification；其後仍須分離 global tail，才可組成完整
+legacy18 provider。
+
 ## Issuance bounded private-spool codec／snapshot handoff v1（獨立 branch）
 
 從 `c1c2b5d` 建立 `codex/pq-rbbc-issuance-private-spool-handoff-v1`。仍屬 offline issuance
