@@ -1,4 +1,5 @@
 from dataclasses import FrozenInstanceError, replace
+import errno
 import hashlib
 from pathlib import Path
 import shutil
@@ -179,7 +180,7 @@ class MultitreeRestartSchedulerTests(unittest.TestCase):
         original = gate.execution_plan_snapshot()
         mutations = []
         document = original.document()
-        document["implementation_version"] = "2.0"
+        document["implementation_version"] = "1.0"
         mutations.append(gate.canonical_json(document))
         document = original.document()
         document["ordered_tree_indices"] = [1, 0]
@@ -335,6 +336,153 @@ class MultitreeRestartSchedulerTests(unittest.TestCase):
             )
         self.assertEqual(computed, [1])
         self.assertEqual(resumed.adopted_orphan_tree_indices, (0,))
+
+    def test_completed_child_dependencies_sync_before_parent_checkpoint(self):
+        self.fresh_cached(scheduling_mode="sequential", stop_after_child_tree=0)
+        child = gate._tree_output(self.output, 0)
+        events = []
+        original_sync = disk.sync_directory
+        original_publish = disk.publish
+
+        def record_sync(path, descriptor):
+            events.append(("sync", Path(path)))
+            return original_sync(path, descriptor)
+
+        def record_publish(path, raw):
+            events.append(("publish", Path(path)))
+            return original_publish(path, raw)
+
+        with patch.object(
+            disk, "sync_directory", side_effect=record_sync
+        ), patch.object(disk, "publish", side_effect=record_publish):
+            resumed = self.resume_cached(scheduling_mode="sequential")
+
+        parent_checkpoint = (
+            self.output
+            / gate.SCHEDULER_JOURNAL_DIRECTORY
+            / gate.TREE_CHECKPOINT_NAMES[0]
+        )
+        parent_position = events.index(("publish", parent_checkpoint))
+        expected_dependencies = (
+            child / restart.INPUT_DIRECTORY,
+            child / restart.RESULT_DIRECTORY,
+            child / restart.JOURNAL_DIRECTORY,
+            child,
+            self.root,
+        )
+        sync_positions = [
+            events.index(("sync", dependency))
+            for dependency in expected_dependencies
+        ]
+        self.assertEqual(sync_positions, sorted(sync_positions))
+        self.assertTrue(all(position < parent_position for position in sync_positions))
+        self.assertEqual(resumed.adopted_orphan_tree_indices, (0,))
+
+    def test_child_durability_eio_refuses_parent_then_exact_retry_succeeds(self):
+        self.fresh_cached(scheduling_mode="sequential", stop_after_child_tree=0)
+        child = gate._tree_output(self.output, 0)
+        parent = gate.latest_scheduler_checkpoint(
+            self.output, artifact_root=self.root
+        )
+        before = self.files()
+        original_sync = disk.sync_directory
+        injected = False
+
+        def fail_once(path, descriptor):
+            nonlocal injected
+            if not injected and Path(path) == child / restart.RESULT_DIRECTORY:
+                injected = True
+                raise OSError(errno.EIO, "injected child durability failure")
+            return original_sync(path, descriptor)
+
+        with patch.object(
+            disk, "sync_directory", side_effect=fail_once
+        ), self.assertRaises(OSError) as raised:
+            self.resume_cached(
+                scheduling_mode="sequential",
+                expected_checkpoint_sha256=parent.identity["sha256"],
+            )
+        self.assertEqual(raised.exception.errno, errno.EIO)
+        self.assertEqual(before, self.files())
+        self.assertEqual(
+            gate.latest_scheduler_checkpoint(
+                self.output, artifact_root=self.root
+            ).location.name,
+            gate.INPUTS_COMMITTED_NAME,
+        )
+        resumed = self.resume_cached(scheduling_mode="sequential")
+        self.assertEqual(resumed.adopted_orphan_tree_indices, (0,))
+
+    def test_unknown_child_root_component_refuses_before_relation_or_parent_commit(self):
+        self.fresh_cached(stop_after_inputs=True)
+        parent = gate.latest_scheduler_checkpoint(
+            self.output, artifact_root=self.root
+        )
+        child = gate._tree_output(self.output, 0)
+        (child / "unknown-component").write_bytes(b"unexpected")
+        with patch.object(
+            restart,
+            "run_bounded_tree_post",
+            side_effect=AssertionError("relation work preceded child inventory"),
+        ), self.assertRaisesRegex(gate.SchedulerError, "one-tree output component"):
+            gate.run_bounded_scheduler(
+                self.output,
+                artifact_root=self.root,
+                resume=True,
+                expected_checkpoint_sha256=parent.identity["sha256"],
+            )
+        self.assertEqual(
+            gate.latest_scheduler_checkpoint(
+                self.output, artifact_root=self.root
+            ).identity,
+            parent.identity,
+        )
+
+    def test_unknown_parent_component_refuses_resume_and_completed_capture(self):
+        completed = self.fresh_cached()
+        (self.output / "unknown-component").write_bytes(b"unexpected")
+        digest = completed.complete_checkpoint.identity["sha256"]
+        with patch.object(
+            restart,
+            "latest_checkpoint",
+            side_effect=AssertionError("child read preceded parent inventory"),
+        ):
+            with self.assertRaisesRegex(
+                gate.SchedulerError, "scheduler output component"
+            ):
+                gate.run_bounded_scheduler(
+                    self.output,
+                    artifact_root=self.root,
+                    resume=True,
+                    expected_checkpoint_sha256=digest,
+                )
+            with self.assertRaisesRegex(
+                gate.SchedulerError, "scheduler output component"
+            ):
+                gate.capture_completed_schedule(
+                    self.output,
+                    artifact_root=self.root,
+                    expected_complete_sha256=digest,
+                )
+
+    def test_completed_capture_requires_direct_child_scheduler_output(self):
+        completed = self.fresh_cached()
+        nested = self.root / "nested"
+        nested.mkdir(mode=0o700)
+        for source in (
+            self.output,
+            gate._tree_output(self.output, 0),
+            gate._tree_output(self.output, 1),
+        ):
+            shutil.copytree(source, nested / source.name)
+        with self.assertRaisesRegex(gate.SchedulerError, "direct child"):
+            gate.capture_completed_schedule(
+                nested / self.output.name,
+                artifact_root=self.root,
+                expected_complete_sha256=completed.complete_checkpoint.identity[
+                    "sha256"
+                ],
+            )
 
     def test_competing_scheduler_is_rejected_by_parent_output_lock(self):
         self.fresh_cached(stop_after_inputs=True)

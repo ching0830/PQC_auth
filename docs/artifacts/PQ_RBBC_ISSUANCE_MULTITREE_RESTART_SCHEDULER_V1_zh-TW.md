@@ -7,6 +7,15 @@
 evidence 與本文件；未修改 one-tree predecessor、root canonical documents、system
 architecture、ticket lifecycle 或 `pq_sat_auth`。
 
+初始 commit `2d20829e3f09588e9aed7caf9508bef9b221c6d4` 的 bounded AI security
+rereview 找到兩項 P2 與一項 P3：completed-child adoption 缺少 dependency-ordered
+directory durability barriers、非 adoption 路徑可在 child root 含未知 component 時發布
+不可再次 capture 的 complete、以及 parent output root 未採 closed-world inventory。
+Corrective branch
+`codex/pq-rbbc-issuance-multitree-restart-scheduler-corrective-v1` 以
+`implementation_version=1.1` 建立新 parent plan／checkpoint identities；舊 1.0 scheduler
+outputs 不得宣稱已由本 corrective qualification 涵蓋。
+
 ## Protocol 位置與 bounded 範圍
 
 本工作仍只位於 offline issuance I3 的 bounded `CAP.Commit` tree-post child：
@@ -36,7 +45,8 @@ global-tail output 或 parent output。它不是完整 CAP provider、legacy18 p
 ## Canonical execution plan
 
 Execution plan format 為
-`PQRBBC-ISSUANCE-MULTITREE-RESTART-SCHEDULER-1-EXECUTION-PLAN`，version 為 `1`，
+`PQRBBC-ISSUANCE-MULTITREE-RESTART-SCHEDULER-1-EXECUTION-PLAN`，plan version 為 `1`、
+implementation version 為 `1.1`，
 relation namespace 為
 `pq-rbbc/issuance/multitree-restart-scheduler/tree0-tree1-4leaf-insecure-test-only/v1`。
 Domain separation 為 ASCII
@@ -56,7 +66,7 @@ Plan 固定：
 - per-tree 與 parallel aggregate resource ceiling。
 
 Execution plan identity 為 6,156 bytes，SHA-256
-`3f90a5cb6f1c7dd4a1c10421ec6f00dd617dfaa00cf9fd3daa6a6884c6d6ff5e`。
+`5153d3f07f5b14413db93826b7bb901b9eb3ca64827c5746ec397847760f17fd`。
 
 ### Per-tree identity 與 output port
 
@@ -112,7 +122,7 @@ Sequential 與 bounded-parallel 產出的 scheduler journal、兩份完整 one-t
 results、receipts 與 child checkpoints 全部 byte-identical。測試刻意延遲 tree 0，使 worker
 completion order 為 `[1,0]`；scheduler 仍只按 plan 發布 `[0,1]`，final result order 不受
 completion order 影響。Scheduler complete checkpoint 為 1,359 bytes，SHA-256
-`ac2fb156ab616319e45855cc6281a53bdd3e75f836a6396c92642ef325b4f6f6`。
+`5afe06b8eefad0d5383653114ab7747fc30699514d9e6a2aa4825dc243e0b625`。
 
 ## Crash／restart contract
 
@@ -122,6 +132,11 @@ Tests 覆蓋：
   `inputs-committed`；resume 可完成 tree 1；
 - tree 0 已完整發布 child output、但 parent tree-result checkpoint 尚未發布的 orphan；
   resume 只在 child complete identity 與 plan pin 完全相符時採用，且不重算 tree 0；
+- adopted 或新完成的 child 都必須先通過 closed-world inventory，再依
+  `inputs → results → journal → child output → artifact root` 順序完成 directory fsync，
+  才能發布 parent tree-result checkpoint；任一 `EIO` 保留原 parent checkpoint並可exact retry；
+- scheduler parent必須是trusted artifact root的direct child，parent只允許
+  `scheduler-journal`；child root只允許`inputs`、`results`及`journal`；
 - parent output lock 下的 competing scheduler 拒絕；
 - wrong／stale parent checkpoint 在任何 child input、journal 或 relation work 前拒絕；
 - wrong child checkpoint、missing tree root、missing/unknown child result、unknown tree、
@@ -130,7 +145,8 @@ Tests 覆蓋：
   files 保持不變。
 
 Parent scheduler journal 與 child journals 都採 exclusive append-only publication。既有 entry
-只會以 exact expected bytes 採用，不會 truncate、replace 或 overwrite。這仍是 bounded
+只會以 exact expected bytes 採用，不會 truncate、replace 或 overwrite。Corrective
+durability barriers封閉的是受控publication dependency order；這仍是 bounded
 cooperative-writer／controlled failure contract，不證明 hostile same-credential writer
 exclusion、實體斷電、kernel crash、remount 或跨主機 durability。
 
@@ -160,18 +176,19 @@ PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python -m unittest discover -s tests -v
 git diff --check
 ```
 
-Targeted 最終結果為 15 passed、0 failed/errors/skipped，39.703 秒。完整 baseline 為
-948 tests：936 passed、0 failed/errors、12 skipped，1,404.469 秒；skips 均為未安裝的
-optional external artifacts。最終 Git 檢查須以本 branch commit 前實際結果為準。
+Corrective targeted 最終結果為 20 passed、0 failed/errors/skipped，42.376 秒。完整
+corrective baseline 最終結果為 953 tests：941 passed、0 failed/errors、12 skipped，
+1436.253 秒。Skipped 案例仍是缺少精確 external artifacts 的既有 optional tests；不得把
+skip 解讀為相關 production evidence 已完成。
 
 Metadata-only tracked identities：
 
 | File | Bytes | SHA-256 |
 | --- | ---: | --- |
-| source | 50,659 | `876a6685ec18f2f57156d91ab6998d254ab9724e71f43b68c7ae26de9c440300` |
-| tests | 23,493 | `3a1106d9812e8969474ae4eccbd10aee7ce2005f04bc2670a3cdf0609fe7203c` |
-| manifest | 15,337 | `0229d93454108f5d3e9527a42e9b5fa427b37a8ca90cbbe34422f7e5b6481f44` |
-| portable evidence | 3,943 | `dcb0b91cfec43ba606ef5fabc374c21c8ebbc67397381860b1318279ea19e05e` |
+| source | 52,593 | `8b22015ce6a94cc0c11a6c000896f285804fea10f363ea71108623f5940d0cd2` |
+| tests | 29,496 | `3d5e55198c451e8b943b0424146f65917a487d902733eb611893bddf2f8e4564` |
+| manifest | 15,475 | `fa59af42eedb86e95e709e17d6fcc61d4cb8fd0c89282ec31cc8b4291d146364` |
+| portable evidence | 4,081 | `546fdf247aca3b21d3a6fd6b6e6f82e7f65abff0d59e61afff86f8603640138d` |
 
 Portable evidence 不含 continuation、spool、private result、assignment、receipt、scheduler
 checkpoint 或 tree resume-state raw。V2.38／v2.39 的 19 份 historical identities 已由

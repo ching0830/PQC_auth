@@ -34,7 +34,7 @@ import pq_rbbc_recovery_io_v2_42 as disk
 
 
 ROOT = Path(__file__).resolve().parents[1]
-IMPLEMENTATION_VERSION = "1.0"
+IMPLEMENTATION_VERSION = "1.1"
 FORMAT = "PQRBBC-ISSUANCE-MULTITREE-RESTART-SCHEDULER-1"
 PLAN_FORMAT = FORMAT + "-EXECUTION-PLAN"
 RELATION_ID = (
@@ -491,6 +491,8 @@ FROZEN = {
     "sequential_parallel_artifacts_byte_identical": True,
     "sequential_parallel_ordered_results_byte_identical": True,
     "result_order_matches_plan": True,
+    "completed_child_dependency_durability_order_qualified_by_tests": True,
+    "closed_world_parent_and_child_inventories_qualified_by_tests": True,
 }
 
 
@@ -570,6 +572,9 @@ def latest_scheduler_checkpoint(
     output: Path, *, artifact_root: Path
 ) -> io.Snapshot:
     root = io.ArtifactRoot(artifact_root)
+    output = root.require_location(output)
+    if output.parent != root.root:
+        raise SchedulerError("scheduler output must be a direct child of trusted root")
     root.require_location(output / SCHEDULER_JOURNAL_DIRECTORY / COMPLETE_NAME)
     ordered = _journal_shape(_names(output / SCHEDULER_JOURNAL_DIRECTORY))
     return disk.read(output / SCHEDULER_JOURNAL_DIRECTORY / ordered[-1])
@@ -609,6 +614,11 @@ def _validate_scheduler_journal(
 
 def _tree_output(output: Path, index: int) -> Path:
     return output.with_name(output.name + f".tree-{index}")
+
+
+def _validate_scheduler_output_inventory(output: Path) -> None:
+    if _names(output) != {SCHEDULER_JOURNAL_DIRECTORY}:
+        raise SchedulerError("unknown or missing scheduler output component")
 
 
 def _scoped_tree_output_names(output: Path, artifact_root: Path) -> set[str]:
@@ -664,18 +674,38 @@ def _validate_child_result(
         raise SchedulerError("one-tree result or private result-root identity mismatch")
 
 
-def _validate_completed_child_inventory(child: Path, index: int) -> None:
+def _validate_child_root_inventory(child: Path) -> None:
     if _names(child) != {
         restart.INPUT_DIRECTORY,
         restart.RESULT_DIRECTORY,
         restart.JOURNAL_DIRECTORY,
     }:
         raise SchedulerError("unknown or missing one-tree output component")
+
+
+def _validate_completed_child_inventory(child: Path, index: int) -> None:
+    _validate_child_root_inventory(child)
     if _names(child / restart.RESULT_DIRECTORY) != {
         restart.RESULT_NAMES[index],
         restart.RECEIPT_NAMES[index],
     }:
         raise SchedulerError("missing or unknown completed one-tree result")
+
+
+def _sync_completed_child_dependencies(child: Path, artifact_root: Path) -> None:
+    """Make validated child dependencies durable before a parent checkpoint."""
+    with (
+        io.directory_fd(child / restart.INPUT_DIRECTORY, external=True) as input_fd,
+        io.directory_fd(child / restart.RESULT_DIRECTORY, external=True) as result_fd,
+        io.directory_fd(child / restart.JOURNAL_DIRECTORY, external=True) as journal_fd,
+        io.directory_fd(child, external=True) as child_fd,
+        io.directory_fd(artifact_root, external=True) as root_fd,
+    ):
+        disk.sync_directory(child / restart.INPUT_DIRECTORY, input_fd)
+        disk.sync_directory(child / restart.RESULT_DIRECTORY, result_fd)
+        disk.sync_directory(child / restart.JOURNAL_DIRECTORY, journal_fd)
+        disk.sync_directory(child, child_fd)
+        disk.sync_directory(artifact_root, root_fd)
 
 
 def _complete_or_adopt_tree(
@@ -685,6 +715,7 @@ def _complete_or_adopt_tree(
 ) -> tuple[restart.PublishedTreePostResultInsecureTestOnly, bool]:
     index = int(descriptor["tree_index"])
     child = _tree_output(output, index)
+    _validate_child_root_inventory(child)
     latest = restart.latest_checkpoint(child, artifact_root=artifact_root)
     chain = descriptor["dependency_checkpoint_chain"]
     allowed = [item["identity"]["sha256"] for item in chain]
@@ -709,6 +740,8 @@ def _complete_or_adopt_tree(
         if result is None:
             raise SchedulerError("one-tree restart did not complete")
     _validate_child_result(result, descriptor)
+    _validate_completed_child_inventory(child, index)
+    _sync_completed_child_dependencies(child, artifact_root)
     return result, adopted
 
 
@@ -826,6 +859,7 @@ def run_bounded_scheduler(
                 raise SchedulerError(
                     "scheduler checkpoint identity mismatch (including stale digest)"
                 )
+        _validate_scheduler_output_inventory(output)
         journal = _capture_scheduler_journal(output, latest)
         expected_prefix = _validate_scheduler_journal(
             journal, require_restartable=True
@@ -942,6 +976,7 @@ def capture_completed_schedule(
         or latest.identity["sha256"] != expected_complete_sha256
     ):
         raise SchedulerError("scheduler complete checkpoint identity mismatch")
+    _validate_scheduler_output_inventory(output)
     journal = _capture_scheduler_journal(output, latest)
     if tuple(journal) != SCHEDULER_JOURNAL_NAMES:
         raise SchedulerError("completed scheduler journal is incomplete")
@@ -1091,6 +1126,8 @@ def bounded_self_check() -> dict[str, object]:
                 "shared_resume_state": False,
                 "other_tree_observed_stream_bytes_used": False,
                 "exact_orphan_adoption_qualified_by_tests": True,
+                "completed_child_dependency_durability_order_qualified_by_tests": True,
+                "closed_world_parent_and_child_inventories_qualified_by_tests": True,
                 "repeated_resume_idempotence_qualified_by_tests": True,
                 "competing_scheduler_rejection_qualified_by_tests": True,
                 "global_tail_continuation_implemented": False,
