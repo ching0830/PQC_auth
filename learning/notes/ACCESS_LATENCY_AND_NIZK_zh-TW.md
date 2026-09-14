@@ -108,3 +108,34 @@ NIZK 可支援首則認證，離線可驗的票券可減少線上身分查詢；
 
 本次補充支持「四訊息不是必然、應依低延遲需求比較候選」；沒有選定新 canonical protocol、
 實作 holder NIZK／AKE、執行 benchmark 或宣稱單往返方案已證明安全。
+
+## 2026-09-14 追問：目前正式資料怎麼說
+
+學習者原文：「我現在的正式資料是怎麼說的」。以下核對目前 checkout 的正式來源，
+不把前面的單往返候選寫成既有設計。文件權責依
+[文件政策](../../docs/DOCUMENTATION_POLICY_zh-TW.md)：架構管系統定義，研究狀態管完成程度，
+導覽與本學習筆記不另立正式規格。
+
+| 問題 | 目前文字與白話解讀 | 正式來源 |
+| --- | --- | --- |
+| 降低延遲如何落實？ | 降低衛星在線通訊與驗證負擔；將大型發行證明留在離線。所核對的頂層文件尚未明定「接入 NIZK 省去 challenge 往返」或單往返上限。 | [架構：系統目標與 M2](../../ARCHITECTURE_zh-TW.md)、[研究方法：設計決策第 1 點](../../methodology.md) |
+| NIZK 在哪個階段？ | `pi_issue` 定義於盲發行，由 issuer 驗證；最終票券不附這份發行證明。這不等於正式禁止另一份接入 NIZK，後者尚未選定。 | [形式化核心：issuance 與 ticket verification](../../docs/proof/source/pq_rbbc_sgtd_core_proof_v1.tex)、[架構 M2](../../ARCHITECTURE_zh-TW.md) |
+| 接入是否包含地面站 nonce？ | M5 明列輸入 `verifier nonce`；v0.1 §5 具體定義 Init、Challenge、Finish、Accept。Challenge 含 `fgs_nonce`，Finish 才帶 `holder_authenticator` 與 UE key confirmation。 | [架構 M5](../../ARCHITECTURE_zh-TW.md)、[接入規格 §5](../../docs/specs/ONE_TIME_TICKET_STATE_v0_1_zh-TW.md) |
+| 這已經完成了嗎？ | 訊息編解碼與部分綁定／狀態模型已有實作測試；持票者認證方法與 PQ AKE 尚未選定／實作，端到端 benchmark 未開始。 | [研究狀態：Satellite access 與 End-to-end evaluation](../../RESEARCH_STATUS_zh-TW.md)、[研究方法 D-002](../../methodology.md) |
+
+依 §5 的訊息依賴，從 UE 送出 Init 到收到 Accept，正常流程是四則依序訊息，
+其傳播項約為兩個 UE–FGS RTT。這是依現有草稿推得的時序，不是文件已量測的總延遲，
+也不是安全性要求所有協定至少兩趟往返。
+
+[協定導覽 §6](../../docs/guides/PROTOCOL_TO_IMPLEMENTATION_GUIDE_zh-TW.md) 的概念段落
+只列 UE→FGS 與 FGS→UE 兩列，且把 holder authenticator 放在 UE 那列；同節工程對應
+卻列出四個 Access objects。概念列與實際訊息粒度尚未對齊，不能把它當成已定義的兩訊息
+協定，也不能直接等同 §5 中沒有 authenticator 的 Init。
+
+與 backhaul 相關，接入規格 §2 要求同一接受域使用線性一致的共享使用狀態，或等價的
+single-writer／consensus 分片；取不到權威狀態時不得建立新 session。文件沒有承諾
+省去這段後端等待，亦尚無端到端量測證據。
+
+目前可準確對外說明：正式設計把大型發行 NIZK 留在離線，接入另採含 FGS challenge 的
+四訊息草稿，密碼學組合尚待決定。使用者提出的「首則接入 NIZK 降低往返」仍是待納入
+正式決策比較的需求。本次僅保存來源對照，未更改正式架構、規格或程式。
