@@ -6,6 +6,39 @@
 
 日期：2026 年 9 月 14 日
 
+## Issuance production producer ABI read-only pre-freeze v1（獨立 branch）
+
+從 `c8bcdb2` 建立 `codex/pq-rbbc-issuance-production-abi-prefreeze-v1`。本 gate 仍只處理
+offline issuance I3 的 CAP child 與 parent binding：把五段 bounded producer 對應到
+42-stage production dependency plan，沒有改變 protocol messages 或產生正式 `pi_issue`。
+
+新增唯讀 checker、strict canonical plan、50 份 exact-byte prerequisites、18 組 tree
+pre/post reservations、72 個 ordinary-equality relocation ports、17 組 corrections 與共同
+386-bit point handoff。Fresh ABI namespace 為
+`pq-rbbc/issuance/cap576-native/production-producer-abi/candidate/v1`；保留現有 18-root
+CAP profile，非 unified-tree migration。Interval 只由 historical topology 導出，production
+split emitter 尚未資格化，fresh rows/stream/assignment observations 均為 `null`。
+
+重要差異是 production 必須使用 per-owner cursor；不能把 bounded 單一 `next_wire` 或
+四筆 cumulative private JSON 直接放大。Tree pre 的 p-plain/mhat-plain exports、multi-tree
+corrections、salt/root/message binding、private spool streaming、fresh parent composition 與
+scale/resume 都仍需 qualification。Snapshot 仍為 single-open／single bounded read，同一
+immutable raw 用於 identity、parse、binding；metadata 不能證明 writer quiescence。
+Future executor 不得重開 CandidateSet/Invocation 的 pathnames，部署 trust 前提仍在。
+
+唯讀 preflight 可通過並允許下一個 bounded multi-tree adapter／per-owner allocator gate；
+但本 invocation 未 provision 五份 production external inputs，未取得真實資源 reservation、
+independent review 或大型執行授權。Production API 在任何 I/O 前拒絕，production／replay／
+proving commands 為 `null`，所有 production/security/large-run claims 保持 false。
+本次未新增 assignment、row archive、BR1CS、cache、resume state 或 proof。
+
+Targeted 17 tests 全部通過；完整 baseline 共 878 tests，866 passed、12 個既有 optional
+external-artifact skips、0 failures/errors（1,231.595 秒）。19 份 v2.38/v2.39 historical
+files 的 exact size/SHA-256 均相符；既有 source/tests/manifests/evidence bytes 保持不變。
+Plan SHA-256 為 `8ab365ec9d3324ef2a669c177914f5f5dbebb4747e1b059d3906d2ff3dc370c4`。
+詳細 wire reservations、schema、資源範圍、exact commands 與 identities 見
+[artifact note](../artifacts/PQ_RBBC_ISSUANCE_PRODUCTION_ABI_PREFREEZE_V1_zh-TW.md)。
+
 ## Issuance independent fragment producers checkpoint v1（獨立 branch）
 
 2026-09-14從native split lowerer commit `cad06ae`建立獨立branch
