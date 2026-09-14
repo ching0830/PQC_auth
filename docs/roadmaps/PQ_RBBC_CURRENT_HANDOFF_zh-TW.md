@@ -6,6 +6,40 @@
 
 日期：2026 年 9 月 14 日
 
+## Issuance bounded multi-tree adapter／per-owner allocator v1（獨立 branch）
+
+從 `47cfd58` 建立 `codex/pq-rbbc-issuance-bounded-multitree-adapter-v1`。本 gate 實際驗證
+offline issuance I3 中兩棵各 4 leaves、不同 roots 的 insecure test-only CAP child，保留
+576/1472-bit widths；沒有改變 protocol messages、production profile 或 system lifecycle。
+
+Native coroutines 在 tree-pre 後真正暫停，收齊 pre relocations 才產生 global-A points，
+然後各自恢復 tree owner 的 pre-end cursor。兩棵樹共 8 個 output relocations、一組非零
+p/mhat corrections，以及 salt/root/message anchor bindings 均由 ordinary constraints
+驗證。合計 185,743 rows、123,798 wires、0 failures；三個 native streams 的 rows/wires/
+bytes/SHA-256 分別與未修改的 legacy generators 相同。新增 12,458 條 equality 的 exact
+forms 亦納入 receipt digest，不是只驗證 host values 或 row counts。
+
+新的 namespace 為
+`pq-rbbc/issuance/cap576-native/multitree-4plus4-insecure-test-only/v1`。這是 single-caller、
+in-process suspension，不是 crash recovery、durable spool 或 production resume；private
+assignment、spool、point values 與 runtime receipt bytes 未提交。Point/receipt validation
+只使用 immutable snapshots；future executor 不得重開 CandidateSet/Invocation pathnames。
+Metadata 不能證明沒有 writer，trusted handoff 與部署前提仍是 external blockers。
+
+Mixed degree-12/13、完整 18-tree／72 relocations、formal I1–I5、parent join、PQ-SE backend、
+正式 `pi_issue`、Proof-closed、Production-closed 與 large-run flags 全部維持 false。五份
+production external inputs、independent review、資源 reservation 與大型授權未提供。
+
+Targeted 13 passed、0 failures/errors、0 skipped（59.823 秒）；full baseline 891 tests，
+879 passed、0 failures/errors、12 optional external-artifact skips（1,282.256 秒）。
+v2.38／v2.39 的 19 份 historical bytes／SHA-256 均未改變。Plan digest 為
+`729418cf1f9400b729ea02798547d260bf508bb775819456193a4e9270087c84`；final receipt digest
+為 `e82d57c9edb0b6bf05be5bea5534953e8e91719f2bc049add92635bc50a60801`。詳細 scope、
+資源、native identities、exact commands 與 claim boundary 見
+[artifact note](../artifacts/PQ_RBBC_ISSUANCE_BOUNDED_MULTITREE_ADAPTER_V1_zh-TW.md)。
+下一 gate 是 bounded private-spool canonical codec 與 snapshot-based state handoff，
+再進入 process restart／durable resume qualification；不啟動 production replay。
+
 ## Issuance production producer ABI read-only pre-freeze v1（獨立 branch）
 
 從 `c8bcdb2` 建立 `codex/pq-rbbc-issuance-production-abi-prefreeze-v1`。本 gate 仍只處理
