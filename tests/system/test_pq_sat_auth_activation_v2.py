@@ -261,6 +261,45 @@ class FGSActivationPositiveTests(FGSActivationFixture):
 
 
 class FGSActivationBoundaryTests(FGSActivationFixture):
+    def test_optional_pure_pre_activation_check_runs_before_transition(self) -> None:
+        observed = []
+
+        def reject(capability):
+            capability.validate()
+            observed.append(capability.application_key)
+            return False
+
+        rejected = self.activation_processor().process(
+            self.encoded_activation,
+            pre_activate_check=reject,
+        )
+        self.assertFalse(rejected.accepted)
+        self.assertEqual(rejected.failures, ("pre_activation_check_failed",))
+        self.assertEqual(observed, [self.session_state.application_key])
+        self.assert_pending()
+
+        def broken(_capability):
+            raise RuntimeError("authenticated record failed")
+
+        failed = self.activation_processor().process(
+            self.encoded_activation,
+            pre_activate_check=broken,
+        )
+        self.assertFalse(failed.accepted)
+        self.assertEqual(
+            failed.failures,
+            ("pre_activation_check:RuntimeError",),
+        )
+        self.assert_pending()
+
+        accepted = self.activation_processor().process(
+            self.encoded_activation,
+            pre_activate_check=lambda capability: (
+                capability.application_key == self.session_state.application_key
+            ),
+        )
+        self.assertTrue(accepted.accepted, accepted.failures)
+
     def test_noncanonical_unknown_and_cross_bound_activation_reject(self) -> None:
         processor = self.activation_processor()
         cases = (

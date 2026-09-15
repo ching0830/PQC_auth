@@ -96,6 +96,7 @@ Message types：
 0x0101 AccessRequestV2
 0x0102 AccessAcceptV2
 0x0103 SessionActivateV2
+0x0104 FirstApplicationRecordV2
 ```
 
 Primitive-dependent fields 使用：
@@ -434,6 +435,67 @@ header。FGS 必須在 atomic activation commit 後才執行該 record 的 appli
 effect。重複的正確 confirmation 必須 idempotent；錯誤、過期或跨 session
 confirmation 不得啟動 session。
 
+### 8.1 第一個受保護 application record
+
+v0.2 bounded reference 將「把 `SessionActivateV2` 併入第一個 application AEAD」的
+exact bytes 固定如下：
+
+```text
+FirstApplicationRecordV2 body =
+    suite_id_u16be
+ || request_digest[32]
+ || attempt_id[32]
+ || session_id[32]
+ || response_digest[32]
+ || sequence_number_u64be       # 必須為 0
+ || activation = Opaque         # exact canonical SessionActivateV2 frame
+ || ciphertext = Opaque
+```
+
+其中 `activation` 內的五個 fixed fields 必須與 record header 完全相同。AAD、nonce
+context 及 record identity 分別為：
+
+```text
+authenticated_header =
+    suite_id || request_digest || attempt_id || session_id
+ || response_digest || sequence_number || Opaque(activation)
+
+AAD = "PQ-SAT/FIRST-APPLICATION-AAD/v2"
+   || authenticated_header
+
+nonce_context = SHAKE256(
+    "PQ-SAT/FIRST-APPLICATION-NONCE/v2"
+ || suite_id_u16be || session_id || sequence_number_u64be,
+    256
+)
+
+record_digest = SHAKE256(
+    "PQ-SAT/FIRST-APPLICATION-RECORD/v2"
+ || Encode(FirstApplicationRecordV2),
+    256
+)
+```
+
+`nonce_context` 是交給 concrete suite 的唯一衍生輸入，不代表直接截取成任一 AEAD 的
+nonce；實際 nonce mapping、tag size 與 plaintext limit 必須由 production suite 固定。
+同一 `session_id` 的 sequence 0 只能保留一個 plaintext identity。UE 必須先在 durable
+outbox 完成 `RESERVED -> READY`、保存 exact record bytes 並 read back，才可把 wire bytes
+交給傳輸層；相同 plaintext retry 回傳原 bytes，不得重新選 nonce 或建立另一個 record，
+不同 plaintext 則 fail closed。
+
+FGS 的處理順序為：strict parse及binding、驗證client Finished、以 `K_application`
+驗證整個 record AEAD、atomic activate session、取得一次性的 delivery claim，最後才把
+plaintext capability交給application layer。AEAD失敗不得activate；相同record retry在已
+delivery後只回覆`ALREADY_DELIVERED`且不再釋放plaintext。另一個通過AEAD的sequence-0
+record必須視為conflict。
+
+Reference delivery claim目前只是process-local at-most-once release gate；activation與
+delivery不在同一durable transaction，application side effect也未納入該transaction。
+因此它不能宣稱crash-safe exactly-once：activation後、claim前crash可由exact retry恢復；
+claim後、外部side effect前crash則可能遺失工作但不會在同一process state內重複釋放。
+Production profile仍須把durable／distributed delivery state與實際application transaction
+整合，或明定可接受的idempotency key及補償語意。
+
 ## 9. Acceptance terminology
 
 為避免把 1 RTT 說得比實際保證更強，v0.2 固定三個不同事件：
@@ -585,9 +647,10 @@ atomic `CONSUMED_PENDING_CONFIRM -> CONSUMED_ACTIVE`後，processor才回傳包�
 key與exporter key的內部capability；exact retry回傳同一active record與capability，平行
 重送只有一個transition winner。
 
-此capability不是application side effect本身，也不是network bearer token。第一個受保護
-application record、side-effect exactly-once transaction、production session-state
-protection及durable／distributed store仍未完成。Activation revocation snapshot與store
+此capability不是application side effect本身，也不是network bearer token。於該checkpoint
+第一個受保護application record仍未完成；後續§13.7已補上bounded record與delivery
+capability，但side-effect exactly-once transaction、production session-state protection及
+durable／distributed store仍未完成。Activation revocation snapshot與store
 transition亦非同一authoritative transaction，存在明確TOCTOU邊界；concrete PQ AKE／
 Finished suite仍待研究線選型與實例化。完整failure semantics、tests與claim boundary見
 `docs/artifacts/SATELLITE_ACCESS_v0_2_FGS_ACTIVATION_PROCESSOR_zh-TW.md`及
@@ -631,6 +694,28 @@ race、restart、commit後突然process exit、corruption、schema／protection 
 ack及deadline recovery。這只支持可信單機filesystem與SQLite假設下的reference durability；
 test-only protection adapter不是production encryption。Rollback protection、hardware-backed
 key、secure erasure、實體斷電／kernel crash／remount、distributed wallet及first protected
-application record仍未完成。詳細evidence與machine claims見
+application record於該checkpoint仍未完成；其後續bounded實作見§13.7。詳細evidence與machine claims見
 `docs/artifacts/SATELLITE_ACCESS_v0_2_UE_WALLET_SQLITE_zh-TW.md`及
 `manifests/pq_sat_auth_ue_wallet_v0_2.json`。
+
+### 13.7 First protected application record checkpoint
+
+後續checkpoint新增`src/pq_sat_auth/v2/application.py`與
+`src/pq_sat_auth/v2/storage/sqlite_first_record.py`，實作§8.1的`0x0104`
+`FirstApplicationRecordV2`、exact AAD／nonce context／record digest、UE sequence-zero
+reservation及SQLite outbox。兩階段`RESERVED -> READY`先固定plaintext digest，避免同一
+session在race時用相同sequence／nonce context保護不同plaintext；只有finalize commit與
+read-back一致後才釋放wire bytes。Restart、parallel exact retry、competing plaintext、lost
+ack、schema identity及corruption均有測試。
+
+FGS透過activation processor的pure pre-activation check先驗證application protection，
+成功後才執行既有atomic session activation；process-local delivery store對同一session只
+釋放一次plaintext capability，exact retry不重複釋放，第二個authenticated sequence-zero
+record拒絕。此ordering使corrupt ciphertext不會把pending session轉成active。
+
+這仍是test-only protection backend下的bounded reference。FGS delivery state不durable、
+不distributed，activation與delivery claim不是同一transaction，external application side
+effect也不具crash-safe exactly-once保證；concrete production AEAD、secure nonce mapping與
+實體斷電測試仍未完成。完整evidence與machine claims見
+`docs/artifacts/SATELLITE_ACCESS_v0_2_FIRST_APPLICATION_RECORD_zh-TW.md`及
+`manifests/pq_sat_auth_first_application_v0_2.json`。

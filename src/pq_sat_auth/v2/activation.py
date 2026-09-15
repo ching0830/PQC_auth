@@ -6,7 +6,7 @@ import hashlib
 import struct
 from dataclasses import dataclass
 from enum import Enum
-from typing import Mapping, Protocol
+from typing import Callable, Mapping, Protocol
 
 from pq_sat_auth.identities import TicketUseIdentity
 
@@ -400,8 +400,20 @@ class FGSActivationProcessorV2:
             session_id=record.session_id,
         )
 
-    def process(self, encoded_activation: bytes) -> ActivationProcessResultV2:
-        """Activate an explicit SessionActivateV2; no application data is run."""
+    def process(
+        self,
+        encoded_activation: bytes,
+        *,
+        pre_activate_check: Callable[[ActivatedSessionCapabilityV2], bool]
+        | None = None,
+    ) -> ActivationProcessResultV2:
+        """Validate and activate one session.
+
+        The optional check is for pure authenticated-record validation.  It
+        receives candidate key material and must return the literal ``True``
+        before the store transition.  It must not perform application side
+        effects.
+        """
 
         try:
             activation = decode_session_activate(
@@ -483,6 +495,33 @@ class FGSActivationProcessorV2:
             )
         if confirmation_ok is not True:
             return self._reject("client_finished_invalid")
+
+        candidate_capability = ActivatedSessionCapabilityV2(
+            identity=record.identity,
+            system_config_digest=state.system_config_digest,
+            acceptance_domain_digest=state.acceptance_domain_digest,
+            session_id=record.session_id,
+            response_digest=record.response_digest,
+            activated_at=(record.activated_at if was_active else now),
+            session_expiry=record.session_expiry,
+            application_key=state.application_key,
+            exporter_key=state.exporter_key,
+        )
+        try:
+            candidate_capability.validate()
+        except Exception as error:
+            return self._reject(
+                f"pre_activation_capability:{type(error).__name__}"
+            )
+        if pre_activate_check is not None:
+            try:
+                checked = pre_activate_check(candidate_capability)
+            except Exception as error:
+                return self._reject(
+                    f"pre_activation_check:{type(error).__name__}"
+                )
+            if checked is not True:
+                return self._reject("pre_activation_check_failed")
 
         confirmation_digest = derive_activation_digest(
             activation,
@@ -604,6 +643,7 @@ def fgs_activation_processor_manifest() -> dict[str, object]:
             "activation_binding_and_deadline",
             "query_bound_activation_revocation",
             "client_finished",
+            "optional_pure_pre_activation_check",
             "atomic_activate",
             "release_capability_after_activate",
         ],
@@ -613,6 +653,7 @@ def fgs_activation_processor_manifest() -> dict[str, object]:
         "claim_boundary": {
             "unique_session_index_implemented": True,
             "client_finished_boundary_implemented": True,
+            "pre_activation_check_hook_implemented": True,
             "activation_revocation_boundary_implemented": True,
             "capability_released_only_after_activate": True,
             "explicit_session_activate_frame_implemented": True,

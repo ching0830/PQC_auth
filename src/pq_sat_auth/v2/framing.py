@@ -24,6 +24,7 @@ class FrameTypeV2(IntEnum):
     ACCESS_REQUEST = 0x0101
     ACCESS_ACCEPT = 0x0102
     SESSION_ACTIVATE = 0x0103
+    FIRST_APPLICATION_RECORD = 0x0104
 
 
 @dataclass(frozen=True)

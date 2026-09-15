@@ -1,0 +1,63 @@
+{
+  "checkpoint": {
+    "access_protocol_version": 2,
+    "aad_domain": "PQ-SAT/FIRST-APPLICATION-AAD/v2",
+    "claim_boundary": {
+      "activation_and_delivery_same_transaction": false,
+      "activation_in_authenticated_header_implemented": true,
+      "canonical_first_application_record_implemented": true,
+      "durable_ue_exact_record_outbox_reference_implemented": true,
+      "external_side_effect_exactly_once": false,
+      "fgs_delivery_store_durable_or_distributed": false,
+      "fgs_one_time_delivery_capability_implemented": true,
+      "outbox_restart_and_race_tested": true,
+      "physical_power_loss_tested": false,
+      "production_aead_instantiated": false,
+      "production_ready": false,
+      "proof_closed": false,
+      "sequence_zero_enforced": true
+    },
+    "fgs_order": [
+      "canonical_record_and_embedded_activation",
+      "suite_bound_application_authentication",
+      "client_finished_and_application_authentication",
+      "atomic_session_activation",
+      "atomic_process_local_delivery_claim",
+      "release_plaintext_capability_once"
+    ],
+    "format": "PQ-SAT-FIRST-APPLICATION-CHECKPOINT-v0.2",
+    "frame_type": "0x0104",
+    "nonce_context_domain": "PQ-SAT/FIRST-APPLICATION-NONCE/v2",
+    "record_digest_domain": "PQ-SAT/FIRST-APPLICATION-RECORD/v2",
+    "sequence_number": 0,
+    "ue_order": [
+      "accepted_session_validation",
+      "plaintext_identity_reservation",
+      "suite_bound_protection",
+      "exact_record_finalize",
+      "read_back_validation",
+      "release_wire_bytes_after_commit"
+    ]
+  },
+  "sqlite_outbox": {
+    "application_id": "0x5051534f",
+    "claims": {
+      "competing_sequence_zero_plaintext_rejected": true,
+      "distributed": false,
+      "exact_record_committed_before_release": true,
+      "physical_power_loss_tested": false,
+      "production_ready": false,
+      "record_contains_secrets_at_rest": false,
+      "rollback_resistance": false,
+      "single_host_reference_durability": true
+    },
+    "format": "PQ-SAT-FIRST-RECORD-OUTBOX-SQLITE-v0.2",
+    "journal_mode": "WAL",
+    "schema_version": 1,
+    "states": [
+      "RESERVED",
+      "READY"
+    ],
+    "synchronous": "FULL"
+  }
+}

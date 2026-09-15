@@ -188,8 +188,10 @@ authoritative active record恢復。
 Activation前的authenticated revocation snapshot必須綁定configuration、acceptance
 domain、ticket use key、原grant revocation query、FGS／key、request／response及session。
 然而外部snapshot與process-local activate不是同一transaction；production backend仍須
-提供authoritative ordering。Explicit `SessionActivateV2`也尚未實作第一個application
-record及其side-effect transaction，兩者不得被混稱為已完成。
+提供authoritative ordering。後續bounded first-record processor已把exact
+`SessionActivateV2`放入application AAD，並在application authentication成功後才activate；
+但其process-local delivery claim與side-effect transaction仍不得被混稱為production
+exactly-once ordering。
 
 ## 7. Exact replay and retry semantics
 
@@ -342,3 +344,12 @@ backend在資料進入SQLite前封裝整份canonical record。已測試commit後
 XOR／HMAC adapter也不是production cryptography。資料庫rollback protection、secure erasure
 及accepted後舊page／WAL中的ephemeral secret清除仍未實作，因此此checkpoint不能被解讀為
 production secure wallet或FGS authoritative distributed replay store已完成。
+
+2026-09-15 first protected application checkpoint另固定`FirstApplicationRecordV2`、AAD、
+nonce context、`sequence_number = 0`及record digest。UE端獨立SQLite outbox先以
+`RESERVED`固定plaintext identity，再以`READY`保存exact wire bytes；commit及read-back
+完成前不釋放。FGS先驗證client Finished與application protection，再activate，最後由
+process-local claim只釋放一次plaintext capability。它已測試restart、thread／process
+race、lost acknowledgement、ciphertext mutation及competing sequence-zero record，但
+FGS delivery不durable／distributed，activation與external side effect也不是同一
+transaction，故不構成crash-safe exactly-once保證。
