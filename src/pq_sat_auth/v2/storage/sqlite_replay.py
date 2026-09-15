@@ -827,41 +827,53 @@ class SQLiteFGSReplayStoreV2:
         connection = self._connect()
         try:
             connection.execute("BEGIN IMMEDIATE")
-            use_key, existing = self._check_identity_bindings(connection, identity)
-            if existing is None:
-                raise ReservationNotFound("cannot commit an unreserved ticket")
-            if isinstance(existing, GrantRecordV2):
-                if _commit_identity(existing) == _commit_identity(candidate):
-                    connection.execute("COMMIT")
-                    return existing
-                raise InvalidTransition("consumed ticket cannot change grant")
-            session_owner = connection.execute(
-                "SELECT use_key FROM fgs_replay_records WHERE session_id = ?",
-                (candidate.session_id,),
-            ).fetchone()
-            if session_owner is not None and session_owner[0] != use_key:
-                raise IdentityConflict("session ID belongs to another ticket")
-            if (
-                existing.attempt_id != candidate.attempt_id
-                or existing.request_digest != candidate.request_digest
-                or existing.serving_context_digest
-                != candidate.serving_context_digest
-                or existing.revocation_generation > candidate.revocation_generation
-            ):
-                raise ReservationNotFound("reservation belongs to another request")
-            if candidate.consumed_at < existing.reserved_at:
-                raise InvalidTransition("grant predates reservation")
-            if candidate.consumed_at > existing.lease_deadline:
-                raise InvalidTransition("reservation lease expired before commit")
-            self._replace(connection, candidate)
+            result = self._commit_grant_candidate(connection, candidate)
             connection.execute("COMMIT")
-            return candidate
+            return result
         except Exception:
             if connection.in_transaction:
                 connection.execute("ROLLBACK")
             raise
         finally:
             connection.close()
+
+    def _commit_grant_candidate(
+        self,
+        connection: sqlite3.Connection,
+        candidate: GrantRecordV2,
+    ) -> GrantRecordV2:
+        """Commit one candidate inside the caller's active write transaction."""
+
+        use_key, existing = self._check_identity_bindings(
+            connection,
+            candidate.identity,
+        )
+        if existing is None:
+            raise ReservationNotFound("cannot commit an unreserved ticket")
+        if isinstance(existing, GrantRecordV2):
+            if _commit_identity(existing) == _commit_identity(candidate):
+                return existing
+            raise InvalidTransition("consumed ticket cannot change grant")
+        session_owner = connection.execute(
+            "SELECT use_key FROM fgs_replay_records WHERE session_id = ?",
+            (candidate.session_id,),
+        ).fetchone()
+        if session_owner is not None and session_owner[0] != use_key:
+            raise IdentityConflict("session ID belongs to another ticket")
+        if (
+            existing.attempt_id != candidate.attempt_id
+            or existing.request_digest != candidate.request_digest
+            or existing.serving_context_digest
+            != candidate.serving_context_digest
+            or existing.revocation_generation > candidate.revocation_generation
+        ):
+            raise ReservationNotFound("reservation belongs to another request")
+        if candidate.consumed_at < existing.reserved_at:
+            raise InvalidTransition("grant predates reservation")
+        if candidate.consumed_at > existing.lease_deadline:
+            raise InvalidTransition("reservation lease expired before commit")
+        self._replace(connection, candidate)
+        return candidate
 
     def activate_session(
         self,

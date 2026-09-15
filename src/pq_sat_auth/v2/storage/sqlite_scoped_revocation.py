@@ -31,6 +31,7 @@ from ..activation import (
     ActivationRevocationQueryV2,
     ActivationRevocationSnapshotV2,
 )
+from ..grant import GrantCommitRequestV2
 from ..replay import GrantRecordV2
 from .sqlite_authoritative import (
     ActivationRevocationFenceRecordV2,
@@ -697,68 +698,194 @@ class SQLiteFGSScopedRevocationStoreV2(
             )
         return updated
 
-    def register_activation_query(
+    def _register_activation_query_in_transaction(
         self,
+        connection: sqlite3.Connection,
         query: ActivationRevocationQueryV2,
-        *,
         base_generation: int,
     ) -> ActivationRevocationSnapshotV2:
         if not isinstance(query, ActivationRevocationQueryV2):
             raise TypeError("query must be an ActivationRevocationQueryV2")
         encoded = query.encode()
         _sqlite_uint(base_generation, "base_generation")
+        existing_query = self._select_query(connection, query.digest)
+        if existing_query is not None:
+            if existing_query != query:
+                raise UnifiedActivationInboxIntegrityError(
+                    "registered query digest collision"
+                )
+            existing_fence = self._select_fence(connection, query.digest)
+            if existing_fence is None:
+                raise UnifiedActivationInboxIntegrityError(
+                    "registered query lacks a revocation fence"
+                )
+            if existing_fence.snapshot.generation < base_generation:
+                raise InvalidTransition(
+                    "registered query base generation advanced"
+                )
+            return existing_fence.snapshot
+
+        for registered in self._registered_queries(connection):
+            if (
+                registered.session_id == query.session_id
+                or registered.ticket_use_key == query.ticket_use_key
+            ):
+                raise InvalidTransition(
+                    "session or ticket already has another activation query"
+                )
+
+        snapshot = ActivationRevocationSnapshotV2(
+            query_digest=query.digest,
+            generation=base_generation,
+            effective_at=0,
+            valid_until=SQLITE_INT_MAX,
+        )
+        for envelope in self._commands_for_ctx(connection, query.ctx):
+            if self._scope_matches(envelope.command, query):
+                snapshot = self._apply_command(snapshot, envelope.command)
+        record = ActivationRevocationFenceRecordV2(snapshot, 1)
+        record.validate()
+        connection.execute(
+            "INSERT INTO activation_revocation_queries "
+            "(query_digest, canonical_query, query_checksum) "
+            "VALUES (?, ?, ?)",
+            (
+                query.digest,
+                encoded,
+                derive_registered_query_checksum(encoded),
+            ),
+        )
+        connection.execute(
+            "INSERT INTO activation_revocation_fences "
+            "(query_digest, generation, revision, effective_at, "
+            "valid_until, configuration_revoked, fgs_key_revoked, "
+            "ticket_revoked, session_revoked, canonical_record, "
+            "record_checksum) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            self._write_values(record),
+        )
+        return snapshot
+
+    def register_activation_query(
+        self,
+        query: ActivationRevocationQueryV2,
+        *,
+        base_generation: int,
+    ) -> ActivationRevocationSnapshotV2:
         connection = self._connect()
         try:
             connection.execute("BEGIN IMMEDIATE")
-            existing_query = self._select_query(connection, query.digest)
-            if existing_query is not None:
-                if existing_query != query:
-                    raise UnifiedActivationInboxIntegrityError(
-                        "registered query digest collision"
-                    )
-                existing_fence = self._select_fence(connection, query.digest)
-                if existing_fence is None:
-                    raise UnifiedActivationInboxIntegrityError(
-                        "registered query lacks a revocation fence"
-                    )
-                if existing_fence.snapshot.generation < base_generation:
-                    raise InvalidTransition(
-                        "registered query base generation advanced"
-                    )
-                connection.execute("COMMIT")
-                return existing_fence.snapshot
-
-            snapshot = ActivationRevocationSnapshotV2(
-                query_digest=query.digest,
-                generation=base_generation,
-                effective_at=0,
-                valid_until=SQLITE_INT_MAX,
-            )
-            for envelope in self._commands_for_ctx(connection, query.ctx):
-                if self._scope_matches(envelope.command, query):
-                    snapshot = self._apply_command(snapshot, envelope.command)
-            record = ActivationRevocationFenceRecordV2(snapshot, 1)
-            record.validate()
-            connection.execute(
-                "INSERT INTO activation_revocation_queries "
-                "(query_digest, canonical_query, query_checksum) "
-                "VALUES (?, ?, ?)",
-                (
-                    query.digest,
-                    encoded,
-                    derive_registered_query_checksum(encoded),
-                ),
-            )
-            connection.execute(
-                "INSERT INTO activation_revocation_fences "
-                "(query_digest, generation, revision, effective_at, "
-                "valid_until, configuration_revoked, fgs_key_revoked, "
-                "ticket_revoked, session_revoked, canonical_record, "
-                "record_checksum) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                self._write_values(record),
+            snapshot = self._register_activation_query_in_transaction(
+                connection,
+                query,
+                base_generation,
             )
             connection.execute("COMMIT")
             return snapshot
+        except Exception:
+            if connection.in_transaction:
+                connection.execute("ROLLBACK")
+            raise
+        finally:
+            connection.close()
+
+    @staticmethod
+    def _validate_grant_query_binding(
+        record: GrantRecordV2,
+        query: ActivationRevocationQueryV2,
+    ) -> None:
+        bindings = (
+            (query.ctx, record.identity.ctx),
+            (query.ticket_use_key, record.identity.use_key),
+            (query.fgs_id, record.fgs_id),
+            (query.request_digest, record.request_digest),
+            (query.response_digest, record.response_digest),
+            (query.session_id, record.session_id),
+        )
+        if any(actual != expected for actual, expected in bindings):
+            raise InvalidTransition(
+                "registered activation query and grant differ"
+            )
+
+    def _registered_query_for_grant(
+        self,
+        connection: sqlite3.Connection,
+        record: GrantRecordV2,
+    ) -> ActivationRevocationQueryV2:
+        matching = tuple(
+            query
+            for query in self._registered_queries(connection)
+            if query.session_id == record.session_id
+        )
+        if len(matching) != 1:
+            raise ActivationRevocationFenceUnavailable(
+                "grant does not have exactly one registered activation query"
+            )
+        query = matching[0]
+        self._validate_grant_query_binding(record, query)
+        fence = self._select_fence(connection, query.digest)
+        if fence is None:
+            raise ActivationRevocationFenceUnavailable(
+                "registered grant query lacks a revocation fence"
+            )
+        if fence.snapshot.generation < record.revocation_generation:
+            raise InvalidTransition(
+                "registered grant revocation generation is stale"
+            )
+        return query
+
+    def commit_grant(self, *_args: object, **_kwargs: object) -> GrantRecordV2:
+        raise InvalidTransition(
+            "scoped store requires atomic grant and query registration"
+        )
+
+    def commit_grant_and_register(
+        self,
+        request: GrantCommitRequestV2,
+    ) -> GrantRecordV2:
+        if not isinstance(request, GrantCommitRequestV2):
+            raise TypeError("request must be a GrantCommitRequestV2")
+        request.validate()
+        candidate = request.record
+        query = request.activation_revocation_query
+        connection = self._connect()
+        try:
+            connection.execute("BEGIN IMMEDIATE")
+            record = self._commit_grant_candidate(connection, candidate)
+            snapshot = self._register_activation_query_in_transaction(
+                connection,
+                query,
+                record.revocation_generation,
+            )
+            self._validate_grant_query_binding(record, query)
+            if snapshot.revoked:
+                raise InvalidTransition(
+                    "matching revocation precedes grant commit"
+                )
+            connection.execute("COMMIT")
+            return record
+        except Exception:
+            if connection.in_transaction:
+                connection.execute("ROLLBACK")
+            raise
+        finally:
+            connection.close()
+
+    def validate_registered_grant(self, record: GrantRecordV2) -> None:
+        if not isinstance(record, GrantRecordV2):
+            raise TypeError("record must be a GrantRecordV2")
+        connection = self._connect()
+        try:
+            connection.execute("BEGIN")
+            _, stored = self._check_identity_bindings(
+                connection,
+                record.identity,
+            )
+            if not isinstance(stored, GrantRecordV2) or stored != record:
+                raise UnifiedActivationInboxIntegrityError(
+                    "stored grant changed before query validation"
+                )
+            self._registered_query_for_grant(connection, stored)
+            connection.execute("COMMIT")
         except Exception:
             if connection.in_transaction:
                 connection.execute("ROLLBACK")
@@ -1034,11 +1161,17 @@ def sqlite_scoped_revocation_manifest() -> dict[str, object]:
             "append_only_command_replay_and_generation_control": True,
             "registered_current_query_fanout_implemented": True,
             "future_query_rule_application_implemented": True,
+            "grant_and_query_registration_same_transaction": True,
+            "source_access_revocation_query_bound_at_commit": True,
+            "matching_preexisting_revocation_rejects_grant_commit": True,
+            "existing_grant_query_validation_before_retry_release": True,
+            "direct_grant_commit_without_query_disabled": True,
             "configuration_scope_implemented": True,
             "fgs_authentication_key_scope_implemented": True,
             "ticket_use_scope_implemented": True,
             "session_scope_implemented": True,
             "command_ingest_and_fanout_same_transaction": True,
+            "command_ingest_and_grant_commit_linearizable": True,
             "command_ingest_and_activation_linearizable": True,
             "activation_inbox_and_fence_same_transaction": True,
             "unauthenticated_direct_publication_disabled": True,

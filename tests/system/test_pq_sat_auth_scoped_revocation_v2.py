@@ -15,12 +15,20 @@ from pq_rbbc.governance.system_init import (
     AuthenticatedSystemInitialization,
 )
 from pq_sat_auth.replay import InvalidTransition
-from pq_sat_auth.v2.activation import FGSActivationProcessorV2
+from pq_sat_auth.v2.access import decode_access_accept
+from pq_sat_auth.v2.activation import (
+    FGSActivationProcessorV2,
+    derive_activation_revocation_query_v2,
+)
 from pq_sat_auth.v2.application import (
     FGSFirstApplicationRecordProcessorV2,
     FGSFirstRecordDispositionV2,
 )
-from pq_sat_auth.v2.replay import GrantStateV2
+from pq_sat_auth.v2.grant import (
+    GrantCommitRequestV2,
+    GrantDispositionV2,
+)
+from pq_sat_auth.v2.replay import GrantStateV2, ReservationV2
 from pq_sat_auth.v2.storage.sqlite_scoped_revocation import (
     ACCESS_PROTOCOL_VERSION,
     APPLICATION_ID,
@@ -106,6 +114,24 @@ class IngestAfterSnapshot:
         return checked
 
 
+class RegistrationFailureStore(SQLiteFGSScopedRevocationStoreV2):
+    def _register_activation_query_in_transaction(self, *args, **kwargs):
+        raise OSError("simulated query registration failure")
+
+
+class LostGrantQueryCommitAcknowledgementStore(
+    SQLiteFGSScopedRevocationStoreV2
+):
+    lose_ack = True
+
+    def commit_grant_and_register(self, request):
+        record = super().commit_grant_and_register(request)
+        if self.lose_ack:
+            self.lose_ack = False
+            raise OSError("simulated lost grant-query commit acknowledgement")
+        return record
+
+
 class ScopedRevocationFixture(FirstApplicationFixture):
     def setUp(self) -> None:
         super().setUp()
@@ -113,17 +139,14 @@ class ScopedRevocationFixture(FirstApplicationFixture):
         self.replay_protection = ReplayProtectionTestBackend()
         self.inbox_protection = InboxProtectionTestBackend()
         self.scoped = self.open_scoped(self.scoped_path)
-        self.install_pending_grant(self.scoped)
         assert self.recovery.last_state is not None
         self.query = FGSActivationProcessorV2._activation_revocation_query(
             self.response,
             self.grant_record,
             self.recovery.last_state,
         )
-        self.snapshot = self.scoped.register_activation_query(
-            self.query,
-            base_generation=self.grant_record.revocation_generation,
-        )
+        self.install_pending_grant(self.scoped, self.query)
+        self.snapshot = self.scoped.snapshot(self.query)
         self.configuration_key = self.bundle.key_for(
             KeyRole.FEDERATION_CONFIGURATION
         )
@@ -140,6 +163,7 @@ class ScopedRevocationFixture(FirstApplicationFixture):
     def install_pending_grant(
         self,
         store: SQLiteFGSScopedRevocationStoreV2,
+        query,
     ) -> None:
         grant = self.grant_record
         store.reserve(
@@ -151,22 +175,13 @@ class ScopedRevocationFixture(FirstApplicationFixture):
             lease_deadline=grant.consumed_at,
             revocation_generation=grant.revocation_generation,
         )
-        store.commit_grant(
-            grant.identity,
-            attempt_id=grant.attempt_id,
-            request_digest=grant.request_digest,
-            transcript_digest=grant.transcript_digest,
-            session_id=grant.session_id,
-            response_digest=grant.response_digest,
-            sealed_response=grant.sealed_response,
-            sealed_session_state=grant.sealed_session_state,
-            serving_context_digest=grant.serving_context_digest,
-            fgs_id=grant.fgs_id,
-            revocation_generation=grant.revocation_generation,
-            consumed_at=grant.consumed_at,
-            activation_deadline=grant.activation_deadline,
-            session_expiry=grant.session_expiry,
-            retention_deadline=grant.retention_deadline,
+        store.commit_grant_and_register(
+            GrantCommitRequestV2(
+                grant,
+                query,
+                self.validated.revocation_query,
+                self.validated.request.suite_id,
+            )
         )
 
     def command(
@@ -368,6 +383,280 @@ class ScopedRevocationCodecTests(ScopedRevocationFixture):
                 "authenticated_revocation_commands",
             },
         )
+
+
+class ScopedGrantRegistrationTests(ScopedRevocationFixture):
+    def grant_query(self, result):
+        assert result.record is not None
+        assert result.response_bytes is not None
+        assert self.recovery.last_state is not None
+        return derive_activation_revocation_query_v2(
+            decode_access_accept(result.response_bytes),
+            result.record,
+            self.recovery.last_state,
+        )
+
+    def test_grant_processor_atomically_registers_query_and_exact_retry(
+        self,
+    ) -> None:
+        path = Path(self.temporary.name) / "grant-query.sqlite3"
+        store = self.open_scoped(path)
+        processor = self.grant_processor(
+            replay_store=store,
+            atomic_activation_query_store=store,
+        )
+        first = processor.process(self.validated)
+        self.assertTrue(first.accepted, first.failures)
+        self.assertIs(first.disposition, GrantDispositionV2.NEW_GRANT)
+        assert first.record is not None
+        query = self.grant_query(first)
+        self.assertEqual(store.registered_query_count(), 1)
+        self.assertEqual(
+            store.snapshot(query).generation,
+            first.record.revocation_generation,
+        )
+        store.validate_registered_grant(first.record)
+
+        retry = processor.process(self.validated)
+        self.assertTrue(retry.accepted, retry.failures)
+        self.assertIs(retry.disposition, GrantDispositionV2.EXISTING_GRANT)
+        self.assertEqual(retry.response_bytes, first.response_bytes)
+        self.assertEqual(store.registered_query_count(), 1)
+
+    def test_commit_request_rejects_every_grant_query_binding_mutation(
+        self,
+    ) -> None:
+        request = GrantCommitRequestV2(
+            self.grant_record,
+            self.query,
+            self.validated.revocation_query,
+            self.validated.request.suite_id,
+        )
+        request.validate()
+        mutations = (
+            {"suite_id": self.query.suite_id ^ 1},
+            {
+                "system_config_digest": fixed(
+                    b"commit-query/wrong-configuration"
+                )
+            },
+            {
+                "acceptance_domain_digest": fixed(
+                    b"commit-query/wrong-acceptance-domain"
+                )
+            },
+            {"ctx": fixed(b"commit-query/wrong-ctx")},
+            {"ticket_use_key": fixed(b"commit-query/wrong-ticket")},
+            {
+                "original_revocation_query_digest": fixed(
+                    b"commit-query/wrong-source-query"
+                )
+            },
+            {"fgs_id": fixed(b"commit-query/wrong-fgs")},
+            {"fgs_auth_key_id": fixed(b"commit-query/wrong-fgs-key")},
+            {"request_digest": fixed(b"commit-query/wrong-request")},
+            {"response_digest": fixed(b"commit-query/wrong-response")},
+            {"session_id": fixed(b"commit-query/wrong-session")},
+        )
+        for changes in mutations:
+            with self.subTest(field=next(iter(changes))):
+                with self.assertRaisesRegex(ValueError, "grant record differ"):
+                    GrantCommitRequestV2(
+                        self.grant_record,
+                        replace(self.query, **changes),
+                        self.validated.revocation_query,
+                        self.validated.request.suite_id,
+                    ).validate()
+
+        mutated_source = replace(
+            self.validated.revocation_query,
+            holder_hash=fixed(b"commit-query/wrong-source-holder"),
+        )
+        with self.assertRaisesRegex(ValueError, "grant record differ"):
+            GrantCommitRequestV2(
+                self.grant_record,
+                self.query,
+                mutated_source,
+                self.validated.request.suite_id,
+            ).validate()
+
+    def test_session_and_ticket_cannot_bind_another_registered_query(
+        self,
+    ) -> None:
+        changed = replace(
+            self.query,
+            request_digest=fixed(b"another-query-request"),
+        )
+        with self.assertRaisesRegex(InvalidTransition, "another activation"):
+            self.scoped.register_activation_query(
+                changed,
+                base_generation=self.grant_record.revocation_generation,
+            )
+
+    def test_scoped_store_requires_same_object_atomic_composition(self) -> None:
+        path = Path(self.temporary.name) / "composition.sqlite3"
+        store = self.open_scoped(path)
+        with self.assertRaisesRegex(ValueError, "must be the grant replay store"):
+            self.grant_processor(
+                replay_store=store,
+                atomic_activation_query_store=self.scoped,
+            )
+        with self.assertRaisesRegex(InvalidTransition, "atomic grant"):
+            store.commit_grant()
+
+    def test_registration_failure_rolls_grant_back_to_reservation(self) -> None:
+        path = Path(self.temporary.name) / "registration-failure.sqlite3"
+        store = RegistrationFailureStore(
+            path,
+            self.replay_protection,
+            self.inbox_protection,
+            busy_timeout_ms=20_000,
+        )
+        result = self.grant_processor(
+            replay_store=store,
+            atomic_activation_query_store=store,
+        ).process(self.validated)
+        self.assertFalse(result.accepted)
+        self.assertIs(result.disposition, GrantDispositionV2.RECOVERY_REQUIRED)
+        self.assertEqual(result.failures, ("commit_backend:OSError",))
+        self.assertIsNone(result.response_bytes)
+        stored = store.lookup(self.validated.identity)
+        self.assertIsInstance(stored, ReservationV2)
+        self.assertEqual(store.registered_query_count(), 0)
+
+    def test_preexisting_matching_revocation_rolls_back_grant(self) -> None:
+        path = Path(self.temporary.name) / "pre-revoked-grant.sqlite3"
+        store = self.open_scoped(path)
+        command = self.command(
+            RevocationScopeV2.TICKET_USE,
+            target=self.validated.identity.use_key,
+            command_label=b"pre-revoked-ticket",
+        )
+        ingested = self.ingest(
+            self.authenticated_command(command),
+            store=store,
+        )
+        self.assertTrue(ingested.accepted, ingested.failures)
+
+        result = self.grant_processor(
+            replay_store=store,
+            atomic_activation_query_store=store,
+        ).process(self.validated)
+        self.assertFalse(result.accepted)
+        self.assertIs(result.disposition, GrantDispositionV2.RECOVERY_REQUIRED)
+        self.assertEqual(result.failures, ("commit_backend:InvalidTransition",))
+        self.assertIsNone(result.response_bytes)
+        self.assertIsInstance(store.lookup(self.validated.identity), ReservationV2)
+        self.assertEqual(store.command_count(), 1)
+        self.assertEqual(store.registered_query_count(), 0)
+
+    def test_lost_commit_ack_recovers_only_registered_existing_grant(
+        self,
+    ) -> None:
+        path = Path(self.temporary.name) / "lost-grant-query-ack.sqlite3"
+        store = LostGrantQueryCommitAcknowledgementStore(
+            path,
+            self.replay_protection,
+            self.inbox_protection,
+            busy_timeout_ms=20_000,
+        )
+        processor = self.grant_processor(
+            replay_store=store,
+            atomic_activation_query_store=store,
+        )
+        uncertain = processor.process(self.validated)
+        self.assertFalse(uncertain.accepted)
+        self.assertIs(
+            uncertain.disposition,
+            GrantDispositionV2.RECOVERY_REQUIRED,
+        )
+        self.assertEqual(uncertain.failures, ("commit_backend:OSError",))
+        self.assertIsNone(uncertain.response_bytes)
+        self.assertEqual(store.registered_query_count(), 1)
+
+        recovered = processor.process(self.validated)
+        self.assertTrue(recovered.accepted, recovered.failures)
+        self.assertIs(
+            recovered.disposition,
+            GrantDispositionV2.EXISTING_GRANT,
+        )
+        assert recovered.record is not None
+        store.validate_registered_grant(recovered.record)
+
+    def test_existing_grant_with_corrupt_query_releases_no_response(self) -> None:
+        path = Path(self.temporary.name) / "corrupt-recovery-query.sqlite3"
+        store = self.open_scoped(path)
+        processor = self.grant_processor(
+            replay_store=store,
+            atomic_activation_query_store=store,
+        )
+        first = processor.process(self.validated)
+        self.assertTrue(first.accepted, first.failures)
+        connection = sqlite3.connect(path)
+        try:
+            connection.execute(
+                "UPDATE activation_revocation_queries SET query_checksum = ?",
+                (b"x" * 32,),
+            )
+            connection.commit()
+        finally:
+            connection.close()
+
+        retry = processor.process(self.validated)
+        self.assertFalse(retry.accepted)
+        self.assertIs(retry.disposition, GrantDispositionV2.RECOVERY_REQUIRED)
+        self.assertEqual(
+            retry.failures,
+            (
+                "activation_query_recovery:"
+                "UnifiedActivationInboxIntegrityError",
+            ),
+        )
+        self.assertIsNone(retry.response_bytes)
+
+    def test_concurrent_ticket_revocation_and_grant_have_one_order(self) -> None:
+        path = Path(self.temporary.name) / "grant-revocation-race.sqlite3"
+        store = self.open_scoped(path)
+        processor = self.grant_processor(
+            replay_store=store,
+            atomic_activation_query_store=store,
+        )
+        command = self.command(
+            RevocationScopeV2.TICKET_USE,
+            target=self.validated.identity.use_key,
+            command_label=b"grant-race-ticket",
+        )
+        envelope = self.authenticated_command(command)
+        start = threading.Barrier(2)
+
+        def grant():
+            start.wait()
+            return processor.process(self.validated)
+
+        def revoke():
+            start.wait()
+            return self.ingest(envelope, store=store)
+
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            grant_future = executor.submit(grant)
+            revoke_future = executor.submit(revoke)
+            grant_result = grant_future.result(timeout=10)
+            revoke_result = revoke_future.result(timeout=10)
+        self.assertTrue(revoke_result.accepted, revoke_result.failures)
+        if grant_result.accepted:
+            query = self.grant_query(grant_result)
+            self.assertTrue(store.snapshot(query).ticket_revoked)
+            self.assertEqual(store.registered_query_count(), 1)
+        else:
+            self.assertEqual(
+                grant_result.failures,
+                ("commit_backend:InvalidTransition",),
+            )
+            self.assertIsInstance(
+                store.lookup(self.validated.identity),
+                ReservationV2,
+            )
+            self.assertEqual(store.registered_query_count(), 0)
 
 
 class ScopedRevocationIngestTests(ScopedRevocationFixture):

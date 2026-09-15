@@ -160,6 +160,30 @@ class ActivationRevocationSnapshotV2:
         )
 
 
+def derive_activation_revocation_query_v2(
+    response: AccessAcceptV2,
+    record: GrantRecordV2,
+    state: PendingSessionStateV2,
+) -> ActivationRevocationQueryV2:
+    """Derive the exact query shared by grant registration and activation."""
+
+    query = ActivationRevocationQueryV2(
+        suite_id=response.suite_id,
+        system_config_digest=response.system_config_digest,
+        acceptance_domain_digest=state.acceptance_domain_digest,
+        ctx=record.identity.ctx,
+        ticket_use_key=record.identity.use_key,
+        original_revocation_query_digest=state.revocation_query.digest,
+        fgs_id=response.fgs_id,
+        fgs_auth_key_id=response.fgs_auth_key_id,
+        request_digest=record.request_digest,
+        response_digest=record.response_digest,
+        session_id=record.session_id,
+    )
+    query.encode()
+    return query
+
+
 class AuthenticatedActivationRevocationProviderV2(Protocol):
     def snapshot(
         self,
@@ -449,19 +473,7 @@ class FGSActivationProcessorV2:
         record: GrantRecordV2,
         state: PendingSessionStateV2,
     ) -> ActivationRevocationQueryV2:
-        return ActivationRevocationQueryV2(
-            suite_id=response.suite_id,
-            system_config_digest=response.system_config_digest,
-            acceptance_domain_digest=state.acceptance_domain_digest,
-            ctx=record.identity.ctx,
-            ticket_use_key=record.identity.use_key,
-            original_revocation_query_digest=state.revocation_query.digest,
-            fgs_id=response.fgs_id,
-            fgs_auth_key_id=response.fgs_auth_key_id,
-            request_digest=record.request_digest,
-            response_digest=record.response_digest,
-            session_id=record.session_id,
-        )
+        return derive_activation_revocation_query_v2(response, record, state)
 
     def process(
         self,

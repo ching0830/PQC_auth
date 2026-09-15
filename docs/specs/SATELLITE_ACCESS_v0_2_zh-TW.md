@@ -1,6 +1,6 @@
 # Satellite Access 與 PQ AKE 規格 v0.2
 
-> 狀態：Defined；bounded reference codecs／relation／processors、UE SQLite wallet、FGS single-host SQLite replay／delivery／protected application inbox、unified activation-inbox transaction、authenticated scoped-revocation ingestion及fanout已 Implemented／Tested；尚未 Instantiated／distributed／Proof-closed／Production-closed
+> 狀態：Defined；bounded reference codecs／relation／processors、UE SQLite wallet、FGS single-host SQLite replay／delivery／protected application inbox、unified activation-inbox transaction、atomic grant-query registration、authenticated scoped-revocation ingestion及fanout已 Implemented／Tested；尚未 Instantiated／distributed／Proof-closed／Production-closed
 > 日期：2026-09-15
 > 所屬模組：M5 Satellite authentication、M6 Anti-replay／revocation／handover
 > State companion：`docs/specs/ONE_TIME_TICKET_STATE_v0_2_zh-TW.md`
@@ -913,4 +913,44 @@ production record／plaintext protection均未完成。Query registration亦是�
 邊界，不是可直接暴露的網路API。因此只能宣稱bounded single-host authenticated-ingestion
 與general-scope fanout已Implemented／Tested，不能宣稱production revocation完成。詳細evidence見
 `docs/artifacts/SATELLITE_ACCESS_v0_2_AUTHENTICATED_SCOPED_REVOCATION_zh-TW.md`，machine claims見
+`manifests/pq_sat_auth_fgs_scoped_revocation_sqlite_v0_2.json`。
+
+### 13.14 FGS atomic grant-query registration checkpoint
+
+前一checkpoint仍由可信內部caller在grant commit後額外呼叫
+`register_activation_query()`。雖然missing query會使activation fail closed，仍可能出現
+ticket已進入`CONSUMED_PENDING_CONFIRM`、但M2因query尚未登錄而不能安全釋放的恢復缺口。
+
+本checkpoint在`FGSGrantProcessorV2`加入explicit optional composition，且強制atomic
+activation-query store與grant replay store為同一object。Processor以和activation相同的
+`derive_activation_revocation_query_v2()`建立exact query，再交給scoped store執行：
+
+```text
+BEGIN IMMEDIATE
+  validate exact RESERVED grant identity
+  replay row -> CONSUMED_PENDING_CONFIRM
+  register exact activation query
+  replay matching historical revocation commands into fence
+  reject and ROLLBACK if the resulting fence is revoked
+COMMIT
+return M2 only after commit
+```
+
+Scoped successor停用沒有query的direct `commit_grant()`。Composed request同時攜帶
+`GrantRecordV2`、activation query及pure-check產生的source access-revocation query；兩層query
+必須和grant path的suite、configuration、acceptance domain、`ctx`、`ticket_use_key`、FGS／key、request、
+response及session完全一致。一個ticket或session不得綁到第二個query。若commit
+acknowledgement遺失，same-attempt retry只在stored grant與唯一query都通過驗證後才重新釋放
+原M2。Query遺失或corrupt時回傳`RECOVERY_REQUIRED`且不釋放response。
+
+Command ingestion與composed grant使用同一SQLite write order。Matching revocation先commit時，
+late query replay得到revoked fence並使grant與query一起rollback至原reservation；grant先commit
+時，之後command fanout標記已登錄fence。這封閉的是可信單機database內的ordering，不把
+先前pure-check provider的remote snapshot與本transaction視為同一authoritative source。
+
+本checkpoint仍沒有reservation abort自動化、schema migration、distributed store、concrete
+PQ revocation authentication、authority rotation、實體斷電／rollback protection或production
+cryptographic backends。完整evidence見
+`docs/artifacts/SATELLITE_ACCESS_v0_2_ATOMIC_GRANT_QUERY_REGISTRATION_zh-TW.md`；machine claims見
+`manifests/pq_sat_auth_fgs_grant_v0_2.json`及
 `manifests/pq_sat_auth_fgs_scoped_revocation_sqlite_v0_2.json`。

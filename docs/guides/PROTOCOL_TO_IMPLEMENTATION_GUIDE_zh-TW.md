@@ -302,7 +302,8 @@ Exact V2 bytes與acceptance events見
   per-query revocation fence，再完成activation與inbox insert；
 - `src/pq_sat_auth/v2/storage/sqlite_scoped_revocation.py`：驗證綁定system initialization的
   canonical revocation command，將configuration／FGS key／ticket／session scope事件fan out
-  至目前及之後登錄的activation queries，並與activation共用單機write order；
+  至目前及之後登錄的activation queries；它也把grant commit、query registration及歷史
+  revocation replay放入同一transaction，並與activation共用單機write order；
 - `src/pq_sat_auth/v2/dispatch.py`：以`record_digest`作idempotency key的application
   `apply_once`／stable receipt dispatch contract；
 - `tests/system/test_pq_sat_auth_*_v2.py`：canonical vectors、truncation、mutation、
@@ -310,9 +311,10 @@ Exact V2 bytes與acceptance events見
 
 這使V2的bounded byte／relation／M1-M2／activation／first-record state boundary達
 Implemented／Tested。UE wallet／first-record outbox與FGS replay／delivery／protected inbox
-已有單機SQLite reference；scoped successor已把authenticated command ingestion、四種scope
-fanout、exact per-query fence、activation與inbox放進同一database ordering，idempotent
-dispatch composition以test-only application ledger驗證。Concrete suite、真實proof／AKE、
+已有單機SQLite reference；scoped successor已把grant-query registration、authenticated
+command ingestion、四種scope fanout、exact per-query fence、activation與inbox放進同一
+database ordering，idempotent dispatch composition以test-only application ledger驗證。
+Concrete suite、真實proof／AKE、
 獨立production revocation key／PQ verifier、authority rotation、production record／plaintext
 protection、distributed FGS store及production external application `apply_once`仍未完成。
 

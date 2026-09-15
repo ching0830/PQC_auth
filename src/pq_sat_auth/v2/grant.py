@@ -13,7 +13,7 @@ import hashlib
 import struct
 from dataclasses import dataclass, replace
 from enum import Enum
-from typing import Mapping, Protocol
+from typing import TYPE_CHECKING, Mapping, Protocol
 
 from pq_sat_auth.identities import TicketUseIdentity
 
@@ -60,6 +60,9 @@ from .replay import (
     ReserveDispositionV2,
     ReserveResultV2,
 )
+
+if TYPE_CHECKING:
+    from .activation import ActivationRevocationQueryV2
 
 
 U64_MAX = (1 << 64) - 1
@@ -247,6 +250,75 @@ class GrantReplayStoreV2(Protocol):
     ) -> GrantRecordV2: ...
 
 
+@dataclass(frozen=True)
+class GrantCommitRequestV2:
+    """Exact grant and activation-query pair for a composed commit."""
+
+    record: GrantRecordV2
+    activation_revocation_query: "ActivationRevocationQueryV2"
+    source_access_revocation_query: AccessRevocationQueryV2
+    suite_id: int
+
+    def validate(self) -> None:
+        from .activation import ActivationRevocationQueryV2
+
+        if not isinstance(self.record, GrantRecordV2):
+            raise TypeError("record must be a GrantRecordV2")
+        if self.record.state is not GrantStateV2.CONSUMED_PENDING_CONFIRM:
+            raise ValueError("grant commit record must be pending confirmation")
+        query = self.activation_revocation_query
+        if not isinstance(query, ActivationRevocationQueryV2):
+            raise TypeError(
+                "activation_revocation_query has the wrong type"
+            )
+        query.encode()
+        source = self.source_access_revocation_query
+        if not isinstance(source, AccessRevocationQueryV2):
+            raise TypeError("source_access_revocation_query has the wrong type")
+        source.encode()
+        if isinstance(self.suite_id, bool) or not isinstance(self.suite_id, int):
+            raise TypeError("grant commit suite ID must be an integer")
+        if not 0 <= self.suite_id < (1 << 16):
+            raise ValueError("grant commit suite ID does not fit uint16")
+        bindings = (
+            (query.suite_id, self.suite_id),
+            (query.ctx, self.record.identity.ctx),
+            (query.ticket_use_key, self.record.identity.use_key),
+            (query.fgs_id, self.record.fgs_id),
+            (query.request_digest, self.record.request_digest),
+            (query.response_digest, self.record.response_digest),
+            (query.session_id, self.record.session_id),
+            (query.system_config_digest, source.system_config_digest),
+            (
+                query.acceptance_domain_digest,
+                source.acceptance_domain_digest,
+            ),
+            (query.ctx, source.ctx),
+            (query.original_revocation_query_digest, source.digest),
+            (query.fgs_id, source.fgs_id),
+            (query.fgs_auth_key_id, source.fgs_auth_key_id),
+            (source.payload_digest, self.record.identity.ticket_digest),
+            (source.visible_serial, self.record.identity.serial),
+        )
+        if any(actual != expected for actual, expected in bindings):
+            raise ValueError("activation query and grant record differ")
+
+
+class AtomicGrantActivationQueryStoreV2(Protocol):
+    """Optional same-store composition required by scoped revocation."""
+
+    production_ready: bool
+    durable: bool
+    distributed: bool
+
+    def commit_grant_and_register(
+        self,
+        request: GrantCommitRequestV2,
+    ) -> GrantRecordV2: ...
+
+    def validate_registered_grant(self, record: GrantRecordV2) -> None: ...
+
+
 class GrantDispositionV2(Enum):
     NEW_GRANT = "new_grant"
     EXISTING_GRANT = "existing_grant"
@@ -369,6 +441,9 @@ class FGSGrantProcessorV2:
         self,
         *,
         replay_store: GrantReplayStoreV2,
+        atomic_activation_query_store: (
+            AtomicGrantActivationQueryStoreV2 | None
+        ) = None,
         clock: AccessClockV2,
         revocation_provider: AuthenticatedRevocationProviderV2,
         kem_backend: PQKEMBackendV2,
@@ -382,7 +457,15 @@ class FGSGrantProcessorV2:
             int, ProofLimitsV2
         ] = REFERENCE_PROOF_SUITE_REGISTRY,
     ) -> None:
+        if (
+            atomic_activation_query_store is not None
+            and replay_store is not atomic_activation_query_store
+        ):
+            raise ValueError(
+                "atomic activation-query store must be the grant replay store"
+            )
         self._replay_store = replay_store
+        self._atomic_activation_query_store = atomic_activation_query_store
         self._clock = clock
         self._revocation_provider = revocation_provider
         self._kem_backend = kem_backend
@@ -632,6 +715,16 @@ class FGSGrantProcessorV2:
                 raise ValueError("recovered response state mismatch")
         except Exception as error:
             return self._reject(f"response_recovery:{type(error).__name__}")
+        if self._atomic_activation_query_store is not None:
+            try:
+                self._atomic_activation_query_store.validate_registered_grant(
+                    record
+                )
+            except Exception as error:
+                return self._recovery_required(
+                    "activation_query_recovery:"
+                    + type(error).__name__
+                )
         return GrantProcessResultV2(
             True,
             GrantDispositionV2.EXISTING_GRANT,
@@ -912,12 +1005,9 @@ class FGSGrantProcessorV2:
             )
             _opaque(sealed_response, "sealed response")
             _opaque(sealed_session_state, "sealed session state")
-        except Exception as error:
-            return self._recovery_required(f"grant_build:{type(error).__name__}")
-
-        try:
-            record = self._replay_store.commit_grant(
-                validated.identity,
+            candidate = GrantRecordV2(
+                state=GrantStateV2.CONSUMED_PENDING_CONFIRM,
+                identity=validated.identity,
                 attempt_id=validated.attempt_id,
                 request_digest=validated.request_digest,
                 transcript_digest=transcript_digest,
@@ -935,43 +1025,49 @@ class FGSGrantProcessorV2:
                 session_expiry=session_expiry,
                 retention_deadline=retention_deadline,
             )
+            from .activation import derive_activation_revocation_query_v2
+
+            commit_request = GrantCommitRequestV2(
+                candidate,
+                derive_activation_revocation_query_v2(
+                    response,
+                    candidate,
+                    pending_state,
+                ),
+                validated.revocation_query,
+                validated.request.suite_id,
+            )
+            commit_request.validate()
+        except Exception as error:
+            return self._recovery_required(f"grant_build:{type(error).__name__}")
+
+        try:
+            if self._atomic_activation_query_store is None:
+                record = self._replay_store.commit_grant(
+                    candidate.identity,
+                    attempt_id=candidate.attempt_id,
+                    request_digest=candidate.request_digest,
+                    transcript_digest=candidate.transcript_digest,
+                    session_id=candidate.session_id,
+                    response_digest=candidate.response_digest,
+                    sealed_response=candidate.sealed_response,
+                    sealed_session_state=candidate.sealed_session_state,
+                    serving_context_digest=candidate.serving_context_digest,
+                    fgs_id=candidate.fgs_id,
+                    revocation_generation=candidate.revocation_generation,
+                    consumed_at=candidate.consumed_at,
+                    activation_deadline=candidate.activation_deadline,
+                    session_expiry=candidate.session_expiry,
+                    retention_deadline=candidate.retention_deadline,
+                )
+            else:
+                record = (
+                    self._atomic_activation_query_store
+                    .commit_grant_and_register(commit_request)
+                )
             if not isinstance(record, GrantRecordV2):
                 raise TypeError("commit backend returned the wrong type")
-            expected = (
-                validated.identity,
-                validated.attempt_id,
-                validated.request_digest,
-                transcript_digest,
-                session_id,
-                response_digest,
-                sealed_response,
-                sealed_session_state,
-                validated.request.serving_context_digest,
-                validated.request.target_fgs_id,
-                revocation.generation,
-                commit_now,
-                activation_deadline,
-                session_expiry,
-                retention_deadline,
-            )
-            actual = (
-                record.identity,
-                record.attempt_id,
-                record.request_digest,
-                record.transcript_digest,
-                record.session_id,
-                record.response_digest,
-                record.sealed_response,
-                record.sealed_session_state,
-                record.serving_context_digest,
-                record.fgs_id,
-                record.revocation_generation,
-                record.consumed_at,
-                record.activation_deadline,
-                record.session_expiry,
-                record.retention_deadline,
-            )
-            if actual != expected:
+            if record != candidate:
                 raise ValueError("commit backend changed the grant identity")
         except Exception as error:
             return self._recovery_required(f"commit_backend:{type(error).__name__}")
@@ -1001,7 +1097,8 @@ def fgs_grant_processor_manifest() -> dict[str, object]:
             "key_schedule_fgs_authentication_server_finished",
             "pre_commit_revocation_recheck",
             "response_and_session_state_protection",
-            "commit_grant",
+            "commit_grant_or_atomic_grant_query_registration",
+            "existing_grant_query_registration_validation_when_composed",
             "return_response_after_commit",
         ],
         "claim_boundary": {
@@ -1010,6 +1107,10 @@ def fgs_grant_processor_manifest() -> dict[str, object]:
             "same_attempt_retry_avoids_second_kem": True,
             "pre_commit_revocation_recheck_implemented": True,
             "response_returned_only_after_commit": True,
+            "atomic_grant_query_composition_available": True,
+            "atomic_query_store_identity_enforced": True,
+            "source_access_revocation_query_bound": True,
+            "existing_grant_query_validation_available": True,
             "session_activation_implemented": False,
             "atomic_revocation_and_commit_implemented": False,
             "durable_or_distributed_store_implemented": False,

@@ -1,6 +1,6 @@
 # One-Time Ticket 狀態與 1-RTT Access 邊界規格 v0.2
 
-> 狀態：Defined；FGS replay／delivery／protected application inbox、unified activation-inbox transaction、authenticated scoped-revocation ingestion／fanout與UE single-host SQLite references已 Implemented／Tested；尚未 distributed／Production-closed
+> 狀態：Defined；FGS replay／delivery／protected application inbox、unified activation-inbox transaction、atomic grant-query registration、authenticated scoped-revocation ingestion／fanout與UE single-host SQLite references已 Implemented／Tested；尚未 distributed／Production-closed
 > 日期：2026-09-15
 > Access companion：`docs/specs/SATELLITE_ACCESS_v0_2_zh-TW.md`
 > Historical predecessor：`docs/specs/ONE_TIME_TICKET_STATE_v0_1_zh-TW.md`
@@ -413,3 +413,14 @@ PQ authentication、獨立revocation key ceremony、authority rotation／unrevoc
 規模benchmark及跨FGS consensus／linearizable store皆未完成，也沒有實體斷電或rollback
 證據。因此「single-host authenticated ingestion與general-scope fanout已測試」仍不得擴張成
 「production revocation已完成」。
+
+2026-09-15 atomic grant-query registration successor再移除grant commit後由caller手動補登錄
+activation query的操作缺口。Scoped store現在只接受包含exact grant、activation query及
+source access-revocation query的composed commit；replay transition、query insert及matching
+historical revocation replay在同一`BEGIN IMMEDIATE`內完成。若所得fence已revoked，整筆
+transaction rollback，ticket保持`RESERVED`且M2不會釋放。
+
+若grant-query commit已成功但ack遺失，retry只有在existing grant與唯一registered query皆
+完整時才取回原M2；missing／corrupt query不會被當成成功。這封閉可信單機SQLite中的
+grant-query crash gap，但失敗後reservation仍須依既有bounded recovery evidence處理，並不
+代表distributed revocation、automatic abort或Production-closed已完成。
