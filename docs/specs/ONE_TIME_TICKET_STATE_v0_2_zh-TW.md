@@ -307,6 +307,21 @@ Run result的`accepted=true`只表示這一次bounded pass完整結束，不能�
 correlation identity，沒有被認證或持久化。Reference不提供operator authorization、
 production clock、常駐scheduler或persistent run audit log。
 
+後續single-host reference加入獨立SQLite reconciliation audit journal。Journaled runner先以
+`invocation_id + batch_limit + minimum_stale_seconds`建立immutable intent並read-back；只有
+得到`NEW`且exact intent可讀回時才呼叫coordinator。Coordinator回傳後，runner將完整typed
+run result編成bounded canonical receipt；receipt必須匹配intent的invocation、batch上限及
+cutoff policy，append並exact read-back後才回傳`EXECUTED_AND_RECORDED`。既有exact receipt的
+retry直接回傳`RECORDED_REPLAY`，不重新取樣clock或操作replay store；receipt commit ack遺失
+時，只有exact read-back成立才可回復為`EXECUTED_RECEIPT_RECOVERED`。
+
+Intent與receipt採append-only public API及獨立record-protection boundary。Audit SQLite與
+replay SQLite是兩個database，沒有cross-database atomic transaction。若crash發生在intent與
+receipt之間，journal只能確定「這次run可能執行過」，不知道是否已scan、處理哪些candidate或
+停在哪一筆；相同invocation因此回傳`RECOVERY_REQUIRED`且不得自動重跑。Incomplete-run plan／
+per-item reconstruction、operator authorization、production audit protection、rollback
+resistance及實體斷電證據仍未完成。
+
 ## 11. Retention and backhaul
 
 Consumption record 至少保存至：
@@ -351,6 +366,11 @@ single-writer partitions。Store unavailable／timeout／partition時，新的 f
 24. Abort acknowledgement不確定時，只有exact／equivalent protected fence read-back可恢復成功。
 25. 非預期backend或fence read-back錯誤會停止同批剩餘項目。
 26. 多個coordinator對同一candidate競爭時，只接受同一fence generation／evidence identity。
+27. Journaled runner在exact intent durable read-back前不得呼叫coordinator。
+28. Journaled completed result在exact receipt durable read-back前不得回傳。
+29. Existing exact receipt retry不得再取樣clock或操作replay store。
+30. Intent存在但receipt缺少時，相同invocation不得自動重跑。
+31. Receipt必須符合intent的invocation、batch limit及minimum-stale cutoff policy。
 
 ## 13. Claim boundary
 

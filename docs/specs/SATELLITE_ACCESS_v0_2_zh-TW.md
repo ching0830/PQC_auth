@@ -1006,3 +1006,33 @@ ack但exact read-back成立記為`FENCED_RECOVERED`；另一coordinator已完成
 invocation ID未經簽章、未保存於append-only audit log，也沒有production trusted clock、
 operator authentication、常駐scheduler、distributed coordination或schema migration。因此
 此checkpoint只支持明確觸發的單機bounded operational composition，不構成production部署。
+
+### 13.17 Persistent reconciliation intent／receipt audit checkpoint
+
+後續reference新增獨立SQLite audit journal及`JournaledReservationReconciliationRunnerV2`。
+Runner固定下列ordering：
+
+```text
+load existing intent / receipt
+  -> append immutable intent
+  -> exact intent read-back
+  -> execute coordinator once
+  -> append complete typed receipt
+  -> exact receipt read-back
+  -> return completed wrapper result
+```
+
+Intent綁定32-byte invocation ID與coordinator的`batch_limit／minimum_stale_seconds`。Receipt
+canonical保存run disposition、單次clock observation、scan cutoff、scanned count、逐筆
+disposition與failure；journal同時驗證receipt沒有超過intent batch且cutoff等於該policy導出
+的值。相同intent／receipt append為idempotent，衝突內容拒絕。跨程序並行建立同一intent時
+只有一筆`NEW`；既有exact receipt直接replay，不再呼叫coordinator。Receipt acknowledgement
+遺失時可由exact read-back恢復。
+
+Intent與receipt為分開的append-only rows，audit database也與replay database分離。因此
+intent-before-mutation可保證wrapper不會在完全沒有journal痕跡時執行，但不能原子證明receipt
+涵蓋每一個replay mutation。Intent存在而receipt缺少時，run可能尚未開始、執行一部分或已完成
+但receipt遺失；本checkpoint一律`RECOVERY_REQUIRED`並拒絕相同invocation自動重跑。
+Per-item durable plan、incomplete-run reconstruction、operator authentication、production
+record protection、background scheduler、distributed audit、rollback resistance與實體斷電
+仍未完成，因此不是完整production audit trail。

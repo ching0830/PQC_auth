@@ -258,6 +258,10 @@ class ReservationReconciliationCoordinatorV2:
         self._clock = clock
         self._policy = policy
 
+    @property
+    def policy(self) -> ReservationReconciliationPolicyV2:
+        return self._policy
+
     @staticmethod
     def _run_result(
         invocation: ReservationReconciliationInvocationV2,
