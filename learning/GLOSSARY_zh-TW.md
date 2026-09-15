@@ -112,6 +112,10 @@
 | Replay backend／replay store | FGS 後方以原子交易保存 `UNSEEN`、`RESERVED`、`CONSUMED`，並裁決哪個 access attempt 能使用票券的內部服務／資料庫 | 不負責讓 signature／NIZK 成立；密碼驗證通過後仍要靠它阻止另一台 FGS 同時接受同一票券 |
 | 唯一寫入者（single writer） | 讓某個 ticket 的狀態只由一個指定節點裁決與提交 | 可避免並行雙寫；路由、故障移轉與舊新 writer 交接仍須保持唯一性 |
 | 早期拒絕（early rejection） | 在訊息抵達完整 verifier 前，以便宜檢查丟棄明顯錯誤或不合規的流量 | 可節省後端負載，不一定縮短合法使用者建立 session 的 RTT；FGS 仍可能需要完整重驗 |
+| Expiry bucket | 一群票券共同採用的有效期間設定；本專案把它放入共同 configuration 並綁進 `ctx` | Exact 單位、長度與相鄰 bucket 規則仍待 deployment profile 固定；不應替每位使用者設定可辨識的精確期限 |
+| 票券庫存（ticket inventory） | UE 在接入前已取得、仍可使用的一組 one-use tickets | 票多可提高 HNCC 失聯時的可用性，也增加 wallet 儲存、過期浪費與整批失竊風險 |
+| 低庫存門檻（low watermark） | 可用票券降到某個數量時，提前開始補發的觸發值 `L` | 應涵蓋 issuance outage 與補發期間可能發生的接入；不是等到零張才補發 |
+| Wallet journal | UE 本機可靠記錄 ticket 為 unused、reserved 或 outcome-known 的狀態 | App restart、備份 rollback 或多裝置同步不能讓可能已被 FGS 消耗的 ticket 回到 unused |
 | 比較基準（baseline） | 用於評估新機制的已定義參考方案、既有論文或測量條件 | 論文比較必須忠實採用對方實際機制與可比範圍，不能用自己虛構的共同流程代替 |
 | 相關研究（related work） | 說明既有研究解決的問題、方法與尚存缺口的文獻集合 | 被引用不等於已有可重現實作，也不表示可直接做數值同比 |
 | 比較論文（comparison paper） | 本研究選來做機制、安全性或效能對照的論文 | 流程可以不同；須先固定比較事件、成本邊界和證據等級 |

@@ -39,6 +39,7 @@
 | 階段 4／第十九堂：Blind issuance 與普通 signed ticket | 已提供基礎講解，理解待後續應用 | 已定位 issuer unlinkability、blindness／NIZK 分工及共謀／metadata 限制 |
 | 階段 4／第二十堂：組織拓撲與角色分離 | 進行中 | 學習者已指出初版組織圖錯誤；已改為 FAC／OA 同屬最高治理組織、HGS 隸屬 HNCC、FGS 隸屬其他 NCC、NCC 與 satellite operator 合作，並區分行政隸屬與 key-role separation |
 | 階段 4／第二十一堂：地面站與衛星的工作分配 | 已提供基礎講解，理解待後續應用 | 已區分工作放置與行政隸屬，對照 FGS／LEO／state backend；說明 1 RTT access NIZK 候選仍需 state backhaul，HGS protocol role 保持未定 |
+| 階段 4／第二十二堂：票券有效期與庫存 | 已提供基礎講解，理解待後續應用 | 已區分四種 expiry、共同 bucket、batch 容量與 low-watermark 補發；UE wallet journal 與實際參數均尚未實作／選定 |
 | 階段 5／程式閱讀工具 | 未開始 | 後續補充 repository、Python module、bytes、測試與 Git 工作流 |
 | 階段 6／6-1 至 6-10 | 未開始 | 既有對話中的程式介紹不視為已掌握 |
 | 階段 7／證據與限制 | 未開始 | 每堂先保留研究目標與成果的區分，之後集中學習 |
@@ -712,6 +713,30 @@
   `production_ready = False`。
 - 明列最小保存範圍為 ticket identity／`use_key`、attempt、state、期限與回應恢復資料；不應保存
   `k_hold`、`rid`、session key 或不必要的完整 ticket。
+
+### 2026-09-16 — 第二十二堂：短效票券的有效期、庫存與補發策略
+
+- 學習者要求下一堂；不把其接續視為已掌握 Replay backend 或第 21 課的分散式狀態取捨。
+- 區分 configuration `expiry_bucket`、`IssuerGrant.not_before／expiry`、`challenge_expiry` 與
+  `session_expiry`，避免將票券、發行權、單次 challenge 和 session 的期限混為一談。
+- 核對 ticket payload `M=(ctx,sn,h,C)` 沒有 per-ticket expiry；`SystemConfiguration.expiry_bucket`
+  被 canonical encoding 並綁入 `ctx`。目前 contract 只檢查 `u64` 與 encoding，exact 時間語意、bucket
+  長度及 overlap policy 尚未凍結。
+- 說明共同 expiry bucket 可擴大 anonymity set、降低個人化 expiry watermark，並支援 Replay
+  backend 按期間清理；代價是 bucket 尾端發行的票券可用時間縮短。
+- 比較短／長有效期在 disconnected availability、wallet theft、revocation lag、FGS retention、
+  issuance frequency 與 metadata linkage 的交換，並重申 short expiry 不取代有效期內 revocation。
+- 以 `B ≥ N+R+S` 作容量模型，分開預估 initial access、結果不確定／handover fallback 與安全餘裕；
+  這是待實測參數，不是安全公式或目前採用數值。
+- 引入 low watermark `L`、相鄰 bucket 預先補發及 UE `unused → reserved → outcome-known` journal；
+  回應遺失、crash、backup rollback 與多裝置複製均不能讓可能已消耗 ticket 恢復 unused。
+- 區分 `IssuerGrant.quota` 與單一 UE batch size；前者是 federation 限制 HNCC 發行權的 control-plane
+  quota，後者是 wallet inventory policy。
+- 保留 `expiry_bucket` encoding／binding 已實作，exact lifetime、`B`／`L`、wallet journal、補發與
+  production Replay retention 均未完成。下一堂整理 honest-but-curious／malicious／compromised／
+  unavailable threat model。
+- 助教核對 226 個學習文件本機連結，沒有缺失目標；以本機瀏覽器檢查 ticket-lifetime 圖在 736
+  與 288 像素內容寬度下的呈現，共同 bucket、wallet inventory、長短期限與 journal 均無重疊或裁切。
 
 ## 後續更新方式
 
