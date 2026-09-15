@@ -116,6 +116,13 @@
 | 票券庫存（ticket inventory） | UE 在接入前已取得、仍可使用的一組 one-use tickets | 票多可提高 HNCC 失聯時的可用性，也增加 wallet 儲存、過期浪費與整批失竊風險 |
 | 低庫存門檻（low watermark） | 可用票券降到某個數量時，提前開始補發的觸發值 `L` | 應涵蓋 issuance outage 與補發期間可能發生的接入；不是等到零張才補發 |
 | Wallet journal | UE 本機可靠記錄 ticket 為 unused、reserved 或 outcome-known 的狀態 | App restart、備份 rollback 或多裝置同步不能讓可能已被 FGS 消耗的 ticket 回到 unused |
+| 威脅模型（threat model） | 明確列出攻擊者控制誰、能看／改／阻斷什麼、哪些角色仍誠實及什麼事件算攻擊成功 | 不是列一串攻擊名稱；安全結論只能在模型寫明的能力與假設內成立 |
+| Honest-but-curious | 角色遵守協定，但保存並分析正常執行時可見的資料 | 若故意改參數、加入 watermark、跳過檢查或偽造訊息，就已是 malicious 行為 |
+| Malicious | 角色可任意偏離協定、選擇輸入、重放、並行、說謊、分享資料或拒絕服務 | 不自動表示能讀取其他誠實端點的 secrets 或破解密碼學 |
+| Compromised／corrupted | 攻擊者取得角色內部控制權、secrets 或 state，並可讓它任意行動 | 必須列出被取得的具體資料；只洩漏 ticket bytes 與整個 UE wallet 失陷不同 |
+| Untrusted | 設計不依賴該角色正確行動，協定須容忍其允許的竊聽、修改、重放或丟棄能力 | 不等於其他角色的內部 secrets 也已洩漏；例如 untrusted relay 不自動取得 OA shares |
+| Unavailable | 角色或網路因 crash、斷線、partition、維修或 DoS 無法提供服務 | 主要影響 availability；和 honest／malicious／compromised 是不同維度 |
+| Security game | Challenger 建立 keys／state 並開放指定操作，攻擊者嘗試觸發明確 winning event 的安全實驗 | 每個 game 只支持其定義的性質；unit tests 和 game-based proof 是不同證據 |
 | 比較基準（baseline） | 用於評估新機制的已定義參考方案、既有論文或測量條件 | 論文比較必須忠實採用對方實際機制與可比範圍，不能用自己虛構的共同流程代替 |
 | 相關研究（related work） | 說明既有研究解決的問題、方法與尚存缺口的文獻集合 | 被引用不等於已有可重現實作，也不表示可直接做數值同比 |
 | 比較論文（comparison paper） | 本研究選來做機制、安全性或效能對照的論文 | 流程可以不同；須先固定比較事件、成本邊界和證據等級 |

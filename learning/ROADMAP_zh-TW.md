@@ -105,6 +105,7 @@ checkout 補出「概念 → 檔案 → 函式 → 測試 → 目前限制」的
 | [第二十堂：組織拓撲、角色分離與跨域關聯風險](lessons/20_ROLE_SEPARATION_AND_COLLUSION_zh-TW.md) | 階段 4；能分開行政隸屬、protocol role 與 key role，說明 FAC／OA 同組織、各 NCC 所屬地面站、satellite operator 合作關係，以及跨域資料共享／門檻失陷的邊界 |
 | [第二十一堂：地面站與衛星的工作分配](lessons/21_GROUND_SATELLITE_WORK_PLACEMENT_zh-TW.md) | 階段 4；能說明驗證位置與 RTT 是不同設計軸，區分 satellite path、state backhaul 與 home lookup，並解釋首則 access NIZK 為何不取代權威 one-use state |
 | [第二十二堂：短效票券的有效期、庫存與補發策略](lessons/22_TICKET_LIFETIME_AND_INVENTORY_zh-TW.md) | 階段 4；能區分 configuration／grant／challenge／session expiry，說明共同 bucket、batch 容量、提前補發、wallet crash state 及短長有效期的取捨 |
+| [第二十三堂：Threat Model 與安全邊界](lessons/23_THREAT_MODEL_AND_SECURITY_BOUNDARIES_zh-TW.md) | 階段 4 總整理；能按角色列出 adversary view／capability、誠實假設與成功事件，並判斷 issuer unlinkability、one-use、opening privacy 與 availability 各自在哪些條件下成立 |
 
 目前單元與理解狀態只在 [學習進度](PROGRESS_zh-TW.md) 更新。第二至七堂已提供必要概念的
 入門說明；第八至十五堂已完成階段 3 的教材範圍，涵蓋共同設定、發行、接入、使用狀態、
@@ -112,5 +113,6 @@ checkout 補出「概念 → 檔案 → 函式 → 測試 → 目前限制」的
 第十七堂建立異構衛星認證論文的公平比較方法，第十八堂比較 one-use ticket 與 reusable anonymous
 `Show`，第十九堂分析 blind issuance 與普通 signed ticket，第二十堂已依作者更正建立組織拓撲，
 第二十一堂分析 HGS、FGS 與 LEO／FLEO 的工作分配，以及 2 RTT 草稿和 1 RTT 候選；第二十二堂
-分析 short-lived ticket 的有效期、庫存和補發策略；下一堂整理 threat model。仍於應用時補課，不以教材
+分析 short-lived ticket 的有效期、庫存和補發策略；第二十三堂整理 threat model 與安全主張邊界。
+下一堂進入階段 5，開始閱讀 repository。仍於應用時補課，不以教材
 建立視為已掌握，尚未進入逐模組或逐行程式閱讀。

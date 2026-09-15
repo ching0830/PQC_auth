@@ -33,6 +33,7 @@
 | [第二十堂：組織拓撲、角色分離與跨域關聯風險](lessons/20_ROLE_SEPARATION_AND_COLLUSION_zh-TW.md) | 區分行政組織、協定角色與 key role；固定 FAC／OA、HNCC／HGS、其他 NCC／FGS 及 satellite operator 的正確關係，改以跨域資料共享分析關聯風險 |
 | [第二十一堂：地面站與衛星的工作分配](lessons/21_GROUND_SATELLITE_WORK_PLACEMENT_zh-TW.md) | 區分驗證位置與訊息往返數，說明 FGS 權威狀態、衛星輕量檢查、首則 access NIZK 的 1 RTT 候選，以及 satellite／state／home 三種延遲 |
 | [第二十二堂：短效票券的有效期、庫存與補發策略](lessons/22_TICKET_LIFETIME_AND_INVENTORY_zh-TW.md) | 區分四種 expiry，說明共同 expiry bucket、`B ≥ N+R+S` 容量模型、low-watermark 補發、UE journal 與隱私 metadata 取捨 |
+| [第二十三堂：Threat Model 與安全邊界](lessons/23_THREAT_MODEL_AND_SECURITY_BOUNDARIES_zh-TW.md) | 分辨 honest-but-curious、malicious、compromised、untrusted 與 unavailable，逐角色對照攻擊能力、假設、winning event 與目前宣稱範圍 |
 
 課程按概念相依順序進行。第一堂從研究問題開始；角色名稱與新術語先解釋用途，再進入公式、程式與測試。
 先前對話曾提前介紹 replay；該次介紹不代表學習者已理解或完成相應單元。
