@@ -46,6 +46,9 @@ from pq_sat_auth.v2.storage.sqlite_delivery import (
 from pq_sat_auth.v2.storage.sqlite_inbox import (
     sqlite_first_application_inbox_manifest,
 )
+from pq_sat_auth.v2.storage.sqlite_authoritative import (
+    sqlite_authoritative_activation_inbox_manifest,
+)
 from pq_sat_auth.v2.storage.sqlite_unified import (
     sqlite_unified_activation_inbox_manifest,
 )
@@ -266,6 +269,9 @@ class FirstApplicationCodecTests(FirstApplicationFixture):
                 "sqlite_delivery": sqlite_first_application_delivery_manifest(),
                 "sqlite_inbox": sqlite_first_application_inbox_manifest(),
                 "sqlite_outbox": sqlite_first_record_outbox_manifest(),
+                "sqlite_authoritative": (
+                    sqlite_authoritative_activation_inbox_manifest()
+                ),
                 "sqlite_unified": sqlite_unified_activation_inbox_manifest(),
             },
         )

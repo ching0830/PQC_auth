@@ -15,6 +15,7 @@
     "production_session_state_protection_instantiated": false,
     "pre_activation_check_hook_implemented": true,
     "proof_closed": false,
+    "revocation_context_in_commit_request_implemented": true,
     "unique_session_index_implemented": true
   },
   "format": "PQ-SAT-FGS-ACTIVATION-PROCESSOR-v0.2",

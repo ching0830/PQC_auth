@@ -1,6 +1,6 @@
 # Satellite Access 與 PQ AKE 規格 v0.2
 
-> 狀態：Defined；bounded reference codecs／relation／processors、UE SQLite wallet、FGS single-host SQLite replay／delivery／protected application inbox及unified activation-inbox transaction已 Implemented／Tested；尚未 Instantiated／distributed／Proof-closed／Production-closed
+> 狀態：Defined；bounded reference codecs／relation／processors、UE SQLite wallet、FGS single-host SQLite replay／delivery／protected application inbox、unified activation-inbox transaction及authoritative activation-revocation fence已 Implemented／Tested；尚未 Instantiated／distributed／Proof-closed／Production-closed
 > 日期：2026-09-15
 > 所屬模組：M5 Satellite authentication、M6 Anti-replay／revocation／handover
 > State companion：`docs/specs/ONE_TIME_TICKET_STATE_v0_2_zh-TW.md`
@@ -837,3 +837,34 @@ production application `apply_once`仍未封閉，external side effect exactly-o
 詳細evidence見
 `docs/artifacts/SATELLITE_ACCESS_v0_2_UNIFIED_ACTIVATION_INBOX_zh-TW.md`，machine claims見
 `manifests/pq_sat_auth_fgs_unified_activation_inbox_sqlite_v0_2.json`。
+
+### 13.12 FGS authoritative activation-revocation fence checkpoint
+
+後續checkpoint新增`src/pq_sat_auth/v2/storage/sqlite_authoritative.py`，以新的application
+ID及三表exact schema繼承unified profile。Activation processor也把它實際檢查的
+`ActivationRevocationQueryV2`與exact `ActivationRevocationSnapshotV2`帶入composed
+commit request。建議單機reference的完整順序變成：
+
+```text
+read exact local revocation snapshot
+BEGIN IMMEDIATE
+  re-read and match the exact authoritative fence
+  validate grant/query/time/generation/non-revoked bindings
+  update replay row -> CONSUMED_ACTIVE
+  insert inbox row -> PENDING(record_digest, protected plaintext)
+COMMIT
+```
+
+`publish_activation_revocation()`與activation都由同一database的`BEGIN IMMEDIATE`
+序列化。因此publish先commit時，持有舊snapshot的activation會rollback；activation先commit
+時，該筆已接受的inbox work可依既有dispatcher完成。Publication採per-query digest的單調
+generation與sticky revocation flags，exact retry不增加revision。
+
+這只封閉可信單機SQLite中的**exact per-query fence publication vs activation**順序。
+Repository尚未提供具生產身分驗證的revocation writer，也未把configuration／FGS key／
+ticket等general-scope事件fan out到全部session query rows；跨FGS distributed state、
+production record／plaintext protection、外部application side effect、hostile filesystem及
+實體斷電仍未封閉。因此本checkpoint仍非Production-closed或Proof-closed。詳細evidence見
+`docs/artifacts/SATELLITE_ACCESS_v0_2_AUTHORITATIVE_ACTIVATION_REVOCATION_zh-TW.md`，
+machine claims見
+`manifests/pq_sat_auth_fgs_authoritative_activation_inbox_sqlite_v0_2.json`。

@@ -294,6 +294,16 @@ class SQLiteFGSUnifiedActivationInboxStoreV2(SQLiteFGSReplayStoreV2):
             "unified store requires activate_and_enqueue for activation"
         )
 
+    def _validate_activation_fence(
+        self,
+        connection: sqlite3.Connection,
+        request: ActivationCommitRequestV2,
+        grant: GrantRecordV2,
+    ) -> None:
+        """Extension point executed under the activation write transaction."""
+
+        del connection, request, grant
+
     def activate_and_enqueue(
         self,
         request: ActivationCommitRequestV2,
@@ -335,6 +345,8 @@ class SQLiteFGSUnifiedActivationInboxStoreV2(SQLiteFGSReplayStoreV2):
                 raise InvalidTransition("activation belongs to another grant")
             if existing.state is GrantStateV2.CONSUMED_EXPIRED:
                 raise InvalidTransition("expired grant cannot activate")
+
+            self._validate_activation_fence(connection, request, existing)
 
             inbox = self._select_inbox(connection, request.session_id)
             if existing.state is GrantStateV2.CONSUMED_ACTIVE:

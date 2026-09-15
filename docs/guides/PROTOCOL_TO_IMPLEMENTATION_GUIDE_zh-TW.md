@@ -298,6 +298,8 @@ Exact V2 bytes與acceptance events見
   work item，並提供`PENDING -> COMPLETED`及restart pending scan；
 - `src/pq_sat_auth/v2/storage/sqlite_unified.py`：在單一SQLite database／transaction中
   同時完成session activation與protected inbox `PENDING` insert；
+- `src/pq_sat_auth/v2/storage/sqlite_authoritative.py`：在同一單機transaction重讀exact
+  per-query revocation fence，再完成activation與inbox insert；
 - `src/pq_sat_auth/v2/dispatch.py`：以`record_digest`作idempotency key的application
   `apply_once`／stable receipt dispatch contract；
 - `tests/system/test_pq_sat_auth_*_v2.py`：canonical vectors、truncation、mutation、
@@ -305,10 +307,11 @@ Exact V2 bytes與acceptance events見
 
 這使V2的bounded byte／relation／M1-M2／activation／first-record state boundary達
 Implemented／Tested。UE wallet／first-record outbox與FGS replay／delivery／protected inbox
-已有單機SQLite reference；推薦unified profile已把activation與inbox放入同一transaction，
-idempotent dispatch composition以test-only application ledger驗證。Concrete suite、真實
-proof／AKE、production record／plaintext protection、distributed FGS store、atomic
-revocation／activation ordering及production external application `apply_once`仍未完成。
+已有單機SQLite reference；authoritative successor已把exact per-query revocation fence、
+activation與inbox放入同一transaction，idempotent dispatch composition以test-only
+application ledger驗證。Concrete suite、真實proof／AKE、production record／plaintext
+protection、具身分驗證且支援general-scope fanout的revocation writer、distributed FGS store及
+production external application `apply_once`仍未完成。
 
 ## 7. Conditional opening：逐行對應
 

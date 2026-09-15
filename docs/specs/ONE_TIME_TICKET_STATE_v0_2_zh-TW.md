@@ -1,6 +1,6 @@
 # One-Time Ticket 狀態與 1-RTT Access 邊界規格 v0.2
 
-> 狀態：Defined；FGS replay／delivery／protected application inbox、unified activation-inbox transaction與UE single-host SQLite references已 Implemented／Tested；尚未 distributed／Production-closed
+> 狀態：Defined；FGS replay／delivery／protected application inbox、unified activation-inbox transaction、authoritative activation-revocation fence與UE single-host SQLite references已 Implemented／Tested；尚未 distributed／Production-closed
 > 日期：2026-09-15
 > Access companion：`docs/specs/SATELLITE_ACCESS_v0_2_zh-TW.md`
 > Historical predecessor：`docs/specs/ONE_TIME_TICKET_STATE_v0_1_zh-TW.md`
@@ -394,3 +394,14 @@ crash仍需UE exact retry；而production external application必須自行證明
 revocation snapshot atomicity，也不把external application mutation納入SQLite transaction。
 Production application仍需實作可驗證的`apply_once`，故external exactly-once、distributed
 consistency、physical power-loss及Production-closed維持false。
+
+2026-09-15 authoritative activation-revocation successor再把exact per-session revocation
+fence放入同一SQLite database。Processor先讀snapshot做pure validation，最後commit時在
+同一`BEGIN IMMEDIATE`內重讀並要求bytes所代表的所有欄位完全相同，再依序完成activation
+與inbox insert。Revocation publication與activation因此在可信單機上有唯一順序：publication
+先commit則舊activation失敗且不消耗；activation先commit則已接受work item保留並可完成。
+
+此local publication API是尚待production authentication的管理邊界，不是已實例化的
+revocation authority。資料模型目前只支援exact query digest更新，尚無general-scope
+revocation fanout，也沒有跨FGS consensus／linearizable store、實體斷電或rollback證據。
+因此「single-host exact fence atomicity已測試」不得擴張成「production revocation已完成」。

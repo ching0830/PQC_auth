@@ -198,6 +198,8 @@ class ActivationCommitRequestV2:
     response_digest: bytes
     client_confirmation_digest: bytes
     activated_at: int
+    revocation_query: ActivationRevocationQueryV2 | None = None
+    revocation_snapshot: ActivationRevocationSnapshotV2 | None = None
 
     def validate(self) -> None:
         if not isinstance(self.identity, TicketUseIdentity):
@@ -211,6 +213,35 @@ class ActivationCommitRequestV2:
         ):
             _fixed(getattr(self, name), DIGEST_BYTES, name)
         _u64(self.activated_at, "activated_at")
+        if (self.revocation_query is None) != (
+            self.revocation_snapshot is None
+        ):
+            raise ValueError(
+                "revocation query and snapshot must be provided together"
+            )
+        if self.revocation_query is not None:
+            if not isinstance(
+                self.revocation_query,
+                ActivationRevocationQueryV2,
+            ):
+                raise TypeError(
+                    "revocation_query must be an ActivationRevocationQueryV2"
+                )
+            self.revocation_query.encode()
+            if not isinstance(
+                self.revocation_snapshot,
+                ActivationRevocationSnapshotV2,
+            ):
+                raise TypeError(
+                    "revocation_snapshot must be an "
+                    "ActivationRevocationSnapshotV2"
+                )
+            self.revocation_snapshot.validate()
+            if (
+                self.revocation_snapshot.query_digest
+                != self.revocation_query.digest
+            ):
+                raise ValueError("revocation snapshot and query differ")
 
 
 class ActivationDispositionV2(Enum):
@@ -574,6 +605,8 @@ class FGSActivationProcessorV2:
                 response_digest=record.response_digest,
                 client_confirmation_digest=confirmation_digest,
                 activated_at=now,
+                revocation_query=query,
+                revocation_snapshot=revocation,
             )
             commit_request.validate()
             activation_result = (
@@ -710,6 +743,7 @@ def fgs_activation_processor_manifest() -> dict[str, object]:
             "pre_activation_check_hook_implemented": True,
             "composed_activation_commit_hook_implemented": True,
             "activation_revocation_boundary_implemented": True,
+            "revocation_context_in_commit_request_implemented": True,
             "capability_released_only_after_activate": True,
             "explicit_session_activate_frame_implemented": True,
             "first_protected_application_record_implemented": False,
