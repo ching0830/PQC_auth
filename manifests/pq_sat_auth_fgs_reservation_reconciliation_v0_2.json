@@ -1,0 +1,31 @@
+{
+  "claim_boundary": {
+    "automatic_background_scheduler_implemented": false,
+    "bounded_batch_enforced": true,
+    "distributed_coordination_implemented": false,
+    "exact_abort_evidence_derived": true,
+    "explicit_one_shot_invocation_required": true,
+    "lost_ack_fence_recovery_available": true,
+    "minimum_stale_policy_enforced": true,
+    "operator_authentication_instantiated": false,
+    "persistent_invocation_audit_log_implemented": false,
+    "post_abort_fence_readback_required": true,
+    "production_clock_instantiated": false,
+    "production_ready": false,
+    "scan_output_validated": true,
+    "single_clock_sample_per_run": true,
+    "state_change_races_do_not_release_ticket": true,
+    "unexpected_backend_failure_halts_batch": true
+  },
+  "format": "PQ-SAT-FGS-RESERVATION-RECONCILIATION-v0.2",
+  "processing_order": [
+    "validate_explicit_invocation",
+    "sample_clock_once",
+    "apply_minimum_stale_policy",
+    "bounded_expired_reservation_scan",
+    "derive_exact_abort_evidence",
+    "atomic_fence_rotation",
+    "fence_readback",
+    "classify_race_or_halt_on_uncertainty"
+  ]
+}

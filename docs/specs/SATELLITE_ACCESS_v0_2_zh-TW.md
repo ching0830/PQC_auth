@@ -986,3 +986,23 @@ processor發布，`observed_at`也仍由caller提供而非production clock backe
 background scheduler、v1 schema自動migration、distributed lease authority、rollback resistance
 或實體斷電證據。因此本checkpoint只把可信單機SQLite
 的stale-worker／ABA gap提升為Implemented／Tested，不構成Production-closed。
+
+### 13.16 Explicit reservation-reconciliation coordinator checkpoint
+
+後續reference以`ReservationReconciliationCoordinatorV2.run_once()`組合§13.15原語，但不啟動
+background thread。一次invocation接收32-byte correlation ID與固定policy，單次取樣clock，
+將`observed_at - minimum_stale_seconds`作為bounded scan cutoff。Scan結果若超量、重複、
+不是active reservation或尚未符合cutoff，整批在第一個abort前拒絕。
+
+每筆candidate使用同一次`observed_at`導出exact evidence並呼叫atomic abort，隨後透過
+`lookup_reservation_fence()`驗證protected store truth。正常commit回覆記為`FENCED`；lost
+ack但exact read-back成立記為`FENCED_RECOVERED`；另一coordinator已完成等價fence記為
+`FENCED_BY_PEER`。Grant／reservation race或scoped query dependency只記為
+`NOT_RECONCILED`，不把ticket轉回可用；其他backend或read-back不確定性則`HALTED`，不得繼續
+同批後續candidate。
+
+`COMPLETED／accepted`描述run沒有未處理的fatal uncertainty，不代表所有scanned candidates
+都被fence。Caller必須檢查每筆item disposition並以新invocation處理剩餘工作。Reference
+invocation ID未經簽章、未保存於append-only audit log，也沒有production trusted clock、
+operator authentication、常駐scheduler、distributed coordination或schema migration。因此
+此checkpoint只支持明確觸發的單機bounded operational composition，不構成production部署。

@@ -286,6 +286,27 @@ store另拒絕已具有activation query的reservation recovery。Store提供boun
 但`observed_at`仍由caller提供，production recovery clock尚未實例化。Background scheduler、
 v1→v2 schema migration、distributed worker fencing及實體斷電驗證仍未實作。
 
+顯式reference coordinator把上述原語組成一次bounded `run_once`。Caller必須提供exact
+32-byte `invocation_id`；固定policy提供`batch_limit`與`minimum_stale_seconds`。Coordinator
+只取樣一次clock，計算：
+
+```text
+scan_cutoff = max(0, observed_at - minimum_stale_seconds)
+eligible iff lease_deadline < scan_cutoff
+```
+
+Store的scan輸出必須是bounded tuple、無重複、只含符合cutoff的active reservations，否則
+整批在任何abort前拒絕。每筆abort後都read-back protected fence：exact回覆為`FENCED`；
+abort acknowledgement遺失但exact fence存在為`FENCED_RECOVERED`；另一worker以可重新導出的
+evidence先完成為`FENCED_BY_PEER`；reservation已被commit／改變或有scoped dependency則為
+`NOT_RECONCILED`，不釋放任何狀態。非預期backend錯誤或read-back不確定會標成`UNRESOLVED`
+並立即停止後續項目。
+
+Run result的`accepted=true`只表示這一次bounded pass完整結束，不能解讀成每個candidate
+均已fence；caller仍須逐項讀取disposition。`invocation_id`目前只是in-memory result的
+correlation identity，沒有被認證或持久化。Reference不提供operator authorization、
+production clock、常駐scheduler或persistent run audit log。
+
 ## 11. Retention and backhaul
 
 Consumption record 至少保存至：
@@ -325,6 +346,11 @@ single-writer partitions。Store unavailable／timeout／partition時，新的 f
 19. Expired reservation reconciliation與grant commit只有一個linearized winner。
 20. Fence後的stale worker不能對新reservation執行ABA commit。
 21. Internal fence可跨restart驗證，但不會被public lookup誤當成consumed grant。
+22. 每次顯式reconciliation run只取樣一次clock。
+23. Scan輸出不符合type、batch、expiry或uniqueness邊界時，任何candidate都不得abort。
+24. Abort acknowledgement不確定時，只有exact／equivalent protected fence read-back可恢復成功。
+25. 非預期backend或fence read-back錯誤會停止同批剩餘項目。
+26. 多個coordinator對同一candidate競爭時，只接受同一fence generation／evidence identity。
 
 ## 13. Claim boundary
 

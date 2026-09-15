@@ -289,6 +289,8 @@ Exact V2 bytes與acceptance events見
 - `src/pq_sat_auth/v2/storage/sqlite_replay.py`：相同FGS state contract的單機SQLite
   durable reference，保存exact sealed M2／session state、protected recovery tombstone與
   單調fencing generation，並提供bounded expired scan及跨程序serialization；
+- `src/pq_sat_auth/v2/reconciliation.py`：把clock單次取樣、minimum-stale policy、bounded
+  scan、exact evidence、atomic fence及read-back組成顯式一次性reconciliation run；
 - `src/pq_sat_auth/v2/application.py`：第一個受保護UE→FGS record的canonical
   bytes／AAD／sequence-zero identity、UE outbox coordinator與FGS一次性delivery
   capability；
@@ -318,7 +320,8 @@ command ingestion、四種scope fanout、exact per-query fence、activation與in
 database ordering，idempotent dispatch composition以test-only application ledger驗證。
 Expired reservation另可在canonical evidence與fence rotation後安全重新進入public
 `UNSEEN` view，舊worker不能跨generation commit；background scheduler與schema migration
-仍未完成。
+仍未完成。顯式coordinator可用bounded batch執行這條路徑，並在lost acknowledgement後
+以exact fence read-back恢復；invocation ID只作correlation，並非operator authorization。
 Concrete suite、真實proof／AKE、
 獨立production revocation key／PQ verifier、authority rotation、production record／plaintext
 protection、distributed FGS store及production external application `apply_once`仍未完成。
