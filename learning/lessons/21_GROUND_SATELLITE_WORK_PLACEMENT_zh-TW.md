@@ -40,6 +40,23 @@ FAC／OA 位於最高治理組織，但不加入每次正常 access。它們負�
 
 ### 2.2 Strictly one-use 需要一個共同裁決點
 
+這個共同裁決點就是 **Replay backend**。`Backend` 是使用者不直接操作的內部服務；在這裡可以是
+與 FGS 共置的交易式資料庫，也可以是多個 FGS 共用的地面狀態服務。名稱中的 `Replay` 表示它防止
+舊票券或舊接入請求被當成新的初始接入，不表示它負責驗證 NIZK。
+
+例如 FGS-A 與 FGS-B 幾乎同時收到同一張合法票券：
+
+1. 兩台 FGS 的密碼學驗證都可能通過，因為 ticket 本身確實有效。
+2. 兩台都用同一張 ticket 導出的 `use_key` 向 Replay backend 要求 `Reserve`。
+3. Backend 以原子操作決定唯一 winner；假設 A 成功，狀態變成 `RESERVED`。
+4. B 的不同 attempt 看到票券已被 A 預留，因此不能建立另一個 session。
+5. A 建立 session 並執行 `Commit` 後，狀態成為 `CONSUMED`，之後的新 attempt 都拒絕。
+6. 若 A 的同一 attempt 因回應遺失而重試，backend 可辨認它並恢復同一結果，而不是建立第二個
+   session。
+
+Backend 需要保存的是 ticket identity digest／`use_key`、`attempt_id`、狀態、期限及恢復同一回應所需
+的受保護資料。它不應保存 `k_hold`、`rid`、session key 或不必要的完整 ticket。
+
 `VerifyTicket(T)` 是 stateless：兩台 verifier 各自驗同一張合法 ticket，都可能得到 `True`。要限制
 只建立一個 initial session，還要有權威狀態：
 

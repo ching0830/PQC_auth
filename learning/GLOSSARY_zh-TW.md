@@ -109,6 +109,7 @@
 | 預先計算／計算前移（precomputation／computation shifting） | 將不依賴當次接入資料的高成本工作提前完成，縮短 latency-critical path | 依賴目前端點、freshness、session key 或權威狀態的工作不能直接預先計算並永久重用 |
 | 工作／運算放置（work／computation placement） | 決定某項驗證、證明、狀態或金鑰工作由 UE、衛星、地面站或後端的哪一端執行 | 與行政隸屬及訊息數是不同問題；FGS 驗證仍可設計成一往返 |
 | 權威狀態（authoritative state） | 所有可接受 verifier 都必須服從、用來唯一裁決 ticket 是否已使用的狀態 | 各衛星或 FGS 各存一份但只做最終一致，可能在同步前重複接受 |
+| Replay backend／replay store | FGS 後方以原子交易保存 `UNSEEN`、`RESERVED`、`CONSUMED`，並裁決哪個 access attempt 能使用票券的內部服務／資料庫 | 不負責讓 signature／NIZK 成立；密碼驗證通過後仍要靠它阻止另一台 FGS 同時接受同一票券 |
 | 唯一寫入者（single writer） | 讓某個 ticket 的狀態只由一個指定節點裁決與提交 | 可避免並行雙寫；路由、故障移轉與舊新 writer 交接仍須保持唯一性 |
 | 早期拒絕（early rejection） | 在訊息抵達完整 verifier 前，以便宜檢查丟棄明顯錯誤或不合規的流量 | 可節省後端負載，不一定縮短合法使用者建立 session 的 RTT；FGS 仍可能需要完整重驗 |
 | 比較基準（baseline） | 用於評估新機制的已定義參考方案、既有論文或測量條件 | 論文比較必須忠實採用對方實際機制與可比範圍，不能用自己虛構的共同流程代替 |

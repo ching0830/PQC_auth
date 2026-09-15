@@ -699,6 +699,20 @@
 - 助教核對 218 個學習文件本機連結，沒有缺失目標；以本機瀏覽器檢查 work-placement 圖在 736
   與 288 像素內容寬度下的呈現，角色配置、2 RTT／1 RTT 流程及三種延遲均無重疊或裁切。
 
+### 2026-09-15 — 第二十一堂追問：Replay backend 是什麼
+
+- 學習者直接詢問工程術語「Replay backend」的意思，不據此推定已理解分散式狀態或一致性。
+- 補充 backend 是 FGS 後方的內部狀態服務／交易式資料庫；它不驗證 NIZK，而是以 ticket-derived
+  `use_key` 和 `attempt_id` 原子裁決哪個通過驗證的 attempt 能建立唯一 initial session。
+- 以 FGS-A／FGS-B 同時收到同一張合法 ticket 為例：兩者的 stateless ticket verification 都可能
+  通過，但 Replay backend 只允許一個 `Reserve` winner，成功後提交為 `CONSUMED`；同 attempt
+  retry 恢復同一結果，另一 attempt 不得建立第二個 session。
+- 說明 backend 可以和 FGS 共置，也可以是共享地面服務；production 需要 durable、cross-process、
+  cross-FGS linearizable transactions。目前只有 `InMemoryLinearizableReplayStore` 單程序模型，且
+  `production_ready = False`。
+- 明列最小保存範圍為 ticket identity／`use_key`、attempt、state、期限與回應恢復資料；不應保存
+  `k_hold`、`rid`、session key 或不必要的完整 ticket。
+
 ## 後續更新方式
 
 每次接續時更新日期、目前單元、實際回答、已釐清／未釐清事項與下一步。
