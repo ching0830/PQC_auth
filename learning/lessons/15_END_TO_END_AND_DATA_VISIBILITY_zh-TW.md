@@ -152,5 +152,5 @@ one-time state 解決的是重複建立 session，threshold opening 解決的是
 [Conditional Opening Gate](../../docs/artifacts/CONDITIONAL_OPENING_GATE_v0_1_zh-TW.md) 及
 [研究狀態](../../RESEARCH_STATUS_zh-TW.md)。
 
-下一堂進入階段四，先比較「離線發行、在線驗證」與「每次接入都在線向 HNCC 查詢」的取捨，
-並把衛星 RTT、NIZK computation、FGS backhaul 與隱私暴露分開分析。
+下一堂進入階段四，分析高成本 PQ 運算的前移邊界：哪些 issuance work 可在接入前完成，
+哪些 freshness、holder authentication、PQ AKE 與 replay state 必須留在衛星在線路徑。

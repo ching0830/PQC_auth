@@ -33,7 +33,7 @@
 | 階段 3／第十三堂：過期、撤銷與換手 | 已提供基礎講解，理解待後續應用 | 已區分 acceptance predicates 與 consumption state，並說明撤銷競爭、retention、一般拒絕及 session-derived handover |
 | 階段 3／第十四堂：受控身分開啟 | 已提供基礎講解，理解待後續應用 | 已說明案件授權與門檻解密兩道門、OA share gate、opening replay、combiner 一致性與 serial equality |
 | 階段 3／第十五堂：完整生命週期與資料可見性 | 已提供總整理，理解待後續應用 | 已將設定、發行、接入、session／handover 與 opening 串成完整案例；未以教材建立視為能獨立口述 |
-| 階段 4／第十六堂：離線發行、在線驗證 | 進行中 | 已比較每次查 HNCC 與預發票券，分解 RTT、FGS verification、state backhaul 與 HNCC query；下一堂比較 one-use 與 reusable Show |
+| 階段 4／第十六堂：PQ 計算前移與 Replay | 進行中 | 依學習者更正，以降低高成本 PQ 在線運算為主要動機；已區分可前移 issuance work、當下 access work 與 Replay，下一堂建立衛星論文公平比較方法 |
 | 階段 5／程式閱讀工具 | 未開始 | 後續補充 repository、Python module、bytes、測試與 Git 工作流 |
 | 階段 6／6-1 至 6-10 | 未開始 | 既有對話中的程式介紹不視為已掌握 |
 | 階段 7／證據與限制 | 未開始 | 每堂先保留研究目標與成果的區分，之後集中學習 |
@@ -533,28 +533,37 @@
 - 整理各模組目前已有的 interface／codec／reference／test 邊界及未封閉項目，避免從任一
   unit test、circuit checkpoint 或抽象 proof 擴張成端到端 production claim。
 - 階段 3 的教材範圍至此完成，但學習者尚未獨立畫圖或口述，因此不標記理解完成。
-  下一堂進入階段 4，比較離線發行／在線驗證與每次接入向 HNCC 查詢的取捨。
+  下一堂進入階段 4，分析高成本 PQ issuance work 與當下 access work 的切分。
 - 助教核對 179 個學習文件本機連結，沒有缺失目標；以本機瀏覽器檢查完整生命週期圖在
   736 與 288 像素內容寬度下的呈現，正常路徑、handover 與獨立 opening 分支皆完整可見。
 
 ### 2026-09-15 — 第十六堂：離線發行、在線驗證的設計取捨
 
 - 學習者要求進入階段四；第十五堂改記為已提供總整理，不因接續而標記獨立掌握。
-- 以「每次 FGS 在線查 HNCC」作 hypothetical comparison baseline，對照本專案先完成 identity
-  verification、issuance NIZK 與 blind issuance，再由 FGS 在線驗票及建立 session 的架構。
-- 說明離線發行移除 HNCC identity／eligibility query 的接入依賴與直接使用紀錄暴露，但不會
-  移除 FGS crypto、revocation freshness 或 authoritative replay-store backhaul。
+- 初版誤將「每次 FGS 在線查 HNCC」標成 comparison baseline；學習者指出論文應與實際衛星
+  驗證論文比較，而它們的機制並非統一採用這個流程。教材與圖已移除該錯誤 baseline。
+- 依學習者說明，將主要理由更正為 PQ cryptographic components 運算成本高，因此把不依賴
+  當次接入的 identity verification、hidden-ticket construction、`pi_issue`、blind issuance／
+  Finalize 提前完成；privacy 與移除 HNCC 在線依賴記為重要附帶效益。
+- 區分必須留在接入當下的 serving context、freshness、holder authentication、ticket／policy
+  verification、PQ AKE、replay Reserve／Commit 與 session establishment。
 - 區分 offline `pi_issue` 與尚待設計的 access holder authenticator；首則 access NIZK 可能省去
   即時 challenge 往返，仍需 freshness、anti-replay、PQ AKE、prekey 與 atomic state binding。
-- 將 latency 分成 satellite message schedule、`T_verify`、`T_state` 與 hypothetical `T_HNCC`；
-  明列四訊息約 2 RTT 與兩訊息約 1 RTT 都是時序推論，尚非端到端 benchmark。
+- 依學習者詢問新增 Replay 入門：攻擊者複製先前真實有效訊息再送一次，不需偽造簽章或知道
+  holder secret；NIZK 有效不表示訊息新鮮，仍需 freshness／context binding 與權威使用狀態。
+- 區分攻擊 replay 與同 `attempt_id` 的合法 retry，並定位 access、issuance、opening 與 handover
+  各自需要的 replay control。
+- 另區分 PQ-RBBC 文件中的 relation／row／aggregate replay：這些是重新代入 assignment 或中間
+  結果檢查限制式的工程驗證，不是網路重放攻擊。
 - 整理離線發行的代價：UE 票券庫存、短效期、撤銷散布、一致消耗狀態、裝置保護及預取政策；
   不把工作移出接入路徑誤寫為工作消失。
-- 本堂只解釋既有 methodology／architecture 原則，沒有新增正式 D-編號決策、修改 access
-  protocol、執行 benchmark 或提高 implementation／security／production claim。
-- 下一堂比較 short-lived、strictly one-use ticket 與 reusable anonymous `Show`。
-- 助教核對 187 個學習文件本機連結，沒有缺失目標；以本機瀏覽器檢查方案比較圖在 736 與
-  288 像素內容寬度下的呈現，HNCC backhaul、offline `pi_issue` 與保留的 replay state 皆清楚可見。
+- 明列正式 related-work／evaluation baseline 必須逐篇核對真實衛星認證流程，再比較 security
+  level、precomputation、online computation／bytes／RTT、backhaul、privacy、state 與測試環境；
+  目前不虛構論文名稱、流程或結果。
+- 本堂只修正學習文件，沒有新增正式 D-編號決策、修改 access protocol、執行 benchmark 或
+  提高 implementation／security／production claim。下一堂先建立衛星論文公平比較方法。
+- 助教核對 187 個學習文件本機連結，沒有缺失目標；以本機瀏覽器檢查修正後的 computation
+  placement 圖與 Replay 圖在 736／288 像素內容寬度下的呈現，運算前移邊界及重放流程完整可見。
 
 ## 後續更新方式
 
