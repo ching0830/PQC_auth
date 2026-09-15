@@ -35,7 +35,8 @@
 | 階段 3／第十五堂：完整生命週期與資料可見性 | 已提供總整理，理解待後續應用 | 已將設定、發行、接入、session／handover 與 opening 串成完整案例；未以教材建立視為能獨立口述 |
 | 階段 4／第十六堂：PQ 計算前移與 Replay | 已提供基礎講解，理解待後續應用 | 依學習者更正，以降低高成本 PQ 在線運算為主要動機；已區分可前移 issuance work、當下 access work 與 Replay |
 | 階段 4／第十七堂：異構衛星認證論文的公平比較 | 已提供基礎講解，理解待後續應用 | 已建立相同事件、成本邊界與證據等級三項條件，沒有將不同流程或證據來源強制合併排名 |
-| 階段 4／第十八堂：One-use ticket 與 reusable anonymous Show | 進行中 | 已區分固定 ticket reuse 與 randomized Show，並整理 v0.1 選擇、系統代價及未來擴充條件 |
+| 階段 4／第十八堂：One-use ticket 與 reusable anonymous Show | 已提供基礎講解，理解待後續應用 | 已區分固定 ticket reuse 與 randomized Show，並整理 v0.1 選擇、系統代價及未來擴充條件 |
+| 階段 4／第十九堂：Blind issuance 與普通 signed ticket | 進行中 | 已定位 issuer unlinkability、blindness／NIZK 分工及共謀／metadata 限制；下一堂分析角色分離 |
 | 階段 5／程式閱讀工具 | 未開始 | 後續補充 repository、Python module、bytes、測試與 Git 工作流 |
 | 階段 6／6-1 至 6-10 | 未開始 | 既有對話中的程式介紹不視為已掌握 |
 | 階段 7／證據與限制 | 未開始 | 每堂先保留研究目標與成果的區分，之後集中學習 |
@@ -610,6 +611,29 @@
   `Show` construction 或效能數值。下一堂比較 blind issuance 與普通 signed ticket。
 - 助教核對 198 個學習文件本機連結，沒有缺失目標；以本機瀏覽器檢查 one-use／multi-show
   比較圖在 736 與 288 像素內容寬度下的呈現，兩條流程、責任差異與 v0.1 選擇完整可見。
+
+### 2026-09-15 — 第十九堂：Blind issuance 與普通 signed ticket
+
+- 學習者要求下一堂，接續第十八堂；不把接續課程視為已獨立掌握 one-use／multi-show 取捨。
+- 以 ordinary signed ticket 的 issuance log 示範：即使 ticket 只含 encrypted identity，HNCC 在發行
+  時看過相同 payload／digest，日後取得 FGS ticket contents 仍能 equality-match 回 `rid`。
+- 將 issuer unlinkability 定位為「HNCC 已知 enrollment identity，但不能把 issuance session 配到
+  最終 ticket」，而不是對 HNCC 隱藏註冊身分。
+- 說明 relation-bound blind issuance 的 `β → z → Finalize` 資料流；blindness 隱藏配對，`pi_issue`
+  則在不公開 witness 下證明 I1–I5，避免 issuer 對任意 hidden message 盲目簽署。
+- 沿 I1–I5 說明 ticket shape／context、canonical digest、blind request、holder secret 與 trace
+  ciphertext 對 authenticated `rid`／同一 serial 的綁定。
+- 說明追責密文與 blind issuance 的相容性：正常 issuance／access 不取得 `rid` 配對，合法 opening
+  仍須案件授權及至少 `t_O` 個 OA shares。
+- 明列 HNCC–FGS 共謀邊界：核心 game 可涵蓋 curious HNCC 取得最終 ticket contents 後的配對嘗試，
+  但要求 honest-protocol、common metadata、HNCC 無 opening threshold，且不涵蓋 traffic analysis、
+  active watermark 或 malicious-issuer framing。
+- 將 Blind-UOV／`pi_issue` 的 proving、verification、response／Finalize 成本放回 offline issuance，
+  不讓大型 issuance proof 進入衛星接入路徑；同時保留其 proof 與 production blockers。
+- 本堂只更新學習文件，未改寫 canonical architecture／methodology、實作或安全完成宣稱。下一堂
+  分析發行、接入驗證與身分開啟的角色分離。
+- 助教核對 205 個學習文件本機連結，沒有缺失目標；以本機瀏覽器檢查 ordinary／blind issuance
+  比較圖在 736 與 288 像素內容寬度下的呈現，兩條配對路徑、三項責任及限制完整可見。
 
 ## 後續更新方式
 

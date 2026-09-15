@@ -117,6 +117,11 @@
 | 多次出示（multi-show） | 同一 credential 可合法支援多次 presentation 的使用模型 | 原生通常不限制使用次數；quota、撤銷、Replay 與裝置外洩仍需另外處理 |
 | 防重複標記（nullifier） | 從秘密、domain 或使用條件導出的公開標記，用來辨認不允許的重複使用 | 設計不當或在太大範圍固定使用會造成 sessions 可連結；目前 v0.1 沒有採用此機制 |
 | 雙重使用（double spend） | 同一個本應受次數限制的 token／權利被使用超過允許次數 | Online prevention 要在第二次成功前拒絕；offline detection 允許先接受、之後才偵測，兩者保證不同 |
+| 發行者不可連結性（issuer unlinkability） | 發行者知道哪些身分完成 issuance，但難以把之後看到的最終 tickets 配回各 issuance sessions | 不隱藏註冊身分；需要 blind issuance、共同 metadata 等假設，且不自動抵抗 traffic correlation |
+| 發行紀錄（issuance transcript／view） | 發行端在一次 issuance 中看到並保存的公開輸入、訊息、狀態與 randomness／internal data | Blindness 的目標不是刪除紀錄，而是使紀錄不足以配對最終 ticket |
+| 盲簽署回應（blind-signing response） | Issuer 對 blind request 執行簽署端運算後回傳的中間結果，本專案記為 `z` | `z` 不是最終 signature；UE 還要以本機 blinding data 執行 `Finalize` |
+| 浮水印攻擊（watermarking attack） | 發行端在 metadata、參數、格式或其他可見欄位放入特定使用者專屬標記 | Blind-signature primitive 不會自動清除協定外層的唯一標記；需共同設定與治理限制 |
+| 流量關聯（traffic correlation） | 依發行與使用的時間、封包大小、路徑、位置或頻率推測兩筆活動的關係 | Cryptographic issuer unlinkability 通常不隱藏這些 metadata；需要 batching、延遲、padding 或網路層措施另行分析 |
 
 專案用語依 [架構](../ARCHITECTURE_zh-TW.md) 與
 [研究方法](../methodology.md) 解釋；本表不替代各模組正式規格。

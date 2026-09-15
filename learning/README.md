@@ -29,6 +29,7 @@
 | [第十六堂：後量子計算前移——離線發行、在線驗證](lessons/16_OFFLINE_ISSUANCE_ONLINE_VERIFICATION_zh-TW.md) | 階段 4 起點；區分可前移的重型 issuance work 與依賴當下資料的 access work，並解釋 Replay |
 | [第十七堂：流程不同，怎麼公平比較衛星認證論文](lessons/17_FAIR_SATELLITE_AUTH_COMPARISON_zh-TW.md) | 保留各篇真實機制，依相同事件、成本邊界與證據等級比較 AnFRA、PkT-SIN、N3PA-STIN、QPCASIN 與本研究 |
 | [第十八堂：One-use ticket 與 reusable anonymous Show](lessons/18_ONE_USE_VS_REUSABLE_SHOW_zh-TW.md) | 比較一次性票券批次與多次匿名出示，說明不可連結性、quota、Replay、在線成本、共享狀態及 v0.1 的選擇理由 |
+| [第十九堂：Blind issuance 與普通 signed ticket](lessons/19_BLIND_VS_ORDINARY_ISSUANCE_zh-TW.md) | 解釋發行端知道註冊身分時，blindness 與 NIZK 如何共同切斷 issuance session 到最終票券的直接連結，並限定共謀與 metadata 邊界 |
 
 課程按概念相依順序進行。第一堂從研究問題開始；角色名稱與新術語先解釋用途，再進入公式、程式與測試。
 先前對話曾提前介紹 replay；該次介紹不代表學習者已理解或完成相應單元。
