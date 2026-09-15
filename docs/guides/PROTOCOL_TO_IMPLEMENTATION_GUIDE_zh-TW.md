@@ -295,6 +295,10 @@ Exact V2 bytes與acceptance events見
   `src/pq_sat_auth/v2/storage/sqlite_reconciliation_audit.py`：在coordinator前append
   immutable intent、完成回傳前append exact receipt；incomplete intent阻止相同
   invocation自動重跑；
+- `src/pq_sat_auth/v2/reconciliation_resume.py`與
+  `src/pq_sat_auth/v2/storage/sqlite_reconciliation_resume.py`：使用獨立profile，在第一筆
+  replay mutation前保存exact clock／candidate plan，逐筆append contiguous progress，讓
+  incomplete invocation可沿用原plan續跑；
 - `src/pq_sat_auth/v2/application.py`：第一個受保護UE→FGS record的canonical
   bytes／AAD／sequence-zero identity、UE outbox coordinator與FGS一次性delivery
   capability；
@@ -327,7 +331,10 @@ Expired reservation另可在canonical evidence與fence rotation後安全重新�
 仍未完成。顯式coordinator可用bounded batch執行這條路徑，並在lost acknowledgement後
 以exact fence read-back恢復；invocation ID只作correlation，並非operator authorization。
 獨立SQLite audit journal可保存intent／receipt並讓exact completed retry不重跑coordinator；
-它與replay database不是同一transaction，且尚不能自動重建incomplete run。
+它與replay database不是同一transaction。另有隔離的resumable journal保存
+`intent -> plan -> progress* -> receipt`，可重建已保存prefix；若fence已commit但progress
+未commit，會以原plan observation重做該candidate並靠exact fence read-back恢復。這仍不提供
+single-active-executor、跨主機lease或兩個database間的atomic transaction。
 Concrete suite、真實proof／AKE、
 獨立production revocation key／PQ verifier、authority rotation、production record／plaintext
 protection、distributed FGS store及production external application `apply_once`仍未完成。

@@ -203,6 +203,48 @@ class ReservationReconciliationRunResultV2:
             raise ValueError("run result contains duplicate items")
 
 
+@dataclass(frozen=True)
+class ReservationReconciliationPlanV2:
+    """Immutable candidate snapshot for one resumable reconciliation run."""
+
+    invocation_id: bytes
+    observed_at: int
+    scan_cutoff: int
+    batch_limit: int
+    minimum_stale_seconds: int
+    candidates: tuple[ReservationV2, ...]
+
+    def __post_init__(self) -> None:
+        _fixed(self.invocation_id, DIGEST_BYTES, "plan invocation_id")
+        _u64(self.observed_at, "plan observed_at")
+        _u64(self.scan_cutoff, "plan scan_cutoff")
+        policy = ReservationReconciliationPolicyV2(
+            self.batch_limit,
+            self.minimum_stale_seconds,
+        )
+        if self.scan_cutoff != max(
+            0,
+            self.observed_at - policy.minimum_stale_seconds,
+        ):
+            raise ValueError("plan cutoff does not match its policy")
+        if not isinstance(self.candidates, tuple):
+            raise TypeError("plan candidates must be a tuple")
+        if len(self.candidates) > policy.batch_limit:
+            raise ValueError("plan candidates exceed batch_limit")
+        seen: set[bytes] = set()
+        for candidate in self.candidates:
+            if not isinstance(candidate, ReservationV2) or isinstance(
+                candidate,
+                FencedReservationV2,
+            ):
+                raise TypeError("plan contains a non-active reservation")
+            if candidate.lease_deadline >= self.scan_cutoff:
+                raise ValueError("plan contains an ineligible reservation")
+            if candidate.identity.use_key in seen:
+                raise ValueError("plan contains a duplicate reservation")
+            seen.add(candidate.identity.use_key)
+
+
 def _same_reservation_fields(
     fence: FencedReservationV2,
     reservation: ReservationV2,
@@ -353,10 +395,12 @@ class ReservationReconciliationCoordinatorV2:
             return ReconciliationItemDispositionV2.FENCED_RECOVERED, None
         return ReconciliationItemDispositionV2.FENCED_BY_PEER, None
 
-    def run_once(
+    def prepare_run(
         self,
         invocation: ReservationReconciliationInvocationV2,
-    ) -> ReservationReconciliationRunResultV2:
+    ) -> ReservationReconciliationPlanV2 | ReservationReconciliationRunResultV2:
+        """Sample and scan without mutating replay state."""
+
         if not isinstance(invocation, ReservationReconciliationInvocationV2):
             raise TypeError(
                 "invocation must be ReservationReconciliationInvocationV2"
@@ -373,8 +417,10 @@ class ReservationReconciliationCoordinatorV2:
                 items=[],
                 failure=f"clock_backend:{type(error).__name__}",
             )
-        stale_seconds = self._policy.minimum_stale_seconds
-        scan_cutoff = max(0, observed_at - stale_seconds)
+        scan_cutoff = max(
+            0,
+            observed_at - self._policy.minimum_stale_seconds,
+        )
         try:
             candidates = self._validate_scan(
                 self._store.expired_reservations(
@@ -394,150 +440,210 @@ class ReservationReconciliationCoordinatorV2:
                 items=[],
                 failure=f"replay_scan:{type(error).__name__}",
             )
-
-        items: list[ReservationReconciliationItemResultV2] = []
-        for reservation in candidates:
-            try:
-                evidence = derive_reservation_abort_evidence_v2(
-                    reservation,
-                    observed_at,
-                )
-                expected = _expected_fence(
-                    reservation,
-                    observed_at,
-                    evidence,
-                )
-            except Exception as error:
-                items.append(
-                    self._item(
-                        reservation,
-                        ReconciliationItemDispositionV2.UNRESOLVED,
-                        detail=f"candidate:{type(error).__name__}",
-                    )
-                )
-                return self._run_result(
-                    invocation,
-                    ReconciliationRunDispositionV2.HALTED,
-                    observed_at=observed_at,
-                    scan_cutoff=scan_cutoff,
-                    scanned_count=len(candidates),
-                    items=items,
-                    failure=f"candidate:{type(error).__name__}",
-                )
-
-            abort_error: Exception | None = None
-            returned: FencedReservationV2 | None = None
-            try:
-                returned = self._store.abort_reservation(
-                    reservation.identity,
-                    fencing_generation=reservation.fencing_generation,
-                    attempt_id=reservation.attempt_id,
-                    request_digest=reservation.request_digest,
-                    observed_at=observed_at,
-                    evidence=evidence,
-                )
-            except Exception as error:
-                abort_error = error
-
-            readback_disposition, readback_error = self._read_back_fence(
-                reservation,
-                expected,
-            )
-            if readback_error is not None:
-                items.append(
-                    self._item(
-                        reservation,
-                        ReconciliationItemDispositionV2.UNRESOLVED,
-                        detail=readback_error,
-                    )
-                )
-                return self._run_result(
-                    invocation,
-                    ReconciliationRunDispositionV2.HALTED,
-                    observed_at=observed_at,
-                    scan_cutoff=scan_cutoff,
-                    scanned_count=len(candidates),
-                    items=items,
-                    failure=readback_error,
-                )
-
-            if readback_disposition is not None:
-                disposition = readback_disposition
-                if abort_error is None and returned == expected:
-                    disposition = ReconciliationItemDispositionV2.FENCED
-                items.append(
-                    self._item(
-                        reservation,
-                        disposition,
-                        fence_generation=reservation.fencing_generation + 1,
-                        detail=(
-                            None
-                            if abort_error is None
-                            else f"abort_ack:{type(abort_error).__name__}"
-                        ),
-                    )
-                )
-                continue
-
-            if abort_error is None:
-                detail = (
-                    "abort_output:mismatch"
-                    if returned != expected
-                    else "fence_readback:missing"
-                )
-                items.append(
-                    self._item(
-                        reservation,
-                        ReconciliationItemDispositionV2.UNRESOLVED,
-                        detail=detail,
-                    )
-                )
-                return self._run_result(
-                    invocation,
-                    ReconciliationRunDispositionV2.HALTED,
-                    observed_at=observed_at,
-                    scan_cutoff=scan_cutoff,
-                    scanned_count=len(candidates),
-                    items=items,
-                    failure=detail,
-                )
-
-            if isinstance(abort_error, (ReservationNotFound, InvalidTransition)):
-                items.append(
-                    self._item(
-                        reservation,
-                        ReconciliationItemDispositionV2.NOT_RECONCILED,
-                        detail=f"abort_race:{type(abort_error).__name__}",
-                    )
-                )
-                continue
-
-            detail = f"abort_backend:{type(abort_error).__name__}"
-            items.append(
-                self._item(
-                    reservation,
-                    ReconciliationItemDispositionV2.UNRESOLVED,
-                    detail=detail,
-                )
-            )
-            return self._run_result(
-                invocation,
-                ReconciliationRunDispositionV2.HALTED,
-                observed_at=observed_at,
-                scan_cutoff=scan_cutoff,
-                scanned_count=len(candidates),
-                items=items,
-                failure=detail,
-            )
-
-        return self._run_result(
-            invocation,
-            ReconciliationRunDispositionV2.COMPLETED,
+        return ReservationReconciliationPlanV2(
+            invocation_id=invocation.invocation_id,
             observed_at=observed_at,
             scan_cutoff=scan_cutoff,
-            scanned_count=len(candidates),
-            items=items,
+            batch_limit=self._policy.batch_limit,
+            minimum_stale_seconds=self._policy.minimum_stale_seconds,
+            candidates=candidates,
         )
+
+    def reconcile_plan_item(
+        self,
+        plan: ReservationReconciliationPlanV2,
+        item_index: int,
+    ) -> ReservationReconciliationItemResultV2:
+        """Execute one exact plan item; safe retry relies on fence read-back."""
+
+        if not isinstance(plan, ReservationReconciliationPlanV2):
+            raise TypeError("plan has the wrong type")
+        if (
+            plan.batch_limit != self._policy.batch_limit
+            or plan.minimum_stale_seconds != self._policy.minimum_stale_seconds
+        ):
+            raise ValueError("plan policy does not match coordinator policy")
+        if isinstance(item_index, bool) or not isinstance(item_index, int):
+            raise TypeError("item_index must be an integer")
+        if not 0 <= item_index < len(plan.candidates):
+            raise ValueError("item_index is outside the plan")
+        reservation = plan.candidates[item_index]
+        try:
+            evidence = derive_reservation_abort_evidence_v2(
+                reservation,
+                plan.observed_at,
+            )
+            expected = _expected_fence(
+                reservation,
+                plan.observed_at,
+                evidence,
+            )
+        except Exception as error:
+            return self._item(
+                reservation,
+                ReconciliationItemDispositionV2.UNRESOLVED,
+                detail=f"candidate:{type(error).__name__}",
+            )
+
+        abort_error: Exception | None = None
+        returned: FencedReservationV2 | None = None
+        try:
+            returned = self._store.abort_reservation(
+                reservation.identity,
+                fencing_generation=reservation.fencing_generation,
+                attempt_id=reservation.attempt_id,
+                request_digest=reservation.request_digest,
+                observed_at=plan.observed_at,
+                evidence=evidence,
+            )
+        except Exception as error:
+            abort_error = error
+
+        readback_disposition, readback_error = self._read_back_fence(
+            reservation,
+            expected,
+        )
+        if readback_error is not None:
+            return self._item(
+                reservation,
+                ReconciliationItemDispositionV2.UNRESOLVED,
+                detail=readback_error,
+            )
+        if readback_disposition is not None:
+            disposition = readback_disposition
+            if abort_error is None and returned == expected:
+                disposition = ReconciliationItemDispositionV2.FENCED
+            return self._item(
+                reservation,
+                disposition,
+                fence_generation=reservation.fencing_generation + 1,
+                detail=(
+                    None
+                    if abort_error is None
+                    else f"abort_ack:{type(abort_error).__name__}"
+                ),
+            )
+        if abort_error is None:
+            detail = (
+                "abort_output:mismatch"
+                if returned != expected
+                else "fence_readback:missing"
+            )
+            return self._item(
+                reservation,
+                ReconciliationItemDispositionV2.UNRESOLVED,
+                detail=detail,
+            )
+        if isinstance(abort_error, (ReservationNotFound, InvalidTransition)):
+            return self._item(
+                reservation,
+                ReconciliationItemDispositionV2.NOT_RECONCILED,
+                detail=f"abort_race:{type(abort_error).__name__}",
+            )
+        return self._item(
+            reservation,
+            ReconciliationItemDispositionV2.UNRESOLVED,
+            detail=f"abort_backend:{type(abort_error).__name__}",
+        )
+
+    @classmethod
+    def finalize_plan(
+        cls,
+        plan: ReservationReconciliationPlanV2,
+        items: tuple[ReservationReconciliationItemResultV2, ...],
+    ) -> ReservationReconciliationRunResultV2:
+        """Bind a terminal contiguous item prefix to its immutable plan."""
+
+        if not isinstance(plan, ReservationReconciliationPlanV2):
+            raise TypeError("plan has the wrong type")
+        if not isinstance(items, tuple):
+            raise TypeError("plan items must be a tuple")
+        if len(items) > len(plan.candidates):
+            raise ValueError("plan result contains too many items")
+        for index, item in enumerate(items):
+            if not isinstance(item, ReservationReconciliationItemResultV2):
+                raise TypeError("plan result contains a non-item")
+            candidate = plan.candidates[index]
+            if (
+                item.use_key != candidate.identity.use_key
+                or item.attempt_id != candidate.attempt_id
+                or item.prior_fencing_generation
+                != candidate.fencing_generation
+            ):
+                raise ValueError("plan result item does not match candidate")
+            fenced = item.disposition in (
+                ReconciliationItemDispositionV2.FENCED,
+                ReconciliationItemDispositionV2.FENCED_RECOVERED,
+                ReconciliationItemDispositionV2.FENCED_BY_PEER,
+            )
+            if fenced:
+                if (
+                    candidate.fencing_generation >= U64_MAX
+                    or item.fence_generation
+                    != candidate.fencing_generation + 1
+                ):
+                    raise ValueError(
+                        "fenced plan result has the wrong generation"
+                    )
+            elif item.fence_generation is not None:
+                raise ValueError(
+                    "non-fenced plan result contains a fence generation"
+                )
+            if (
+                item.disposition
+                in (
+                    ReconciliationItemDispositionV2.NOT_RECONCILED,
+                    ReconciliationItemDispositionV2.UNRESOLVED,
+                )
+                and item.detail is None
+            ):
+                raise ValueError("non-success plan result has no detail")
+            if (
+                item.disposition is ReconciliationItemDispositionV2.UNRESOLVED
+                and index != len(items) - 1
+            ):
+                raise ValueError("unresolved plan item must terminate progress")
+        invocation = ReservationReconciliationInvocationV2(plan.invocation_id)
+        if items and (
+            items[-1].disposition is ReconciliationItemDispositionV2.UNRESOLVED
+        ):
+            detail = items[-1].detail
+            if detail is None:
+                raise ValueError("unresolved plan item has no failure detail")
+            return cls._run_result(
+                invocation,
+                ReconciliationRunDispositionV2.HALTED,
+                observed_at=plan.observed_at,
+                scan_cutoff=plan.scan_cutoff,
+                scanned_count=len(plan.candidates),
+                items=list(items),
+                failure=detail,
+            )
+        if len(items) != len(plan.candidates):
+            raise ValueError("non-terminal plan progress cannot be finalized")
+        return cls._run_result(
+            invocation,
+            ReconciliationRunDispositionV2.COMPLETED,
+            observed_at=plan.observed_at,
+            scan_cutoff=plan.scan_cutoff,
+            scanned_count=len(plan.candidates),
+            items=list(items),
+        )
+
+    def run_once(
+        self,
+        invocation: ReservationReconciliationInvocationV2,
+    ) -> ReservationReconciliationRunResultV2:
+        prepared = self.prepare_run(invocation)
+        if isinstance(prepared, ReservationReconciliationRunResultV2):
+            return prepared
+        items: list[ReservationReconciliationItemResultV2] = []
+        for index in range(len(prepared.candidates)):
+            item = self.reconcile_plan_item(prepared, index)
+            items.append(item)
+            if item.disposition is ReconciliationItemDispositionV2.UNRESOLVED:
+                break
+        return self.finalize_plan(prepared, tuple(items))
 
 
 def reservation_reconciliation_manifest() -> dict[str, object]:
@@ -548,6 +654,7 @@ def reservation_reconciliation_manifest() -> dict[str, object]:
             "sample_clock_once",
             "apply_minimum_stale_policy",
             "bounded_expired_reservation_scan",
+            "freeze_immutable_candidate_plan",
             "derive_exact_abort_evidence",
             "atomic_fence_rotation",
             "fence_readback",
@@ -559,6 +666,7 @@ def reservation_reconciliation_manifest() -> dict[str, object]:
             "minimum_stale_policy_enforced": True,
             "bounded_batch_enforced": True,
             "scan_output_validated": True,
+            "prepare_execute_finalize_api": True,
             "exact_abort_evidence_derived": True,
             "post_abort_fence_readback_required": True,
             "lost_ack_fence_recovery_available": True,

@@ -1,0 +1,32 @@
+{
+  "claim_boundary": {
+    "automatic_background_scheduler_implemented": false,
+    "completed_retry_avoids_rescan_and_reexecution": true,
+    "contiguous_per_item_progress_persisted": true,
+    "distributed_execution_lease_implemented": false,
+    "immutable_scan_plan_persisted_before_replay_mutation": true,
+    "journal_and_replay_atomic_transaction": false,
+    "mutation_before_progress_ack_recoverable_by_fence_readback": true,
+    "operator_authentication_instantiated": false,
+    "physical_power_loss_tested": false,
+    "production_clock_instantiated": false,
+    "production_ready": false,
+    "production_record_protection_instantiated": false,
+    "restart_uses_original_clock_and_candidates": true,
+    "rollback_resistance": false,
+    "separate_from_receipt_only_audit_profile": true,
+    "separate_journal_and_replay_databases": true,
+    "single_active_executor_enforced": false
+  },
+  "format": "PQ-SAT-FGS-RECONCILIATION-RESUME-v0.2",
+  "processing_order": [
+    "append_exact_resumable_intent",
+    "prepare_read_only_scan",
+    "append_exact_candidate_plan_before_mutation",
+    "resume_contiguous_progress_prefix",
+    "execute_one_candidate_with_fence_readback",
+    "append_item_progress_before_next_candidate",
+    "finalize_terminal_prefix",
+    "append_exact_receipt_before_return"
+  ]
+}

@@ -328,6 +328,14 @@ Commit(
 
 只有四項都成立時才能執行 `Abort`。若結果不確定，保持 `RESERVED` 並 fail closed，交由 reconciliation／operator recovery；不得為 availability 猜測「大概沒有成功」。
 
+Reference resumable reconciliation必須在第一個`Abort`前持久保存同一次clock observation與
+exact reservation candidate list，並在每筆fence read-back後append contiguous progress。
+重啟只能從該plan的下一個未保存index繼續，不得重新取樣clock或換一批candidate。若replay
+mutation已commit但progress acknowledgement／commit遺失，允許以相同plan item重試並由exact
+fence read-back收斂；audit journal與replay store分離時，這是可恢復composition，不是跨store
+atomicity。沒有single-active-executor或distributed lease時，多個executor的liveness不在此
+reference claim內，衝突／不確定輸出必須fail closed。
+
 ## 9. Revocation ordering
 
 Revocation check 必須在 pure validation 時執行，並在 reserve／commit transaction 內再次確認同一或更新的 revocation generation。

@@ -1036,3 +1036,38 @@ intent-before-mutation可保證wrapper不會在完全沒有journal痕跡時執�
 Per-item durable plan、incomplete-run reconstruction、operator authentication、production
 record protection、background scheduler、distributed audit、rollback resistance與實體斷電
 仍未完成，因此不是完整production audit trail。
+
+### 13.18 Durable reconciliation plan／progress resume checkpoint
+
+為縮小§13.17的incomplete-intent窗口，後續reference另建獨立resumable profile；既有
+receipt-only audit database不會被自動升級或視為可續跑。新runner固定：
+
+```text
+append resumable intent
+  -> sample clock and perform read-only bounded scan
+  -> append exact immutable plan before the first replay mutation
+  -> for each candidate from the durable contiguous prefix:
+       execute exact candidate with original observed_at
+       verify fence read-back
+       append exact indexed progress before moving to the next candidate
+  -> derive terminal COMPLETED / HALTED receipt from plan + progress
+  -> append and read back receipt before returning recorded
+```
+
+Plan保存`invocation_id`、policy、`observed_at`、`scan_cutoff`及每個active reservation的完整
+identity／attempt／request／serving context／lease／revocation與fencing generation。Progress
+使用zero-based contiguous index並再次綁定candidate的`use_key`、attempt及prior generation；
+unknown fields、alternate encoding、gap、duplicate conflict、plan mismatch與terminal item之後的
+append全部拒絕。Receipt只能由exact terminal prefix導出：完整prefix為`COMPLETED`，最後一筆
+`UNRESOLVED`為`HALTED`；clock／scan在任何mutation前失敗時才允許沒有plan的`REJECTED` receipt。
+
+重啟時，runner沿用原plan，不重新取樣clock或重掃candidate。若fence已commit但該item progress
+尚未commit，再執行相同item會由generation與exact fence read-back得到
+`FENCED_RECOVERED`，之後才保存progress。Intent／plan／progress／receipt都使用append-only
+public API、domain-separated record protection與SQLite `BEGIN IMMEDIATE` serialization。
+
+這個profile仍與replay database分離，沒有跨database transaction；也未強制single active
+executor。並行executor可依已提交progress收斂或回傳不確定，但本checkpoint不宣稱distributed
+execution lease或availability。Operator authentication、production trusted clock／record
+protection、background scheduler、rollback resistance與physical power-loss evidence仍為false，
+因此只構成可信單機假設下的Implemented／Tested recovery reference，不是Production-closed。
