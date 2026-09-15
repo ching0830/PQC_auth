@@ -103,11 +103,13 @@ checkout 補出「概念 → 檔案 → 函式 → 測試 → 目前限制」的
 | [第十八堂：One-use ticket 與 reusable anonymous Show](lessons/18_ONE_USE_VS_REUSABLE_SHOW_zh-TW.md) | 階段 4；能說明固定票券重用不等於匿名 Show，並比較 one-use 與 multi-show 在不可連結性、quota、計算位置、狀態、庫存和失竊風險上的取捨 |
 | [第十九堂：Blind issuance 與普通 signed ticket](lessons/19_BLIND_VS_ORDINARY_ISSUANCE_zh-TW.md) | 階段 4；能說明 issuer unlinkability 保護的配對、NIZK 對 hidden ticket 的檢查責任，以及 honest-protocol、共同 metadata、opening threshold 與 traffic analysis 的限制 |
 | [第二十堂：組織拓撲、角色分離與跨域關聯風險](lessons/20_ROLE_SEPARATION_AND_COLLUSION_zh-TW.md) | 階段 4；能分開行政隸屬、protocol role 與 key role，說明 FAC／OA 同組織、各 NCC 所屬地面站、satellite operator 合作關係，以及跨域資料共享／門檻失陷的邊界 |
+| [第二十一堂：地面站與衛星的工作分配](lessons/21_GROUND_SATELLITE_WORK_PLACEMENT_zh-TW.md) | 階段 4；能說明驗證位置與 RTT 是不同設計軸，區分 satellite path、state backhaul 與 home lookup，並解釋首則 access NIZK 為何不取代權威 one-use state |
 
 目前單元與理解狀態只在 [學習進度](PROGRESS_zh-TW.md) 更新。第二至七堂已提供必要概念的
 入門說明；第八至十五堂已完成階段 3 的教材範圍，涵蓋共同設定、發行、接入、使用狀態、
 換手／撤銷、受控身分開啟及資料可見性總整理。第十六堂已分析高成本 PQ 運算的前移邊界，
 第十七堂建立異構衛星認證論文的公平比較方法，第十八堂比較 one-use ticket 與 reusable anonymous
 `Show`，第十九堂分析 blind issuance 與普通 signed ticket，第二十堂已依作者更正建立組織拓撲，
-並區分行政隸屬、協定角色與密碼功能；下一堂分析 HGS、FGS 與 LEO／FLEO 的工作分配。仍於應用時補課，不以教材
+第二十一堂分析 HGS、FGS 與 LEO／FLEO 的工作分配，以及 2 RTT 草稿和 1 RTT 候選；下一堂分析
+short-lived ticket 的有效期與預先發行策略。仍於應用時補課，不以教材
 建立視為已掌握，尚未進入逐模組或逐行程式閱讀。

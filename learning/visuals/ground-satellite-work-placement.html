@@ -1,0 +1,81 @@
+<section id="work-placement-v21" aria-labelledby="work-placement-v21-title" aria-describedby="work-placement-v21-desc">
+  <style>
+    #work-placement-v21 { width: 100%; color: var(--foreground); background: transparent; font-size: var(--font-size-base); }
+    #work-placement-v21 * { box-sizing: border-box; }
+    #work-placement-v21 h2, #work-placement-v21 h3, #work-placement-v21 p { margin: 0; }
+    #work-placement-v21 .lead { margin-top: 0.35rem; color: var(--muted-foreground); }
+    #work-placement-v21 .placement { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.65rem; margin-top: 1rem; }
+    #work-placement-v21 .actor { min-width: 0; padding-top: 0.55rem; border-top: 3px solid var(--viz-series-1); }
+    #work-placement-v21 .actor:nth-child(2) { border-top-color: var(--viz-series-3); }
+    #work-placement-v21 .actor:nth-child(3) { border-top-color: var(--viz-series-4); }
+    #work-placement-v21 .actor:nth-child(4) { border-top-color: var(--viz-series-5); }
+    #work-placement-v21 .actor span, #work-placement-v21 .actor em { display: block; margin-top: 0.18rem; color: var(--muted-foreground); font-style: normal; }
+    #work-placement-v21 .actor em { padding-top: 0.35rem; }
+    #work-placement-v21 .flows { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; margin-top: 1rem; }
+    #work-placement-v21 .flow { min-width: 0; padding-top: 0.65rem; border-top: 1px solid var(--border); }
+    #work-placement-v21 .metric { margin-top: 0.18rem; color: var(--muted-foreground); }
+    #work-placement-v21 .steps { margin-top: 0.55rem; }
+    #work-placement-v21 .step { display: grid; grid-template-columns: 1.7rem 1fr; gap: 0.45rem; align-items: start; padding: 0.38rem 0; border-bottom: 1px solid var(--border); }
+    #work-placement-v21 .step:last-child { border-bottom: 0; }
+    #work-placement-v21 .num { color: var(--muted-foreground); }
+    #work-placement-v21 .state { margin-top: 0.9rem; padding: 0.75rem; background: color-mix(in srgb, var(--viz-series-5) 10%, transparent); text-align: center; }
+    #work-placement-v21 .state p { margin-top: 0.25rem; color: var(--muted-foreground); }
+    #work-placement-v21 .state strong { color: var(--foreground); }
+    #work-placement-v21 .latencies { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.7rem; margin-top: 0.85rem; }
+    #work-placement-v21 .latency { min-width: 0; padding-top: 0.5rem; border-top: 2px solid var(--viz-series-2); }
+    #work-placement-v21 .latency strong, #work-placement-v21 .latency span { display: block; }
+    #work-placement-v21 .latency span { margin-top: 0.18rem; color: var(--muted-foreground); }
+    #work-placement-v21 .boundary { margin-top: 0.8rem; padding: 0.75rem; text-align: center; background: color-mix(in srgb, var(--accent) 45%, transparent); color: var(--accent-foreground); }
+    @media (max-width: 620px) {
+      #work-placement-v21 .placement { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      #work-placement-v21 .flows, #work-placement-v21 .latencies { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 390px) {
+      #work-placement-v21 .placement { grid-template-columns: 1fr; }
+    }
+  </style>
+
+  <h2 id="work-placement-v21-title">在線工作的兩個問題：在哪裡算、要走幾次</h2>
+  <p id="work-placement-v21-desc" class="lead">FGS 保留驗證與權威狀態，也能評估首則 NIZK 的 1 RTT 候選；兩個選擇並不衝突。</p>
+
+  <div class="placement" aria-label="目前工作放置">
+    <section class="actor"><h3>UE</h3><span>票券與 k_hold</span><em>產生 holder proof／AKE data</em></section>
+    <section class="actor"><h3>LEO／FLEO</h3><span>Satellite operator</span><em>中繼或明確的輕量檢查</em></section>
+    <section class="actor"><h3>FGS</h3><span>Other／visited NCC</span><em>驗證、session、state decision</em></section>
+    <section class="actor"><h3>Replay backend</h3><span>FGS acceptance domain</span><em>Linearizable Reserve／Commit</em></section>
+  </div>
+
+  <div class="flows" aria-label="訊息往返比較">
+    <section class="flow">
+      <h3>現有 access 草稿</h3>
+      <p class="metric">四則訊息 · 約 2 個 UE–FGS RTT</p>
+      <div class="steps">
+        <div class="step"><span class="num">1 →</span><span>Init：UE 經衛星送票券與 key share</span></div>
+        <div class="step"><span class="num">2 ←</span><span>Challenge：FGS nonce、preliminary AKE data</span></div>
+        <div class="step"><span class="num">3 →</span><span>Finish：holder authenticator 與 UE confirmation</span></div>
+        <div class="step"><span class="num">4 ←</span><span>Accept：FGS 提交 state 後回覆 session</span></div>
+      </div>
+    </section>
+    <section class="flow">
+      <h3>低延遲候選</h3>
+      <p class="metric">兩則訊息 · 約 1 個 UE–FGS RTT</p>
+      <div class="steps">
+        <div class="step"><span class="num">1 →</span><span>Request：ticket＋access NIZK＋freshness＋AKE data</span></div>
+        <div class="step"><span class="num">2 ←</span><span>Accept：FGS 驗證、提交 state、認證回覆</span></div>
+      </div>
+    </section>
+  </div>
+
+  <section class="state" aria-label="一次性狀態仍在地面端">
+    <strong>兩種流程都需要：FGS → authoritative state → Reserve／Commit</strong>
+    <p>NIZK 可省掉逐次 challenge 的衛星往返，不能證明另一台 FGS 是否已接受同一張 ticket。</p>
+  </section>
+
+  <div class="latencies" aria-label="三種應分開量測的延遲">
+    <div class="latency"><strong>Satellite path</strong><span>UE ↔ LEO／FLEO ↔ FGS；2 RTT 或 1 RTT</span></div>
+    <div class="latency"><strong>State backhaul</strong><span>FGS ↔ replay／session backend；strict one-use 仍需要</span></div>
+    <div class="latency"><strong>Home lookup</strong><span>FGS ↔ HNCC／HGS；目前每次 access 不需要</span></div>
+  </div>
+
+  <div class="boundary"><strong>設計重點：</strong>用首則 access NIZK 減少訊息輪數；用 FGS 地面狀態維持 one-use。HGS 的 protocol role 尚未固定。</div>
+</section>

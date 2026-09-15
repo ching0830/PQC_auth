@@ -38,6 +38,7 @@
 | 階段 4／第十八堂：One-use ticket 與 reusable anonymous Show | 已提供基礎講解，理解待後續應用 | 已區分固定 ticket reuse 與 randomized Show，並整理 v0.1 選擇、系統代價及未來擴充條件 |
 | 階段 4／第十九堂：Blind issuance 與普通 signed ticket | 已提供基礎講解，理解待後續應用 | 已定位 issuer unlinkability、blindness／NIZK 分工及共謀／metadata 限制 |
 | 階段 4／第二十堂：組織拓撲與角色分離 | 進行中 | 學習者已指出初版組織圖錯誤；已改為 FAC／OA 同屬最高治理組織、HGS 隸屬 HNCC、FGS 隸屬其他 NCC、NCC 與 satellite operator 合作，並區分行政隸屬與 key-role separation |
+| 階段 4／第二十一堂：地面站與衛星的工作分配 | 已提供基礎講解，理解待後續應用 | 已區分工作放置與行政隸屬，對照 FGS／LEO／state backend；說明 1 RTT access NIZK 候選仍需 state backhaul，HGS protocol role 保持未定 |
 | 階段 5／程式閱讀工具 | 未開始 | 後續補充 repository、Python module、bytes、測試與 Git 工作流 |
 | 階段 6／6-1 至 6-10 | 未開始 | 既有對話中的程式介紹不視為已掌握 |
 | 階段 7／證據與限制 | 未開始 | 每堂先保留研究目標與成果的區分，之後集中學習 |
@@ -676,6 +677,27 @@
   integration lane 正式同步，不提高 Defined／Implemented claim。
 - 助教核對 211 個學習文件本機連結，沒有缺失目標；以本機瀏覽器重新檢查組織／密碼功能圖在
   736 與 288 像素內容寬度下的呈現，階層、隸屬、合作關係與文字均無重疊或裁切。
+
+### 2026-09-15 — 第二十一堂：地面站與衛星的工作分配
+
+- 學習者要求下一堂；以前一堂修正後的組織拓撲為前提，不把 HNCC／HGS、其他 NCC／FGS 與
+  satellite operator 的行政歸屬再次抽象成彼此獨立角色。
+- 分開 administrative ownership、work placement 與 message round count。說明 HGS 歸屬已知但
+  protocol role 未定；FGS 是目前 verifier／session endpoint，LEO／FLEO 只中繼或執行明確輕量子集。
+- 說明 FGS 放置重型驗證的資源／更新理由，並以 linearizable replay state、PQ AKE endpoint 與
+  session commit 解釋為何只把 ticket verification 搬到衛星不能取代地面端。
+- 更正「衛星驗簽需要 issuer secret」的潛在誤解：初步 signature verification 只需 public key；
+  主要代價是 configuration／revocation freshness、衛星計算、重複驗證與仍需 FGS state decision。
+- 對照四訊息草稿約 2 RTT 與首則 access NIZK 候選約 1 RTT。候選仍由衛星中繼、FGS 驗證，
+  因此減少逐次 challenge 不要求把完整 verifier 搬到衛星。
+- 將 satellite-path delay、FGS 到 authoritative state 的 state-backhaul delay，以及目前不需要的
+  FGS 到 HNCC／HGS home lookup 分開；NIZK 只能直接降低第一項的訊息輪數。
+- 列出 replay backend 共置、以 `use_key` 分片到 unique writer、縮小 acceptance domain 與 offline
+  double-spend detection 的代價；後者不符合目前 strictly one-use claim。
+- 本堂只新增學習材料，沒有將 1 RTT 候選、HGS protocol role 或分散式 replay backend 提升為
+  canonical／Implemented／Tested 狀態。下一堂分析 short-lived ticket 的有效期與預先發行策略。
+- 助教核對 218 個學習文件本機連結，沒有缺失目標；以本機瀏覽器檢查 work-placement 圖在 736
+  與 288 像素內容寬度下的呈現，角色配置、2 RTT／1 RTT 流程及三種延遲均無重疊或裁切。
 
 ## 後續更新方式
 
