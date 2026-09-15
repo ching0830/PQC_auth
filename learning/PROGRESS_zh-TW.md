@@ -37,7 +37,7 @@
 | 階段 4／第十七堂：異構衛星認證論文的公平比較 | 已提供基礎講解，理解待後續應用 | 已建立相同事件、成本邊界與證據等級三項條件，沒有將不同流程或證據來源強制合併排名 |
 | 階段 4／第十八堂：One-use ticket 與 reusable anonymous Show | 已提供基礎講解，理解待後續應用 | 已區分固定 ticket reuse 與 randomized Show，並整理 v0.1 選擇、系統代價及未來擴充條件 |
 | 階段 4／第十九堂：Blind issuance 與普通 signed ticket | 已提供基礎講解，理解待後續應用 | 已定位 issuer unlinkability、blindness／NIZK 分工及共謀／metadata 限制 |
-| 階段 4／第二十堂：角色分離與共謀邊界 | 進行中 | 已分開 HNCC／FGS／FAC／OA／Operator／LEO 權力，並說明角色合併、key role 與 threshold 限制 |
+| 階段 4／第二十堂：組織拓撲與角色分離 | 進行中 | 學習者已指出初版組織圖錯誤；已改為 FAC／OA 同屬最高治理組織、HGS 隸屬 HNCC、FGS 隸屬其他 NCC、NCC 與 satellite operator 合作，並區分行政隸屬與 key-role separation |
 | 階段 5／程式閱讀工具 | 未開始 | 後續補充 repository、Python module、bytes、測試與 Git 工作流 |
 | 階段 6／6-1 至 6-10 | 未開始 | 既有對話中的程式介紹不視為已掌握 |
 | 階段 7／證據與限制 | 未開始 | 每堂先保留研究目標與成果的區分，之後集中學習 |
@@ -626,7 +626,8 @@
   ciphertext 對 authenticated `rid`／同一 serial 的綁定。
 - 說明追責密文與 blind issuance 的相容性：正常 issuance／access 不取得 `rid` 配對，合法 opening
   仍須案件授權及至少 `t_O` 個 OA shares。
-- 明列 HNCC–FGS 共謀邊界：核心 game 可涵蓋 curious HNCC 取得最終 ticket contents 後的配對嘗試，
+- 明列跨域資料共同分析的邊界：核心 game 可涵蓋 curious HNCC 取得其他 NCC 所屬 FGS 的最終
+  ticket contents 後的配對嘗試，
   但要求 honest-protocol、common metadata、HNCC 無 opening threshold，且不涵蓋 traffic analysis、
   active watermark 或 malicious-issuer framing。
 - 將 Blind-UOV／`pi_issue` 的 proving、verification、response／Finalize 成本放回 offline issuance，
@@ -644,8 +645,8 @@
   LEO／FLEO 只中繼或做明確的輕量檢查。
 - 介紹 least privilege、separation of duties 與 compromise domain，說明增加角色名稱不足以建立
   隔離；keys、thresholds、ceremonies、storage、rotation、accounts 與 audit 也需分開。
-- 分析 HNCC+FGS、FGS+至少 `t_O` OA、opening authorization+至少 `t_O` OA、FAC+HNCC 及在 LEO
-  保存高價值 secrets 的風險；保留 blind issuer unlinkability 只處理限定模型內配對的細節。
+- 初版曾分析 HNCC+FGS、FGS+至少 `t_O` OA、opening authorization+至少 `t_O` OA、FAC+HNCC 及在
+  LEO 保存高價值 secrets 的風險；其中以角色合併描述 HNCC／FGS 的方式已由下方更正取代。
 - 說明角色分離不能防止所有共謀，只能把攻擊成功所需 key roles、shares、corruption assumptions
   與 audit evidence 寫清楚；達 threshold 的 OA compromise 會超出 privacy 假設。
 - 對照 `SystemInitializationBundle` 五種 key roles、跨角色不同 key identity、分離的 FAC／OA
@@ -657,6 +658,24 @@
   分析 FGS 與 LEO／FLEO 的工作分配。
 - 助教核對 212 個學習文件本機連結，沒有缺失目標；以本機瀏覽器檢查角色分離圖在 736 與
   288 像素內容寬度下的呈現，治理路徑、三種敏感能力、衛星邊界與合併風險完整可見。
+
+### 2026-09-15 — 第二十堂更正：組織拓撲與控制邊界
+
+- 學習者指出初版把協定／key-role separation 誤畫成組織分離，並把「HNCC＋FGS 合併／共謀」
+  當成主要結構風險，與預定系統及真實部署不符。
+- 依作者更正固定預定行政拓撲：FAC 與 OA 是同一最高治理組織內的功能；HGS 隸屬 HNCC；FGS
+  隸屬其他／受訪 NCC；NCC 與 satellite operator 是合作關係；LEO／FLEO 由 satellite operator 營運。
+- 將組織圖、協定角色圖與 key-role map 分開。FAC／OA 同組織不表示 configuration、opening
+  authorization 與 threshold shares 能共用 key、帳號或批准流程，也不能據此宣稱抵抗完整治理域失陷。
+- 將風險敘述改為 home-domain issuance records、visited-domain access logs 與 satellite/network
+  metadata 的跨域共同分析；既有 HNCC–HGS 與 NCC–FGS 隸屬本身不是 collusion event。
+- 核對 `ServingContextV1` 目前只有 operator、FGS、relay／cell scope、epoch 與 policy digests；
+  沒有 HGS、home／visited NCC identity 或行政隸屬編碼。
+- 現有 canonical architecture 未出現 HGS，也未完整記錄上述組織邊，因此本次只在學習資料保存
+  作者確認的 intended topology；HGS 協定責任與 `Operator`／satellite operator 名稱關係仍待
+  integration lane 正式同步，不提高 Defined／Implemented claim。
+- 助教核對 211 個學習文件本機連結，沒有缺失目標；以本機瀏覽器重新檢查組織／密碼功能圖在
+  736 與 288 像素內容寬度下的呈現，階層、隸屬、合作關係與文字均無重疊或裁切。
 
 ## 後續更新方式
 

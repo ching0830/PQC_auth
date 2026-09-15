@@ -1,138 +1,55 @@
-# 第二十堂：角色分離、最小權限與共謀邊界
+# 第二十堂：組織拓撲、角色分離與跨域關聯風險
 
 日期：2026-09-15。所屬階段：4／設計取捨。
-接續[第十九堂](19_BLIND_VS_ORDINARY_ISSUANCE_zh-TW.md)，本堂分析為什麼發行、接入驗證、
-治理授權與身分開啟不交給同一個角色，以及「避免共謀」在安全設計中究竟能做到什麼程度。
+接續[第十九堂](19_BLIND_VS_ORDINARY_ISSUANCE_zh-TW.md)，本堂先修正一個重要觀念：
+**行政組織、協定角色與密碼金鑰角色是三種不同的分類。**
 
-## 1. 角色分離不是增加名稱，而是分開敏感能力
+前一版把 HNCC、FGS、FAC、OA 和 satellite operator 畫成彼此獨立的組織，並討論
+「HNCC 與 FGS 合併」。這不符合作者確認的實際部署。正確的組織模型是：
 
-系統內最敏感的三種能力是：
+- FAC 與 OA 是最高治理組織內的兩種功能，該組織負責管理整個系統；
+- HGS 隸屬 HNCC；
+- FGS 隸屬另一個 NCC；
+- NCC 與 satellite operator 是合作關係；
+- 衛星由 satellite operator 營運。
 
-1. **知道註冊身分並發行票券。**HNCC 在 enrollment／issuance 時知道 `rid`，並持有 issuer
-   signing key。
-2. **看到使用活動並建立 session。**FGS 看見 ticket、時間、serving context、session 與
-   consumption state。
-3. **把特定票券開啟為註冊身分。**OA members 持有 threshold decryption shares。
+所以 HNCC 擁有自己的 HGS、其他 NCC 擁有自己的 FGS，都是正常的行政隸屬，不是安全分析中
+臨時發生的「角色合併」。
 
-若同一方同時擁有三種能力，它可以從註冊、發行一路追蹤到每次接入，並直接開啟身分。Blind
-issuance、FGS anonymity 和 threshold opening 的分界都會失去意義。
+## 1. 先分清三張地圖
 
-角色分離採用兩個常見安全原則：
+### 1.1 行政組織圖：誰管理誰
 
-- **Least privilege（最小權限）：**每個元件只取得完成工作所需的最少資料、金鑰與操作。
-- **Separation of duties（職責分離）：**高風險操作必須跨不同權限完成，不讓單一角色自行批准、
-  執行並驗證自己的行為。
+最高層是同一個 federation governance organization，內含 FAC 與 OA 功能。營運層則有 home NCC
+（HNCC）、其他／受訪 NCC，以及 satellite operator。HNCC 管理 HGS，其他 NCC 管理 FGS，
+satellite operator 管理 LEO／FLEO；各 NCC 與 satellite operator 透過合作提供服務。
 
-這些原則降低單一元件失陷的影響範圍，不能保證所有角色永遠不共謀。
+這一層回答的是：
 
-## 2. 每個角色應該知道什麼、不能做什麼
+- 員工、設備與預算屬於哪個組織？
+- 哪個組織可以制定或執行管理政策？
+- 發生事故時由誰負責？
 
-| 角色 | 正常責任與可見資料 | 不應單獨具有的能力 |
-| --- | --- | --- |
-| UE／holder | 保存 `k_hold`、票券與 session state；提出 issuance／access request | 發行簽章、修改共同 policy、產生 OA shares |
-| Operator | 提出共同 epoch、domain、policy、expiry bucket、serving rules | 自己宣稱設定可信、任意為單一 UE 改 metadata、持有全部治理／開啟秘密 |
-| FAC／federation governance | 認證共同 configuration 與 HNCC 的 issuer grant／quota | 直接發行票券、看到每次 access、持有 OA decryption threshold |
-| HNCC | 驗證 `rid`、issuance policy／quota、`pi_issue`，回傳 blind-signing response | 跟蹤每次 access、持有 OA shares、任意個人化共同 metadata |
-| FGS | 驗票、執行 holder authentication／PQ AKE、維護 anti-replay state、建立 session | 取得註冊 `rid`、自行發票、取得 issuer／OA secret keys |
-| OA member | 驗 opening request／authorization，產生自己的一份 `OpenShare` | 單獨解密、處理任意裸 ciphertext、看到所有 access logs |
-| LEO／FLEO | 中繼或執行協定明確指定的輕量檢查 | 保存 issuer、FAC、OA secrets，或成為 consumption state 唯一權威 |
+### 1.2 協定角色圖：每個元件在流程中做什麼
 
-Operator「提出 policy」與 FAC「認證 policy」不同。如果接收端直接相信 Operator 提供的公鑰和
-自簽設定，攻擊者也能產生自己的公鑰及惡意設定。Verifier 必須先持有 out-of-band federation trust
-anchor，再驗證 initialization bundle。
+目前研究文件已明確賦予的主要工作是：
 
-## 3. 三條正常資料路徑
+| 協定角色 | 目前明確的工作 |
+| --- | --- |
+| FAC function | 認證共同設定與有界的 issuer authorization |
+| OA function／members | 在案件授權與門檻條件成立後，提供 opening shares |
+| HNCC | 認證註冊身分、檢查發行資格／quota／`pi_issue`，參與 blind issuance |
+| FGS | 驗證 ticket、holder、serving context、freshness 與狀態，建立 session |
+| LEO／FLEO | 中繼，或執行日後明確指定的輕量工作 |
+| UE | 保存 `k_hold` 與票券，建立發行／接入證明並參與 session establishment |
 
-### 3.1 治理與發行
+HGS 的**行政歸屬**已由作者確認為 HNCC，但現有 canonical architecture 尚未定義 HGS 在協定中的
+確切訊息、驗證、狀態或中繼責任。因此本堂只固定它「屬於 HNCC」，不猜測它一定執行哪一步。
 
-```text
-Operator 提出共同設定
-→ FAC／governance 認證 configuration 與 bounded issuer grant
-→ HNCC 只能在指定 ctx、epoch、policy、quota、expiry 內發行
-```
+### 1.3 金鑰角色圖：哪一把 key 能批准什麼
 
-FAC 不替 HNCC 產生每張票券，HNCC 也不能自行擴張自己的授權。
-
-### 3.2 日常接入
-
-```text
-UE → LEO／FLEO relay → FGS
-FGS 驗 ticket、holder、context、freshness、state、PQ AKE
-→ 建立 session
-```
-
-HNCC 和 OA 不在正常 satellite online path。這同時減少延遲依賴和日常身分資料集中。
-
-### 3.3 例外開啟
-
-```text
-特定 ticket + case + evidence + purpose
-→ OPENING_AUTHORIZATION key role 驗證案件授權
-→ 至少 t_O 個 OA 各自產生有效 share
-→ Combiner 重建並核對 rid、sn
-```
-
-「案件可開啟」和「具有解密 share」是兩道不同的門。單有授權沒有 shares 不能解密；湊到 shares
-卻沒有有效授權，也不應從正常 `OpenShareService` 取得輸出。
-
-## 4. 把角色合併會發生什麼
-
-### HNCC 與 FGS 合併
-
-同一系統同時持有 enrollment／issuance 資料和完整 access metadata，traffic correlation、時間配對
-及個人化 policy 的風險提高。Blindness 在 honest-protocol、common-metadata 模型下仍可保護確切
-ticket 配對，但無法阻止同一營運域利用位置、時間、路由與裝置資訊做推測。
-
-### FGS 與足夠 OA shares 合併
-
-FGS 本來看見每次出示的 ticket。若它同時控制至少 `t_O` 份 opening secrets，就能對看到的票券
-執行開啟，FGS anonymity 的主要邊界失效。
-
-### Opening authorization 與足夠 OA shares 合併
-
-同一控制域既能批准案件，又能完成解密，會讓「先審查目的／證據，再由獨立成員開啟」退化成
-自行批准、自行解密。即使 wire format 仍有兩種 key，若人員、管理帳號、HSM 或 root seed 完全
-相同，實際 compromise domain 仍可能沒有分開。
-
-### FAC 與 HNCC issuer 合併
-
-同一方可以替自己擴張 issuer grant、quota 或 epoch，削弱 federation authorization 的意義。
-Verifier 仍需由外部 trust anchor 驗證 grant，不能把 HNCC 自己宣告的權限當成可信。
-
-### 把高價值 secrets 放到 LEO／FLEO
-
-衛星端暴露、更新困難且可能被捕獲。若保存 issuer 或 opening secrets，單一衛星 compromise 的
-影響會從中繼服務擴大為大量偽造或身分開啟。因此目前只允許 relay 或明確的輕量檢查。
-
-## 5. 相同 organization 不等於可以共用同一把 key
-
-Architecture 允許 FAC 與 OA 由相同 organizations 營運，這是部署彈性；但仍要求以下項目獨立：
-
-- key pair／secret shares；
-- threshold `t_F` 與 `t_O`；
-- DKG／key ceremony；
-- storage 與存取帳號；
-- rotation／revocation；
-- audit log；
-- compromise domain。
-
-`Compromise domain` 是「一次入侵或管理失誤可能同時控制的範圍」。例如兩個服務使用不同 key ID，
-但 secret keys 都由同一 root seed 推導並放在同一未隔離伺服器，形式上有兩把 key，實際上仍可能
-一次全部失陷。
-
-所以要分清三個層次：
-
-```text
-Organization：誰營運
-Protocol role：協定中允許做什麼
-Key role：哪一把 key 只能認證／解密哪一類資料
-```
-
-同一 organization 可以承擔多個 protocol roles，但論文必須誠實列出這會讓哪些腐化事件相關。
-
-## 6. 目前程式如何固定 key-role separation
-
-`SystemInitializationBundle` 要求五種 public key roles 各出現一次：
+同一組織可以執行多個協定功能，但不同用途仍應使用不同 key roles。現在
+`SystemInitializationBundle` 分開五種 public key roles：
 
 1. `FEDERATION_CONFIGURATION`
 2. `ISSUER_AUTHORIZATION`
@@ -140,74 +57,146 @@ Key role：哪一把 key 只能認證／解密哪一類資料
 4. `ISSUER_VERIFICATION`
 5. `OPENING_ENCRYPTION`
 
-目前 contract 要求各角色的 key ID 與 public-key digest 彼此不同，FAC 與 OA 的 member count／
-threshold 也分開編碼。後續模組只取得相符 role 的 public reference：
+這一層回答的是：某把 key 可以驗哪一類訊息、某份 secret share 能做哪一種運算，以及一個
+管理帳號失陷時會同時得到哪些能力。
 
-- issuer grant 只能由 `ISSUER_AUTHORIZATION` role 驗證；
-- opening case 只能由 `OPENING_AUTHORIZATION` role 驗證；
-- ticket 使用 `ISSUER_VERIFICATION` role；
-- opening shares 對應 `OPENING_ENCRYPTION` role。
+## 2. FAC 與 OA 同組織，為什麼仍分成兩種功能
 
-這能阻止「拿一把已知但用途錯誤的 key，去驗證另一種訊息」。Domain-separated message encoding
-則進一步阻止相同 bytes 在不同角色間被重新解讀。
+作者的系統把 FAC 與 OA 放在同一個最高治理組織，這是組織事實。把它們分成兩個名稱，目的不是
+假裝它們來自互不相關的公司，而是區分兩種敏感操作：
 
-不過目前 bundle 只保存 public key identity／digest，相關 production PQ signature、FAC／OA DKG、
-真正 secret storage 與 ceremony 仍未完成。Codec 和 wrong-role negative tests 支持介面分離，不能
-證明真實組織、硬體或管理權限已隔離。
+- **FAC function：**認證 federation configuration 與 HNCC 的發行權限；
+- **OA function：**對特定 opening case 執行身分開啟。
 
-## 7. 角色分離如何處理共謀
+即使同一組織負責兩者，仍可用不同 key pairs、OA threshold shares、HSM policy、操作人員、案件
+核准流程與 audit logs 限制日常誤用。例如「設定可接受」不能直接當成「准許開啟某張票券」，
+`OPENING_AUTHORIZATION` 也不能代替 `OPENING_ENCRYPTION` shares。
 
-角色分離的目標不是聲稱「無法共謀」，而是把安全結論寫成明確條件：
+但論文不能把這種**組織內分權**寫成「抵抗整個最高治理組織惡意」。如果同一治理組織的最高權限
+可以控制 opening authorization 和至少 `t_O` 份 opening secrets，完整治理域失陷時，匿名性便不在
+原本的門檻假設內。這裡能主張的強度，取決於實際的人員、設備與管理隔離，而不只 key role 名稱。
 
-- 少於 `t_O` 個 OA 被控制時，攻擊者不應能開啟身分。
-- 達到或超過 `t_O` 個 OA secrets 被控制時，threshold privacy 假設失效。
-- Curious HNCC 與 FGS 分享 ticket contents 時，issuer unlinkability 仍依賴 blind issuance 與共同
-  metadata；若再加入 traffic observation，只能在額外網路假設下分析。
-- HNCC 若完全惡意，現有 trace soundness／non-frameability 不涵蓋 issuer framing。
-- FGS 若完全惡意，one-time acceptance、revocation enforcement 與 AKE endpoint authentication
-  通常也不能由現有設計保證。
+## 3. NCC、地面站與衛星營運商的正確關係
 
-Threshold 的作用是把「攻陷一個節點」提升成「必須取得至少指定數量的獨立 shares」。如果部署上
-所有 shares 都受同一管理員、同一 root account 或同一備份檔控制，數學門檻仍存在，實際獨立性卻
-大幅降低。
+### Home domain
 
-## 8. 分離帶來的成本
+HNCC 與 HGS 屬於同一個 home administrative domain。HNCC 在 enrollment／issuance 時知道 `rid`、
+發行資格、`sid` 與 quota。HGS 未來若會看到網路 metadata 或執行部分接入工作，這些可見資料必須
+在正式協定中列出；現有文件還不能替它下結論。
 
-- 系統要管理更多 keys、certificates、key IDs、rotation 和 revocation。
-- FAC／OA 需要 DKG、ceremony、成員更換及 threshold availability。
-- Opening 要等待授權與足夠 OA members，可能因成員離線而失敗。
-- 多個組織間的 audit、incident response 與版本同步更複雜。
-- 設定錯誤或 key-role mismatch 必須 fail closed，可能降低 availability。
+### Visited／other-NCC domain
 
-這些成本大多在 initialization、issuance governance 或 exceptional opening，不必加入每次 satellite
-access。正常接入只需要 FGS 已取得並驗證的共同設定、票券資料、撤銷資訊和 state backend。
+FGS 隸屬另一個 NCC。依目前 access 草稿，FGS 是驗票、holder authentication、anti-replay／
+consumption state 和 session establishment 的端點。它會看到 ticket、serving context、時間與
+session 資料，但正常接入不應直接取得註冊 `rid`。
 
-## 9. 目前實作與宣稱邊界
+### Satellite-operator domain
+
+Satellite operator 與各 NCC 合作並營運 LEO／FLEO。衛星路徑可看到的 routing、時間、cell 或流量
+metadata，不能因為 payload 使用密碼學保護就當成消失。高價值 issuer、FAC 或 OA secrets 也不應
+因營運合作而自然下放到衛星。
+
+目前程式的 `ServingContextV1` 已包含 `operator_id_digest`、`fgs_id_digest`、relay scope、cell scope、
+epoch 與 policy digest，能綁定一次接入的部分服務環境。不過它沒有 HGS、home NCC 或 visited NCC
+的明確欄位，也沒有編碼 FGS 與某 NCC 的行政隸屬；程式中的 digest 不能取代組織拓撲規格。
+
+## 4. 應分析「跨域分享資料」，不是「HNCC 與 FGS 合併」
+
+現在把三個主要資料視角分開：
+
+| 行政域 | 可能直接看見的核心資料 | 論文要問的問題 |
+| --- | --- | --- |
+| Home NCC／HNCC＋HGS | 註冊與發行資料；HGS 的額外 metadata 尚待定義 | 能否把 issuance session 配到日後票券？ |
+| Other NCC＋FGS | 最終 ticket、接入時間、serving context、session／consumption state | 能否得知 `rid`，或連結不同票券？ |
+| Satellite operator＋LEO／FLEO | relay、cell、routing、時間與流量 metadata | 能否透過網路觀察推測使用者或行程？ |
+| Federation governance organization（FAC＋OA） | configuration／authorization 與受控 opening 能力 | 哪些條件允許開啟，誰能批准與湊足 shares？ |
+
+真正需要分析的情境是：**home-domain issuance records 與 visited-domain access records 被共同分析
+時，還能推出什麼？** 這可以是兩個 NCC 合作交換資料、事件調查、資料外洩或惡意分享，不需要把
+HNCC 和 FGS 描述成同一組織。
+
+在 honest-protocol、common-metadata、HNCC 沒有 opening threshold 等條件下，blind issuance 的核心
+目標仍是：即使 home domain 後來取得 visited FGS 看見的 ticket contents，也不能只靠 issuance
+transcript 與 ticket 可靠配對。但是它不自動隱藏：
+
+- 發行與接入時間；
+- 位置、relay path、cell 與封包大小；
+- 每位使用者不同的 policy、expiry bucket 或其他 watermark；
+- HGS 未來可能觀察、但尚未被規格限制的 metadata。
+
+所以這裡應寫成「在限定觀察資料下的 issuer unlinkability」，而不是無條件的「HNCC 與 FGS 無法
+共謀」。
+
+## 5. 正常隸屬與高風險權力集中要分開
+
+### 正常且預期的隸屬
+
+- HNCC 管理 HGS；
+- 其他 NCC 管理 FGS；
+- satellite operator 管理衛星；
+- FAC 與 OA 位於同一最高治理組織。
+
+這些關係本身不是協定漏洞。安全模型應把每個行政域原本能看到的資料算入攻擊者 view。
+
+### 需要明列的失陷或濫用情境
+
+- **跨 NCC 資料共享：**home issuance records 與 visited access logs 結合後，可能產生 timing／
+  location correlation；blindness 只涵蓋其安全遊戲定義的密碼配對問題。
+- **治理域取得完整 opening 能力：**若 opening authorization 與至少 `t_O` 份 shares 都受同一個
+  可被完整控制的管理域支配，未授權開啟的風險由實際內部分權與稽核決定。
+- **Visited NCC／FGS 與 opening threshold 合作：**FGS 已看見特定 ticket；取得合法 opening 或控制
+  足夠 shares 時便可恢復其追責身分。兩種情況要分別記錄為授權追責與門檻失陷。
+- **NCC 與 satellite operator 交換 metadata：**即使沒有 `rid`，時間、位置與路由仍可能支援統計
+  關聯。
+- **衛星保存高價值 secrets：**單一衛星失陷可能擴大成偽造、治理冒充或任意 opening，因此是否
+  下放任何密碼功能必須另外論證。
+
+`Collusion` 在這裡最好翻成「原本分屬不同控制邊界的參與者共同使用各自資料或秘密」。它不等於
+兩個組織正式合併，也不適合用來描述 HNCC 與自己的 HGS 這種既有隸屬。
+
+## 6. Least privilege 與 separation of duties 應套在哪裡
+
+- **Least privilege（最小權限）：**HGS、FGS、LEO、後端服務與人員只取得其工作所需的資料和 key。
+- **Separation of duties（職責分離）：**同一治理組織內，設定認證、案件批准、opening share 產生
+  與結果稽核可由不同 key roles、帳號或多人門檻完成。
+- **Compromise domain（共同失陷範圍）：**一次帳號、HSM、root seed、備份或管理層失陷可以同時
+  控制哪些功能。
+
+因此同一 organization 內仍能做有意義的分權，但這種分權有多強要靠部署證據支持。兩個服務即使
+有不同 key ID，若 secrets 都從同一 root seed 推導並存於同一台未隔離主機，實際 compromise
+domain 仍可能相同。
+
+## 7. 目前實作與正式文件的邊界
 
 | 項目 | 目前狀態 |
 | --- | --- |
-| 五種 public key roles、唯一 key IDs／digests、FAC／OA threshold shape | 已由 canonical contracts 實作／測試 |
-| Authenticated initialization 與外部 pinned trust anchor | 介面與 deterministic tests 已有；production PQ authentication 未完成 |
-| Bounded issuer grant、role check、quota／replay reference | 已實作／測試單程序 prototype；FAC threshold backend 未完成 |
-| Opening request、authorization role check、share gate／combiner control flow | 已實作／測試抽象 backend 邊界；production threshold opening 未完成 |
-| 真實 FAC／OA DKG、ceremony、HSM／storage isolation | 尚未完成 |
-| 組織共謀與部署 compromise-domain 證據 | 尚未建立 |
+| 五種 public key roles、不同 key identities、FAC／OA threshold shape | 已由 canonical contracts 實作／測試 |
+| HNCC issuance、FGS access endpoint 與 LEO／FLEO relay 的抽象流程 | 已有規格與 reference control flow；production PQ backends 未完成 |
+| `ServingContextV1` 對 operator、FGS、relay／cell scope 的綁定 | 已有 test-only reference codec；deployment identifier mapping 未固定 |
+| FAC 與 OA 同屬最高治理組織 | 作者已確認的預定部署；canonical 文件目前只說可由相同 organizations 營運，尚未完整畫出層級 |
+| HGS 隸屬 HNCC、FGS 隸屬其他 NCC、NCC 與 satellite operator 合作 | 作者已確認的預定拓撲；尚未寫入 canonical architecture 或程式資料模型 |
+| HGS 的確切協定責任與資料可見性 | 尚未定義，不能由本堂自行補造 |
+| 真實 key ceremony、HSM／帳號隔離、跨組織資料治理證據 | 尚未完成 |
 
-正式依據見 [architecture roles](../../ARCHITECTURE_zh-TW.md#角色)、
-[system initialization contracts](../../docs/artifacts/SYSTEM_INITIALIZATION_CONTRACTS_v0_1_zh-TW.md)、
-[issuer authorization](../../docs/artifacts/ISSUER_AUTHORIZATION_v0_1_zh-TW.md) 與
-[conditional opening gate](../../docs/artifacts/CONDITIONAL_OPENING_GATE_v0_1_zh-TW.md)。
+這個差距很重要：本堂記錄的是作者對預定系統拓撲的更正，尚不能說成 canonical architecture 已完成
+該定義。正式研究文件之後需要由 integration lane 同步，並解決現有 `Operator` 名稱究竟指
+satellite operator、service-policy role，或另一個治理功能，避免同名角色造成誤解。
 
-## 10. 口試時可以怎麼回答
+正式現況依據見 [architecture roles](../../ARCHITECTURE_zh-TW.md#角色)、
+[system initialization contracts](../../docs/artifacts/SYSTEM_INITIALIZATION_CONTRACTS_v0_1_zh-TW.md) 與
+[one-time ticket state](../../docs/specs/ONE_TIME_TICKET_STATE_v0_1_zh-TW.md)。
 
-> 本系統把知道註冊身分並發票的 HNCC、看到日常使用並建立 session 的 FGS，以及持有身分開啟
-> shares 的 OA 分開。FAC／governance 另外認證共同設定與 issuer grant，Operator 只能提出 policy，
-> LEO／FLEO 不保存高價值秘密。這遵循 least privilege 與 separation of duties，使單一 compromise
-> 不會同時取得身分、使用紀錄和開啟能力。角色分離不會消滅共謀；安全主張必須明列少於 `t_O`
-> OA、honest-protocol HNCC、正確 FGS 等假設。即使同一組織營運多個角色，其 keys、thresholds、
-> ceremonies、storage、rotation 和 compromise domains 仍須獨立。目前程式已固定 public key-role
-> separation 與 fail-closed control flow，但 production PQ backends、DKG、真實 key isolation 及部署
-> 共謀證據尚未完成。
+## 8. 口試時可以怎麼回答
 
-下一堂分析地面站與衛星的工作分配：為什麼 LEO／FLEO 主要中繼，而較重的驗證、state 與 session
-工作放在 FGS，以及這個選擇如何影響 latency、backhaul、信任與可用性。
+> 我的組織架構有兩個層次。最高層是同一個 federation governance organization，其中包含 FAC 與
+> OA 功能並管理整體系統；營運層的 HGS 隸屬 HNCC，FGS 隸屬另一個 NCC，各 NCC 與 satellite
+> operator 合作，而衛星由 satellite operator 營運。這些行政關係不等於密碼功能可以共用同一把
+> key。系統仍將 configuration、issuer authorization、opening authorization、issuer verification
+> 與 opening encryption 分成不同 key roles，OA opening 還受案件授權與 threshold 控制。因此我不把
+> HNCC 與自己的 HGS 描述成共謀，也不把 HNCC 和 FGS 寫成組織合併；我要分析的是 home-domain
+> issuance data、visited-domain access data 與 satellite metadata 被跨域分享後，密碼學與流量分析
+> 各能連結到什麼。目前程式已表達部分 key-role separation、HNCC／FGS 協定角色及 serving context，
+> 但 HGS 的協定責任和完整組織拓撲仍待正式規格化。
+
+下一堂分析地面站與衛星的工作分配。屆時會以這個修正後的組織拓撲為前提，分開討論 HGS、FGS
+與 LEO／FLEO 的行政歸屬、協定工作、在線延遲及資料可見性；不會先替尚未定義的 HGS 工作下結論。

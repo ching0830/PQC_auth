@@ -12,8 +12,10 @@
 | 憑證／票券（credential／ticket） | 可供驗證使用資格的資料；ticket 是本專案的具體設計對象 | 數位資料可複製，安全性還需要持有者驗證與使用規則 |
 | 發行者（issuer） | 檢查註冊／發行條件並發出票券的一方 | 知道註冊身分，不代表應被允許追蹤後續每次使用 |
 | 驗證者（verifier） | 接入時執行所需檢查的一方 | 本專案主要由 FGS 地面站負責，不預設衛星承擔全部驗證 |
-| HNCC | 本專案的註冊／票券發行端，負責驗證註冊身分與發行條件 | 註冊時知道身分；對其不可連結的目標是限制發行紀錄與後續票券使用的對應 |
-| FGS | 本專案的接入驗證地面站與連線端點 | 希望能驗證票券、持票者及服務條件，而不直接取得註冊身分 |
+| HNCC | Home NCC；本專案的註冊／票券發行端，並在行政上管理 HGS | 註冊時知道身分；對其不可連結的目標是限制發行紀錄與後續票券使用的對應 |
+| HGS | 行政上隸屬 HNCC 的 home-side ground station | 作者已確認隸屬關係；目前 canonical architecture 尚未固定其協定責任與資料可見性，不能自行假定 |
+| FGS | 隸屬其他／受訪 NCC 的接入驗證地面站與連線端點 | 希望能驗證票券、持票者及服務條件，而不直接取得註冊身分；不與 HNCC 屬於同一行政域 |
+| Home／visited administrative domain | 分別把 HNCC＋HGS 與其他 NCC＋FGS 視為兩個營運管理域 | 分域是為了列資料視角與控制邊界，不表示兩個 NCC 永遠不會合作或分享資料 |
 | 可連結性（linkability） | 能判斷多次紀錄屬於同一對象、票券或識別值 | 不知道真實姓名，仍可能把多次紀錄串起來 |
 | 身分開啟（identity opening） | 在符合授權條件後，從票券的追責資料恢復註冊身分 | 需要額外權限與程序，不是一般接入驗證自動執行的動作 |
 | 門檻（threshold） | 必須取得至少規定數目的有效參與份額才可完成指定操作 | 多人控制仍需明確授權；不能只以湊足人數代替全部條件 |
@@ -35,7 +37,7 @@
 | 摘要（digest） | 雜湊函式輸出的資料，例如由持票者秘密算出的 `h` | 本專案的 `h` 不是註冊身分；相同摘要也不保證數學上只有唯一對應輸入 |
 | 明文／密文（plaintext／ciphertext） | 明文是加密前的資料；密文是加密後得到的受保護表示 | 密文可以出現在票券中，看到密文不等於已取得裡面的明文 |
 | 加密／解密（encryption／decryption） | 依密碼學方案把明文轉成密文，再以所需金鑰資料恢復明文 | 本專案追責資料的加密公鑰與發行簽署金鑰不同；合法開啟還需要授權檢查與足夠有效份額 |
-| OA（opening authority） | 持有開啟秘密份額、依規則參與身分開啟的單位 | 恢復的是票券綁定的註冊身分與序號；追責明文不包含持票者秘密 |
+| OA（opening authority） | 最高 federation governance organization 內負責受控身分開啟的功能／成員 | 與 FAC 同屬最高治理組織，但 opening authorization、opening shares 與其他 key roles 仍有不同用途 |
 | 綁定（binding） | 使驗證結果依賴指定內容，換掉受保護內容後，原證明不能直接沿用 | 把欄位放在訊息旁邊不等於綁定；本課討論票券、挑戰與此次接入內容的認證綁定 |
 | 重放（replay） | 攻擊者保存一份先前真實有效的訊息，再送一次，企圖讓驗證端把舊訊息當成新的合法請求 | 不必偽造簽章或知道秘密；signature／NIZK 有效不表示訊息新鮮，合法同 attempt retry 也需與攻擊區分 |
 | 關係重播（relation／row replay） | 把已保存的 assignment 或中間結果重新代入 relation／constraints，重做一致性檢查 | 是 PQ-RBBC 工程驗證程序，不是攻擊者重送網路訊息；局部 replay 通過也不等於完整 proof |
@@ -53,8 +55,10 @@
 | secrets | Python 隨附、提供安全亂數工具的模組，例如 `token_bytes(n)` | 示範產生 bytes 不等於完成特殊格式取樣、秘密儲存或整個發行程序 |
 | 固定測試資料（deterministic fixture） | 以固定輸入建立可重現資料，讓測試核對相同結果 | 固定公開測試種子算出的值不能用作正式使用者秘密；fixture 通過不證明安全取樣 |
 | UE（user equipment） | 本專案中使用者的裝置，例如小明持票接入的裝置 | 保存秘密並參與協定；不是只有被動出示票券的資料容器 |
-| FAC | 聯盟授權單位，依門檻機制認可共同設定與發行權限 | 與 OA 即使由同組織營運，仍需分開金鑰、門檻與職責 |
-| Operator | 定義服務政策、適用期間與服務環境等營運設定的角色 | 其設定需受聯盟認證約束，不等於可任意個人化票券標記 |
+| FAC | 最高 federation governance organization 內負責聯盟設定與發行授權的功能 | 與 OA 同屬最高治理組織；功能與 key roles 的區分不表示它們是不同公司 |
+| Federation governance organization | 包含 FAC 與 OA 功能、位於最高層並負責整體系統治理的組織 | 同一組織內仍可用不同 keys、threshold、帳號、操作人員與稽核流程分權；不能據此宣稱抵抗整個治理組織失陷 |
+| Satellite operator | 營運 LEO／FLEO，並與 NCC 合作提供衛星連線的組織 | 與 NCC 是合作關係；目前 canonical 文件的 `Operator` policy role 是否完全等同此組織仍待正式固定 |
+| Operator（現有文件角色） | 現有架構中定義服務政策、適用期間與服務環境等營運設定的角色 | 名稱可能與 satellite operator 混淆；作者的治理拓撲更正尚待 canonical 文件同步 |
 | 中繼（relay） | 接收並轉送兩端之間的通訊，本專案主要對應 LEO／FLEO 路徑 | 轉送不等於持有發行或開啟金鑰，也不自動保證內容機密性 |
 | 連線／會話（session） | 雙方為一次已建立的通訊維護的狀態，可包含多筆後續資料交換 | 一次性票券限制初始連線建立，不表示每筆資料都要重新發行票券 |
 | 連線金鑰（session key） | 依連線協定建立、用於保護該連線通訊的秘密金鑰 | 與持票者秘密、票券序號不同；具體 PQ AKE 仍待選定與完成 |
@@ -126,6 +130,9 @@
 | 職責分離（separation of duties） | 把批准、執行、驗證或解密等高風險能力交給不同權限角色 | 只改角色名稱不夠；若共用 key、帳號、seed 或管理控制域，實際仍可能集中 |
 | 失陷範圍（compromise domain） | 一次漏洞、憑證外洩或管理失誤可能同時控制的一組元件、keys 或角色 | 不同 key IDs 不保證獨立；還要檢查生成、storage、帳號、備份與 rotation 是否共用 |
 | 金鑰角色（key role） | 限制一把 key 只能驗證、簽署或解密特定類型資料的用途標記 | 已知且有效的錯誤角色 key 仍必須拒絕；需搭配 domain-separated message encoding |
+| 行政隸屬（administrative ownership） | 說明人員、設備或服務由哪個組織管理，例如 HGS 隸屬 HNCC | 不等於所有協定工作、資料庫與密碼 keys 都可無限制共用 |
+| 協定角色（protocol role） | 說明一個參與者依協定可接收、驗證、產生哪些訊息 | 同一組織可以執行多個 protocol roles；組織名稱也不能取代精確訊息與狀態定義 |
+| 跨域資料共享（cross-domain data sharing） | 不同行政域把各自的 issuance、access 或 network metadata 放在一起分析 | 比「角色合併」更精確；可能出於合作、調查、外洩或惡意行為，能否關聯取決於密碼與 metadata 邊界 |
 | 門檻腐化（threshold compromise） | 攻擊者取得至少門檻數量的有效 secret shares | 少於 `t_O` 的 privacy 結論不涵蓋達到門檻的攻擊者；治理 gate 也不能替代秘密份額安全 |
 
 專案用語依 [架構](../ARCHITECTURE_zh-TW.md) 與

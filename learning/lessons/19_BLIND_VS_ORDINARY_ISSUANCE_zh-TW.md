@@ -116,13 +116,14 @@ I5 很重要，因為它阻止惡意 UE 把別人的身分、空資料或不可�
 合法案件：經授權且達 OA threshold 後開啟特定 ticket
 ```
 
-## 6. HNCC 與 FGS 共謀時能保護到哪裡
+## 6. Home-domain 與 visited-domain 資料被共同分析時能保護到哪裡
 
 這一點必須按 threat model 說清楚。
 
 目前 issuer-unlinkability game 已讓 honest-protocol curious HNCC 保存兩個完整 issuance views，之後
-取得兩張最終 tickets 並嘗試配對。這涵蓋「FGS 把 ticket contents／digests 交給 HNCC 比對」的核心
-密碼學問題：只靠 issuance transcript 和 ticket，仍不應能可靠配對。
+取得兩張最終 tickets 並嘗試配對。這涵蓋「其他 NCC 所屬 FGS 的 ticket contents／digests 與 HNCC
+的 issuance records 被共同分析」時的核心密碼學問題：只靠 issuance transcript 和 ticket，仍不應
+能可靠配對。這是在分析跨行政域分享資料，不表示 HNCC 與 FGS 原本是同一組織。
 
 但目前結論有以下限制：
 
@@ -134,7 +135,7 @@ I5 很重要，因為它阻止惡意 UE 把別人的身分、空資料或不可�
 - 發行時間、接入時間、封包大小、路徑與位置可能形成 traffic correlation；blindness theorem 不隱藏
   這些 network metadata。
 
-因此「防 HNCC–FGS 共謀」不能寫成沒有條件的全面保證。較準確的說法是：
+因此不能把結果寫成沒有條件的「防 HNCC–FGS 共謀」。較準確的說法是：
 
 > 對遵循發行協定、沒有 opening threshold 的 curious HNCC，即使取得最終 ticket contents，核心目標
 > 是隱藏 ticket 與 issuance session 的配對；active watermark、opening-threshold collusion 與 traffic
