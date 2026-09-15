@@ -1,6 +1,6 @@
 # Satellite Access 與 PQ AKE 規格 v0.2
 
-> 狀態：Defined；bounded reference codecs／relation／processors、UE SQLite wallet、FGS single-host SQLite replay／delivery／protected application inbox已 Implemented／Tested；尚未 Instantiated／distributed／Proof-closed／Production-closed
+> 狀態：Defined；bounded reference codecs／relation／processors、UE SQLite wallet、FGS single-host SQLite replay／delivery／protected application inbox及unified activation-inbox transaction已 Implemented／Tested；尚未 Instantiated／distributed／Proof-closed／Production-closed
 > 日期：2026-09-15
 > 所屬模組：M5 Satellite authentication、M6 Anti-replay／revocation／handover
 > State companion：`docs/specs/ONE_TIME_TICKET_STATE_v0_2_zh-TW.md`
@@ -484,20 +484,26 @@ outbox 完成 `RESERVED -> READY`、保存 exact record bytes 並 read back，�
 不同 plaintext 則 fail closed。
 
 FGS 的共同處理順序為：strict parse及binding、驗證client Finished、以
-`K_application`驗證整個record AEAD，再atomic activate session。AEAD失敗不得activate；
-另一個通過AEAD的sequence-0 record必須視為conflict。Activation後固定兩種互斥sink：
+`K_application`驗證整個record AEAD，再進入activation commit boundary。AEAD失敗不得
+activate；另一個通過AEAD的sequence-0 record必須視為conflict。Processor固定三種互斥
+sink profiles：
 
 - legacy direct-delivery compatibility path：取得durable at-most-once claim後釋放一次
   plaintext capability；exact retry只回`ALREADY_DELIVERED`。此path可能在claim後crash時
   永久遺失工作；
-- recommended durable-inbox path：同一enqueue保存claim identity與protected plaintext，
+- compatibility durable-inbox path：activation後以另一筆enqueue保存claim identity與
+  protected plaintext；
+- recommended unified activation-inbox path：同一SQLite database／connection／
+  `BEGIN IMMEDIATE`內，同時把grant轉成`CONSUMED_ACTIVE`並建立`PENDING` protected
+  plaintext，
   processor只回queue metadata；dispatcher以`record_digest`呼叫application `apply_once`，
   再保存stable receipt並標記`COMPLETED`。
 
-Processor必須只配置其中一種sink。Durable inbox封閉claim與work-item persistence間的
-crash window，但activation與inbox仍不是同一transaction，production external
-application也必須自行在side-effect transaction內實作原子idempotency。故本規格仍不
-宣稱任意application side effect具有crash-safe exactly-once保證。
+Processor必須只配置其中一種sink；unified模式另強制activation processor與atomic inbox
+使用同一store object，且store停用獨立`activate_session()`入口。這封閉單機SQLite模型中
+activation commit後、inbox enqueue前的crash window。Production external application
+仍必須自行在side-effect transaction內實作原子idempotency；因此本規格仍不宣稱任意
+external application side effect具有crash-safe exactly-once保證。
 
 ## 9. Acceptance terminology
 
@@ -802,3 +808,32 @@ test-only SQLite ledger驗證composition，沒有production application adapter�
 distributed transaction。因此external side effect exactly-once仍為false。詳細evidence見
 `docs/artifacts/SATELLITE_ACCESS_v0_2_APPLICATION_INBOX_zh-TW.md`，machine claims收錄於
 `manifests/pq_sat_auth_first_application_v0_2.json`。
+
+### 13.11 FGS unified activation-inbox transaction checkpoint
+
+後續checkpoint新增`src/pq_sat_auth/v2/storage/sqlite_unified.py`及activation processor的
+composed commit hook。Unified store延用replay與inbox的canonical protected records，但以
+新的application ID及一個包含兩張表的exact schema建立單一SQLite database。對已完整驗證
+的第一筆record，唯一commit順序為：
+
+```text
+BEGIN IMMEDIATE
+  validate exact CONSUMED_PENDING_CONFIRM grant
+  update replay row -> CONSUMED_ACTIVE
+  insert inbox row -> PENDING(record_digest, protected plaintext)
+COMMIT
+```
+
+任一步驟在commit前失敗都rollback兩者；exact retry只能讀回同一active grant與同一
+pending／completed inbox identity。Store不使用`ATTACH`，也拒絕透過獨立
+`activate_session()`繞過composition。測試涵蓋inbox sealing failure rollback、restart、
+跨process exact race、competing authenticated first record、dispatch completion，以及
+已接受work item在session之後逾期仍可完成。
+
+這只封閉可信單機SQLite／filesystem假設下的activation-inbox gap。Activation前取得的
+revocation snapshot仍未與authoritative state transition放入同一transaction；production
+record／plaintext protection、實體斷電、rollback／hostile filesystem、distributed FGS及
+production application `apply_once`仍未封閉，external side effect exactly-once仍為false。
+詳細evidence見
+`docs/artifacts/SATELLITE_ACCESS_v0_2_UNIFIED_ACTIVATION_INBOX_zh-TW.md`，machine claims見
+`manifests/pq_sat_auth_fgs_unified_activation_inbox_sqlite_v0_2.json`。

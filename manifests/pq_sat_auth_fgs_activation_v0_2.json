@@ -6,6 +6,7 @@
     "atomic_revocation_and_activation_implemented": false,
     "capability_released_only_after_activate": true,
     "client_finished_boundary_implemented": true,
+    "composed_activation_commit_hook_implemented": true,
     "durable_or_distributed_store_implemented": false,
     "explicit_session_activate_frame_implemented": true,
     "first_protected_application_record_implemented": false,
@@ -25,7 +26,7 @@
     "query_bound_activation_revocation",
     "client_finished",
     "optional_pure_pre_activation_check",
-    "atomic_activate",
+    "atomic_activate_or_composed_commit",
     "release_capability_after_activate"
   ]
 }

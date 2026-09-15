@@ -187,6 +187,32 @@ class ActivationReplayStoreV2(Protocol):
     ) -> ActivateResultV2: ...
 
 
+@dataclass(frozen=True)
+class ActivationCommitRequestV2:
+    """Validated values handed to the final activation commit boundary."""
+
+    identity: TicketUseIdentity
+    attempt_id: bytes
+    request_digest: bytes
+    session_id: bytes
+    response_digest: bytes
+    client_confirmation_digest: bytes
+    activated_at: int
+
+    def validate(self) -> None:
+        if not isinstance(self.identity, TicketUseIdentity):
+            raise TypeError("identity must be a TicketUseIdentity")
+        for name in (
+            "attempt_id",
+            "request_digest",
+            "session_id",
+            "response_digest",
+            "client_confirmation_digest",
+        ):
+            _fixed(getattr(self, name), DIGEST_BYTES, name)
+        _u64(self.activated_at, "activated_at")
+
+
 class ActivationDispositionV2(Enum):
     ACTIVATED = "activated"
     ALREADY_ACTIVE = "already_active"
@@ -258,6 +284,12 @@ class FGSActivationProcessorV2:
         self._key_schedule_backend = key_schedule_backend
         self._recovery_backend = recovery_backend
         self._suite_registry = suite_registry
+
+    @property
+    def replay_store(self) -> ActivationReplayStoreV2:
+        """Expose the bound store identity for composed atomic backends."""
+
+        return self._replay_store
 
     @staticmethod
     def _reject(failure: str) -> ActivationProcessResultV2:
@@ -406,13 +438,19 @@ class FGSActivationProcessorV2:
         *,
         pre_activate_check: Callable[[ActivatedSessionCapabilityV2], bool]
         | None = None,
+        activation_committer: Callable[
+            [ActivationCommitRequestV2], ActivateResultV2
+        ]
+        | None = None,
     ) -> ActivationProcessResultV2:
         """Validate and activate one session.
 
         The optional check is for pure authenticated-record validation.  It
         receives candidate key material and must return the literal ``True``
         before the store transition.  It must not perform application side
-        effects.
+        effects.  A composed store may supply ``activation_committer`` to
+        include additional durable state in the same transaction; its object
+        identity is checked by the caller that composes the processor.
         """
 
         try:
@@ -528,14 +566,30 @@ class FGSActivationProcessorV2:
             self._suite_registry,
         )
         try:
-            activation_result = self._replay_store.activate_session(
-                record.identity,
+            commit_request = ActivationCommitRequestV2(
+                identity=record.identity,
                 attempt_id=record.attempt_id,
                 request_digest=record.request_digest,
                 session_id=record.session_id,
                 response_digest=record.response_digest,
                 client_confirmation_digest=confirmation_digest,
                 activated_at=now,
+            )
+            commit_request.validate()
+            activation_result = (
+                self._replay_store.activate_session(
+                    commit_request.identity,
+                    attempt_id=commit_request.attempt_id,
+                    request_digest=commit_request.request_digest,
+                    session_id=commit_request.session_id,
+                    response_digest=commit_request.response_digest,
+                    client_confirmation_digest=(
+                        commit_request.client_confirmation_digest
+                    ),
+                    activated_at=commit_request.activated_at,
+                )
+                if activation_committer is None
+                else activation_committer(commit_request)
             )
             if not isinstance(activation_result, ActivateResultV2):
                 raise TypeError("activation backend returned the wrong type")
@@ -644,7 +698,7 @@ def fgs_activation_processor_manifest() -> dict[str, object]:
             "query_bound_activation_revocation",
             "client_finished",
             "optional_pure_pre_activation_check",
-            "atomic_activate",
+            "atomic_activate_or_composed_commit",
             "release_capability_after_activate",
         ],
         "activation_revocation_query_domain": (
@@ -654,6 +708,7 @@ def fgs_activation_processor_manifest() -> dict[str, object]:
             "unique_session_index_implemented": True,
             "client_finished_boundary_implemented": True,
             "pre_activation_check_hook_implemented": True,
+            "composed_activation_commit_hook_implemented": True,
             "activation_revocation_boundary_implemented": True,
             "capability_released_only_after_activate": True,
             "explicit_session_activate_frame_implemented": True,

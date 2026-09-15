@@ -26,6 +26,7 @@ from .access import (
     encode_session_activate,
 )
 from .activation import (
+    ActivationCommitRequestV2,
     ActivatedSessionCapabilityV2,
     ActivationDispositionV2,
     FGSActivationProcessorV2,
@@ -40,6 +41,7 @@ from .framing import (
     require_uint,
 )
 from .processor import AccessClockV2
+from .replay import ActivateResultV2
 from .ue import UEAcceptedSessionV2
 
 
@@ -723,6 +725,36 @@ class FirstApplicationInboxStoreV2(Protocol):
     def pending(self, *, limit: int = 100) -> tuple[bytes, ...]: ...
 
 
+@dataclass(frozen=True)
+class AtomicActivationInboxResultV2:
+    activation: ActivateResultV2
+    inbox: InboxEnqueueResultV2
+
+    def validate(self) -> None:
+        if not isinstance(self.activation, ActivateResultV2):
+            raise TypeError("atomic activation result has the wrong type")
+        if not isinstance(self.inbox, InboxEnqueueResultV2):
+            raise TypeError("atomic inbox result has the wrong type")
+        self.inbox.validate()
+        if self.activation.record.session_id != self.inbox.session_id:
+            raise ValueError("atomic activation and inbox session differ")
+
+
+class AtomicActivationInboxStoreV2(Protocol):
+    """One physical transaction for activation and protected inbox enqueue."""
+
+    durable: bool
+    distributed: bool
+    production_ready: bool
+
+    def activate_and_enqueue(
+        self,
+        request: ActivationCommitRequestV2,
+        record_digest: bytes,
+        plaintext: bytes,
+    ) -> AtomicActivationInboxResultV2: ...
+
+
 class InMemoryFirstApplicationDeliveryStoreV2:
     durable = False
     distributed = False
@@ -806,16 +838,30 @@ class FGSFirstApplicationRecordProcessorV2:
         protection_backend: ApplicationProtectionBackendV2,
         delivery_store: FirstApplicationDeliveryStoreV2 | None = None,
         inbox_store: FirstApplicationInboxStoreV2 | None = None,
+        atomic_inbox_store: AtomicActivationInboxStoreV2 | None = None,
         suite_registry: Mapping[int, SuiteLimitsV2] = REFERENCE_SUITE_REGISTRY,
     ) -> None:
-        if (delivery_store is None) == (inbox_store is None):
+        configured_sinks = sum(
+            candidate is not None
+            for candidate in (delivery_store, inbox_store, atomic_inbox_store)
+        )
+        if configured_sinks != 1:
             raise ValueError(
-                "exactly one delivery_store or inbox_store must be configured"
+                "exactly one delivery_store, inbox_store, or "
+                "atomic_inbox_store must be configured"
+            )
+        if (
+            atomic_inbox_store is not None
+            and activation_processor.replay_store is not atomic_inbox_store
+        ):
+            raise ValueError(
+                "atomic inbox store must be the activation replay store"
             )
         self._activation_processor = activation_processor
         self._protection_backend = protection_backend
         self._delivery_store = delivery_store
         self._inbox_store = inbox_store
+        self._atomic_inbox_store = atomic_inbox_store
         self._suite_registry = suite_registry
 
     @staticmethod
@@ -856,6 +902,7 @@ class FGSFirstApplicationRecordProcessorV2:
 
         plaintext_output: bytes | None = None
         record_digest_output: bytes | None = None
+        atomic_output: AtomicActivationInboxResultV2 | None = None
 
         def authenticate_record(
             capability: ActivatedSessionCapabilityV2,
@@ -889,9 +936,41 @@ class FGSFirstApplicationRecordProcessorV2:
             )
             return True
 
+        def commit_activation(
+            request: ActivationCommitRequestV2,
+        ) -> ActivateResultV2:
+            nonlocal atomic_output
+            if self._atomic_inbox_store is None:
+                raise RuntimeError("atomic inbox store is unavailable")
+            if not isinstance(plaintext_output, bytes) or not isinstance(
+                record_digest_output,
+                bytes,
+            ):
+                raise RuntimeError("authenticated application output is missing")
+            committed = self._atomic_inbox_store.activate_and_enqueue(
+                request,
+                record_digest_output,
+                plaintext_output,
+            )
+            if not isinstance(committed, AtomicActivationInboxResultV2):
+                raise TypeError("atomic inbox store returned the wrong type")
+            committed.validate()
+            if (
+                committed.inbox.session_id != record.session_id
+                or committed.inbox.record_digest != record_digest_output
+            ):
+                raise ValueError("atomic inbox store changed record identity")
+            atomic_output = committed
+            return committed.activation
+
         activation_result = self._activation_processor.process(
             record.activation_bytes,
             pre_activate_check=authenticate_record,
+            activation_committer=(
+                commit_activation
+                if self._atomic_inbox_store is not None
+                else None
+            ),
         )
         if activation_result.accepted is not True:
             disposition = (
@@ -934,6 +1013,31 @@ class FGSFirstApplicationRecordProcessorV2:
             )
         plaintext = plaintext_output
         record_digest = record_digest_output
+
+        if self._atomic_inbox_store is not None:
+            if atomic_output is None:
+                return self._result(
+                    FGSFirstRecordDispositionV2.COMMIT_UNCERTAIN,
+                    "atomic_activation_inbox_output_missing",
+                )
+            enqueue = atomic_output.inbox
+            disposition = {
+                InboxEnqueueDispositionV2.NEW: FGSFirstRecordDispositionV2.QUEUED,
+                InboxEnqueueDispositionV2.EXISTING_PENDING: (
+                    FGSFirstRecordDispositionV2.ALREADY_QUEUED
+                ),
+                InboxEnqueueDispositionV2.EXISTING_COMPLETED: (
+                    FGSFirstRecordDispositionV2.ALREADY_COMPLETED
+                ),
+            }[enqueue.disposition]
+            return FGSFirstRecordProcessResultV2(
+                True,
+                disposition,
+                (),
+                record,
+                None,
+                enqueue,
+            )
 
         if self._inbox_store is not None:
             try:
@@ -1056,8 +1160,8 @@ def first_application_checkpoint_manifest() -> dict[str, object]:
             "canonical_record_and_embedded_activation",
             "suite_bound_application_authentication",
             "client_finished_and_application_authentication",
-            "atomic_session_activation",
-            "durable_single_host_inbox_enqueue",
+            "atomic_session_activation_or_composed_activation_inbox_commit",
+            "durable_single_host_protected_inbox",
             "idempotent_application_dispatch",
         ],
         "claim_boundary": {
@@ -1073,6 +1177,8 @@ def first_application_checkpoint_manifest() -> dict[str, object]:
             "fgs_protected_plaintext_inbox_reference_implemented": True,
             "fgs_pending_inbox_restart_recovery_implemented": True,
             "application_apply_once_contract_implemented": True,
+            "single_host_atomic_activation_and_inbox_implemented": True,
+            "separate_inbox_mode_atomic_with_activation": False,
             "activation_and_delivery_same_transaction": False,
             "external_side_effect_exactly_once": False,
             "production_aead_instantiated": False,

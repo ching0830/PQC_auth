@@ -1,6 +1,6 @@
 # One-Time Ticket 狀態與 1-RTT Access 邊界規格 v0.2
 
-> 狀態：Defined；FGS replay／delivery／protected application inbox與UE single-host SQLite references已 Implemented／Tested；尚未 distributed／Production-closed
+> 狀態：Defined；FGS replay／delivery／protected application inbox、unified activation-inbox transaction與UE single-host SQLite references已 Implemented／Tested；尚未 distributed／Production-closed
 > 日期：2026-09-15
 > Access companion：`docs/specs/SATELLITE_ACCESS_v0_2_zh-TW.md`
 > Historical predecessor：`docs/specs/ONE_TIME_TICKET_STATE_v0_1_zh-TW.md`
@@ -383,3 +383,14 @@ acknowledgement遺失的retry均已測試，test-only idempotent ledger只產生
 crash仍需UE exact retry；而production external application必須自行證明其`apply_once`
 在實際side effect transaction內原子去重。Repository尚未提供該production adapter，
 所以external exactly-once、distributed consistency及Production-closed仍為false。
+
+2026-09-15 unified activation-inbox successor以新的單一SQLite schema取代上述兩筆交易
+的推薦部署方式。它在同一connection與同一`BEGIN IMMEDIATE`中執行
+`CONSUMED_PENDING_CONFIRM -> CONSUMED_ACTIVE`及`PENDING` inbox insert；inbox protection
+或insert在commit前失敗時兩者一併rollback。Exact retry、restart與跨process race均只能
+得到同一對active grant／inbox identity，且unified store拒絕獨立activation入口。
+
+此successor封閉的是單機reference內的activation-inbox crash gap，不包含activation前的
+revocation snapshot atomicity，也不把external application mutation納入SQLite transaction。
+Production application仍需實作可驗證的`apply_once`，故external exactly-once、distributed
+consistency、physical power-loss及Production-closed維持false。
