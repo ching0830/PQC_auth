@@ -99,9 +99,11 @@ checkout 補出「概念 → 檔案 → 函式 → 測試 → 目前限制」的
 | [第十四堂：受控身分開啟為什麼需要兩道門](lessons/14_CONDITIONAL_OPENING_zh-TW.md) | 階段 3；能分開說明案件授權與門檻解密，沿 OA gate 與 combiner 指出綁定、replay、份額一致性及最終序號檢查 |
 | [第十五堂：完整生命週期與資料可見性總整理](lessons/15_END_TO_END_AND_DATA_VISIBILITY_zh-TW.md) | 階段 3 總整理；能沿完整案例指出每一階段的角色、資料、狀態與分支，並說清楚匿名／不可連結性的觀察者與時間範圍 |
 | [第十六堂：後量子計算前移——離線發行、在線驗證](lessons/16_OFFLINE_ISSUANCE_ONLINE_VERIFICATION_zh-TW.md) | 階段 4 起點；能說明哪些高成本 PQ issuance work 可提前完成、哪些 access work 必須依賴當下資料，並區分 Replay、issuance NIZK 與 access NIZK |
+| [第十七堂：流程不同，怎麼公平比較衛星認證論文](lessons/17_FAIR_SATELLITE_AUTH_COMPARISON_zh-TW.md) | 階段 4；能區分 related work、comparison paper 與 baseline，依相同事件、在線邊界和證據等級比較異構協定，不把原作者數值冒充同環境 benchmark |
 
 目前單元與理解狀態只在 [學習進度](PROGRESS_zh-TW.md) 更新。第二至七堂已提供必要概念的
 入門說明；第八至十五堂已完成階段 3 的教材範圍，涵蓋共同設定、發行、接入、使用狀態、
-換手／撤銷、受控身分開啟及資料可見性總整理。第十六堂已進入階段 4，先分析高成本 PQ
-運算的前移邊界；下一堂建立異構衛星認證論文的公平比較方法。仍於應用時補課，不以教材
+換手／撤銷、受控身分開啟及資料可見性總整理。第十六堂已分析高成本 PQ 運算的前移邊界，
+第十七堂建立異構衛星認證論文的公平比較方法；下一堂比較 one-use ticket 與 reusable anonymous
+`Show`。仍於應用時補課，不以教材
 建立視為已掌握，尚未進入逐模組或逐行程式閱讀。

@@ -1,0 +1,148 @@
+<section id="sat-auth-comparison-v17" aria-labelledby="sat-auth-comparison-v17-title" aria-describedby="sat-auth-comparison-v17-desc">
+  <style>
+    #sat-auth-comparison-v17 {
+      color: var(--foreground);
+      background: transparent;
+      font-size: var(--font-size-base);
+      width: 100%;
+    }
+    #sat-auth-comparison-v17 * { box-sizing: border-box; }
+    #sat-auth-comparison-v17 h2,
+    #sat-auth-comparison-v17 p { margin: 0; }
+    #sat-auth-comparison-v17 .lead {
+      color: var(--muted-foreground);
+      margin-top: 0.4rem;
+    }
+    #sat-auth-comparison-v17 .papers {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 0.55rem;
+      margin-top: 1rem;
+    }
+    #sat-auth-comparison-v17 .paper {
+      min-width: 0;
+      padding: 0.65rem 0.45rem;
+      border-top: 3px solid var(--viz-series-1);
+      background: color-mix(in srgb, var(--viz-series-1) 9%, transparent);
+    }
+    #sat-auth-comparison-v17 .paper:nth-child(2) {
+      border-top-color: var(--viz-series-2);
+      background: color-mix(in srgb, var(--viz-series-2) 9%, transparent);
+    }
+    #sat-auth-comparison-v17 .paper:nth-child(3) {
+      border-top-color: var(--viz-series-3);
+      background: color-mix(in srgb, var(--viz-series-3) 9%, transparent);
+    }
+    #sat-auth-comparison-v17 .paper:nth-child(4) {
+      border-top-color: var(--viz-series-4);
+      background: color-mix(in srgb, var(--viz-series-4) 9%, transparent);
+    }
+    #sat-auth-comparison-v17 .paper:nth-child(5) {
+      border-top-color: var(--viz-series-5);
+      background: color-mix(in srgb, var(--viz-series-5) 9%, transparent);
+    }
+    #sat-auth-comparison-v17 .paper strong,
+    #sat-auth-comparison-v17 .paper span { display: block; }
+    #sat-auth-comparison-v17 .paper span {
+      color: var(--muted-foreground);
+      margin-top: 0.25rem;
+    }
+    #sat-auth-comparison-v17 .arrow {
+      color: var(--muted-foreground);
+      font-weight: 500;
+      text-align: center;
+      padding: 0.45rem 0;
+    }
+    #sat-auth-comparison-v17 .preserve {
+      text-align: center;
+      padding: 0.7rem;
+      border-block: 1px solid var(--border);
+      font-weight: 500;
+    }
+    #sat-auth-comparison-v17 .steps {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.75rem;
+    }
+    #sat-auth-comparison-v17 .step {
+      min-width: 0;
+      padding-top: 0.7rem;
+    }
+    #sat-auth-comparison-v17 .step-head {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      font-weight: 500;
+    }
+    #sat-auth-comparison-v17 .num {
+      display: inline-grid;
+      place-items: center;
+      width: 1.55rem;
+      height: 1.55rem;
+      flex: 0 0 auto;
+      border-radius: 50%;
+      color: var(--primary-foreground);
+      background: var(--primary);
+    }
+    #sat-auth-comparison-v17 .step p {
+      color: var(--muted-foreground);
+      margin-top: 0.4rem;
+    }
+    #sat-auth-comparison-v17 .decision {
+      margin-top: 0.8rem;
+      padding: 0.75rem;
+      background: color-mix(in srgb, var(--accent) 45%, transparent);
+      color: var(--accent-foreground);
+      text-align: center;
+    }
+    #sat-auth-comparison-v17 .decision strong { font-weight: 500; }
+    #sat-auth-comparison-v17 .legend {
+      margin-top: 0.65rem;
+      color: var(--muted-foreground);
+      text-align: center;
+    }
+    @media (max-width: 620px) {
+      #sat-auth-comparison-v17 .papers { grid-template-columns: 1fr 1fr; }
+      #sat-auth-comparison-v17 .paper:last-child { grid-column: 1 / -1; }
+      #sat-auth-comparison-v17 .steps { grid-template-columns: 1fr; gap: 0.25rem; }
+    }
+    @media (max-width: 360px) {
+      #sat-auth-comparison-v17 .papers { grid-template-columns: 1fr; }
+      #sat-auth-comparison-v17 .paper:last-child { grid-column: auto; }
+    }
+  </style>
+
+  <h2 id="sat-auth-comparison-v17-title">流程不同，仍然可以公平比較</h2>
+  <p id="sat-auth-comparison-v17-desc" class="lead">先保留每篇論文真正解決的事件，再建立共同量測邊界。</p>
+
+  <div class="papers" role="list" aria-label="五種不同研究焦點">
+    <div class="paper" role="listitem"><strong>AnFRA</strong><span>匿名快速 roaming</span></div>
+    <div class="paper" role="listitem"><strong>PkT-SIN</strong><span>每期間最多 k 次匿名認證</span></div>
+    <div class="paper" role="listitem"><strong>N3PA-STIN</strong><span>三方認證與批次驗證</span></div>
+    <div class="paper" role="listitem"><strong>QPCASIN</strong><span>PQ、持續認證與預先換手</span></div>
+    <div class="paper" role="listitem"><strong>本研究</strong><span>離線 PQ 發行與一次性票券</span></div>
+  </div>
+
+  <div class="arrow" aria-hidden="true">↓</div>
+  <div class="preserve">第一步：不改寫角色、不改寫訊息順序、不把不同功能假裝成同一功能</div>
+  <div class="arrow" aria-hidden="true">↓</div>
+
+  <div class="steps" role="list" aria-label="三項公平比較條件">
+    <div class="step" role="listitem">
+      <div class="step-head"><span class="num">1</span><span>同一事件</span></div>
+      <p>initial access、roaming、handover、continuous authentication 分開比較。</p>
+    </div>
+    <div class="step" role="listitem">
+      <div class="step-head"><span class="num">2</span><span>同一成本邊界</span></div>
+      <p>統一在線起訖點；另列 precomputation、bytes、RTT、backhaul 與 state。</p>
+    </div>
+    <div class="step" role="listitem">
+      <div class="step-head"><span class="num">3</span><span>同一證據等級</span></div>
+      <p>區分作者原報告、重新建模與同環境實測，保留硬體及安全參數。</p>
+    </div>
+  </div>
+
+  <div class="arrow" aria-hidden="true">↓</div>
+  <div class="decision"><strong>三項都對齊：</strong>可以做數值比較　　<strong>無法對齊：</strong>做質性比較或標示 N/A</div>
+  <p class="legend">「論文有被引用」不等於「它已成為可重現的實驗 baseline」。</p>
+</section>

@@ -33,7 +33,8 @@
 | 階段 3／第十三堂：過期、撤銷與換手 | 已提供基礎講解，理解待後續應用 | 已區分 acceptance predicates 與 consumption state，並說明撤銷競爭、retention、一般拒絕及 session-derived handover |
 | 階段 3／第十四堂：受控身分開啟 | 已提供基礎講解，理解待後續應用 | 已說明案件授權與門檻解密兩道門、OA share gate、opening replay、combiner 一致性與 serial equality |
 | 階段 3／第十五堂：完整生命週期與資料可見性 | 已提供總整理，理解待後續應用 | 已將設定、發行、接入、session／handover 與 opening 串成完整案例；未以教材建立視為能獨立口述 |
-| 階段 4／第十六堂：PQ 計算前移與 Replay | 進行中 | 依學習者更正，以降低高成本 PQ 在線運算為主要動機；已區分可前移 issuance work、當下 access work 與 Replay，下一堂建立衛星論文公平比較方法 |
+| 階段 4／第十六堂：PQ 計算前移與 Replay | 已提供基礎講解，理解待後續應用 | 依學習者更正，以降低高成本 PQ 在線運算為主要動機；已區分可前移 issuance work、當下 access work 與 Replay |
+| 階段 4／第十七堂：異構衛星認證論文的公平比較 | 進行中 | 已建立相同事件、成本邊界與證據等級三項條件；下一堂比較 one-use ticket 與 reusable anonymous Show |
 | 階段 5／程式閱讀工具 | 未開始 | 後續補充 repository、Python module、bytes、測試與 Git 工作流 |
 | 階段 6／6-1 至 6-10 | 未開始 | 既有對話中的程式介紹不視為已掌握 |
 | 階段 7／證據與限制 | 未開始 | 每堂先保留研究目標與成果的區分，之後集中學習 |
@@ -564,6 +565,28 @@
   提高 implementation／security／production claim。下一堂先建立衛星論文公平比較方法。
 - 助教核對 187 個學習文件本機連結，沒有缺失目標；以本機瀏覽器檢查修正後的 computation
   placement 圖與 Replay 圖在 736／288 像素內容寬度下的呈現，運算前移邊界及重放流程完整可見。
+
+### 2026-09-15 — 第十七堂：異構衛星認證論文的公平比較
+
+- 學習者要求下一堂，接續其對錯誤 comparison baseline 的更正；不把接續課程視為已獨立掌握
+  第十六堂。
+- 以 AnFRA、PkT-SIN、N3PA-STIN、QPCASIN 四篇現有候選比較文本為例，保留 roaming、periodic
+  `k`-time、three-party／batch、PQ continuous／preemptive handover 等原始研究焦點，不將其改畫成
+  本研究 HNCC–FGS 流程。
+- 區分 related work、comparison paper 與可重現 performance baseline；目前已有 security-property
+  對齊草稿，但正式 bibliography、完整 protocol extraction 與同比 benchmark 尚未封閉。
+- 建立公平比較三項條件：相同事件、相同成本邊界與相同證據等級；initial access、roaming、
+  handover、continuous authentication、batch authentication 分開處理。
+- 將效能拆成 precomputation／offline cost、online critical path 與 amortized cost，另列 messages、
+  bytes、RTT、每角色計算、backhaul、state、queue、batch size、security level 與測試環境。
+- 區分 paper-reported、共同模型換算及同環境實測；無法對齊的項目使用質性比較、`NR`、`NA` 或
+  `OPEN`，不以不同硬體或計時範圍的總延遲做排名。
+- 明列 AnFRA roaming、本研究 initial access、PkT-SIN bounded-use、N3PA-STIN batch 及 QPCASIN PQ
+  目標之間不可直接等同的例子；保留本研究 access protocol、PQ AKE 與 benchmark 尚未封閉的狀態。
+- 本堂只更新學習文件，未修改 canonical related-work、security-game 或 evaluation 文件，未執行
+  協定 benchmark，也未提高研究完成宣稱。下一堂比較 one-use ticket 與 reusable anonymous Show。
+- 助教核對 191 個學習文件本機連結，沒有缺失目標；以本機瀏覽器檢查比較框架圖在 736 與
+  288 像素內容寬度下的呈現，五篇研究焦點、三項比較條件及判斷結果完整可見。
 
 ## 後續更新方式
 

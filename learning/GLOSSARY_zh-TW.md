@@ -104,6 +104,14 @@
 | 延遲預算（latency budget） | 把端到端等待拆成衛星 RTT、密碼學計算、排隊、狀態存取與後端查詢等部分 | 訊息數較少不保證一定更快；必須使用相同範圍與實際量測比較 |
 | 預先計算／計算前移（precomputation／computation shifting） | 將不依賴當次接入資料的高成本工作提前完成，縮短 latency-critical path | 依賴目前端點、freshness、session key 或權威狀態的工作不能直接預先計算並永久重用 |
 | 比較基準（baseline） | 用於評估新機制的已定義參考方案、既有論文或測量條件 | 論文比較必須忠實採用對方實際機制與可比範圍，不能用自己虛構的共同流程代替 |
+| 相關研究（related work） | 說明既有研究解決的問題、方法與尚存缺口的文獻集合 | 被引用不等於已有可重現實作，也不表示可直接做數值同比 |
+| 比較論文（comparison paper） | 本研究選來做機制、安全性或效能對照的論文 | 流程可以不同；須先固定比較事件、成本邊界和證據等級 |
+| 正規化比較（normalized comparison） | 把不同方案放入明確的共同成本模型，例如相同 security level、operation cost、bytes 與 RTT 定義 | 需要公開換算假設；不能把不同 primitive 的一次 operation 當成相同成本 |
+| 作者原報告值（paper-reported result） | 從原論文保留的量測數字及其硬體、參數與計時範圍 | 不是本研究在相同環境重測的結果；跨論文數值不可省略來源條件 |
+| 攤銷成本（amortized cost） | 把一次共用或預先工作依其實際服務的多次操作分攤 | 必須同時報告總成本、可使用次數與過期／未使用成本，不能用平均值讓工作消失 |
+| 批次大小（batch size） | 一次共同處理的請求數量 | 批次越大可能改善平均計算成本，也可能增加等待湊批次的 latency |
+| 吞吐量（throughput） | 系統在單位時間內完成的請求數量 | 高 throughput 不保證單一使用者等待時間低；需和 per-request latency 分開報告 |
+| `NR`／`NA`／`OPEN` | `NR` 表示論文未報告，`NA` 表示該項不適用，`OPEN` 表示本研究尚未封閉 | 不知道時應保留空缺含義，不能自行假設成通過、失敗或零成本 |
 
 專案用語依 [架構](../ARCHITECTURE_zh-TW.md) 與
 [研究方法](../methodology.md) 解釋；本表不替代各模組正式規格。
