@@ -171,6 +171,56 @@ class ReplayStoreV2Tests(unittest.TestCase):
             )
         self.assertIsInstance(self.store.lookup(self.identity), ReservationV2)
 
+    def test_commit_may_advance_but_not_rollback_revocation_generation(self) -> None:
+        self.reserve()
+        advanced = self.store.commit_grant(
+            self.identity,
+            attempt_id=self.attempt,
+            request_digest=self.request,
+            transcript_digest=fixed(8),
+            session_id=fixed(9),
+            response_digest=fixed(10),
+            sealed_response=b"exact-access-accept-v2",
+            sealed_session_state=b"sealed-kem-and-session-state",
+            serving_context_digest=fixed(6),
+            fgs_id=fixed(11),
+            revocation_generation=8,
+            consumed_at=150,
+            activation_deadline=250,
+            session_expiry=500,
+            retention_deadline=900,
+        )
+        self.assertEqual(advanced.revocation_generation, 8)
+
+        other_store = InMemoryLinearizableReplayStoreV2()
+        other_store.reserve(
+            self.identity,
+            attempt_id=self.attempt,
+            request_digest=self.request,
+            serving_context_digest=fixed(6),
+            reserved_at=100,
+            lease_deadline=200,
+            revocation_generation=7,
+        )
+        with self.assertRaises(ReservationNotFound):
+            other_store.commit_grant(
+                self.identity,
+                attempt_id=self.attempt,
+                request_digest=self.request,
+                transcript_digest=fixed(8),
+                session_id=fixed(9),
+                response_digest=fixed(10),
+                sealed_response=b"exact-access-accept-v2",
+                sealed_session_state=b"sealed-kem-and-session-state",
+                serving_context_digest=fixed(6),
+                fgs_id=fixed(11),
+                revocation_generation=6,
+                consumed_at=150,
+                activation_deadline=250,
+                session_expiry=500,
+                retention_deadline=900,
+            )
+
     def test_activation_is_exact_and_idempotent(self) -> None:
         self.reserve()
         pending = self.commit()

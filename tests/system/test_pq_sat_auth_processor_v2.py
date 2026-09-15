@@ -135,9 +135,11 @@ class RevocationProvider:
         self.changes = changes
         self.calls = 0
         self.broken = False
+        self.last_query = None
 
     def snapshot(self, query):
         self.calls += 1
+        self.last_query = query
         if self.broken:
             raise OSError("revocation service unavailable")
         snapshot = AccessRevocationSnapshotV2(
@@ -311,6 +313,11 @@ class FGSPureCheckFixture(unittest.TestCase):
             valid_until=NOW + 1_000,
             freshness_window_seconds=120,
             maximum_clock_skew_seconds=10,
+            pure_check_max_age_seconds=5,
+            reservation_lease_seconds=30,
+            activation_window_seconds=60,
+            session_lifetime_seconds=600,
+            replay_retention_grace_seconds=300,
             access_profile_digest=fixed(b"access-profile"),
             access_pp_digest=fixed(b"access-pp"),
             fgs_id=fixed(b"fgs-id"),
@@ -432,12 +439,20 @@ class FGSPureCheckPositiveTests(FGSPureCheckFixture):
         self.assertEqual(validated.checked_at, NOW)
         self.assertEqual(validated.revocation_generation, 12)
         self.assertEqual(
+            validated.revocation_query.digest,
+            self.revocation_provider.last_query.digest,
+        )
+        self.assertEqual(
             validated.identity.ticket_digest,
             self.ticket.payload_digest,
         )
         self.assertEqual(
             validated.ticket.system_config_digest,
             self.access_configuration.initialization_configuration_digest,
+        )
+        self.assertEqual(
+            validated.ticket.expires_at,
+            self.bundle.configuration.expiry_bucket,
         )
         self.assertNotEqual(
             validated.identity.ticket_digest,
@@ -516,6 +531,15 @@ class FGSPureCheckBoundaryTests(FGSPureCheckFixture):
         invalid = replace(
             self.access_configuration,
             acceptance_domain_digest=bytes(32),
+        )
+        outcome = self.process(
+            configuration_provider=ConfigurationProvider(invalid)
+        )
+        self.assert_rejected(outcome, "configuration_invalid:ValueError")
+
+        invalid = replace(
+            self.access_configuration,
+            reservation_lease_seconds=0,
         )
         outcome = self.process(
             configuration_provider=ConfigurationProvider(invalid)

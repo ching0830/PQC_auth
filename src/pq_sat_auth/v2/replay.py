@@ -370,7 +370,7 @@ class InMemoryLinearizableReplayStoreV2:
                 or existing.serving_context_digest
                 != candidate.serving_context_digest
                 or existing.revocation_generation
-                != candidate.revocation_generation
+                > candidate.revocation_generation
             ):
                 raise ReservationNotFound("reservation belongs to another request")
             if candidate.consumed_at < existing.reserved_at:

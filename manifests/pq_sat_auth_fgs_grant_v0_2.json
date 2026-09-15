@@ -1,0 +1,31 @@
+{
+  "access_protocol_version": 2,
+  "claim_boundary": {
+    "atomic_revocation_and_commit_implemented": false,
+    "durable_or_distributed_store_implemented": false,
+    "pre_commit_revocation_recheck_implemented": true,
+    "production_pq_ake_instantiated": false,
+    "production_ready": false,
+    "production_response_protection_instantiated": false,
+    "production_session_state_protection_instantiated": false,
+    "proof_closed": false,
+    "pure_check_output_integrated": true,
+    "reserve_before_expensive_grant_construction": true,
+    "response_returned_only_after_commit": true,
+    "same_attempt_retry_avoids_second_kem": true,
+    "session_activation_implemented": false
+  },
+  "format": "PQ-SAT-FGS-GRANT-PROCESSOR-v0.2",
+  "processing_order": [
+    "validated_handoff_recheck",
+    "reserve",
+    "exact_existing_grant_recovery_or_pending",
+    "kem_encapsulation_and_session_id",
+    "response_core_and_transcript",
+    "key_schedule_fgs_authentication_server_finished",
+    "pre_commit_revocation_recheck",
+    "response_and_session_state_protection",
+    "commit_grant",
+    "return_response_after_commit"
+  ]
+}

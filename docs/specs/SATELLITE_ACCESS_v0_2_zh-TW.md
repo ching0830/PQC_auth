@@ -558,3 +558,19 @@ authentication key／access suite extension，所以authenticated access configu
 測試及claim boundary見
 `docs/artifacts/SATELLITE_ACCESS_v0_2_FGS_PURE_CHECK_PROCESSOR_zh-TW.md`與
 `manifests/pq_sat_auth_fgs_pure_check_v0_2.json`。
+
+### 13.3 FGS grant processor checkpoint
+
+後續checkpoint新增`src/pq_sat_auth/v2/grant.py`，把pure-check output接到`Reserve`、
+KEM encapsulation、session ID、transcript、KDF、FGS authentication、server Finished、
+pre-commit revocation recheck、response／session-state protection及`CommitGrant`。只有
+commit成功才回傳exact `AccessAcceptV2`；same-attempt retry回復並重新驗證原M2，不重做
+KEM或建立第二個session。
+
+Authenticated configuration snapshot新增pure-check age、reservation lease、activation
+window、session lifetime及retention grace policy；stable ticket adapter輸出authenticated
+ticket expiry。Reference pre-commit revocation check與process-local commit尚非同一原子
+ordering；crypto／sealing backends仍為test-only，activation processor亦未完成。完整
+設計、failure semantics及claim boundary見
+`docs/artifacts/SATELLITE_ACCESS_v0_2_FGS_GRANT_PROCESSOR_zh-TW.md`與
+`manifests/pq_sat_auth_fgs_grant_v0_2.json`。

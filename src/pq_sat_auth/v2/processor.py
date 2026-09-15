@@ -108,6 +108,11 @@ class AccessConfigurationSnapshotV2:
     valid_until: int
     freshness_window_seconds: int
     maximum_clock_skew_seconds: int
+    pure_check_max_age_seconds: int
+    reservation_lease_seconds: int
+    activation_window_seconds: int
+    session_lifetime_seconds: int
+    replay_retention_grace_seconds: int
     access_profile_digest: bytes
     access_pp_digest: bytes
     fgs_id: bytes
@@ -145,6 +150,11 @@ class AccessConfigurationSnapshotV2:
             "valid_until",
             "freshness_window_seconds",
             "maximum_clock_skew_seconds",
+            "pure_check_max_age_seconds",
+            "reservation_lease_seconds",
+            "activation_window_seconds",
+            "session_lifetime_seconds",
+            "replay_retention_grace_seconds",
             "minimum_revocation_generation",
         ):
             _uint64(getattr(self, name), name)
@@ -152,6 +162,18 @@ class AccessConfigurationSnapshotV2:
             raise ValueError("configuration validity interval is empty")
         if self.freshness_window_seconds == 0:
             raise ValueError("freshness_window_seconds must be positive")
+        for name in (
+            "pure_check_max_age_seconds",
+            "reservation_lease_seconds",
+            "activation_window_seconds",
+            "session_lifetime_seconds",
+        ):
+            if getattr(self, name) == 0:
+                raise ValueError(f"{name} must be positive")
+        if self.session_lifetime_seconds < self.activation_window_seconds:
+            raise ValueError(
+                "session_lifetime_seconds precedes activation window"
+            )
         _suite_ids(self.allowed_suite_ids, "allowed_suite_ids")
         _suite_ids(self.allowed_proof_suite_ids, "allowed_proof_suite_ids")
         if not isinstance(self.channel_binding_policy, ChannelBindingPolicyV2):
@@ -185,6 +207,7 @@ class VerifiedAccessTicketV2:
     visible_serial: bytes
     holder_hash: bytes
     issuer_key_id: bytes
+    expires_at: int
 
     def validate(self) -> None:
         _fixed(
@@ -213,6 +236,7 @@ class VerifiedAccessTicketV2:
             "issuer_key_id",
             nonzero=True,
         )
+        _uint64(self.expires_at, "ticket expires_at")
 
 
 class AccessTicketVerifierV2(Protocol):
@@ -306,6 +330,7 @@ class SystemAccessTicketVerifierV2:
                 visible_serial=parsed.payload.sn,
                 holder_hash=parsed.payload.holder_hash,
                 issuer_key_id=parsed.issuer_key_id,
+                expires_at=initialization.bundle.configuration.expiry_bucket,
             )
             verified.validate()
         except Exception:
@@ -451,6 +476,7 @@ class ValidatedAccessRequestV2:
     request_core_digest: bytes
     request_digest: bytes
     attempt_id: bytes
+    revocation_query: AccessRevocationQueryV2
     revocation_generation: int
     checked_at: int
 
@@ -754,6 +780,7 @@ class FGSPureCheckProcessorV2:
                 request_core_digest=request_core_digest,
                 request_digest=request_digest,
                 attempt_id=attempt_id,
+                revocation_query=revocation_query,
                 revocation_generation=revocation.generation,
                 checked_at=now,
             ),

@@ -156,6 +156,11 @@ identity及 response recovery state，必須使用 write-ahead／transactional r
 不得出現「M2 已送出但 ticket回到 unused」、「ticket consumed但 retry產生新 KEM
 ciphertext」或「相同 response 對應不同 session key」。
 
+Reference grant processor可在commit前取得較新的non-revoked snapshot，並把reservation
+記錄的`revocation_generation`單調提升；commit不得接受較舊generation。此兩步驟在
+process-local model中仍不是同一serializable transaction，不能取代production store在
+authoritative ordering內執行的revocation recheck＋grant commit。
+
 ## 6. Activation
 
 FGS 收到 `SessionActivateV2` 或攜帶等價 header 的第一個 application AEAD 時：
@@ -258,9 +263,10 @@ single-writer partitions。Store unavailable／timeout／partition時，新的 f
 4. Parallel distinct attempts最多一個 reservation／grant winner。
 5. Same M1 retries只得到同一 `session_id`、`response_digest`及 response bytes。
 6. Retry不重新執行 KEM encapsulation。
-7. M2永遠不先於 durable `CONSUMED_PENDING_CONFIRM` publication。
-8. Pending session不得執行 application side effect。
-9. Correct client confirmation只能產生一次 activation。
+7. Grant commit的revocation generation不得低於reservation generation。
+8. M2永遠不先於 durable `CONSUMED_PENDING_CONFIRM` publication。
+9. Pending session不得執行 application side effect。
+10. Correct client confirmation只能產生一次 activation。
 10. Wrong／late／cross-session confirmation不得 activate。
 11. 所有 consumed states永不回到 `UNSEEN`／`RESERVED`。
 12. Crash injection後不會形成第二個 response／session key。
