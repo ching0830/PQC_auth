@@ -1,0 +1,125 @@
+<div id="pqc-learning-offline-online-tradeoff" role="img" aria-label="每次接入在線查詢 HNCC，與本專案先離線盲發行再由 FGS 在線驗證的比較。前者讓接入路徑多出 HNCC backhaul，HNCC 也能觀察每次接入相關查詢；後者把身分認證、發行 NIZK 和盲簽署移到接入前，接入時不需要 HNCC，但仍需 FGS 驗證與權威 replay state。發行 NIZK 不直接減少 access 往返，首則 access NIZK 是尚未選定的另一個候選。">
+  <style>
+    #pqc-learning-offline-online-tradeoff { width: 100%; color: var(--foreground); }
+    #pqc-learning-offline-online-tradeoff .tradeoff { display: block; width: 100%; }
+    #pqc-learning-offline-online-tradeoff .tradeoff text { fill: var(--foreground); font-family: inherit; }
+    #pqc-learning-offline-online-tradeoff .tradeoff .baseline { fill: color-mix(in srgb, var(--viz-series-2) 10%, var(--background)); stroke: var(--viz-series-2); }
+    #pqc-learning-offline-online-tradeoff .tradeoff .chosen { fill: color-mix(in srgb, var(--viz-series-1) 10%, var(--background)); stroke: var(--viz-series-1); }
+    #pqc-learning-offline-online-tradeoff .tradeoff .state { fill: color-mix(in srgb, var(--viz-series-3) 10%, var(--background)); stroke: var(--viz-series-3); }
+    #pqc-learning-offline-online-tradeoff .tradeoff .flow { fill: none; stroke: var(--muted-foreground); stroke-width: 1.5; }
+    #pqc-learning-offline-online-tradeoff .tradeoff .divider { stroke: var(--border); stroke-width: 1; }
+    #pqc-learning-offline-online-tradeoff .tradeoff .muted { fill: var(--muted-foreground); }
+    #pqc-learning-offline-online-tradeoff .tradeoff .cost { fill: var(--destructive); }
+    #pqc-learning-offline-online-tradeoff .tradeoff .benefit { fill: var(--primary); }
+  </style>
+  <svg class="tradeoff" xmlns="http://www.w3.org/2000/svg" aria-labelledby="pqc-offline-title pqc-offline-desc">
+    <title id="pqc-offline-title">每次查 HNCC 與離線發行、在線驗證的取捨</title>
+    <desc id="pqc-offline-desc">左側比較基準在每次接入時由 FGS 查詢 HNCC，增加 HNCC backhaul 與使用紀錄暴露。右側本專案先完成盲發行，接入時由 FGS 驗證票券及持票者並存取 replay state，不把 HNCC 放進在線路徑。發行 NIZK 位於接入前；首則 access NIZK 是另一項待選候選。</desc>
+  </svg>
+  <script>
+    (() => {
+      const root = document.getElementById('pqc-learning-offline-online-tradeoff');
+      const svg = root.querySelector('.tradeoff');
+      const ns = 'http://www.w3.org/2000/svg';
+      function add(name, attributes, parent) {
+        const item = document.createElementNS(ns, name);
+        for (const [key, value] of Object.entries(attributes)) item.setAttribute(key, String(value));
+        parent.appendChild(item);
+        return item;
+      }
+      function draw() {
+        const old = svg.querySelector('[data-drawing]');
+        if (old) old.remove();
+        const width = Math.max(280, Math.round(root.getBoundingClientRect().width));
+        const narrow = width < 560;
+        const height = narrow ? 1050 : 545;
+        svg.setAttribute('viewBox', '0 0 ' + width + ' ' + height);
+        svg.setAttribute('height', String(height));
+        const group = add('g', { 'data-drawing': '' }, svg);
+        function label(x, y, value, size = 12, weight = 400, className = '', anchor = 'middle') {
+          const item = add('text', { x, y, 'text-anchor': anchor, 'font-size': size, 'font-weight': weight, class: className }, group);
+          item.textContent = value;
+        }
+        function box(x, y, w, h, title, line1, line2, className) {
+          add('rect', { x, y, width: w, height: h, rx: 9, class: className }, group);
+          label(x + w / 2, y + 23, title, 13, 500);
+          label(x + w / 2, y + 45, line1, 11.5);
+          label(x + w / 2, y + 63, line2, 11.5);
+        }
+        function arrow(x1, y1, x2, y2) {
+          add('line', { x1, y1, x2, y2, class: 'flow' }, group);
+          const angle = Math.atan2(y2 - y1, x2 - x1);
+          const len = 7;
+          const spread = 0.55;
+          add('path', {
+            d: 'M ' + (x2 - len * Math.cos(angle - spread)) + ' ' + (y2 - len * Math.sin(angle - spread)) +
+              ' L ' + x2 + ' ' + y2 +
+              ' L ' + (x2 - len * Math.cos(angle + spread)) + ' ' + (y2 - len * Math.sin(angle + spread)),
+            class: 'flow'
+          }, group);
+        }
+        label(width / 2, 24, narrow ? '接入時要不要查 HNCC？' : '把身分與發行移出衛星接入關鍵路徑', narrow ? 15 : 16, 500);
+        label(width / 2, 46, '比較 latency、privacy、availability 與 state', 11.5, 400, 'muted');
+        if (!narrow) {
+          const gap = 28;
+          const margin = 12;
+          const panelW = (width - margin * 2 - gap) / 2;
+          const left = margin;
+          const right = margin + panelW + gap;
+          const nodeMargin = 24;
+          const nodeW = panelW - nodeMargin * 2;
+          const h = 72;
+          label(left + panelW / 2, 78, '比較基準：每次在線查 HNCC', 14, 500);
+          box(left + nodeMargin, 94, nodeW, h, 'UE 發出接入請求', '經衛星到 FGS', '帶可供在線查詢的資料', 'baseline');
+          box(left + nodeMargin, 186, nodeW, h, 'FGS ↔ HNCC', '地面 backhaul＋資格查詢', '等待允許／拒絕結果', 'baseline');
+          box(left + nodeMargin, 278, nodeW, h, 'FGS 建立 session', '仍需驗證與使用狀態', 'HNCC 查詢在關鍵路徑', 'state');
+          arrow(left + panelW / 2, 166, left + panelW / 2, 184);
+          arrow(left + panelW / 2, 258, left + panelW / 2, 276);
+          label(left + panelW / 2, 382, '代價：新增 T_HNCC；HNCC 可觀察接入查詢', 11.5, 500, 'cost');
+          label(left + panelW / 2, 406, '好處：集中端可直接使用最新資格資料', 11.5, 400, 'muted');
+          add('line', { x1: width / 2, y1: 68, x2: width / 2, y2: 430, class: 'divider' }, group);
+          label(right + panelW / 2, 78, '本專案：離線發行、在線驗證', 14, 500);
+          box(right + nodeMargin, 94, nodeW, h, '接入前：UE ↔ HNCC', '認證 rid、驗 pi_issue、盲簽署', 'UE 得到 T；HNCC 離開在線路徑', 'chosen');
+          box(right + nodeMargin, 186, nodeW, h, '接入時：衛星 → FGS', '驗 T、持票者、policy 與 AKE', '不向 HNCC 查詢 rid', 'chosen');
+          box(right + nodeMargin, 278, nodeW, h, 'Replay state → session', 'Reserve／Commit 仍可能 backhaul', '成功後 T 為 CONSUMED', 'state');
+          arrow(right + panelW / 2, 166, right + panelW / 2, 184);
+          arrow(right + panelW / 2, 258, right + panelW / 2, 276);
+          label(right + panelW / 2, 382, '好處：移除 T_HNCC；避免 HNCC 直接記每次使用', 11.5, 500, 'benefit');
+          label(right + panelW / 2, 406, '代價：預取票券、撤銷散布與一致 state', 11.5, 400, 'muted');
+          label(width / 2, 466, 'pi_issue 在離線發行；不會直接減少 access RTT', 12, 500);
+          label(width / 2, 493, '首則 access NIZK 可能把約 2 RTT draft 降為 1 RTT 候選', 12, 500);
+          label(width / 2, 518, '但 freshness、AKE、proof 成本與 T_state 仍要另外處理', 11.5, 400, 'muted');
+        } else {
+          const x = 14;
+          const w = width - 28;
+          const h = 72;
+          label(width / 2, 78, '比較基準：每次在線查 HNCC', 13.5, 500);
+          box(x, 92, w, h, 'UE → 衛星 → FGS', '發出接入請求', '帶可供在線查詢的資料', 'baseline');
+          box(x, 184, w, h, 'FGS ↔ HNCC', 'backhaul＋最新資格查詢', '等待允許／拒絕', 'baseline');
+          box(x, 276, w, h, 'FGS 建立 session', '仍需驗證與使用狀態', 'HNCC 查詢在關鍵路徑', 'state');
+          arrow(width / 2, 164, width / 2, 182);
+          arrow(width / 2, 256, width / 2, 274);
+          label(width / 2, 378, '代價：新增 T_HNCC；HNCC 看見接入查詢', 11.5, 500, 'cost');
+          label(width / 2, 402, '好處：直接使用集中端最新資格', 11.5, 400, 'muted');
+          add('line', { x1: 20, y1: 430, x2: width - 20, y2: 430, class: 'divider' }, group);
+          label(width / 2, 462, '本專案：離線發行、在線驗證', 13.5, 500);
+          box(x, 476, w, h, '接入前：UE ↔ HNCC', '認證 rid、驗 pi_issue、盲簽署', 'UE 得到 T', 'chosen');
+          box(x, 568, w, h, '接入時：衛星 → FGS', '驗 T、持票者、policy 與 AKE', '不向 HNCC 查詢 rid', 'chosen');
+          box(x, 660, w, h, 'Replay state → session', 'Reserve／Commit 仍可能 backhaul', '成功後 T 為 CONSUMED', 'state');
+          arrow(width / 2, 548, width / 2, 566);
+          arrow(width / 2, 640, width / 2, 658);
+          label(width / 2, 762, '好處：移除 T_HNCC；HNCC 不直接記每次使用', 11.5, 500, 'benefit');
+          label(width / 2, 786, '代價：票券庫存、撤銷散布、一致 state', 11.5, 400, 'muted');
+          label(width / 2, 842, 'pi_issue 位於離線發行', 12, 500);
+          label(width / 2, 866, '不會直接減少 access RTT', 11.5, 400, 'muted');
+          label(width / 2, 910, '首則 access NIZK：2 RTT → 1 RTT 候選', 12, 500);
+          label(width / 2, 936, '仍需 freshness、AKE、proof 成本與 T_state', 11.5, 400, 'muted');
+          label(width / 2, 994, '沒有量測前，不能宣稱端到端一定更快', 11.5, 500, 'cost');
+        }
+      }
+      draw();
+      if (typeof ResizeObserver !== 'undefined') new ResizeObserver(draw).observe(root);
+      else window.addEventListener('resize', draw);
+    })();
+  </script>
+</div>
