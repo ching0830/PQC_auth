@@ -5,6 +5,7 @@
     "claim_boundary": {
       "activation_and_delivery_same_transaction": false,
       "activation_in_authenticated_header_implemented": true,
+      "application_apply_once_contract_implemented": true,
       "canonical_first_application_record_implemented": true,
       "durable_ue_exact_record_outbox_reference_implemented": true,
       "external_side_effect_exactly_once": false,
@@ -12,6 +13,8 @@
       "fgs_delivery_store_durable_or_distributed": true,
       "fgs_delivery_store_single_host_durable_reference_implemented": true,
       "fgs_one_time_delivery_capability_implemented": true,
+      "fgs_pending_inbox_restart_recovery_implemented": true,
+      "fgs_protected_plaintext_inbox_reference_implemented": true,
       "outbox_restart_and_race_tested": true,
       "physical_power_loss_tested": false,
       "production_aead_instantiated": false,
@@ -24,8 +27,8 @@
       "suite_bound_application_authentication",
       "client_finished_and_application_authentication",
       "atomic_session_activation",
-      "durable_single_host_delivery_claim",
-      "release_plaintext_capability_once"
+      "durable_single_host_inbox_enqueue",
+      "idempotent_application_dispatch"
     ],
     "format": "PQ-SAT-FIRST-APPLICATION-CHECKPOINT-v0.2",
     "frame_type": "0x0104",
@@ -39,6 +42,31 @@
       "exact_record_finalize",
       "read_back_validation",
       "release_wire_bytes_after_commit"
+    ]
+  },
+  "dispatch": {
+    "claims": {
+      "application_apply_once_contract_defined": true,
+      "apply_ack_loss_recovery_supported": true,
+      "completion_ack_loss_recovery_supported": true,
+      "distributed": false,
+      "external_application_exactly_once_proven": false,
+      "production_application_adapter_instantiated": false,
+      "production_ready": false,
+      "reference_dispatch_implemented": true,
+      "restart_pending_recovery_implemented": true
+    },
+    "format": "PQ-SAT-FGS-APPLICATION-DISPATCH-v0.2",
+    "idempotency_key": "first_application_record_digest",
+    "ordering": [
+      "load_and_authenticate_pending_inbox_item",
+      "application_apply_once_by_record_digest",
+      "validate_stable_receipt",
+      "mark_inbox_completed"
+    ],
+    "states": [
+      "PENDING",
+      "COMPLETED"
     ]
   },
   "sqlite_delivery": {
@@ -62,6 +90,34 @@
     "format": "PQ-SAT-FGS-FIRST-DELIVERY-SQLITE-v0.2",
     "journal_mode": "WAL",
     "schema_version": 1,
+    "synchronous": "FULL"
+  },
+  "sqlite_inbox": {
+    "application_id": "0x50515349",
+    "claims": {
+      "application_apply_once_required": true,
+      "competing_record_or_receipt_rejected": true,
+      "distributed": false,
+      "exact_enqueue_and_completion_idempotent": true,
+      "external_application_exactly_once_proven": false,
+      "hostile_filesystem_protection": false,
+      "pending_scan_for_restart_recovery": true,
+      "physical_power_loss_tested": false,
+      "plaintext_protection_backend_boundary": true,
+      "production_plaintext_protection_instantiated": false,
+      "production_ready": false,
+      "rollback_resistance": false,
+      "single_host_cross_process_durable_reference": true
+    },
+    "format": "PQ-SAT-FGS-APPLICATION-INBOX-SQLITE-v0.2",
+    "journal_mode": "WAL",
+    "record_aad_domain": "PQ-SAT/FGS-APPLICATION-INBOX-AAD/v0.2",
+    "record_format": "PQ-SAT-FGS-APPLICATION-INBOX-RECORD-v0.2",
+    "schema_version": 1,
+    "states": [
+      "PENDING",
+      "COMPLETED"
+    ],
     "synchronous": "FULL"
   },
   "sqlite_outbox": {

@@ -1,6 +1,6 @@
 # Satellite Access 與 PQ AKE 規格 v0.2
 
-> 狀態：Defined；bounded reference codecs／relation／processors、UE SQLite wallet、FGS single-host SQLite replay與delivery stores已 Implemented／Tested；尚未 Instantiated／distributed／Proof-closed／Production-closed
+> 狀態：Defined；bounded reference codecs／relation／processors、UE SQLite wallet、FGS single-host SQLite replay／delivery／protected application inbox已 Implemented／Tested；尚未 Instantiated／distributed／Proof-closed／Production-closed
 > 日期：2026-09-15
 > 所屬模組：M5 Satellite authentication、M6 Anti-replay／revocation／handover
 > State companion：`docs/specs/ONE_TIME_TICKET_STATE_v0_2_zh-TW.md`
@@ -483,19 +483,21 @@ outbox 完成 `RESERVED -> READY`、保存 exact record bytes 並 read back，�
 交給傳輸層；相同 plaintext retry 回傳原 bytes，不得重新選 nonce 或建立另一個 record，
 不同 plaintext 則 fail closed。
 
-FGS 的處理順序為：strict parse及binding、驗證client Finished、以 `K_application`
-驗證整個 record AEAD、atomic activate session、取得一次性的 delivery claim，最後才把
-plaintext capability交給application layer。AEAD失敗不得activate；相同record retry在已
-delivery後只回覆`ALREADY_DELIVERED`且不再釋放plaintext。另一個通過AEAD的sequence-0
-record必須視為conflict。
+FGS 的共同處理順序為：strict parse及binding、驗證client Finished、以
+`K_application`驗證整個record AEAD，再atomic activate session。AEAD失敗不得activate；
+另一個通過AEAD的sequence-0 record必須視為conflict。Activation後固定兩種互斥sink：
 
-目前bounded delivery claim已由單機SQLite store提供cross-process serialization與restart
-recovery。Claim commit成功後，exact retry只回覆`ALREADY_DELIVERED`，不再釋放plaintext。
-但activation、delivery claim及application side effect仍不是同一transaction，因此只能
-宣稱durable at-most-once capability gate，不能宣稱crash-safe exactly-once：activation後、
-claim前crash可由exact retry恢復；claim已commit但回覆或side effect前crash則可能永久遺失
-工作。Production profile仍須整合distributed state與實際application transaction，或明定
-可接受的idempotency key、inbox／outbox及補償語意。
+- legacy direct-delivery compatibility path：取得durable at-most-once claim後釋放一次
+  plaintext capability；exact retry只回`ALREADY_DELIVERED`。此path可能在claim後crash時
+  永久遺失工作；
+- recommended durable-inbox path：同一enqueue保存claim identity與protected plaintext，
+  processor只回queue metadata；dispatcher以`record_digest`呼叫application `apply_once`，
+  再保存stable receipt並標記`COMPLETED`。
+
+Processor必須只配置其中一種sink。Durable inbox封閉claim與work-item persistence間的
+crash window，但activation與inbox仍不是同一transaction，production external
+application也必須自行在side-effect transaction內實作原子idempotency。故本規格仍不
+宣稱任意application side effect具有crash-safe exactly-once保證。
 
 ## 9. Acceptance terminology
 
@@ -771,4 +773,32 @@ row mutation、processor restart及lost claim acknowledgement。
 因此claim後crash可能造成工作遺失，但retry不得重複釋放plaintext；distributed consistency、
 rollback protection、實體斷電與exactly-once side effect仍未完成。完整evidence見
 `docs/artifacts/SATELLITE_ACCESS_v0_2_FGS_DELIVERY_SQLITE_zh-TW.md`，machine claims收錄於
+`manifests/pq_sat_auth_first_application_v0_2.json`。
+
+### 13.10 FGS protected application inbox與idempotent dispatch checkpoint
+
+後續checkpoint新增`src/pq_sat_auth/v2/storage/sqlite_inbox.py`與
+`src/pq_sat_auth/v2/dispatch.py`。推薦的FGS路徑不再於delivery claim後直接把plaintext交給
+外部application，而是在同一enqueue transaction中保存受保護的work item：
+
+```text
+authenticated first record
+  -> activate session
+  -> inbox PENDING(session_id, record_digest, protected plaintext)
+  -> application.apply_once(record_digest, plaintext) -> stable receipt
+  -> inbox COMPLETED(receipt)
+```
+
+Inbox processor模式只回覆`QUEUED`／`ALREADY_QUEUED`／`ALREADY_COMPLETED` metadata，
+不回傳`FirstApplicationDeliveryV2` plaintext capability。獨立dispatcher可掃描pending
+session IDs、驗證並開啟protected item，再要求application adapter以
+`record_digest`作idempotency key。Application已commit但ack遺失時，retry必須取得同一
+receipt而不得重做side effect；inbox completion ack遺失時，restart必須讀回`COMPLETED`。
+
+這封閉了「delivery claim已commit但plaintext work item未持久化」窗口，並提供enqueue後
+的自主restart recovery。不過activation與inbox仍是兩筆交易；activation後、enqueue前
+crash仍依賴UE exact retry。外部application的`apply_once`是必要假設，repository只有
+test-only SQLite ledger驗證composition，沒有production application adapter或跨服務
+distributed transaction。因此external side effect exactly-once仍為false。詳細evidence見
+`docs/artifacts/SATELLITE_ACCESS_v0_2_APPLICATION_INBOX_zh-TW.md`，machine claims收錄於
 `manifests/pq_sat_auth_first_application_v0_2.json`。

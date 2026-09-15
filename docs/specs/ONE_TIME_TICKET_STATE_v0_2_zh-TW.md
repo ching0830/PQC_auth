@@ -1,6 +1,6 @@
 # One-Time Ticket 狀態與 1-RTT Access 邊界規格 v0.2
 
-> 狀態：Defined；FGS replay／delivery與UE single-host SQLite references已 Implemented／Tested；尚未 distributed／Production-closed
+> 狀態：Defined；FGS replay／delivery／protected application inbox與UE single-host SQLite references已 Implemented／Tested；尚未 distributed／Production-closed
 > 日期：2026-09-15
 > Access companion：`docs/specs/SATELLITE_ACCESS_v0_2_zh-TW.md`
 > Historical predecessor：`docs/specs/ONE_TIME_TICKET_STATE_v0_1_zh-TW.md`
@@ -372,3 +372,14 @@ authenticated sequence-zero record拒絕。Claim commit後突然process exit仍�
 identity；但若commit acknowledgement或application side effect前crash，工作可能遺失。
 Activation、claim及external mutation不是同一transaction，故不支持exactly-once、
 distributed、rollback、hostile-filesystem或實體斷電宣稱。
+
+2026-09-15 FGS application inbox checkpoint再把`record_digest` claim與受保護plaintext
+work item放入同一單機SQLite enqueue。FGS inbox模式在commit後只回`QUEUED` metadata，
+dispatcher從`PENDING`恢復工作，呼叫`apply_once(record_digest, plaintext)`取得stable
+receipt後才轉成`COMPLETED`。Application apply acknowledgement或inbox completion
+acknowledgement遺失的retry均已測試，test-only idempotent ledger只產生一次effect。
+
+此結果仍有兩個必要邊界：activation與inbox enqueue不是同一transaction，前者完成後
+crash仍需UE exact retry；而production external application必須自行證明其`apply_once`
+在實際side effect transaction內原子去重。Repository尚未提供該production adapter，
+所以external exactly-once、distributed consistency及Production-closed仍為false。

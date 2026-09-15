@@ -30,6 +30,7 @@ from pq_sat_auth.v2.application import (
     first_application_checkpoint_manifest,
 )
 from pq_sat_auth.v2.activation import FGSActivationProcessorV2
+from pq_sat_auth.v2.dispatch import application_dispatch_manifest
 from pq_sat_auth.v2.framing import FRAME_HEADER_BYTES
 from pq_sat_auth.v2.replay import GrantStateV2
 from pq_sat_auth.v2.storage.sqlite_first_record import (
@@ -41,6 +42,9 @@ from pq_sat_auth.v2.storage.sqlite_first_record import (
 )
 from pq_sat_auth.v2.storage.sqlite_delivery import (
     sqlite_first_application_delivery_manifest,
+)
+from pq_sat_auth.v2.storage.sqlite_inbox import (
+    sqlite_first_application_inbox_manifest,
 )
 from tests.system.test_pq_sat_auth_activation_v2 import (
     ActivationKeySchedule,
@@ -255,7 +259,9 @@ class FirstApplicationCodecTests(FirstApplicationFixture):
             expected,
             {
                 "checkpoint": first_application_checkpoint_manifest(),
+                "dispatch": application_dispatch_manifest(),
                 "sqlite_delivery": sqlite_first_application_delivery_manifest(),
+                "sqlite_inbox": sqlite_first_application_inbox_manifest(),
                 "sqlite_outbox": sqlite_first_record_outbox_manifest(),
             },
         )
@@ -619,6 +625,13 @@ class FGSFirstApplicationTests(FirstApplicationFixture):
             ]
         )
         self.assertFalse(claims["fgs_delivery_store_distributed"])
+        self.assertTrue(
+            claims["fgs_protected_plaintext_inbox_reference_implemented"]
+        )
+        self.assertTrue(
+            claims["fgs_pending_inbox_restart_recovery_implemented"]
+        )
+        self.assertTrue(claims["application_apply_once_contract_implemented"])
         self.assertFalse(claims["activation_and_delivery_same_transaction"])
         self.assertFalse(claims["external_side_effect_exactly_once"])
         self.assertFalse(claims["production_aead_instantiated"])

@@ -1,8 +1,9 @@
 """First protected UE-to-FGS application record for access profile v0.2.
 
 The module freezes record bytes, AAD, sequence zero, UE outbox ordering, and
-an at-most-once FGS delivery-capability boundary.  It deliberately does not
-instantiate a production AEAD or claim an exactly-once external side effect.
+mutually exclusive direct-delivery or durable-inbox FGS sinks.  It deliberately
+does not instantiate a production AEAD or claim an exactly-once external side
+effect.
 """
 
 from __future__ import annotations
@@ -44,6 +45,7 @@ from .ue import UEAcceptedSessionV2
 
 FIRST_APPLICATION_SEQUENCE = 0
 MAX_APPLICATION_PLAINTEXT_BYTES = 900_000
+MAX_APPLICATION_RECEIPT_BYTES = 262_144
 # Leaves room inside the global FrameV2 body bound for the largest registered
 # SessionActivateV2 and both Opaque length fields.
 MAX_APPLICATION_CIPHERTEXT_BYTES = 982_744
@@ -642,6 +644,85 @@ class FirstApplicationDeliveryStoreV2(Protocol):
     ) -> DeliveryClaimResultV2: ...
 
 
+class FirstApplicationInboxStateV2(IntEnum):
+    PENDING = 1
+    COMPLETED = 2
+
+
+@dataclass(frozen=True)
+class FirstApplicationInboxEntryV2:
+    state: FirstApplicationInboxStateV2
+    revision: int
+    session_id: bytes
+    record_digest: bytes
+    plaintext: bytes
+    receipt: bytes | None = None
+
+    def validate(self) -> None:
+        if not isinstance(self.state, FirstApplicationInboxStateV2):
+            raise TypeError("inbox state has the wrong type")
+        require_uint(self.revision, 64, "inbox revision")
+        if self.revision != int(self.state):
+            raise ValueError("inbox state and revision differ")
+        _fixed(self.session_id, SESSION_ID_BYTES, "session_id")
+        _fixed(self.record_digest, DIGEST_BYTES, "record_digest")
+        _plaintext(self.plaintext)
+        if self.state is FirstApplicationInboxStateV2.PENDING:
+            if self.receipt is not None:
+                raise ValueError("pending inbox entry contains a receipt")
+            return
+        if not isinstance(self.receipt, bytes) or not self.receipt:
+            raise ValueError("completed inbox entry lacks a receipt")
+        if len(self.receipt) > MAX_APPLICATION_RECEIPT_BYTES:
+            raise ValueError("application receipt exceeds the v0.2 maximum")
+
+
+class InboxEnqueueDispositionV2(Enum):
+    NEW = "new"
+    EXISTING_PENDING = "existing_pending"
+    EXISTING_COMPLETED = "existing_completed"
+
+
+@dataclass(frozen=True)
+class InboxEnqueueResultV2:
+    disposition: InboxEnqueueDispositionV2
+    session_id: bytes
+    record_digest: bytes
+
+    def validate(self) -> None:
+        if not isinstance(self.disposition, InboxEnqueueDispositionV2):
+            raise TypeError("inbox enqueue disposition has the wrong type")
+        _fixed(self.session_id, SESSION_ID_BYTES, "session_id")
+        _fixed(self.record_digest, DIGEST_BYTES, "record_digest")
+
+
+class FirstApplicationInboxStoreV2(Protocol):
+    durable: bool
+    distributed: bool
+    production_ready: bool
+
+    def enqueue(
+        self,
+        session_id: bytes,
+        record_digest: bytes,
+        plaintext: bytes,
+    ) -> InboxEnqueueResultV2: ...
+
+    def load(
+        self,
+        session_id: bytes,
+    ) -> FirstApplicationInboxEntryV2 | None: ...
+
+    def complete(
+        self,
+        session_id: bytes,
+        record_digest: bytes,
+        receipt: bytes,
+    ) -> FirstApplicationInboxEntryV2: ...
+
+    def pending(self, *, limit: int = 100) -> tuple[bytes, ...]: ...
+
+
 class InMemoryFirstApplicationDeliveryStoreV2:
     durable = False
     distributed = False
@@ -681,6 +762,9 @@ class InMemoryFirstApplicationDeliveryStoreV2:
 class FGSFirstRecordDispositionV2(Enum):
     DELIVERED = "delivered"
     ALREADY_DELIVERED = "already_delivered"
+    QUEUED = "queued"
+    ALREADY_QUEUED = "already_queued"
+    ALREADY_COMPLETED = "already_completed"
     REJECTED = "rejected"
     COMMIT_UNCERTAIN = "commit_uncertain"
 
@@ -707,10 +791,11 @@ class FGSFirstRecordProcessResultV2:
     failures: tuple[str, ...]
     record: FirstApplicationRecordV2 | None
     delivery: FirstApplicationDeliveryV2 | None
+    inbox: InboxEnqueueResultV2 | None = None
 
 
 class FGSFirstApplicationRecordProcessorV2:
-    """Activate a session and release one authenticated plaintext capability."""
+    """Activate a session and commit one authenticated post-activation sink."""
 
     production_ready = False
 
@@ -719,12 +804,18 @@ class FGSFirstApplicationRecordProcessorV2:
         *,
         activation_processor: FGSActivationProcessorV2,
         protection_backend: ApplicationProtectionBackendV2,
-        delivery_store: FirstApplicationDeliveryStoreV2,
+        delivery_store: FirstApplicationDeliveryStoreV2 | None = None,
+        inbox_store: FirstApplicationInboxStoreV2 | None = None,
         suite_registry: Mapping[int, SuiteLimitsV2] = REFERENCE_SUITE_REGISTRY,
     ) -> None:
+        if (delivery_store is None) == (inbox_store is None):
+            raise ValueError(
+                "exactly one delivery_store or inbox_store must be configured"
+            )
         self._activation_processor = activation_processor
         self._protection_backend = protection_backend
         self._delivery_store = delivery_store
+        self._inbox_store = inbox_store
         self._suite_registry = suite_registry
 
     @staticmethod
@@ -844,7 +935,51 @@ class FGSFirstApplicationRecordProcessorV2:
         plaintext = plaintext_output
         record_digest = record_digest_output
 
+        if self._inbox_store is not None:
+            try:
+                enqueue = self._inbox_store.enqueue(
+                    record.session_id,
+                    record_digest,
+                    plaintext,
+                )
+                if not isinstance(enqueue, InboxEnqueueResultV2):
+                    raise TypeError("inbox store returned the wrong type")
+                enqueue.validate()
+                if (
+                    enqueue.session_id != record.session_id
+                    or enqueue.record_digest != record_digest
+                ):
+                    raise ValueError("inbox store changed record identity")
+            except FirstRecordOutboxConflictError:
+                return self._result(
+                    FGSFirstRecordDispositionV2.REJECTED,
+                    "inbox_conflict",
+                )
+            except Exception as error:
+                return self._result(
+                    FGSFirstRecordDispositionV2.COMMIT_UNCERTAIN,
+                    f"inbox_enqueue:{type(error).__name__}",
+                )
+            disposition = {
+                InboxEnqueueDispositionV2.NEW: FGSFirstRecordDispositionV2.QUEUED,
+                InboxEnqueueDispositionV2.EXISTING_PENDING: (
+                    FGSFirstRecordDispositionV2.ALREADY_QUEUED
+                ),
+                InboxEnqueueDispositionV2.EXISTING_COMPLETED: (
+                    FGSFirstRecordDispositionV2.ALREADY_COMPLETED
+                ),
+            }[enqueue.disposition]
+            return FGSFirstRecordProcessResultV2(
+                True,
+                disposition,
+                (),
+                record,
+                None,
+                enqueue,
+            )
+
         try:
+            assert self._delivery_store is not None
             claim = self._delivery_store.claim(record.session_id, record_digest)
             if not isinstance(claim, DeliveryClaimResultV2):
                 raise TypeError("delivery store returned the wrong type")
@@ -922,8 +1057,8 @@ def first_application_checkpoint_manifest() -> dict[str, object]:
             "suite_bound_application_authentication",
             "client_finished_and_application_authentication",
             "atomic_session_activation",
-            "durable_single_host_delivery_claim",
-            "release_plaintext_capability_once",
+            "durable_single_host_inbox_enqueue",
+            "idempotent_application_dispatch",
         ],
         "claim_boundary": {
             "canonical_first_application_record_implemented": True,
@@ -935,6 +1070,9 @@ def first_application_checkpoint_manifest() -> dict[str, object]:
             "fgs_delivery_store_durable_or_distributed": True,
             "fgs_delivery_store_single_host_durable_reference_implemented": True,
             "fgs_delivery_store_distributed": False,
+            "fgs_protected_plaintext_inbox_reference_implemented": True,
+            "fgs_pending_inbox_restart_recovery_implemented": True,
+            "application_apply_once_contract_implemented": True,
             "activation_and_delivery_same_transaction": False,
             "external_side_effect_exactly_once": False,
             "production_aead_instantiated": False,
