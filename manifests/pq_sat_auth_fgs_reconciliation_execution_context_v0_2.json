@@ -1,0 +1,38 @@
+{
+  "claim_boundary": {
+    "actual_store_and_journal_identity_attested": false,
+    "authenticated_execution_scope_provider_instantiated": false,
+    "authorization_bound_to_invocation_scope_and_validity": true,
+    "authorization_validity_rechecked_on_each_lease_clock_sample": true,
+    "automatic_background_scheduler_implemented": false,
+    "backend_readiness_gate_implemented": true,
+    "backend_self_assertion_independently_certified": false,
+    "canonical_execution_scope_implemented": true,
+    "canonical_executor_authorization_implemented": true,
+    "canonical_executor_credential_envelope_implemented": true,
+    "clock_and_verifier_identities_pinned": true,
+    "concrete_operator_credential_scheme_instantiated": false,
+    "credential_checked_before_journal_or_replay_mutation": true,
+    "credential_revocation_or_replay_store_implemented": false,
+    "cross_process_or_reboot_clock_rollback_detection": false,
+    "owner_id_derived_from_authenticated_authorization": true,
+    "per_runner_clock_rollback_rejected": true,
+    "physical_power_loss_tested": false,
+    "production_ready": false,
+    "reconciliation_policy_pinned": true,
+    "trusted_clock_backend_instantiated": false,
+    "unique_live_executor_credential_enforced": false
+  },
+  "format": "PQ-SAT-FGS-RECONCILIATION-EXECUTION-CONTEXT-v0.2",
+  "processing_order": [
+    "validate_pinned_clock_and_verifier_identities",
+    "require_structurally_production_ready_backends",
+    "strictly_decode_executor_credential",
+    "bind_authorization_to_invocation_and_execution_scope",
+    "sample_trusted_clock_and_check_authorization_interval",
+    "verify_exact_domain_separated_executor_authorization",
+    "derive_owner_id_from_authenticated_authorization",
+    "recheck_clock_monotonicity_and_authorization_on_each_lease_sample",
+    "enter_lease_fenced_resumable_runner"
+  ]
+}

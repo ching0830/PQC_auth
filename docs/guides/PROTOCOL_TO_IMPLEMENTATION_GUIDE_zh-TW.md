@@ -302,6 +302,10 @@ Exact V2 bytes與acceptance events見
 - `src/pq_sat_auth/v2/reconciliation_lease.py`：在resumable profile外加入distinct-owner
   single-host cross-process execution lease；generation takeover會fence舊owner，progress／
   receipt在同一SQLite transaction中驗證current unexpired lease後才能append；
+- `src/pq_sat_auth/v2/reconciliation_context.py`：把raw `owner_id`隔離在低階reference
+  runner，production-gated入口只接受canonical executor credential；credential綁定
+  invocation、execution scope、clock domain與有效期，owner ID由已驗證authorization導出，
+  並在每次lease clock sample重查單調性與authorization validity；
 - `src/pq_sat_auth/v2/application.py`：第一個受保護UE→FGS record的canonical
   bytes／AAD／sequence-zero identity、UE outbox coordinator與FGS一次性delivery
   capability；
@@ -340,6 +344,10 @@ Expired reservation另可在canonical evidence與fence rotation後安全重新�
 兩個database間的atomic transaction。可選的lease-fenced runner會在每筆mutation前assert／
 renew single-host lease，並原子綁定journal write；它不等於跨主機consensus lease，也無法阻止
 已通過lease check的舊process在lease被takeover後仍發出一次idempotent replay call。
+Credentialed successor另要求clock／credential-verifier identities符合signed execution scope，
+且兩個backend明確通過readiness gate後才可進入lease runner；目前沒有具體operator credential
+scheme、可信clock實作、credential replay／revocation registry或獨立backend qualification，
+因此這是fail-closed composition boundary，不是production認證已完成。
 Concrete suite、真實proof／AKE、
 獨立production revocation key／PQ verifier、authority rotation、production record／plaintext
 protection、distributed FGS store及production external application `apply_once`仍未完成。

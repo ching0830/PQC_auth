@@ -1114,3 +1114,44 @@ single-host journal-write fencing，不能宣稱replay mutation與lease原子、
 partition availability或stale process cancellation。Production trusted clock、operator
 authentication、background scheduler、production record protection、rollback／physical
 power-loss evidence仍未完成，Production-closed維持false。
+
+### 13.20 Authenticated reconciliation execution-context checkpoint
+
+前一checkpoint的低階runner直接接受caller提供的32-byte `owner_id`及`now()` clock。這足以測試
+lease generation與SQLite fencing，卻不能回答該owner是否為獲授權executor、兩個process是否
+誤用同一identity，或不同clock domain的時間是否可比較。本checkpoint保留該低階API作
+reference／test用途，另新增`CredentialedLeaseFencedResumableReconciliationRunnerV2`作
+fail-closed入口。
+
+Verifier-owned execution scope canonical綁定：
+
+```text
+system_context_digest
+replay_store_id
+reconciliation_journal_id
+clock_id
+credential_verifier_id
+batch_limit / minimum_stale_seconds
+lease_seconds / renewal_margin_seconds
+```
+
+Executor authorization另綁定exact `invocation_id`、scope digest、`operator_id`、每次executor
+instance ID、credential ID及半開有效區間`[not_before, not_after)`。外層credential對
+domain-separated canonical authorization bytes作authentication；驗證成功後才由完整
+authorization導出lease `owner_id`，caller不能在此入口另傳owner ID。
+
+Runner在任何intent／plan／lease或replay mutation前，先要求clock／credential verifier ID與
+scope相符、兩個backend明確標記ready、strict decode credential、取樣clock、核對invocation／
+scope／reconciliation policy／validity並驗證authentication。初次clock sample會交給lease
+acquisition重用；後續每次
+assert／renew／progress／receipt前的clock sample都再檢查per-runner non-decreasing及credential
+仍在有效期內。Backend exception、非boolean success、wrong ID、expired／not-yet-valid credential
+全部fail closed。
+
+這個結構性gate不證明backend自稱`production_ready`為真，也沒有配置真實operator key、credential
+issuer、revocation／anti-replay registry、可信時間服務或reboot rollback detector。Execution scope
+中的store／journal identities是credential所授權的configuration identities；reference尚未提供
+authenticated system-configuration scope provider，也未提供能attest實際Python object／database
+instance的production adapter。相同credential若被複製到兩個
+process仍會導出相同owner ID，故unique-live-executor issuance必須由未來credential authority及
+scheduler封閉。Production-closed維持false。
