@@ -34,7 +34,8 @@
 | 階段 3／第十四堂：受控身分開啟 | 已提供基礎講解，理解待後續應用 | 已說明案件授權與門檻解密兩道門、OA share gate、opening replay、combiner 一致性與 serial equality |
 | 階段 3／第十五堂：完整生命週期與資料可見性 | 已提供總整理，理解待後續應用 | 已將設定、發行、接入、session／handover 與 opening 串成完整案例；未以教材建立視為能獨立口述 |
 | 階段 4／第十六堂：PQ 計算前移與 Replay | 已提供基礎講解，理解待後續應用 | 依學習者更正，以降低高成本 PQ 在線運算為主要動機；已區分可前移 issuance work、當下 access work 與 Replay |
-| 階段 4／第十七堂：異構衛星認證論文的公平比較 | 進行中 | 已建立相同事件、成本邊界與證據等級三項條件；下一堂比較 one-use ticket 與 reusable anonymous Show |
+| 階段 4／第十七堂：異構衛星認證論文的公平比較 | 已提供基礎講解，理解待後續應用 | 已建立相同事件、成本邊界與證據等級三項條件，沒有將不同流程或證據來源強制合併排名 |
+| 階段 4／第十八堂：One-use ticket 與 reusable anonymous Show | 進行中 | 已區分固定 ticket reuse 與 randomized Show，並整理 v0.1 選擇、系統代價及未來擴充條件 |
 | 階段 5／程式閱讀工具 | 未開始 | 後續補充 repository、Python module、bytes、測試與 Git 工作流 |
 | 階段 6／6-1 至 6-10 | 未開始 | 既有對話中的程式介紹不視為已掌握 |
 | 階段 7／證據與限制 | 未開始 | 每堂先保留研究目標與成果的區分，之後集中學習 |
@@ -587,6 +588,28 @@
   協定 benchmark，也未提高研究完成宣稱。下一堂比較 one-use ticket 與 reusable anonymous Show。
 - 助教核對 191 個學習文件本機連結，沒有缺失目標；以本機瀏覽器檢查比較框架圖在 736 與
   288 像素內容寬度下的呈現，五篇研究焦點、三項比較條件及判斷結果完整可見。
+
+### 2026-09-15 — 第十八堂：One-use ticket 與 reusable anonymous Show
+
+- 學習者要求下一堂，接續第十七堂；不把接續課程視為已獨立掌握文獻比較方法。
+- 先區分重送固定 `T=(M,σ)` 與真正 reusable `Show`：後者需以每次新 randomness 產生新的
+  randomized ZK presentation，不能靠在固定 ticket 旁附加亂數取得 unlinkability。
+- 說明 core `VerifyTicket(T)` 是 stateless validity check；strict one-use 是另由 holder authentication、
+  authoritative consumption state 與 lifecycle assumptions 組成的 M6 system property。
+- 比較兩種模型的 privacy：one-use 以不同 tickets 避免正常使用時重複同一固定物件；multi-show
+  以 presentation randomization 隱藏共同 credential，兩者皆不自動隱藏 timing／location metadata。
+- 區分 transcript replay、合法物件重用、quota 與 double-spend；v0.1 要求 online prevention，
+  disconnected FGS 事後才偵測重複不能仍宣稱 strictly one-use。
+- 將 one-use 的 offline issuance／wallet 與 online state commit，對照 reusable Show 的較低發行頻率、
+  較高在線 ZK presentation、revocation 與 quota 擴充成本。
+- 接回先前的秘密外洩問題：ticket 與 `k_hold` 同時外洩時，one-use 只能限制每張 ticket 的成功次數；
+  reusable credential 與秘密外洩可能持續產生 Shows，兩者都仍需裝置保護和撤銷。
+- 說明 D-001 選擇 one-use 的理由是現有 fixed ticket core、清楚的一次成功 invariant、計算前移及
+  較少新增密碼假設；同時保留 wallet、補發、durable state、backhaul 和 partition availability 代價。
+- 本堂只更新學習文件，未修改 D-001、canonical protocol、實作或測試狀態，亦未新增 reusable
+  `Show` construction 或效能數值。下一堂比較 blind issuance 與普通 signed ticket。
+- 助教核對 198 個學習文件本機連結，沒有缺失目標；以本機瀏覽器檢查 one-use／multi-show
+  比較圖在 736 與 288 像素內容寬度下的呈現，兩條流程、責任差異與 v0.1 選擇完整可見。
 
 ## 後續更新方式
 

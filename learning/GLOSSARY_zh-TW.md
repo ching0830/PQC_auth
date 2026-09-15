@@ -112,6 +112,11 @@
 | 批次大小（batch size） | 一次共同處理的請求數量 | 批次越大可能改善平均計算成本，也可能增加等待湊批次的 latency |
 | 吞吐量（throughput） | 系統在單位時間內完成的請求數量 | 高 throughput 不保證單一使用者等待時間低；需和 per-request latency 分開報告 |
 | `NR`／`NA`／`OPEN` | `NR` 表示論文未報告，`NA` 表示該項不適用，`OPEN` 表示本研究尚未封閉 | 不知道時應保留空缺含義，不能自行假設成通過、失敗或零成本 |
+| `Show`／presentation | 使用 credential 產生給 verifier 檢查的一次出示證明 | Reusable anonymous `Show` 每次需要新的 randomized proof；不是重送同一份固定 signed ticket |
+| 可重新隨機化（rerandomization） | 以新的 randomness 產生外觀看似不同、但仍能證明來自有效 credential 的表示或證明 | 任意添加亂數不會自動保持驗證關係，也不保證 unlinkability |
+| 多次出示（multi-show） | 同一 credential 可合法支援多次 presentation 的使用模型 | 原生通常不限制使用次數；quota、撤銷、Replay 與裝置外洩仍需另外處理 |
+| 防重複標記（nullifier） | 從秘密、domain 或使用條件導出的公開標記，用來辨認不允許的重複使用 | 設計不當或在太大範圍固定使用會造成 sessions 可連結；目前 v0.1 沒有採用此機制 |
+| 雙重使用（double spend） | 同一個本應受次數限制的 token／權利被使用超過允許次數 | Online prevention 要在第二次成功前拒絕；offline detection 允許先接受、之後才偵測，兩者保證不同 |
 
 專案用語依 [架構](../ARCHITECTURE_zh-TW.md) 與
 [研究方法](../methodology.md) 解釋；本表不替代各模組正式規格。
