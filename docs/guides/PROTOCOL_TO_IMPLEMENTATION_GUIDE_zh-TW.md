@@ -292,14 +292,16 @@ Exact V2 bytes與acceptance events見
   capability；
 - `src/pq_sat_auth/v2/storage/sqlite_first_record.py`：先固定plaintext identity、再保存
   exact ciphertext bytes的單機SQLite outbox；
+- `src/pq_sat_auth/v2/storage/sqlite_delivery.py`：以session／record identity提供單機
+  cross-process、restart-durable的FGS at-most-once delivery claim；
 - `tests/system/test_pq_sat_auth_*_v2.py`：canonical vectors、truncation、mutation、
   binding、retry、race、activation與test-only production rejection。
 
 這使V2的bounded byte／relation／M1-M2／activation／first-record state boundary達
-Implemented／Tested。UE wallet／first-record outbox與FGS replay已有單機SQLite reference；
-FGS delivery仍是process-local。Concrete suite、真實proof／AKE、production record
-protection、distributed FGS store、atomic revocation ordering及external side-effect
-exactly-once transaction仍未完成。
+Implemented／Tested。UE wallet／first-record outbox與FGS replay／delivery已有單機SQLite
+reference。Concrete suite、真實proof／AKE、production record protection、distributed FGS
+store、atomic activation／delivery／revocation ordering及external side-effect exactly-once
+transaction仍未完成。
 
 ## 7. Conditional opening：逐行對應
 

@@ -8,7 +8,9 @@
       "canonical_first_application_record_implemented": true,
       "durable_ue_exact_record_outbox_reference_implemented": true,
       "external_side_effect_exactly_once": false,
-      "fgs_delivery_store_durable_or_distributed": false,
+      "fgs_delivery_store_distributed": false,
+      "fgs_delivery_store_durable_or_distributed": true,
+      "fgs_delivery_store_single_host_durable_reference_implemented": true,
       "fgs_one_time_delivery_capability_implemented": true,
       "outbox_restart_and_race_tested": true,
       "physical_power_loss_tested": false,
@@ -22,7 +24,7 @@
       "suite_bound_application_authentication",
       "client_finished_and_application_authentication",
       "atomic_session_activation",
-      "atomic_process_local_delivery_claim",
+      "durable_single_host_delivery_claim",
       "release_plaintext_capability_once"
     ],
     "format": "PQ-SAT-FIRST-APPLICATION-CHECKPOINT-v0.2",
@@ -38,6 +40,29 @@
       "read_back_validation",
       "release_wire_bytes_after_commit"
     ]
+  },
+  "sqlite_delivery": {
+    "application_id": "0x50515344",
+    "claim_checksum_domain": "PQ-SAT/FGS-FIRST-DELIVERY-CLAIM/v0.2",
+    "claims": {
+      "activation_and_claim_same_transaction": false,
+      "claim_ack_loss_can_drop_work": true,
+      "claim_committed_before_new_capability_release": true,
+      "competing_record_digest_rejected": true,
+      "distributed": false,
+      "exact_retry_returns_existing_without_plaintext": true,
+      "external_side_effect_exactly_once": false,
+      "hostile_filesystem_protection": false,
+      "physical_power_loss_tested": false,
+      "process_exit_recovery_tested": true,
+      "production_ready": false,
+      "rollback_resistance": false,
+      "single_host_cross_process_durable_reference": true
+    },
+    "format": "PQ-SAT-FGS-FIRST-DELIVERY-SQLITE-v0.2",
+    "journal_mode": "WAL",
+    "schema_version": 1,
+    "synchronous": "FULL"
   },
   "sqlite_outbox": {
     "application_id": "0x5051534f",

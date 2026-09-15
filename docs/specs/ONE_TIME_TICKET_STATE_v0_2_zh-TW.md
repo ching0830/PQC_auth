@@ -1,6 +1,6 @@
 # One-Time Ticket 狀態與 1-RTT Access 邊界規格 v0.2
 
-> 狀態：Defined；FGS與UE single-host SQLite reference已 Implemented／Tested；尚未 distributed／Production-closed
+> 狀態：Defined；FGS replay／delivery與UE single-host SQLite references已 Implemented／Tested；尚未 distributed／Production-closed
 > 日期：2026-09-15
 > Access companion：`docs/specs/SATELLITE_ACCESS_v0_2_zh-TW.md`
 > Historical predecessor：`docs/specs/ONE_TIME_TICKET_STATE_v0_1_zh-TW.md`
@@ -158,9 +158,9 @@ identity及 response recovery state，必須使用 write-ahead／transactional r
 ciphertext」或「相同 response 對應不同 session key」。
 
 Reference grant processor可在commit前取得較新的non-revoked snapshot，並把reservation
-記錄的`revocation_generation`單調提升；commit不得接受較舊generation。此兩步驟在
-process-local model中仍不是同一serializable transaction，不能取代production store在
-authoritative ordering內執行的revocation recheck＋grant commit。
+記錄的`revocation_generation`單調提升；commit不得接受較舊generation。即使後續使用
+單機SQLite store，此兩步驟仍不是同一serializable transaction，不能取代production
+backend在authoritative ordering內執行的revocation recheck＋grant commit。
 
 ## 6. Activation
 
@@ -187,11 +187,11 @@ authoritative active record恢復。
 
 Activation前的authenticated revocation snapshot必須綁定configuration、acceptance
 domain、ticket use key、原grant revocation query、FGS／key、request／response及session。
-然而外部snapshot與process-local activate不是同一transaction；production backend仍須
+然而外部snapshot與activate store transition不是同一transaction；production backend仍須
 提供authoritative ordering。後續bounded first-record processor已把exact
 `SessionActivateV2`放入application AAD，並在application authentication成功後才activate；
-但其process-local delivery claim與side-effect transaction仍不得被混稱為production
-exactly-once ordering。
+其後續delivery claim已有單機SQLite durability，但activation、claim與side-effect仍不在
+同一transaction，不得被混稱為production exactly-once ordering。
 
 ## 7. Exact replay and retry semantics
 
@@ -352,8 +352,8 @@ nonce context、`sequence_number = 0`及record digest。UE端獨立SQLite outbox
 `RESERVED`固定plaintext identity，再以`READY`保存exact wire bytes；commit及read-back
 完成前不釋放。FGS先驗證client Finished與application protection，再activate，最後由
 process-local claim只釋放一次plaintext capability。它已測試restart、thread／process
-race、lost acknowledgement、ciphertext mutation及competing sequence-zero record，但
-FGS delivery不durable／distributed，activation與external side effect也不是同一
+race、lost acknowledgement、ciphertext mutation及competing sequence-zero record；該
+checkpoint的FGS delivery仍不durable／distributed，activation與external side effect也不是同一
 transaction，故不構成crash-safe exactly-once保證。
 
 2026-09-15 FGS replay SQLite checkpoint將同一完整state contract接到單機durable store。
@@ -362,5 +362,13 @@ protection backend後保存exact sealed M2與sealed session state。`BEGIN IMMED
 `synchronous=FULL`及parent-directory fsync提供可信單機假設下的跨程序serialization與
 restart recovery；process-local transition suite、跨程序races、突然process exit與實際
 grant→restart→activation pipeline均已測試。它不是多FGS authoritative store，也未提供
-rollback／hostile-filesystem／實體斷電證據；revocation snapshot atomicity、durable delivery
-及external side-effect transaction仍未完成。
+rollback／hostile-filesystem／實體斷電證據；該checkpoint的revocation snapshot atomicity、
+durable delivery及external side-effect transaction仍未完成。
+
+2026-09-15 FGS first-record delivery SQLite checkpoint再將process-local claim替換為單機
+durable at-most-once gate。`session_id`只能綁定一個`record_digest`；跨thread／process只有
+一個`NEW` winner，exact retry在restart後只取得`EXISTING`且不再釋放plaintext，competing
+authenticated sequence-zero record拒絕。Claim commit後突然process exit仍可恢復既有
+identity；但若commit acknowledgement或application side effect前crash，工作可能遺失。
+Activation、claim及external mutation不是同一transaction，故不支持exactly-once、
+distributed、rollback、hostile-filesystem或實體斷電宣稱。

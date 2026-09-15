@@ -1,6 +1,6 @@
 # Satellite Access 與 PQ AKE 規格 v0.2
 
-> 狀態：Defined；bounded reference codecs／relation／processors、UE SQLite wallet及FGS single-host SQLite replay store已 Implemented／Tested；尚未 Instantiated／distributed／Proof-closed／Production-closed
+> 狀態：Defined；bounded reference codecs／relation／processors、UE SQLite wallet、FGS single-host SQLite replay與delivery stores已 Implemented／Tested；尚未 Instantiated／distributed／Proof-closed／Production-closed
 > 日期：2026-09-15
 > 所屬模組：M5 Satellite authentication、M6 Anti-replay／revocation／handover
 > State companion：`docs/specs/ONE_TIME_TICKET_STATE_v0_2_zh-TW.md`
@@ -489,12 +489,13 @@ plaintext capability交給application layer。AEAD失敗不得activate；相同r
 delivery後只回覆`ALREADY_DELIVERED`且不再釋放plaintext。另一個通過AEAD的sequence-0
 record必須視為conflict。
 
-Reference delivery claim目前只是process-local at-most-once release gate；activation與
-delivery不在同一durable transaction，application side effect也未納入該transaction。
-因此它不能宣稱crash-safe exactly-once：activation後、claim前crash可由exact retry恢復；
-claim後、外部side effect前crash則可能遺失工作但不會在同一process state內重複釋放。
-Production profile仍須把durable／distributed delivery state與實際application transaction
-整合，或明定可接受的idempotency key及補償語意。
+目前bounded delivery claim已由單機SQLite store提供cross-process serialization與restart
+recovery。Claim commit成功後，exact retry只回覆`ALREADY_DELIVERED`，不再釋放plaintext。
+但activation、delivery claim及application side effect仍不是同一transaction，因此只能
+宣稱durable at-most-once capability gate，不能宣稱crash-safe exactly-once：activation後、
+claim前crash可由exact retry恢復；claim已commit但回覆或side effect前crash則可能永久遺失
+工作。Production profile仍須整合distributed state與實際application transaction，或明定
+可接受的idempotency key、inbox／outbox及補償語意。
 
 ## 9. Acceptance terminology
 
@@ -713,10 +714,11 @@ FGS透過activation processor的pure pre-activation check先驗證application pr
 釋放一次plaintext capability，exact retry不重複釋放，第二個authenticated sequence-zero
 record拒絕。此ordering使corrupt ciphertext不會把pending session轉成active。
 
-這仍是test-only protection backend下的bounded reference。FGS delivery state不durable、
-不distributed，activation與delivery claim不是同一transaction，external application side
-effect也不具crash-safe exactly-once保證；concrete production AEAD、secure nonce mapping與
-實體斷電測試仍未完成。完整evidence與machine claims見
+這在該checkpoint仍是test-only protection backend下的bounded reference，當時FGS
+delivery state尚不durable；後續單機durable successor見§13.9。即使有successor，activation
+與delivery claim仍不是同一transaction，external application side effect也不具crash-safe
+exactly-once保證；concrete production AEAD、secure nonce mapping與實體斷電測試仍未完成。
+原checkpoint的完整evidence與machine claims見
 `docs/artifacts/SATELLITE_ACCESS_v0_2_FIRST_APPLICATION_RECORD_zh-TW.md`及
 `manifests/pq_sat_auth_first_application_v0_2.json`。
 
@@ -746,7 +748,27 @@ processor在store restart後回復exact M2再完成activation。
 這支持可信單一host與SQLite／filesystem假設下的cross-process serialization及restart
 durability，不支持多FGS／多host linearizability。Test-only protector不是production record
 protection；rollback、hostile filesystem、kernel crash／remount與實體斷電仍未驗證。
-外部revocation snapshot與store transition也尚非同一authoritative transaction，FGS
-delivery claim及application side effect仍未durable整合。詳細evidence與machine claims見
+外部revocation snapshot與store transition也尚非同一authoritative transaction；本
+checkpoint當時的FGS delivery claim尚未durable，後續單機successor見§13.9。詳細evidence與machine claims見
 `docs/artifacts/SATELLITE_ACCESS_v0_2_FGS_REPLAY_SQLITE_zh-TW.md`及
 `manifests/pq_sat_auth_fgs_replay_sqlite_v0_2.json`。
+
+### 13.9 FGS single-host durable first-record delivery checkpoint
+
+後續checkpoint新增`src/pq_sat_auth/v2/storage/sqlite_delivery.py`。Store以`session_id`
+作primary key，永久綁定唯一`record_digest`；第一次atomic insert回覆`NEW`，exact retry
+回覆`EXISTING`，另一個已通過application authentication的sequence-zero record則拒絕。
+只有`NEW` claim在commit成功後才可取得plaintext capability。
+
+Store使用獨立application ID／schema、WAL、`synchronous=FULL`、`BEGIN IMMEDIATE`、
+database mode `0600`及首次建立後parent-directory fsync。Domain-separated public checksum
+可偵測bounded row corruption，但不是MAC，也不支持hostile-filesystem security。測試涵蓋
+thread／process exact race、competing digests、restart、commit後突然process exit、schema／
+row mutation、processor restart及lost claim acknowledgement。
+
+此checkpoint把process-local claim提升為可信單一host下的durable at-most-once gate，沒有
+讓activation與claim成為同一transaction，也沒有納入external application mutation。
+因此claim後crash可能造成工作遺失，但retry不得重複釋放plaintext；distributed consistency、
+rollback protection、實體斷電與exactly-once side effect仍未完成。完整evidence見
+`docs/artifacts/SATELLITE_ACCESS_v0_2_FGS_DELIVERY_SQLITE_zh-TW.md`，machine claims收錄於
+`manifests/pq_sat_auth_first_application_v0_2.json`。

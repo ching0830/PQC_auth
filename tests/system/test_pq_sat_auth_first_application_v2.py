@@ -39,6 +39,9 @@ from pq_sat_auth.v2.storage.sqlite_first_record import (
     SQLiteFirstRecordOutboxV2,
     sqlite_first_record_outbox_manifest,
 )
+from pq_sat_auth.v2.storage.sqlite_delivery import (
+    sqlite_first_application_delivery_manifest,
+)
 from tests.system.test_pq_sat_auth_activation_v2 import (
     ActivationKeySchedule,
     ActivationRevocationProvider,
@@ -252,6 +255,7 @@ class FirstApplicationCodecTests(FirstApplicationFixture):
             expected,
             {
                 "checkpoint": first_application_checkpoint_manifest(),
+                "sqlite_delivery": sqlite_first_application_delivery_manifest(),
                 "sqlite_outbox": sqlite_first_record_outbox_manifest(),
             },
         )
@@ -608,7 +612,13 @@ class FGSFirstApplicationTests(FirstApplicationFixture):
         claims = first_application_checkpoint_manifest()["claim_boundary"]
         self.assertTrue(claims["canonical_first_application_record_implemented"])
         self.assertTrue(claims["fgs_one_time_delivery_capability_implemented"])
-        self.assertFalse(claims["fgs_delivery_store_durable_or_distributed"])
+        self.assertTrue(claims["fgs_delivery_store_durable_or_distributed"])
+        self.assertTrue(
+            claims[
+                "fgs_delivery_store_single_host_durable_reference_implemented"
+            ]
+        )
+        self.assertFalse(claims["fgs_delivery_store_distributed"])
         self.assertFalse(claims["activation_and_delivery_same_transaction"])
         self.assertFalse(claims["external_side_effect_exactly_once"])
         self.assertFalse(claims["production_aead_instantiated"])
