@@ -41,7 +41,7 @@
 | 階段 4／第二十一堂：地面站與衛星的工作分配 | 已提供基礎講解，理解待後續應用 | 已區分工作放置與行政隸屬，對照 FGS／LEO／state backend；說明 1 RTT access NIZK 候選仍需 state backhaul，HGS protocol role 保持未定 |
 | 階段 4／第二十二堂：票券有效期與庫存 | 已提供基礎講解，理解待後續應用 | 已區分四種 expiry、共同 bucket、batch 容量與 low-watermark 補發；UE wallet journal 與實際參數均尚未實作／選定 |
 | 階段 4／第二十三堂：Threat model 與安全邊界 | 已提供階段總整理，理解待後續應用 | 已逐角色區分 honest-but-curious、malicious、compromised、untrusted、unavailable，並將核心／系統／可用性主張對回各自 assumptions；未視為學習者已能獨立撰寫 game |
-| 階段 5／程式閱讀工具 | 未開始 | 後續補充 repository、Python module、bytes、測試與 Git 工作流 |
+| 階段 5／第二十四堂：Repository 地圖與證據路徑 | 進行中 | 已辨認研究、canonical、source、tests、manifests／artifacts 與導覽層；助教沿 framing 執行 6 項測試，學習者尚未親自操作 |
 | 階段 6／6-1 至 6-10 | 未開始 | 既有對話中的程式介紹不視為已掌握 |
 | 階段 7／證據與限制 | 未開始 | 每堂先保留研究目標與成果的區分，之後集中學習 |
 | 階段 8／獨立修改 | 未開始 | 尚無學習者獨立修改與驗證的紀錄 |
@@ -761,6 +761,24 @@
   production-closed。下一堂進入階段 5，從 repository／Python package／module／test／manifest 開始。
 - 助教核對 233 個學習文件本機連結，沒有缺失目標；以本機瀏覽器檢查 threat-model 圖在 736
   與 288 像素內容寬度下的呈現，行為模型、角色假設、安全性質與完整主張句型均無重疊或裁切。
+
+### 2026-09-16 — 第二十四堂：Repository 地圖與證據路徑
+
+- 學習者明確要求進入階段 5；第 23 課仍記為已提供總整理、理解待後續應用，不將階段切換視為
+  已能獨立撰寫 threat model。
+- 從 repository／root／path 開始，將目前 checkout 分成研究工作台、正式全專案定義、`src/`
+  實作、tests／manifests／artifacts／proof evidence，以及 modules／guides／learning 導覽五區。
+- 說明 `ARCHITECTURE_zh-TW.md`、`RESEARCH_STATUS_zh-TW.md`、`ROADMAP_zh-TW.md` 的不同責任，
+  並保留 machine evidence 約束 claim、教材不能覆蓋 canonical status 的順序。
+- 以 `src/pq_sat_auth/framing.py` 為第一條真實閱讀路徑，對照
+  `tests/system/test_pq_sat_auth_framing.py` 的 fixed vector、round trip、mutation、truncation 與
+  type／size rejection。
+- 助教執行 `PYTHONPATH=src python -m unittest tests.system.test_pq_sat_auth_framing -v`，結果為
+  6 tests passed、0 failed、0 skipped；這是助教驗證，不記為學習者已能執行測試。
+- 限定結論為目前 framing codec 的被測規則通過；不提升 ticket／NIZK／PQ AKE、匿名性、proof 或
+  production claim。下一堂閱讀 package、module、`import` 與 `__init__.py`。
+- 助教核對 236 個學習文件本機連結，沒有缺失目標；以本機瀏覽器檢查 repository map 在 736
+  與 288 像素內容寬度下的呈現，五個責任區、framing 閱讀鏈及 claim-level 邊界均無重疊或裁切。
 
 ## 後續更新方式
 

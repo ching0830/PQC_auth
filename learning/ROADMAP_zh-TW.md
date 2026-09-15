@@ -106,6 +106,7 @@ checkout 補出「概念 → 檔案 → 函式 → 測試 → 目前限制」的
 | [第二十一堂：地面站與衛星的工作分配](lessons/21_GROUND_SATELLITE_WORK_PLACEMENT_zh-TW.md) | 階段 4；能說明驗證位置與 RTT 是不同設計軸，區分 satellite path、state backhaul 與 home lookup，並解釋首則 access NIZK 為何不取代權威 one-use state |
 | [第二十二堂：短效票券的有效期、庫存與補發策略](lessons/22_TICKET_LIFETIME_AND_INVENTORY_zh-TW.md) | 階段 4；能區分 configuration／grant／challenge／session expiry，說明共同 bucket、batch 容量、提前補發、wallet crash state 及短長有效期的取捨 |
 | [第二十三堂：Threat Model 與安全邊界](lessons/23_THREAT_MODEL_AND_SECURITY_BOUNDARIES_zh-TW.md) | 階段 4 總整理；能按角色列出 adversary view／capability、誠實假設與成功事件，並判斷 issuer unlinkability、one-use、opening privacy 與 availability 各自在哪些條件下成立 |
+| [第二十四堂：Repository 地圖與證據路徑](lessons/24_REPOSITORY_MAP_AND_EVIDENCE_PATH_zh-TW.md) | 階段 5 起點；能區分 repository root、研究工作台、canonical definitions、source、tests、manifests／artifacts 與導覽文件，沿 framing 功能說明測試真正支持的範圍 |
 
 目前單元與理解狀態只在 [學習進度](PROGRESS_zh-TW.md) 更新。第二至七堂已提供必要概念的
 入門說明；第八至十五堂已完成階段 3 的教材範圍，涵蓋共同設定、發行、接入、使用狀態、
@@ -114,5 +115,6 @@ checkout 補出「概念 → 檔案 → 函式 → 測試 → 目前限制」的
 `Show`，第十九堂分析 blind issuance 與普通 signed ticket，第二十堂已依作者更正建立組織拓撲，
 第二十一堂分析 HGS、FGS 與 LEO／FLEO 的工作分配，以及 2 RTT 草稿和 1 RTT 候選；第二十二堂
 分析 short-lived ticket 的有效期、庫存和補發策略；第二十三堂整理 threat model 與安全主張邊界。
-下一堂進入階段 5，開始閱讀 repository。仍於應用時補課，不以教材
-建立視為已掌握，尚未進入逐模組或逐行程式閱讀。
+第二十四堂已進入階段 5，建立 repository 地圖並沿 framing 走過規格、source、tests 與 claim
+boundary；下一堂學 Python package、module、`import` 與 `__init__.py`。仍於應用時補課，不以教材
+建立視為已掌握，尚未進入階段 6 的逐模組實作閱讀。

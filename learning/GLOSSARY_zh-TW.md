@@ -150,6 +150,14 @@
 | 協定角色（protocol role） | 說明一個參與者依協定可接收、驗證、產生哪些訊息 | 同一組織可以執行多個 protocol roles；組織名稱也不能取代精確訊息與狀態定義 |
 | 跨域資料共享（cross-domain data sharing） | 不同行政域把各自的 issuance、access 或 network metadata 放在一起分析 | 比「角色合併」更精確；可能出於合作、調查、外洩或惡意行為，能否關聯取決於密碼與 metadata 邊界 |
 | 門檻腐化（threshold compromise） | 攻擊者取得至少門檻數量的有效 secret shares | 少於 `t_O` 的 privacy 結論不涵蓋達到門檻的攻擊者；治理 gate 也不能替代秘密份額安全 |
+| Repository／repo | 由 Git 管理的一整個專案工作區，可同時包含文件、source、tests 與 evidence | 不等於只有 Python 程式；repo 中有檔案也不表示相關功能已完成 |
+| Repository root | 專案最外層資料夾，本專案目前是 `PQC_auth/` | 相對路徑都以某個目前位置解讀；執行命令前要知道自己位於哪個目錄 |
+| Path | 指向檔案或資料夾的位置；可分 relative path 與 absolute path | 相同檔名可能在不同資料夾；必須連同路徑判斷責任 |
+| Source／原始碼 | 放在 `src/`、可由 Python 執行或 import 的實作文字 | 有 executable code 只支持 Implemented，不自動支持 Tested、Proof-closed 或 Production-closed |
+| Test／測試 | 對具體輸入、輸出、錯誤或排程執行檢查的程式 | 通過只支持已涵蓋 cases；不是所有攻擊者的安全證明 |
+| Manifest | 以 JSON 等機器可讀格式保存參數、identity、metrics 與 claim boundary | 不取代原始 artifact、實際 execution、tests 或 proof |
+| Artifact | 實作或實驗產生、供後續核對的具體輸出，例如 relation、assignment、proof 或 metadata | 名稱或檔案存在不證明來源可信；須核對版本、size、checksum 與 manifest |
+| Canonical source | 對特定問題具有正式權責的定義或狀態來源 | README、guide 或教材適合導航，但不能覆蓋正式狀態與 machine evidence |
 
 專案用語依 [架構](../ARCHITECTURE_zh-TW.md) 與
 [研究方法](../methodology.md) 解釋；本表不替代各模組正式規格。
