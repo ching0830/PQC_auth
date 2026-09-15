@@ -94,6 +94,9 @@
 | 追責認證（trace authentication） | 檢查解密出的追責資料確實帶有協定要求的完整性／來源綁定 | 能把 bytes 解密出來不表示可直接相信其身分；目前 production 機制仍未完成 |
 | Opening replay | 防止同一案件授權／開啟請求被反覆拿去取得 OA 份額的狀態控制 | 與 ticket consumption 不同；後者防止同一票券建立第二個 initial session |
 | 失敗關閉（fail closed） | 關鍵驗證或狀態不確定時拒絕輸出敏感結果 | 可能犧牲可用性；在 opening 中可避免釋出未被可靠記錄的份額或身分 |
+| 資料可見性（data visibility） | 指定某個角色在某個協定階段能直接取得哪些欄位或狀態 | 看不見 `rid` 不表示無法透過固定票券、session 或 metadata 連結活動 |
+| 網路中介資料（network metadata） | 通訊內容以外仍可觀察的時間、位置、路徑、封包大小與頻率等資訊 | 加密訊息內容不會自動隱藏這些線索；匿名宣稱需列明相關假設 |
+| 浮水印／個人化標記（watermark） | 刻意或意外放入公開設定或票券欄位、可辨認特定使用者的特殊值 | 盲簽章不能補救由 issuer 放入的可見唯一標記，因此共同 metadata 必須受治理 |
 
 專案用語依 [架構](../ARCHITECTURE_zh-TW.md) 與
 [研究方法](../methodology.md) 解釋；本表不替代各模組正式規格。

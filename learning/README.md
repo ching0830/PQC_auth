@@ -25,6 +25,7 @@
 | [第十二堂：一次性票券的狀態、並行與失敗恢復](lessons/12_ONE_TIME_TICKET_STATE_zh-TW.md) | 理解 `UNSEEN`、`RESERVED`、`CONSUMED`，以及競爭、重試、回應遺失與中斷恢復 |
 | [第十三堂：過期、撤銷、已消耗與換手](lessons/13_EXPIRY_REVOCATION_HANDOVER_zh-TW.md) | 區分三種拒絕原因、撤銷競爭與保存期限，理解 handover 不能重用已消耗票券 |
 | [第十四堂：受控身分開啟為什麼需要兩道門](lessons/14_CONDITIONAL_OPENING_zh-TW.md) | 理解案件授權與門檻解密的分工、OA share gate、opening replay 及合併終點檢查 |
+| [第十五堂：完整生命週期與資料可見性總整理](lessons/15_END_TO_END_AND_DATA_VISIBILITY_zh-TW.md) | 串起設定、發行、接入、session、換手與開啟，逐角色核對 `rid`、`k_hold`、`sn` 與 `C` 的可見性 |
 
 課程按概念相依順序進行。第一堂從研究問題開始；角色名稱與新術語先解釋用途，再進入公式、程式與測試。
 先前對話曾提前介紹 replay；該次介紹不代表學習者已理解或完成相應單元。

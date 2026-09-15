@@ -31,8 +31,10 @@
 | 階段 3／第十一堂：衛星接入 | 已提供基礎講解，正式低延遲設計待評估 | 已說明四訊息現況並更正它不是必要下界；低延遲候選已交由實作工作線進一步評估 |
 | 階段 3／第十二堂：一次性使用狀態 | 已提供基礎講解，理解待後續應用 | 已說明三狀態、並行 winner、同 attempt 重試、atomic commit 與中斷恢復；學習者要求接續下一堂 |
 | 階段 3／第十三堂：過期、撤銷與換手 | 已提供基礎講解，理解待後續應用 | 已區分 acceptance predicates 與 consumption state，並說明撤銷競爭、retention、一般拒絕及 session-derived handover |
-| 階段 3／第十四堂：受控身分開啟 | 進行中 | 已說明案件授權與門檻解密兩道門、OA share gate、opening replay、combiner 一致性與 serial equality；下一堂總整生命週期 |
-| 階段 4–5 | 未開始 | 後續補充設計取捨與程式閱讀工具 |
+| 階段 3／第十四堂：受控身分開啟 | 已提供基礎講解，理解待後續應用 | 已說明案件授權與門檻解密兩道門、OA share gate、opening replay、combiner 一致性與 serial equality |
+| 階段 3／第十五堂：完整生命週期與資料可見性 | 進行中 | 已將設定、發行、接入、session／handover 與 opening 串成完整案例；下一堂進入階段 4 比較離線發行與在線查詢 |
+| 階段 4／設計取捨 | 未開始 | 下一堂先分析離線發行／在線驗證、衛星 RTT、NIZK computation、backhaul 與隱私暴露 |
+| 階段 5／程式閱讀工具 | 未開始 | 後續補充 repository、Python module、bytes、測試與 Git 工作流 |
 | 階段 6／6-1 至 6-10 | 未開始 | 既有對話中的程式介紹不視為已掌握 |
 | 階段 7／證據與限制 | 未開始 | 每堂先保留研究目標與成果的區分，之後集中學習 |
 | 階段 8／獨立修改 | 未開始 | 尚無學習者獨立修改與驗證的紀錄 |
@@ -516,6 +518,24 @@
   不代表 production PQ signature、OA DKG、robust decoder、share proof 或 threshold security proof 已完成。
 - 下一堂以完整案例整理設定、發行、接入、一次性狀態、換手與開啟，以及各角色可見資料，
   作為階段 3 總複習後進入階段 4 的設計取捨。
+
+### 2026-09-15 — 第十五堂：完整生命週期與資料可見性總整理
+
+- 學習者要求「下一堂」，接續階段 3 總整理；不把要求接續視為已獨立掌握第十四堂。
+- 新增完整生命週期教材與直接呈現的流程圖，依序整理共同設定／issuer authorization、
+  blind issuance、FGS access、one-time consumption、active session／handover 與獨立 opening 分支。
+- 以 `rid`、`k_hold`、`sn`、`C` 四項資料貫穿流程，區分 HNCC 在註冊時已知身分、FGS
+  日常驗證看到票券、UE 保留 holder secret，以及 OA 達門檻後才受控恢復 `(rid, sn)`。
+- 說明 issuer unlinkability、FGS anonymity、同 session 可連結、同票券 replay 可連結與
+  satellite-path metadata 是不同範圍，不能用一句「系統匿名」概括。
+- 保留接入四訊息草稿不是必要往返下界；將首則 NIZK／低 RTT 候選、replay-store backhaul
+  與正式 holder authenticator／PQ AKE 的缺口一起放回完整流程。
+- 整理各模組目前已有的 interface／codec／reference／test 邊界及未封閉項目，避免從任一
+  unit test、circuit checkpoint 或抽象 proof 擴張成端到端 production claim。
+- 階段 3 的教材範圍至此完成，但學習者尚未獨立畫圖或口述，因此不標記理解完成。
+  下一堂進入階段 4，比較離線發行／在線驗證與每次接入向 HNCC 查詢的取捨。
+- 助教核對 179 個學習文件本機連結，沒有缺失目標；以本機瀏覽器檢查完整生命週期圖在
+  736 與 288 像素內容寬度下的呈現，正常路徑、handover 與獨立 opening 分支皆完整可見。
 
 ## 後續更新方式
 
