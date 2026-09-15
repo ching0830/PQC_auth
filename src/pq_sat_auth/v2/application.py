@@ -1179,6 +1179,8 @@ def first_application_checkpoint_manifest() -> dict[str, object]:
             "application_apply_once_contract_implemented": True,
             "single_host_atomic_activation_and_inbox_implemented": True,
             "single_host_authoritative_revocation_fence_available": True,
+            "authenticated_revocation_ingestion_boundary_available": True,
+            "general_scope_revocation_fanout_available": True,
             "production_authenticated_revocation_writer_instantiated": False,
             "separate_inbox_mode_atomic_with_activation": False,
             "activation_and_delivery_same_transaction": False,

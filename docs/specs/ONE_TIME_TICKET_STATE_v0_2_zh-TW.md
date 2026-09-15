@@ -1,6 +1,6 @@
 # One-Time Ticket 狀態與 1-RTT Access 邊界規格 v0.2
 
-> 狀態：Defined；FGS replay／delivery／protected application inbox、unified activation-inbox transaction、authoritative activation-revocation fence與UE single-host SQLite references已 Implemented／Tested；尚未 distributed／Production-closed
+> 狀態：Defined；FGS replay／delivery／protected application inbox、unified activation-inbox transaction、authenticated scoped-revocation ingestion／fanout與UE single-host SQLite references已 Implemented／Tested；尚未 distributed／Production-closed
 > 日期：2026-09-15
 > Access companion：`docs/specs/SATELLITE_ACCESS_v0_2_zh-TW.md`
 > Historical predecessor：`docs/specs/ONE_TIME_TICKET_STATE_v0_1_zh-TW.md`
@@ -401,7 +401,15 @@ fence放入同一SQLite database。Processor先讀snapshot做pure validation，�
 與inbox insert。Revocation publication與activation因此在可信單機上有唯一順序：publication
 先commit則舊activation失敗且不消耗；activation先commit則已接受work item保留並可完成。
 
-此local publication API是尚待production authentication的管理邊界，不是已實例化的
-revocation authority。資料模型目前只支援exact query digest更新，尚無general-scope
-revocation fanout，也沒有跨FGS consensus／linearizable store、實體斷電或rollback證據。
-因此「single-host exact fence atomicity已測試」不得擴張成「production revocation已完成」。
+2026-09-15 authenticated scoped-revocation successor停用上述未驗證的direct publication，
+改用綁定system bundle、`ctx`、epoch、policy、signer key、scope／target、generation及時窗的
+canonical authenticated command。四種scope分別匹配configuration digest、FGS authentication
+key ID、ticket use key與session ID；command insert與既有registered queries的fence fanout在
+同一transaction完成，之後才登錄的query會重播同一`ctx`的歷史commands。
+
+本reference暫以system-initialization的`FEDERATION_CONFIGURATION` key作control-plane
+authority，並由out-of-band trust anchor驗證；這只是現有ABI內的provisional選擇。Concrete
+PQ authentication、獨立revocation key ceremony、authority rotation／unrevocation、fanout
+規模benchmark及跨FGS consensus／linearizable store皆未完成，也沒有實體斷電或rollback
+證據。因此「single-host authenticated ingestion與general-scope fanout已測試」仍不得擴張成
+「production revocation已完成」。

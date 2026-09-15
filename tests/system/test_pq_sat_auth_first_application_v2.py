@@ -49,6 +49,9 @@ from pq_sat_auth.v2.storage.sqlite_inbox import (
 from pq_sat_auth.v2.storage.sqlite_authoritative import (
     sqlite_authoritative_activation_inbox_manifest,
 )
+from pq_sat_auth.v2.storage.sqlite_scoped_revocation import (
+    sqlite_scoped_revocation_manifest,
+)
 from pq_sat_auth.v2.storage.sqlite_unified import (
     sqlite_unified_activation_inbox_manifest,
 )
@@ -271,6 +274,9 @@ class FirstApplicationCodecTests(FirstApplicationFixture):
                 "sqlite_outbox": sqlite_first_record_outbox_manifest(),
                 "sqlite_authoritative": (
                     sqlite_authoritative_activation_inbox_manifest()
+                ),
+                "sqlite_scoped_revocation": (
+                    sqlite_scoped_revocation_manifest()
                 ),
                 "sqlite_unified": sqlite_unified_activation_inbox_manifest(),
             },

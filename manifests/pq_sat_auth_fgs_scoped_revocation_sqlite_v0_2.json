@@ -1,0 +1,49 @@
+{
+  "application_id": "0x50515357",
+  "authority_key_role": "FEDERATION_CONFIGURATION",
+  "authority_key_selection": "provisional_existing_system_bundle_role",
+  "claims": {
+    "activation_inbox_and_fence_same_transaction": true,
+    "append_only_command_replay_and_generation_control": true,
+    "authority_key_rotation_implemented": false,
+    "canonical_authenticated_command_implemented": true,
+    "command_ingest_and_activation_linearizable": true,
+    "command_ingest_and_fanout_same_transaction": true,
+    "configuration_scope_implemented": true,
+    "distributed": false,
+    "distributed_replication_implemented": false,
+    "explicit_configuration_trust_anchor_required": true,
+    "external_application_same_transaction": false,
+    "fgs_authentication_key_scope_implemented": true,
+    "future_query_rule_application_implemented": true,
+    "physical_power_loss_tested": false,
+    "production_plaintext_protection_instantiated": false,
+    "production_pq_authentication_instantiated": false,
+    "production_ready": false,
+    "production_record_protection_instantiated": false,
+    "registered_current_query_fanout_implemented": true,
+    "scope_fanout_scale_benchmarked": false,
+    "session_scope_implemented": true,
+    "system_bundle_epoch_policy_and_key_bound": true,
+    "ticket_use_scope_implemented": true,
+    "unauthenticated_direct_publication_disabled": true,
+    "unrevocation_implemented": false
+  },
+  "format": "PQ-SAT-FGS-SCOPED-REVOCATION-SQLITE-v0.2",
+  "journal_mode": "WAL",
+  "schema_version": 1,
+  "scopes": [
+    "ACCESS_CONFIGURATION",
+    "FGS_AUTHENTICATION_KEY",
+    "TICKET_USE",
+    "SESSION"
+  ],
+  "synchronous": "FULL",
+  "tables": [
+    "fgs_replay_records",
+    "first_application_inbox",
+    "activation_revocation_fences",
+    "activation_revocation_queries",
+    "authenticated_revocation_commands"
+  ]
+}

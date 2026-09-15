@@ -1,6 +1,6 @@
 # Satellite Access 與 PQ AKE 規格 v0.2
 
-> 狀態：Defined；bounded reference codecs／relation／processors、UE SQLite wallet、FGS single-host SQLite replay／delivery／protected application inbox、unified activation-inbox transaction及authoritative activation-revocation fence已 Implemented／Tested；尚未 Instantiated／distributed／Proof-closed／Production-closed
+> 狀態：Defined；bounded reference codecs／relation／processors、UE SQLite wallet、FGS single-host SQLite replay／delivery／protected application inbox、unified activation-inbox transaction、authenticated scoped-revocation ingestion及fanout已 Implemented／Tested；尚未 Instantiated／distributed／Proof-closed／Production-closed
 > 日期：2026-09-15
 > 所屬模組：M5 Satellite authentication、M6 Anti-replay／revocation／handover
 > State companion：`docs/specs/ONE_TIME_TICKET_STATE_v0_2_zh-TW.md`
@@ -868,3 +868,49 @@ production record／plaintext protection、外部application side effect、hosti
 `docs/artifacts/SATELLITE_ACCESS_v0_2_AUTHORITATIVE_ACTIVATION_REVOCATION_zh-TW.md`，
 machine claims見
 `manifests/pq_sat_auth_fgs_authoritative_activation_inbox_sqlite_v0_2.json`。
+
+### 13.13 FGS authenticated scoped-revocation ingestion checkpoint
+
+本checkpoint新增`src/pq_sat_auth/v2/storage/sqlite_scoped_revocation.py`，把authenticated
+revocation command、registered activation query、materialized fence、replay grant及protected
+inbox放入同一單機SQLite database。網路或不可信caller不能直接提交fence；唯一公開管理
+入口必須先驗證system-initialization envelope及revocation command authentication。
+
+Canonical command固定以下欄位：
+
+```text
+access_protocol_version, ctx, system_bundle_digest, epoch, policy_digest,
+signer_key_id, scope, scope_target, generation,
+issued_at, authorization_expires_at, command_id, reason_digest
+```
+
+Authentication message另綁定versioned domain與`signing_role`。本reference暫時使用既有
+system-initialization bundle的`FEDERATION_CONFIGURATION` key作control-plane authority，
+並要求caller明確提供同一out-of-band trust anchor。這是避免改動既有bundle ABI的暫時
+選擇，不表示production應讓configuration與revocation共用同一私鑰。Concrete PQ
+authentication與獨立revocation key role仍待新版initialization ceremony決定。
+
+Scope與exact query欄位的對應固定為：
+
+| Scope | `scope_target`匹配欄位 | Materialized flag |
+| --- | --- | --- |
+| `ACCESS_CONFIGURATION` | `system_config_digest` | `configuration_revoked` |
+| `FGS_AUTHENTICATION_KEY` | `fgs_auth_key_id` | `fgs_key_revoked` |
+| `TICKET_USE` | `ticket_use_key` | `ticket_revoked` |
+| `SESSION` | `session_id` | `session_revoked` |
+
+Ingestion在一個`BEGIN IMMEDIATE`內保存append-only command，並把它fan out至所有已登錄且
+匹配的query fences；之後才登錄的query會重播該`ctx`的歷史commands。Activation與command
+ingestion使用同一database write order，所以只能出現「activation先commit」或「revocation
+先commit」之一。Command exact replay為idempotent；同一`command_id`改寫、generation不遞增、
+第一筆後的bundle／authority key變更、無效時窗或驗證backend錯誤都fail closed。已接受的
+revocation為sticky；command authorization expiry只限制何時可ingest，不會自動解除撤銷。
+
+這個successor仍是O(registered queries) ingestion及O(commands in ctx) late-registration replay，
+尚未做規模benchmark。Authority rotation／unrevocation、獨立revocation key ceremony、concrete
+PQ verifier、多host replication／consensus、rollback／hostile-filesystem防護、實體斷電及
+production record／plaintext protection均未完成。Query registration亦是可信FGS內部composition
+邊界，不是可直接暴露的網路API。因此只能宣稱bounded single-host authenticated-ingestion
+與general-scope fanout已Implemented／Tested，不能宣稱production revocation完成。詳細evidence見
+`docs/artifacts/SATELLITE_ACCESS_v0_2_AUTHENTICATED_SCOPED_REVOCATION_zh-TW.md`，machine claims見
+`manifests/pq_sat_auth_fgs_scoped_revocation_sqlite_v0_2.json`。
