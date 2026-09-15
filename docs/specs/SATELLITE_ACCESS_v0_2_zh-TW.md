@@ -1071,3 +1071,46 @@ executor。並行executor可依已提交progress收斂或回傳不確定，但�
 execution lease或availability。Operator authentication、production trusted clock／record
 protection、background scheduler、rollback resistance與physical power-loss evidence仍為false，
 因此只構成可信單機假設下的Implemented／Tested recovery reference，不是Production-closed。
+
+### 13.19 Single-host reconciliation execution-lease checkpoint
+
+Resumable runner若由多個process同時啟動，exact plan與fence read-back可維持state safety，但兩個
+executor仍可能重複執行同一candidate並競爭progress。本checkpoint新增可選的
+`LeaseFencedResumableReconciliationRunnerV2`及SQLite schema v2 execution-lease history：
+
+```text
+intent / plan preparation (read-only)
+  -> acquire(owner_id, lease policy, lease clock)
+       no lease                         => generation 1
+       same owner + live lease          => exact existing token
+       different owner + live lease     => HELD_BY_PEER
+       observed_at >= old deadline      => generation + 1 takeover
+  -> before each replay item: assert current or renew
+  -> after item:
+       BEGIN IMMEDIATE
+       verify current owner + generation + unexpired deadline
+       append exact progress
+       COMMIT
+  -> final receipt使用相同transactional lease fencing
+```
+
+Lease record canonical綁定invocation、32-byte owner ID、generation、acquisition／deadline與固定
+duration／renewal margin。Policy衝突、同一runner的clock rollback、早於current acquisition的
+observation、deadline／generation overflow、錯誤owner、
+expired或stale token全部fail closed。Renewal與takeover只append新generation，不update／delete
+舊lease；相同live owner取得exact existing token。`owner_id`必須由caller為每個live executor
+配置不同值；reference尚未用process identity或attestation強制唯一性。Terminal receipt存在後
+不得再取得lease。
+
+SQLite migration只接受exact application ID、schema v1與四個既有table definitions，然後在
+`BEGIN IMMEDIATE`內新增lease table並升至schema v2；未知version、額外table或schema mutation
+仍拒絕。Lease acquisition由SQLite writer lock跨單機process序列化。Progress／receipt的
+lease check與insert共用同一transaction，因此takeover後的舊token不能提交journal結果。
+
+Replay store與journal仍是兩個database：舊executor可能在lease check後暫停、被takeover，再醒來
+發出一次舊的replay call。系統依賴§13.18 exact plan、generation-aware abort與fence read-back讓
+該call不產生第二次release；其journal write仍會被新lease generation拒絕。因此可宣稱
+single-host journal-write fencing，不能宣稱replay mutation與lease原子、distributed consensus、
+partition availability或stale process cancellation。Production trusted clock、operator
+authentication、background scheduler、production record protection、rollback／physical
+power-loss evidence仍未完成，Production-closed維持false。

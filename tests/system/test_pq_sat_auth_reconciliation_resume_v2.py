@@ -248,6 +248,7 @@ class ResumeSQLiteTests(ResumeFixture):
                     "reconciliation_resume_plans",
                     "reconciliation_resume_progress",
                     "reconciliation_resume_receipts",
+                    "reconciliation_resume_leases",
                 },
             )
         finally:

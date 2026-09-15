@@ -299,6 +299,9 @@ Exact V2 bytes與acceptance events見
   `src/pq_sat_auth/v2/storage/sqlite_reconciliation_resume.py`：使用獨立profile，在第一筆
   replay mutation前保存exact clock／candidate plan，逐筆append contiguous progress，讓
   incomplete invocation可沿用原plan續跑；
+- `src/pq_sat_auth/v2/reconciliation_lease.py`：在resumable profile外加入distinct-owner
+  single-host cross-process execution lease；generation takeover會fence舊owner，progress／
+  receipt在同一SQLite transaction中驗證current unexpired lease後才能append；
 - `src/pq_sat_auth/v2/application.py`：第一個受保護UE→FGS record的canonical
   bytes／AAD／sequence-zero identity、UE outbox coordinator與FGS一次性delivery
   capability；
@@ -334,7 +337,9 @@ Expired reservation另可在canonical evidence與fence rotation後安全重新�
 它與replay database不是同一transaction。另有隔離的resumable journal保存
 `intent -> plan -> progress* -> receipt`，可重建已保存prefix；若fence已commit但progress
 未commit，會以原plan observation重做該candidate並靠exact fence read-back恢復。這仍不提供
-single-active-executor、跨主機lease或兩個database間的atomic transaction。
+兩個database間的atomic transaction。可選的lease-fenced runner會在每筆mutation前assert／
+renew single-host lease，並原子綁定journal write；它不等於跨主機consensus lease，也無法阻止
+已通過lease check的舊process在lease被takeover後仍發出一次idempotent replay call。
 Concrete suite、真實proof／AKE、
 獨立production revocation key／PQ verifier、authority rotation、production record／plaintext
 protection、distributed FGS store及production external application `apply_once`仍未完成。

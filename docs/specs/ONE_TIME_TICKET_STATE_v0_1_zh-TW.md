@@ -333,8 +333,11 @@ exact reservation candidate list，並在每筆fence read-back後append contiguo
 重啟只能從該plan的下一個未保存index繼續，不得重新取樣clock或換一批candidate。若replay
 mutation已commit但progress acknowledgement／commit遺失，允許以相同plan item重試並由exact
 fence read-back收斂；audit journal與replay store分離時，這是可恢復composition，不是跨store
-atomicity。沒有single-active-executor或distributed lease時，多個executor的liveness不在此
-reference claim內，衝突／不確定輸出必須fail closed。
+atomicity。Single-host lease-fenced profile另以immutable generation、bounded expiry／renewal與
+transactional journal-write fencing限制current executor；takeover後舊generation不得再提交
+progress或receipt。它仍不能撤回已通過lease check但尚未送到replay store的舊call，因此該call
+必須保持exact-plan idempotent並由fence read-back收斂。跨主機consensus與partition availability
+不在此reference claim內，衝突／不確定輸出必須fail closed。
 
 ## 9. Revocation ordering
 
