@@ -6,6 +6,36 @@
 
 日期：2026 年 9 月 15 日
 
+## Issuance Global-B aggregate CandidateSet preflight（獨立 branch）
+
+從Global-A serial gate `278cdf4682b08b18afe83f63fcd51d660a5785b7`建立
+`codex/pq-rbbc-issuance-global-b-candidateset-preflight-v1`。本branch實作bounded two-tree／
+four-leaf `INSECURE-TEST-ONLY` aggregate CandidateSet builder／validator；它不改寫已reviewed
+Global-A或scheduler files，也不啟動Global-B、production、large replay或proving。
+
+CandidateSet固定32個snapshot identity roles：Global-A complete、scheduler complete、ordered
+tree-post results `[0,1]`、兩份continuations、相同points、tree-pre results、adapter prefix／
+scheduler suffix、shared salt/message，以及8份Global-B relocation candidates。八筆candidate共
+攜帶7,826個tail target bits；host value binding已驗證，但native equality rowsets與35,494條
+Global-B constraints均尚未執行。
+
+Ordinal 2在Global-A prefix與scheduler suffix使用不同filename，但raw bytes、byte count及SHA-256
+相同。Combined receipts形成ordinal 0→3與兩個tree-post branches，不是單一線性execution chain；
+因此`full_execution_receipt_chain_verified=false`。Validator只消費CandidateSet中相同immutable
+raws，不重開pathname或重建monolithic reference。跨兩個published roots的unified filesystem
+capture API仍未實作，trusted handoff及writer quiescence仍是外部前提。
+
+驗證結果：targeted 16 passed；六模組integration 103 passed；完整baseline共1,005 tests，
+993 passed、12個既有optional-artifact skips、0 failed/errors。Controlled external probe 8/8
+checks通過；19份v2.38/v2.39 historical identities維持不變。
+
+下一個serial gate是 **bounded independently invocable Global-B consumer**：消費本CandidateSet，
+發出並驗證8組native relocation equalities與Phase-B constraints，再建立private append-only
+publication／restart。Global-B consumer、完整global-tail、mixed degree-12/13、legacy18 provider、
+fresh parent join、formal `pi_issue`、PQ-SE、large-run、`Proof-closed`與`Production-closed`目前皆為
+false。詳細contract及frozen identities見
+[Global-B CandidateSet artifact note](../artifacts/PQ_RBBC_ISSUANCE_GLOBAL_B_CANDIDATESET_PREFLIGHT_V1_zh-TW.md)。
+
 ## Issuance Global-A serial gate successor（獨立 branch）
 
 從 finding-free multitree scheduler＋SRR-01 exact commit
