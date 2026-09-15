@@ -3,7 +3,7 @@
 
 The production-shaped widths are preserved, but the only executable profile is
 the two-tree, four-leaf, degree-three INSECURE-TEST-ONLY fixture.  A consumer
-uses captured private-spool, point, receipt, and continuation bytes.  It never
+uses captured private-spool, point, two-receipt suffix, and continuation bytes.  It never
 restores a Python generator or hashlib object and never reopens a pathname.
 """
 from __future__ import annotations
@@ -27,7 +27,7 @@ import pq_rbbc_launch_io_v2_41 as io
 
 
 ROOT = Path(__file__).resolve().parents[1]
-IMPLEMENTATION_VERSION = "1.0"
+IMPLEMENTATION_VERSION = "1.1"
 FORMAT = "PQRBBC-ISSUANCE-TREE-POST-CONTINUATION-1"
 RECEIPT_FORMAT = "PQRBBC-ISSUANCE-TREE-POST-FRAGMENT-RECEIPT-1"
 FRAGMENT_STREAM_FORMAT = "PQRBBC-F193-R1CS-TREE-POST-FRAGMENT-1"
@@ -41,6 +41,8 @@ CONTINUATION_NAMES = (
 )
 CONTINUATION_LIMIT = 16_384
 RECEIPT_LIMIT = 16_384
+PRIOR_RECEIPT_NAME = "tree-pre-1.private-receipt.json"
+RECEIPT_SUFFIX_NAMES = (PRIOR_RECEIPT_NAME, predecessor.RECEIPT_NAME)
 DOMAIN_COMPOSITION = b"PQ-RBBC/ISSUANCE/TREE-POST-COMPOSITION/V1"
 DOMAIN_ASSIGNMENT = b"PQ-RBBC/ISSUANCE/TREE-POST-PRIVATE-ASSIGNMENT/V1"
 PLAN_SHA256 = base.FROZEN["plan_sha256"]
@@ -53,6 +55,12 @@ TREE_CONTRACTS = (
 GLOBAL_A_CURSORS = {
     "anchors": 123_799,
     "tail": 23_094,
+    "tree[0]": 80_699,
+    "tree[1]": 119_973,
+}
+TREE_PRE_1_CURSORS = {
+    "anchors": 123_799,
+    "tail": 10_915,
     "tree[0]": 80_699,
     "tree[1]": 119_973,
 }
@@ -113,10 +121,11 @@ SERIALIZED_STATE = (
     "owner_cursor",
     "ordered_pre_group_identities",
     "native_prefix_commitment",
-    "receipt_chain_commitments",
+    "verified_two_entry_receipt_suffix_identities",
     "private_spool_snapshot_identity",
     "global_a_point_snapshot_identity",
-    "global_a_receipt_identity",
+    "ordinal_2_receipt_identity",
+    "ordinal_3_global_a_receipt_identity",
     "selected_pre_wire_values",
     "point_wire_values",
     "tree_post_output_port_layout",
@@ -165,28 +174,41 @@ PREDECESSOR_PINS = {
 
 
 FROZEN: dict[str, object] = {
-    "continuation_identities": [
+    "verified_receipt_suffix_identities": [
         {
-            "bytes": 3_593,
-            "filename": CONTINUATION_NAMES[0],
-            "sha256": "86ebf3cd87445b105764966859e7255514bd5e5a09ac0e9071435173a2133c09",
+            "bytes": 1_306,
+            "filename": PRIOR_RECEIPT_NAME,
+            "sha256": "29a0768e66e15ec989a0b44c98c500688618ec96683b7a171725670d6e14c523",
         },
         {
-            "bytes": 3_599,
+            "bytes": 1_365,
+            "filename": predecessor.RECEIPT_NAME,
+            "sha256": "0573e1b7fb340fcffce9d6cc6f90b3e2c4c2e43e00b6faa59ad528d0f0f427dc",
+        },
+    ],
+    "full_receipt_chain_verified": False,
+    "continuation_identities": [
+        {
+            "bytes": 3_829,
+            "filename": CONTINUATION_NAMES[0],
+            "sha256": "d68382b393f66e6fcd1374985aa2f70d9d39c7a092756ac9bd954810bbba2bc9",
+        },
+        {
+            "bytes": 3_835,
             "filename": CONTINUATION_NAMES[1],
-            "sha256": "210365f8a96ba8b435a05af3e9e2a2f3ffb4731e2d7853f508738e55b5fb48ce",
+            "sha256": "d2f6bcaad813ae59ebd200512d37fbaae8afcdc604b534009f8d84949c6bdc72",
         },
     ],
     "tree_post_receipt_identities": [
         {
-            "bytes": 2_804,
+            "bytes": 2_821,
             "filename": "tree-0.post-receipt.private.json",
-            "sha256": "7161cbfbe1701ca09b8c9348cfb71b42857acc5011e633312642e1eab5a2457d",
+            "sha256": "1097dee376f9e3a338362e6b74168f3e1e7ac8f772df13408fe0da785b45203c",
         },
         {
-            "bytes": 2_807,
+            "bytes": 2_824,
             "filename": "tree-1.post-receipt.private.json",
-            "sha256": "7b5a3ff16236a8de2f9933c701f76576107c39e668fa1f7f4ec533468f6d2720",
+            "sha256": "99fd35afa855c184c4dfe482067bb8e77f921cab8a84673ad1b7650ef380a970",
         },
     ],
     "tree_post_rows": [3_576, 3_576],
@@ -365,55 +387,97 @@ _BASE_RECEIPT_FIELDS = {
 }
 
 
-def _global_a_receipt_document(
-    snapshot: io.Snapshot, handoff: Mapping[str, object]
+def _receipt_document(
+    snapshot: io.Snapshot,
+    handoff: Mapping[str, object],
+    *,
+    ordinal: int,
 ) -> dict[str, object]:
+    if ordinal == 2:
+        filename = PRIOR_RECEIPT_NAME
+        stage_id = "tree-pre[1]"
+        rows = 54_070
+        total_rows = 121_110
+        cursors = TREE_PRE_1_CURSORS
+        point_snapshot_sha256 = None
+        label = "ordinal-2 tree-pre receipt"
+    elif ordinal == 3:
+        filename = predecessor.RECEIPT_NAME
+        stage_id = "global-a"
+        rows = 19_671
+        total_rows = 140_781
+        cursors = GLOBAL_A_CURSORS
+        point_snapshot_sha256 = handoff["points"]["sha256"]
+        label = "ordinal-3 global-A receipt"
+    else:  # pragma: no cover - private caller invariant
+        raise ContinuationError("receipt suffix ordinal must be 2 or 3")
     _snapshot_identity(
         snapshot,
-        filename=predecessor.RECEIPT_NAME,
+        filename=filename,
         limit=predecessor.RECEIPT_LIMIT,
-        label="global-A receipt",
+        label=label,
     )
     try:
         document = snapshot.document()
     except io.ValidationError as error:
-        raise ContinuationError("global-A receipt is not strict canonical JSON") from error
-    current = _exact(document, _BASE_RECEIPT_FIELDS, "global-A receipt")
+        raise ContinuationError(label + " is not strict canonical JSON") from error
+    current = _exact(document, _BASE_RECEIPT_FIELDS, label)
     prefixes = current["native_prefix_identities"]
-    if type(prefixes) is not dict or set(prefixes) != set(GLOBAL_A_CURSORS):
-        raise ContinuationError("global-A native prefix inventory mismatch")
+    if type(prefixes) is not dict or set(prefixes) != set(cursors):
+        raise ContinuationError(label + " native prefix inventory mismatch")
     for name, value in prefixes.items():
-        _digest(value, "global-A prefix " + name)
-    _digest(current["previous_receipt_sha256"], "global-A previous receipt")
-    _digest(current["native_binding_rows_sha256"], "global-A binding rows")
+        _digest(value, label + " prefix " + name)
+    _digest(current["previous_receipt_sha256"], label + " previous receipt")
+    _digest(current["native_binding_rows_sha256"], label + " binding rows")
     if (
         current["format"] != base.FORMAT + "-RECEIPT"
         or current["relation_id"] != base.RELATION_ID
         or current["profile_fingerprint"] != PROFILE_FINGERPRINT
         or current["plan_sha256"] != PLAN_SHA256
         or current["invocation_sha256"] != handoff["invocation_sha256"]
-        or current["ordinal"] != 3
-        or current["stage_id"] != "global-a"
-        or current["rows"] != 19_671
-        or current["total_rows"] != 140_781
-        or current["owner_cursors"] != GLOBAL_A_CURSORS
+        or current["ordinal"] != ordinal
+        or current["stage_id"] != stage_id
+        or current["rows"] != rows
+        or current["total_rows"] != total_rows
+        or current["owner_cursors"] != cursors
         or current["relocation_ports"] != list(PRE_RELOCATIONS)
-        or current["point_snapshot_sha256"] != handoff["points"]["sha256"]
+        or current["point_snapshot_sha256"] != point_snapshot_sha256
         or current["production"] is not False
         or current["durable_resume"] is not False
         or canonical_json(current) != snapshot.raw
     ):
-        raise ContinuationError("global-A receipt binding or stage mismatch")
+        raise ContinuationError(label + " binding or stage mismatch")
     return current
+
+
+def _verified_receipt_suffix_documents(
+    snapshots: tuple[io.Snapshot, io.Snapshot],
+    handoff: Mapping[str, object],
+) -> tuple[dict[str, object], dict[str, object]]:
+    if type(snapshots) is not tuple or len(snapshots) != 2:
+        raise ContinuationError("exact ordinal 2-to-3 receipt snapshot suffix required")
+    ordinal_2 = _receipt_document(snapshots[0], handoff, ordinal=2)
+    ordinal_3 = _receipt_document(snapshots[1], handoff, ordinal=3)
+    if ordinal_3["previous_receipt_sha256"] != sha256(snapshots[0].raw):
+        raise ContinuationError("ordinal-3 receipt does not link to captured ordinal-2 raw")
+    return ordinal_2, ordinal_3
 
 
 @dataclass(frozen=True)
 class TreePostInvocationInsecureTestOnly:
     candidates: predecessor.CandidateSet
     continuation: io.Snapshot
+    receipt_suffix: tuple[io.Snapshot, io.Snapshot]
 
     def __post_init__(self) -> None:
-        if type(self.candidates) is not predecessor.CandidateSet or type(self.continuation) is not io.Snapshot:
+        if (
+            type(self.candidates) is not predecessor.CandidateSet
+            or type(self.continuation) is not io.Snapshot
+            or type(self.receipt_suffix) is not tuple
+            or len(self.receipt_suffix) != 2
+            or any(type(snapshot) is not io.Snapshot for snapshot in self.receipt_suffix)
+            or self.receipt_suffix[1] is not self.candidates.receipt
+        ):
             raise ContinuationError("immutable candidate set and continuation snapshot required")
 
 
@@ -422,6 +486,7 @@ class DecodedContinuationInsecureTestOnly:
     document: Mapping[str, object]
     handoff: Mapping[str, object]
     points: Mapping[str, object]
+    ordinal_2_receipt: Mapping[str, object]
     global_a_receipt: Mapping[str, object]
     spool: codec.TreeSpoolSnapshotInsecureTestOnly
 
@@ -466,6 +531,9 @@ def _continuation_document(
         )
     except codec.SpoolError as error:
         raise ContinuationError("handoff dependency identity rejected") from error
+    ordinal_2_receipt, global_a_receipt = _verified_receipt_suffix_documents(
+        invocation.receipt_suffix, handoff
+    )
     try:
         document = snapshot.document()
     except io.ValidationError as error:
@@ -490,7 +558,7 @@ def _continuation_document(
         "native_prefix_bytes",
         "native_prefix_sha256",
         "pre_groups",
-        "receipt_chain_sha256",
+        "verified_receipt_suffix",
         "dependencies",
         "import_contract",
         "output_contract",
@@ -509,20 +577,19 @@ def _continuation_document(
     if snapshot.location.name != CONTINUATION_NAMES[index] or len(snapshot.raw) > CONTINUATION_LIMIT:
         raise ContinuationError("continuation filename or byte bound mismatch")
     groups = _validate_groups(current["pre_groups"], PRE_GROUPS, "pre groups")
-    chain = current["receipt_chain_sha256"]
-    if type(chain) is not list or len(chain) != 4:
-        raise ContinuationError("exact four-stage receipt chain required")
-    for item in chain:
-        _digest(item, "receipt chain")
+    suffix = current["verified_receipt_suffix"]
+    if type(suffix) is not list or len(suffix) != 2:
+        raise ContinuationError("exact ordinal 2-to-3 receipt suffix required")
     dependencies = _exact(
         current["dependencies"],
-        {"handoff", "private_spool", "points", "global_a_receipt"},
+        {"handoff", "private_spool", "points", "ordinal_2_receipt", "global_a_receipt"},
         "continuation dependencies",
     )
     expected_dependencies = {
         "handoff": invocation.candidates.handoff.identity,
         "private_spool": invocation.candidates.spools[index].identity,
         "points": invocation.candidates.points.identity,
+        "ordinal_2_receipt": invocation.receipt_suffix[0].identity,
         "global_a_receipt": invocation.candidates.receipt.identity,
     }
     for name, expected in expected_dependencies.items():
@@ -531,6 +598,14 @@ def _continuation_document(
         )
         if actual != expected:
             raise ContinuationError("continuation dependency identity mismatch: " + name)
+    for suffix_index, expected in enumerate(
+        (invocation.receipt_suffix[0].identity, invocation.receipt_suffix[1].identity)
+    ):
+        actual = _identity_document(
+            suffix[suffix_index], filename=expected["filename"], bytes_=expected["bytes"]
+        )
+        if actual != expected:
+            raise ContinuationError("verified receipt suffix identity mismatch")
     import_contract = _exact(
         current["import_contract"],
         {
@@ -581,12 +656,9 @@ def _continuation_document(
         or not _is_int(current["native_prefix_bytes"])
         or int(current["native_prefix_bytes"]) <= 0
         or current["native_prefix_sha256"] != (
-            _global_a_receipt_document(invocation.candidates.receipt, handoff)[
-                "native_prefix_identities"
-            ][owner]
+            global_a_receipt["native_prefix_identities"][owner]
         )
         or groups != EXPECTED_PRE_GROUP_DOCUMENTS[index]
-        or chain[-1] != invocation.candidates.receipt.identity["sha256"]
         or import_contract
         != {
             "selected_spool_wire_count": codec.LEAVES * codec.RECORD_WIRES,
@@ -604,7 +676,7 @@ def _continuation_document(
         }
         or composition
         != {
-            "verification": "ordered-group-identities+absolute-wire-interval+receipt-chain",
+            "verification": "ordered-group-identities+absolute-wire-interval+verified-receipt-suffix-2-to-3",
             "prefix_digest_is_commitment_not_restorable_hash_state": True,
             "legacy_stream_hash_continuation_supported": False,
             "tree_pre_replay_permitted": False,
@@ -616,9 +688,6 @@ def _continuation_document(
         or canonical_json(current) != snapshot.raw
     ):
         raise ContinuationError("continuation domain, cursor, dependency, or claim mismatch")
-    receipt = _global_a_receipt_document(invocation.candidates.receipt, handoff)
-    if receipt["previous_receipt_sha256"] != chain[-2]:
-        raise ContinuationError("continuation receipt chain does not reach global-A")
     points = _points_document(invocation.candidates.points, handoff)
     spool_identity = handoff["spools"][index]
     try:
@@ -646,9 +715,33 @@ def _continuation_document(
         MappingProxyType(dict(current)),
         MappingProxyType(dict(handoff)),
         MappingProxyType(dict(points)),
-        MappingProxyType(dict(receipt)),
+        MappingProxyType(dict(ordinal_2_receipt)),
+        MappingProxyType(dict(global_a_receipt)),
         spool,
     )
+
+
+def build_verified_receipt_suffix_snapshots(
+    session: predecessor.HandoffSessionInsecureTestOnly,
+) -> tuple[io.Snapshot, io.Snapshot]:
+    """Capture exactly the receipt raws this checkpoint can verify (ordinals 2 and 3)."""
+    if (
+        not isinstance(session, predecessor.HandoffSessionInsecureTestOnly)
+        or session.closed
+        or session.failed
+        or session.position != 4
+        or session.accepted_handoff is None
+        or len(session.receipts) != 4
+    ):
+        raise ContinuationError("receipt suffix requires accepted exact global-A live prefix")
+    ordinal_2 = io.Snapshot(
+        Path("/in-memory-insecure-test-only") / PRIOR_RECEIPT_NAME,
+        session.receipts[2],
+    )
+    ordinal_3 = session.accepted_handoff.candidates.receipt
+    handoff = session.accepted_handoff.candidates.handoff.document()
+    _verified_receipt_suffix_documents((ordinal_2, ordinal_3), handoff)
+    return ordinal_2, ordinal_3
 
 
 def build_continuation_snapshots(
@@ -669,10 +762,10 @@ def build_continuation_snapshots(
     ):
         raise ContinuationError("continuation requires accepted exact global-A live prefix")
     candidates = session.accepted_handoff.candidates
-    receipt = _global_a_receipt_document(candidates.receipt, candidates.handoff.document())
-    receipt_chain = [sha256(raw) for raw in session.receipts[:4]]
-    if receipt_chain[-1] != candidates.receipt.identity["sha256"]:
-        raise ContinuationError("live receipt chain differs from accepted snapshot")
+    receipt_suffix = build_verified_receipt_suffix_snapshots(session)
+    _, receipt = _verified_receipt_suffix_documents(
+        receipt_suffix, candidates.handoff.document()
+    )
     snapshots: list[io.Snapshot] = []
     for index, contract in enumerate(TREE_CONTRACTS):
         owner = f"tree[{index}]"
@@ -702,11 +795,12 @@ def build_continuation_snapshots(
             "native_prefix_bytes": sink.bytes,
             "native_prefix_sha256": sink._digest.copy().hexdigest(),
             "pre_groups": groups,
-            "receipt_chain_sha256": receipt_chain,
+            "verified_receipt_suffix": [item.identity for item in receipt_suffix],
             "dependencies": {
                 "handoff": candidates.handoff.identity,
                 "private_spool": candidates.spools[index].identity,
                 "points": candidates.points.identity,
+                "ordinal_2_receipt": receipt_suffix[0].identity,
                 "global_a_receipt": candidates.receipt.identity,
             },
             "import_contract": {
@@ -723,7 +817,7 @@ def build_continuation_snapshots(
                 "end_exclusive": contract["output"][0] + contract["output"][1],
             },
             "composition_boundary": {
-                "verification": "ordered-group-identities+absolute-wire-interval+receipt-chain",
+                "verification": "ordered-group-identities+absolute-wire-interval+verified-receipt-suffix-2-to-3",
                 "prefix_digest_is_commitment_not_restorable_hash_state": True,
                 "legacy_stream_hash_continuation_supported": False,
                 "tree_pre_replay_permitted": False,
@@ -767,7 +861,12 @@ def capture_tree_post_invocation(
     candidates = predecessor.capture_candidates(
         root, expected_handoff_sha256=expected_handoff_sha256
     )
-    invocation = TreePostInvocationInsecureTestOnly(candidates, continuation)
+    ordinal_2_receipt = io.read_snapshot(root / PRIOR_RECEIPT_NAME, external=True)
+    invocation = TreePostInvocationInsecureTestOnly(
+        candidates,
+        continuation,
+        (ordinal_2_receipt, candidates.receipt),
+    )
     _continuation_document(
         invocation,
         expected_handoff_sha256=expected_handoff_sha256,
@@ -1254,10 +1353,13 @@ def bounded_self_check() -> dict[str, object]:
         candidates = session.export_candidates()
         handoff_sha = sha256(candidates.handoff.raw)
         session.accept_handoff(candidates, expected_handoff_sha256=handoff_sha)
+        receipt_suffix = build_verified_receipt_suffix_snapshots(session)
         continuations = build_continuation_snapshots(session)
         results = []
         for index, continuation in enumerate(continuations):
-            invocation = TreePostInvocationInsecureTestOnly(candidates, continuation)
+            invocation = TreePostInvocationInsecureTestOnly(
+                candidates, continuation, receipt_suffix
+            )
             result = execute_tree_post_insecure_test_only(
                 invocation,
                 expected_handoff_sha256=handoff_sha,
@@ -1307,6 +1409,11 @@ def bounded_self_check() -> dict[str, object]:
             "total_standalone_rows_checked": sum(int(item.summary["rows"]) for item in results),
             "selected_spool_import_wires_per_tree": codec.LEAVES * codec.RECORD_WIRES,
             "point_import_wires_per_tree": 2 * field.FIELD_DEGREE,
+            "verified_receipt_suffix_ordinals": [2, 3],
+            "verified_receipt_suffix_identities": [
+                snapshot.identity for snapshot in receipt_suffix
+            ],
+            "full_receipt_chain_verified": False,
             "same_snapshot_raw_for_identity_parse_binding_and_consumer": True,
             "standalone_matches_live_native_groups_outputs_and_assignment": True,
             "tree_pre_replayed_by_standalone_consumer": False,
@@ -1342,6 +1449,8 @@ def preflight() -> dict[str, object]:
         "safe_to_run_bounded_insecure_test_only": True,
         "independently_invocable_tree_post_implemented": True,
         "explicit_continuation_contract_implemented": True,
+        "verified_receipt_suffix_ordinals": [2, 3],
+        "full_receipt_chain_verified": False,
         "full_session_restore_implemented": False,
         "durable_resume_implemented": False,
         "private_publication_implemented": False,
@@ -1387,7 +1496,13 @@ def build_manifest() -> dict[str, object]:
             "point_wire_starts": list(POINT_STARTS),
             "serialized_state": list(SERIALIZED_STATE),
             "not_serialized_state": list(NOT_SERIALIZED_STATE),
-            "composition_verification": "ordered-group-identities+absolute-wire-interval+receipt-chain",
+            "composition_verification": "ordered-group-identities+absolute-wire-interval+verified-receipt-suffix-2-to-3",
+            "receipt_contract": {
+                "verified_ordinals": [2, 3],
+                "verified_link": "ordinal-2-raw-sha256-to-ordinal-3-previous_receipt_sha256",
+                "full_chain_verified": False,
+                "earlier_receipt_digests_trusted_or_declared": False,
+            },
             "legacy_stream_hash_state_restorable": False,
         },
         "bounded_qualification": bounded_self_check(),
@@ -1395,6 +1510,7 @@ def build_manifest() -> dict[str, object]:
         "snapshot_contract": {
             "single_open_single_bounded_read": True,
             "same_raw_for_identity_parse_binding_and_consumer": True,
+            "same_capture_batch_includes_all_declared_receipt_snapshots": True,
             "future_executor_consumes_same_candidate_set_snapshots": True,
             "candidate_pathname_reopen_permitted": False,
             "metadata_proves_no_writer": False,

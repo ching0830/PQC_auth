@@ -35,7 +35,7 @@ import pq_rbbc_recovery_io_v2_42 as disk
 
 
 ROOT = Path(__file__).resolve().parents[1]
-IMPLEMENTATION_VERSION = "1.0"
+IMPLEMENTATION_VERSION = "1.1"
 FORMAT = "PQRBBC-ISSUANCE-TREE-POST-RESTART-1"
 RELATION_ID = (
     "pq-rbbc/issuance/tree-post-restart/"
@@ -77,20 +77,20 @@ EVIDENCE_PATH = (
 )
 PREDECESSOR_PINS = {
     "src/pq_rbbc_issuance_tree_post_continuation_v1.py": (
-        59_398,
-        "c604f3c9c0019b6f95ac7faa6c6c21d73cace894602797e1ab08b29cf452f8b0",
+        64_057,
+        "40147e14f1d14db87d4ec2fd223de1037695c3b7a1ed5a0fac3041fc50005bc3",
     ),
     "tests/test_pq_rbbc_issuance_tree_post_continuation_v1.py": (
-        19_627,
-        "1ffc076f4d82b0a2126d3d6dd9a6752fdb5aa4eaf297d092f0ce049b1246d473",
+        28_444,
+        "d96a4fad476e39740b4896b8e056b4a931a89d164274935f6419936432a20aad",
     ),
     continuation.MANIFEST_PATH: (
-        8_733,
-        "be861dedf84074d31cfeda3e48ffbab80a270f685c4b3076cbc81ef0cd028a75",
+        9_540,
+        "5de22b1a9cb931b1571e69c4cb2d70a4b99e1efe71f978fcc2ada90e2a566857",
     ),
     continuation.EVIDENCE_PATH: (
-        3_249,
-        "fd2b14ff298d7643d3f7f4c5f90aa6c851decca2f37034cb8baeae6944292541",
+        3_635,
+        "3638c786d90af28e5b286c3da3854823324801cc387bfb57589c7d69bbcb7bbe",
     ),
     "src/pq_rbbc_recovery_io_v2_42.py": (
         3_839,
@@ -182,6 +182,7 @@ def _input_names(tree_index: int) -> tuple[str, ...]:
         handoff.HANDOFF_NAME,
         *handoff.SPOOL_NAMES,
         handoff.POINT_NAME,
+        continuation.PRIOR_RECEIPT_NAME,
         handoff.RECEIPT_NAME,
         continuation.CONTINUATION_NAMES[tree_index],
     )
@@ -194,6 +195,7 @@ def _input_limits(tree_index: int) -> tuple[int, ...]:
         codec.SPOOL_BYTES,
         codec.SPOOL_BYTES,
         handoff.POINT_LIMIT,
+        handoff.RECEIPT_LIMIT,
         handoff.RECEIPT_LIMIT,
         continuation.CONTINUATION_LIMIT,
     )
@@ -209,7 +211,7 @@ def _input_snapshots(
         invocation.candidates.handoff,
         *invocation.candidates.spools,
         invocation.candidates.points,
-        invocation.candidates.receipt,
+        *invocation.receipt_suffix,
         invocation.continuation,
     )
     for snapshot, name, limit in zip(snapshots, _input_names(index), _input_limits(index)):
@@ -641,9 +643,11 @@ def _load_inputs(
             raise RestartError("published private input identity mismatch: " + name)
         snapshots.append(captured)
     candidates = handoff.CandidateSet(
-        snapshots[0], tuple(snapshots[1:3]), snapshots[3], snapshots[4]
+        snapshots[0], tuple(snapshots[1:3]), snapshots[3], snapshots[5]
     )
-    invocation = continuation.TreePostInvocationInsecureTestOnly(candidates, snapshots[5])
+    invocation = continuation.TreePostInvocationInsecureTestOnly(
+        candidates, snapshots[6], (snapshots[4], snapshots[5])
+    )
     continuation._continuation_document(
         invocation,
         expected_handoff_sha256=str(plan_document["handoff_sha256"]),
@@ -1024,8 +1028,11 @@ def bounded_self_check() -> dict[str, object]:
         candidates = session.export_candidates()
         handoff_sha = sha256(candidates.handoff.raw)
         session.accept_handoff(candidates, expected_handoff_sha256=handoff_sha)
+        receipt_suffix = continuation.build_verified_receipt_suffix_snapshots(session)
         selected = continuation.build_continuation_snapshots(session)[0]
-        invocation = continuation.TreePostInvocationInsecureTestOnly(candidates, selected)
+        invocation = continuation.TreePostInvocationInsecureTestOnly(
+            candidates, selected, receipt_suffix
+        )
         continuation_sha = sha256(selected.raw)
         with TemporaryDirectory(prefix="pq-rbbc-tree-post-restart-") as temporary:
             artifact_root = Path(temporary)
@@ -1075,7 +1082,9 @@ def bounded_self_check() -> dict[str, object]:
                 "relation_id": RELATION_ID,
                 "mode": MODE,
                 "tree_index": 0,
-                "input_artifact_count": 6,
+                "input_artifact_count": 7,
+                "verified_receipt_suffix_ordinals": [2, 3],
+                "full_receipt_chain_verified": False,
                 "tree_post_rows": 3_576,
                 "tree_post_allocated_wires": 2_412,
                 "private_result_identity": restarted.result.identity,
@@ -1129,6 +1138,8 @@ def preflight() -> dict[str, object]:
         "private_append_only_publication_implemented": True,
         "bounded_process_restart_implemented": True,
         "bounded_controlled_crash_recovery_tested": True,
+        "verified_receipt_suffix_ordinals": [2, 3],
+        "full_receipt_chain_verified": False,
         "restartable_boundary": "inputs-committed",
         "incomplete_input_publication_recoverable": False,
         "full_session_restore_implemented": False,
@@ -1176,6 +1187,10 @@ def build_manifest() -> dict[str, object]:
             "future_consumer_uses_captured_completed_snapshots": True,
             "pathname_reopen_after_capture_permitted": False,
             "incomplete_input_publication_recoverable": False,
+            "input_artifact_count": 7,
+            "verified_receipt_suffix_ordinals": [2, 3],
+            "full_receipt_chain_verified": False,
+            "receipt_raws_validated_before_compute_or_publication": True,
         },
         "bounded_qualification": bounded_self_check(),
         "preflight": preflight(),

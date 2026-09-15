@@ -28,10 +28,13 @@ class MultitreeRestartSchedulerTests(unittest.TestCase):
         cls.session.accept_handoff(
             cls.candidates, expected_handoff_sha256=handoff_sha
         )
+        cls.receipt_suffix = continuation.build_verified_receipt_suffix_snapshots(
+            cls.session
+        )
         cls.continuations = continuation.build_continuation_snapshots(cls.session)
         cls.invocations = tuple(
             continuation.TreePostInvocationInsecureTestOnly(
-                cls.candidates, continuation_snapshot
+                cls.candidates, continuation_snapshot, cls.receipt_suffix
             )
             for continuation_snapshot in cls.continuations
         )
@@ -131,6 +134,15 @@ class MultitreeRestartSchedulerTests(unittest.TestCase):
         self.assertFalse(evidence["shared_writable_cache"])
         self.assertFalse(evidence["shared_resume_state"])
         self.assertFalse(evidence["other_tree_observed_stream_bytes_used"])
+        self.assertEqual(evidence["verified_receipt_suffix_ordinals"], [2, 3])
+        self.assertEqual(
+            evidence["verified_receipt_suffix_identities"],
+            list(gate.RECEIPT_SUFFIX_IDENTITIES),
+        )
+        self.assertFalse(evidence["full_receipt_chain_verified"])
+        self.assertTrue(
+            evidence["receipt_suffix_validation_before_scheduler_publication"]
+        )
         for claim in (
             "global_tail_continuation_implemented",
             "production_legacy18_provider_implemented",
@@ -151,6 +163,22 @@ class MultitreeRestartSchedulerTests(unittest.TestCase):
         self.assertEqual(document["plan_version"], 1)
         self.assertEqual(document["execution_domain_hex"], gate.DOMAIN_PLAN.hex())
         self.assertEqual(document["ordered_tree_indices"], [0, 1])
+        self.assertEqual(
+            document["receipt_contract"],
+            {
+                "verified_suffix_ordinals": [2, 3],
+                "verified_receipt_suffix_identities": list(
+                    gate.RECEIPT_SUFFIX_IDENTITIES
+                ),
+                "verified_link": "ordinal-2-raw-sha256-to-ordinal-3-previous_receipt_sha256",
+                "full_receipt_chain_verified": False,
+            },
+        )
+        for tree_document in document["trees"]:
+            self.assertEqual(
+                tree_document["verified_receipt_suffix_identities"],
+                list(gate.RECEIPT_SUFFIX_IDENTITIES),
+            )
         self.assertEqual(document["scheduling"]["concurrency_limit"], 2)
         self.assertEqual(
             document["scheduling"]["result_order"],
@@ -659,6 +687,58 @@ class MultitreeRestartSchedulerTests(unittest.TestCase):
             self.assertFalse(report[claim], claim)
         self.assertIsNone(report["production_execution_command"])
         self.assertEqual(len(report["missing_production_artifacts"]), 5)
+
+    def test_invalid_receipt_suffix_refuses_before_scheduler_publication(self):
+        changed_raw = self.receipt_suffix[0].raw.replace(
+            b'"stage_id":"tree-pre[1]"',
+            b'"stage_id":"tree-pre[0]"',
+        )
+        changed_receipt = replace(self.receipt_suffix[0], raw=changed_raw)
+        changed_invocation = continuation.TreePostInvocationInsecureTestOnly(
+            self.candidates,
+            self.continuations[0],
+            (changed_receipt, self.receipt_suffix[1]),
+        )
+        with patch.object(
+            disk, "locked_output", side_effect=AssertionError("publication")
+        ), patch.object(
+            continuation, "_PostSink", side_effect=AssertionError("compute")
+        ), self.assertRaises(gate.SchedulerError):
+            gate.run_bounded_scheduler(
+                self.output,
+                artifact_root=self.root,
+                fresh_invocations=(changed_invocation, self.invocations[1]),
+                fresh_output=True,
+            )
+        self.assertFalse(self.output.exists())
+
+    def test_valid_receipt_suffixes_are_fully_validated_before_scheduler_lock(self):
+        observed = []
+        original = continuation._continuation_document
+
+        def validate(invocation, **kwargs):
+            observed.append(tuple(item.raw for item in invocation.receipt_suffix))
+            return original(invocation, **kwargs)
+
+        with patch.object(
+            continuation, "_continuation_document", side_effect=validate
+        ), patch.object(
+            disk, "locked_output", side_effect=RuntimeError("controlled lock boundary")
+        ), self.assertRaisesRegex(RuntimeError, "controlled lock boundary"):
+            gate.run_bounded_scheduler(
+                self.output,
+                artifact_root=self.root,
+                fresh_invocations=self.invocations,
+                fresh_output=True,
+            )
+        self.assertEqual(
+            observed,
+            [
+                tuple(item.raw for item in self.receipt_suffix),
+                tuple(item.raw for item in self.receipt_suffix),
+            ],
+        )
+        self.assertFalse(self.output.exists())
 
     def test_result_is_immutable_and_portable_evidence_contains_no_private_bytes(self):
         completed = self.fresh_cached()

@@ -34,7 +34,7 @@ import pq_rbbc_recovery_io_v2_42 as disk
 
 
 ROOT = Path(__file__).resolve().parents[1]
-IMPLEMENTATION_VERSION = "1.1"
+IMPLEMENTATION_VERSION = "1.2"
 FORMAT = "PQRBBC-ISSUANCE-MULTITREE-RESTART-SCHEDULER-1"
 PLAN_FORMAT = FORMAT + "-EXECUTION-PLAN"
 RELATION_ID = (
@@ -74,20 +74,20 @@ EVIDENCE_PATH = (
 
 PREDECESSOR_PINS = {
     "src/pq_rbbc_issuance_tree_post_restart_v1.py": (
-        51_094,
-        "0c8264eb23ba2f7ba5936f4de389e5e5b63808bf5082b5cf098b20dec148fa89",
+        51_763,
+        "96876c8060971dfafdb5c844f83055af48b5d67357705a561755d8bebb20473e",
     ),
     "tests/test_pq_rbbc_issuance_tree_post_restart_v1.py": (
-        19_647,
-        "4b0513b0fbb85448cfd8e73c26cdf1bef4e166a7819a5ab04145a862db64e1b3",
+        24_086,
+        "ad10d878ff5cf79d0f05c40a8261c1f34073162cbcafc5392a9bd6c5e06ec593",
     ),
     restart.MANIFEST_PATH: (
-        7_243,
-        "73313a4a4ae08c77ed35565e46e08cf71e7ddaa7a937955d70878c9ed79dfc63",
+        7_559,
+        "ec87e2d3b42f6c2982596ef48060fd94bb2656fc7e7aec864bdecb21f28c8321",
     ),
     restart.EVIDENCE_PATH: (
-        2_449,
-        "56edb15e8c2292a2a49daa683c58addff91169ee4b4282528b1f9446f0b4bdf9",
+        2_526,
+        "682b064316f06bb08d0db10e03e41d85394d823de1978915f801486e850de45f",
     ),
 }
 
@@ -99,82 +99,94 @@ HANDOFF_IDENTITY = {
 CONTINUATION_IDENTITIES = (
     {
         "filename": continuation.CONTINUATION_NAMES[0],
-        "bytes": 3_593,
-        "sha256": "86ebf3cd87445b105764966859e7255514bd5e5a09ac0e9071435173a2133c09",
+        "bytes": 3_829,
+        "sha256": "d68382b393f66e6fcd1374985aa2f70d9d39c7a092756ac9bd954810bbba2bc9",
     },
     {
         "filename": continuation.CONTINUATION_NAMES[1],
-        "bytes": 3_599,
-        "sha256": "210365f8a96ba8b435a05af3e9e2a2f3ffb4731e2d7853f508738e55b5fb48ce",
+        "bytes": 3_835,
+        "sha256": "d2f6bcaad813ae59ebd200512d37fbaae8afcdc604b534009f8d84949c6bdc72",
+    },
+)
+RECEIPT_SUFFIX_IDENTITIES = (
+    {
+        "filename": continuation.PRIOR_RECEIPT_NAME,
+        "bytes": 1_306,
+        "sha256": "29a0768e66e15ec989a0b44c98c500688618ec96683b7a171725670d6e14c523",
+    },
+    {
+        "filename": handoff.RECEIPT_NAME,
+        "bytes": 1_365,
+        "sha256": "0573e1b7fb340fcffce9d6cc6f90b3e2c4c2e43e00b6faa59ad528d0f0f427dc",
     },
 )
 EXPECTED_PRIVATE_RESULTS = (
     {
         "filename": restart.RESULT_NAMES[0],
         "bytes": 121_721,
-        "sha256": "86b8b9e55e8b31f2dc85674521e47e42208d4a525f77bc8ca934c12ae04b65f3",
+        "sha256": "c250a462e1202c90a52fbf879270bd1a9d18592cfe1903be36a66f9b352a507c",
     },
     {
         "filename": restart.RESULT_NAMES[1],
         "bytes": 121_724,
-        "sha256": "25555d550b8baaa580bc50ea3acd8e7c589bfa8bda98e9f75e07eaeebfd4e9aa",
+        "sha256": "613a8516075fc38582d0d197832d980ed65a552f3b02bbdbe602c040f3c892ff",
     },
 )
 EXPECTED_RECEIPTS = (
     {
         "filename": restart.RECEIPT_NAMES[0],
-        "bytes": 2_804,
-        "sha256": "7161cbfbe1701ca09b8c9348cfb71b42857acc5011e633312642e1eab5a2457d",
+        "bytes": 2_821,
+        "sha256": "1097dee376f9e3a338362e6b74168f3e1e7ac8f772df13408fe0da785b45203c",
     },
     {
         "filename": restart.RECEIPT_NAMES[1],
-        "bytes": 2_807,
-        "sha256": "7b5a3ff16236a8de2f9933c701f76576107c39e668fa1f7f4ec533468f6d2720",
+        "bytes": 2_824,
+        "sha256": "99fd35afa855c184c4dfe482067bb8e77f921cab8a84673ad1b7650ef380a970",
     },
 )
 EXPECTED_CHILD_CHECKPOINT_CHAINS = (
     (
         {
             "filename": restart.PLAN_NAME,
-            "bytes": 1_573,
-            "sha256": "044acd1595355e1d4d43c7f1eeda782a08650bcb6914c4f72fa745cdca1f3cf5",
+            "bytes": 1_709,
+            "sha256": "72f97271f5383f13dfc939b2e9f418a478d3b4b767abadcb51c663df61f1b8da",
         },
         {
             "filename": restart.INPUTS_COMMITTED_NAME,
-            "bytes": 1_398,
-            "sha256": "ce0d7f9b824f7a921cba58bc3eaa7aeb16329ac7ebc5d90ccd314d933b5537da",
+            "bytes": 1_534,
+            "sha256": "e136e95d7607a4e2a15bd6c5cd6192ab93e0b2e753231ea0cd0264decd073359",
         },
         {
             "filename": restart.RESULT_COMMITTED_NAME,
             "bytes": 1_076,
-            "sha256": "335067a3ac69572d379c8967ca71edebc255566c80bd0ff4e3e2bfbc3973d08d",
+            "sha256": "33c22ef8592a23a1823a01247f84bdbd485224b1f5ceb53cbdba5d4c34abb5d8",
         },
         {
             "filename": restart.COMPLETE_NAME,
             "bytes": 1_218,
-            "sha256": "b8af8825ee8969a1e498e66e65d0ddc50dd8160b68c80d281dfa00676069406c",
+            "sha256": "fe2ebf511ad1c6c21a7d823c7b8990de41df1a08e93a6eed40ad3b226b11e1fb",
         },
     ),
     (
         {
             "filename": restart.PLAN_NAME,
-            "bytes": 1_575,
-            "sha256": "b2d032ffce1bba19e4d0efe633a7071b43a74ab54a96048bf2638fa231efa2c8",
+            "bytes": 1_711,
+            "sha256": "d4818580196665561a0c37307e826c63aa1e03a83ace87664579da13528dfcbe",
         },
         {
             "filename": restart.INPUTS_COMMITTED_NAME,
-            "bytes": 1_398,
-            "sha256": "1c8fe2ce78a19de477723c4b4f55951f7a1086c345a65585c42203bdad9ae066",
+            "bytes": 1_534,
+            "sha256": "1f9f9348a8e7eb665f5a98e4a44088c76c29e01bbbe46e4d29cf126c9dd76838",
         },
         {
             "filename": restart.RESULT_COMMITTED_NAME,
             "bytes": 1_076,
-            "sha256": "ccab9bd2ffe2d437b535445cf22734369e7754292982cd2e156e4c0b05b581f4",
+            "sha256": "92df150b66b75120e90ee6f001a29d95d35cdfd21930bc0beda5fdb8970facad",
         },
         {
             "filename": restart.COMPLETE_NAME,
             "bytes": 1_218,
-            "sha256": "ae942f40258c8746258736e7a068bab0c190115aa630a2aaef9d02eaae89a0f7",
+            "sha256": "9c227c3628a36b1175984b108c19d5c66d873c9ddbf3f6b52b7d9981b92dfd1a",
         },
     ),
 )
@@ -250,6 +262,7 @@ def _root_identities(index: int) -> tuple[str, str, str]:
             "tree_index": index,
             "handoff": HANDOFF_IDENTITY,
             "continuation": CONTINUATION_IDENTITIES[index],
+            "verified_receipt_suffix": list(RECEIPT_SUFFIX_IDENTITIES),
         },
     )
     result_root = _domain_digest(
@@ -285,6 +298,7 @@ def _tree_descriptor(index: int) -> dict[str, object]:
         "source_restart_relation_id": restart.RELATION_ID,
         "handoff_identity": HANDOFF_IDENTITY,
         "continuation_identity": CONTINUATION_IDENTITIES[index],
+        "verified_receipt_suffix_identities": list(RECEIPT_SUFFIX_IDENTITIES),
         "private_input_root_identity_sha256": input_root,
         "private_result_root_identity_sha256": result_root,
         "fresh_cache_identity_sha256": cache,
@@ -323,6 +337,12 @@ EXECUTION_PLAN_DOCUMENT: dict[str, object] = {
     "source_restart_relation_id": restart.RELATION_ID,
     "profile_fingerprint": continuation.PROFILE_FINGERPRINT,
     "ordered_tree_indices": list(ORDERED_TREE_INDICES),
+    "receipt_contract": {
+        "verified_suffix_ordinals": [2, 3],
+        "verified_receipt_suffix_identities": list(RECEIPT_SUFFIX_IDENTITIES),
+        "verified_link": "ordinal-2-raw-sha256-to-ordinal-3-previous_receipt_sha256",
+        "full_receipt_chain_verified": False,
+    },
     "trees": [_tree_descriptor(index) for index in ORDERED_TREE_INDICES],
     "dependency_order": [
         "execution-plan",
@@ -493,6 +513,9 @@ FROZEN = {
     "result_order_matches_plan": True,
     "completed_child_dependency_durability_order_qualified_by_tests": True,
     "closed_world_parent_and_child_inventories_qualified_by_tests": True,
+    "verified_receipt_suffix_ordinals": [2, 3],
+    "full_receipt_chain_verified": False,
+    "receipt_suffix_validation_before_scheduler_publication": True,
 }
 
 
@@ -517,6 +540,22 @@ def _validate_invocations(
             raise SchedulerError("bounded handoff identity mismatch")
         if invocation.continuation.identity != CONTINUATION_IDENTITIES[position]:
             raise SchedulerError("continuation identity or tree order mismatch")
+        if tuple(snapshot.identity for snapshot in invocation.receipt_suffix) != (
+            RECEIPT_SUFFIX_IDENTITIES
+        ):
+            raise SchedulerError("verified receipt suffix identity mismatch")
+        try:
+            continuation._continuation_document(
+                invocation,
+                expected_handoff_sha256=HANDOFF_IDENTITY["sha256"],
+                expected_continuation_sha256=CONTINUATION_IDENTITIES[position][
+                    "sha256"
+                ],
+            )
+        except continuation.ContinuationError as error:
+            raise SchedulerError(
+                "tree continuation or verified receipt suffix rejected"
+            ) from error
         checked.append(invocation)
     if len({item["sha256"] for item in CONTINUATION_IDENTITIES}) != 2:
         raise SchedulerError("continuation identities must be distinct")
@@ -830,7 +869,7 @@ def run_bounded_scheduler(
         if expected_checkpoint_sha256 is not None or fresh_invocations is None:
             raise SchedulerError("fresh scheduling requires ordered invocations only")
         invocations = _validate_invocations(fresh_invocations)
-        plan = build_execution_plan(invocations)
+        plan = execution_plan_snapshot()
     else:
         if fresh_invocations is not None or stop_after_inputs:
             raise SchedulerError("resume accepts no live invocation or fresh-input stop")
@@ -1021,9 +1060,12 @@ def _fixture_invocations() -> tuple[
     candidates = session.export_candidates()
     handoff_sha = sha256(candidates.handoff.raw)
     session.accept_handoff(candidates, expected_handoff_sha256=handoff_sha)
+    receipt_suffix = continuation.build_verified_receipt_suffix_snapshots(session)
     continuations = continuation.build_continuation_snapshots(session)
     invocations = tuple(
-        continuation.TreePostInvocationInsecureTestOnly(candidates, item)
+        continuation.TreePostInvocationInsecureTestOnly(
+            candidates, item, receipt_suffix
+        )
         for item in continuations
     )
     _validate_invocations(invocations)
@@ -1082,6 +1124,12 @@ def bounded_self_check() -> dict[str, object]:
                 "execution_plan_identity": plan.identity,
                 "ordered_tree_indices": list(ORDERED_TREE_INDICES),
                 "continuation_identities": list(CONTINUATION_IDENTITIES),
+                "verified_receipt_suffix_ordinals": [2, 3],
+                "verified_receipt_suffix_identities": list(
+                    RECEIPT_SUFFIX_IDENTITIES
+                ),
+                "full_receipt_chain_verified": False,
+                "receipt_suffix_validation_before_scheduler_publication": True,
                 "private_input_root_identities": [
                     descriptor["private_input_root_identity_sha256"]
                     for descriptor in EXECUTION_PLAN_DOCUMENT["trees"]
@@ -1169,6 +1217,9 @@ def preflight() -> dict[str, object]:
         "canonical_execution_plan_defined": True,
         "bounded_multitree_scheduler_implemented": True,
         "ordered_tree_indices": list(ORDERED_TREE_INDICES),
+        "verified_receipt_suffix_ordinals": [2, 3],
+        "full_receipt_chain_verified": False,
+        "receipt_suffix_validation_before_scheduler_publication": True,
         "concurrency_limit": CONCURRENCY_LIMIT,
         "global_tail_continuation_implemented": False,
         "production_legacy18_provider_implemented": False,

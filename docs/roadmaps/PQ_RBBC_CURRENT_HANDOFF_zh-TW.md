@@ -4,12 +4,61 @@
 
 > **模組範圍：**這是 PQ-RBBC 的操作交接，不是整篇論文 roadmap。專案級背景請先讀 [../../ARCHITECTURE_zh-TW.md](../../ARCHITECTURE_zh-TW.md)、[../../RESEARCH_STATUS_zh-TW.md](../../RESEARCH_STATUS_zh-TW.md) 與 [../../ROADMAP_zh-TW.md](../../ROADMAP_zh-TW.md)。
 
-日期：2026 年 9 月 14 日
+日期：2026 年 9 月 15 日
+
+## Multitree scheduler＋SRR-01 integration candidate（獨立 branch）
+
+以 finding-free scheduler commit `13a75945a075630c1dc366615856239972efa6c6` 為直接基準，
+在 `codex/pq-rbbc-multitree-srr01-integration` 移植 SRR-01 corrective
+`64d0947dada2dafb5eb8636f09ea868366e8ef49`。Scheduler 提升為
+`implementation_version=1.2`，並重建 continuation、one-tree與scheduler的successor
+identities；先前對`13a75945`的final security re-review不自動涵蓋combined tree，本
+integration candidate仍須另行綁定exact commit唯讀重審。
+
+Scheduler execution plan現在明確綁定ordinal 2 `tree-pre[1]`與ordinal 3 `global-a`的兩份
+receipt snapshot identities。Fresh scheduler在取得output lock、發布plan或建立child root前，
+先以相同immutable `Snapshot.raw`完成strict continuation／receipt suffix validation；每個
+one-tree child的closed-world input set由6份增為7份。Sequential與bounded-parallel仍固定按
+`[0,1]`發布、不共用writable cache／resume state，也不沿用其他tree observed
+`stream_bytes`。
+
+Integration regression結果：scheduler targeted 22 passed；三模組combined targeted 60
+passed；完整suite共962 tests，950 passed、12個既有optional-artifact skips、0
+failed/errors。Controlled integration probe確認pre-publication拒絕、兩個7-file child input
+sets、sequential／parallel逐檔一致、completed capture與repeated resume不重算。這些結果尚未
+取代combined exact commit所需的獨立唯讀re-review。
+
+這只整合bounded four-leaf test-only tree-post scheduler與verified ordinal 2→3 suffix；
+`full_receipt_chain_verified=false`。Global-tail、mixed degree-12/13、legacy18 production
+provider、production durable resume、正式`pi_issue`、PQ-SE backend、large replay/proving、
+`Proof-closed`與`Production-closed`全部維持false。詳細contract及successor identities見
+[scheduler artifact note](../artifacts/PQ_RBBC_ISSUANCE_MULTITREE_RESTART_SCHEDULER_V1_zh-TW.md)。
+
+## SRR-01 tree-post receipt contract corrective（獨立 branch）
+
+從 `ca6d4a43d7b2ebf728c660b4df0abaf526714544` 建立
+`codex/pq-rbbc-tree-post-srr01-corrective`。Corrective 將下列兩個 active gate 的 receipt
+contract 限定為 **verified ordinal 2→3 two-entry suffix**；ordinal 0／1 raw 未被攜帶，故不
+宣稱完整 receipt chain：
+
+- continuation、manifest 與 portable evidence 已移除四筆 digest-only
+  `receipt_chain_sha256`；
+- ordinal 2 `tree-pre[1]` 與 ordinal 3 `global-a` receipt 各自以 single-open、single
+  bounded read 捕捉，同一份 immutable `Snapshot.raw` 用於 identity、strict JSON、全部 stage
+  binding 與 2→3 `previous_receipt_sha256` link；
+- fresh、resume 與 completed capture 均在 `_PostSink`／tree-post compute 或新增 publication
+  前完成適用驗證；非法 fresh input 不建立 output；
+- `full_receipt_chain_verified=false`，production、large replay/proving、`Proof-closed` 與
+  `Production-closed` 仍全部為 false。
+
+Corrective 沒有改寫 v2.38／v2.39 或其他 historical evidence。詳細 successor identities、
+regressions 與 claim boundary 見 continuation／restart artifact notes；其bytes已納入上述
+integration candidate，仍須對combined exact commit另行唯讀technical re-review。
 
 ## Issuance private tree-post publication／restart v1（獨立 branch）
 
-最新 bounded gate 位於 branch `codex/pq-rbbc-issuance-tree-post-restart-v1`，基線為
-`e2fd55bdecab06bda4a3424a7d47564d36950869`。它為上一 gate 的 independently invocable
+本節記錄的原 gate 位於 branch `codex/pq-rbbc-issuance-tree-post-restart-v1`；其 active
+contract 已由上述 SRR-01 corrective supersede。它為上一 gate 的 independently invocable
 tree-post 加上 private append-only publication、SHA-256 chained journal、externally pinned
 resume 與 completed-result consumer。可恢復邊界明確從
 `0001-inputs-committed.private.json` 開始；不完整 input publication fail closed，必須換新
@@ -17,8 +66,9 @@ trusted root，不能猜測缺失 private bytes。
 
 Bounded tree 0 實際重播 3,576 rows／配置 2,412 wires。Fresh 與另一程序 restart 的全部
 private artifacts byte-identical；受控 process death 已覆蓋 result payload、receipt、result
-checkpoint 與 complete checkpoint 發布後四個邊界。Private result 為 121,721 bytes，SHA-256
-`86b8b9e55e8b31f2dc85674521e47e42208d4a525f77bc8ca934c12ae04b65f3`；portable evidence
+checkpoint 與 complete checkpoint 發布後四個邊界。SRR-01 successor 的 private result 為
+121,721 bytes，SHA-256
+`c250a462e1202c90a52fbf879270bd1a9d18592cfe1903be36a66f9b352a507c`；portable evidence
 只含 metadata，不含 continuation、spool、assignment、result 或 receipt raw。
 
 這不是 full-session restore、global-tail continuation、production durable resume 或完整
@@ -47,11 +97,13 @@ native group identities、xi output port 與全部 post-owned values 均與 unch
 一致，合計 7,152 rows、0 failures、0 external assertions。
 
 Continuation 明確記錄 absolute interval、owner cursor、pre-group identities、native prefix
-commitment、receipt chain、dependency identities、selected pre-wire/value 與 output layout；同時
+commitment、verified ordinal 2→3 receipt suffix identities、dependency identities、selected
+pre-wire/value 與 output layout；同時
 明確排除 generator frame、allocator object、full assignment、tree/tail hash internal state 與
 global-tail continuation。Prefix digest 只是 commitment，不是可恢復 SHA-256 state；composition
-以 ordered group identities、absolute wires 與 receipt chain 驗證，不能宣稱延續 legacy
-monolithic stream hash。
+以 ordered group identities、absolute wires 與 captured ordinal 2→3 link 驗證。Ordinal 0／1
+raw 未攜帶，因此 `full_receipt_chain_verified=false`，也不能宣稱延續 legacy monolithic stream
+hash。
 
 Targeted 15 passed、0 failures/errors/skips（54.441 秒）；完整 baseline 917 tests，905 passed、
 12 個既有 optional external-artifact skips、0 failures/errors（1,339.203 秒）。V2.38／v2.39

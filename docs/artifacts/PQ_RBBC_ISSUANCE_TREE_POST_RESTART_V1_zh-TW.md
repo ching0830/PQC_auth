@@ -1,8 +1,9 @@
 # Issuance private tree-post publication／restart v1
 
-日期：2026-09-14。基線為
-`e2fd55bdecab06bda4a3424a7d47564d36950869`；獨立 branch
-`codex/pq-rbbc-issuance-tree-post-restart-v1`。本 gate 不修改 `main`、system
+日期：2026-09-14；SRR-01 corrective：2026-09-15。原始基線為
+`e2fd55bdecab06bda4a3424a7d47564d36950869`；corrective 基線為
+`ca6d4a43d7b2ebf728c660b4df0abaf526714544`，獨立 branch
+`codex/pq-rbbc-tree-post-srr01-corrective`。本 gate 不修改 `main`、system
 architecture、ticket lifecycle、`pq_sat_auth`、legacy 18-tree profile 或歷史 evidence。
 
 ## Protocol 位置
@@ -24,7 +25,8 @@ tree-pre/private spool + global-A points
 ```
 
 上一 gate 已使 tree-post 不依賴 live Python generator。本 gate 再把 continuation、五份
-CandidateSet snapshots 與 tree-post result 放入 private append-only publication contract，
+CandidateSet snapshots、額外 ordinal-2 receipt snapshot 與 tree-post result 放入 private
+append-only publication contract，
 使另一個程序能從 `inputs-committed` 邊界執行同一棵 bounded tree。
 
 這不是新的 protocol message，也不是完整 CAP provider、global-tail continuation、parent
@@ -39,7 +41,7 @@ output directory：
 output/
 ├── inputs/
 │   ├── handoff、tree-0/tree-1 spools
-│   ├── global-A points、global-A receipt
+│   ├── global-A points、ordinal-2 receipt、global-A ordinal-3 receipt
 │   └── selected tree continuation
 ├── results/
 │   ├── tree-N.post-result.private.json
@@ -58,6 +60,13 @@ Publisher 沿用 v2.42 Linux/POSIX primitive：private directory flock 只序列
 Journal 以 `previous_checkpoint_sha256` 串接 plan、inputs、result 與 complete。Resume caller
 必須從可信 handoff 提供最新 checkpoint 的 exact lowercase SHA-256；程式先核對同一份
 immutable checkpoint raw，通過後才讀 private inputs 或重播 tree-post。
+
+SRR-01 corrective 將輸入 contract 限定為 **verified ordinal 2→3 two-entry receipt
+suffix**。Fresh plan、resume input load 與 completed capture 都攜帶 ordinal 2、3 兩份 raw；
+每份 pathname 只 open／bounded-read 一次，identity、strict JSON、ordinal、stage、invocation、
+cursor、relocation 與 2→3 link 全部使用已捕捉的相同 `Snapshot.raw`，並在 tree-post compute、
+`_PostSink` 或 result publication 前完成。Ordinal 0／1 raw 不在 input set，因此本 checkpoint
+不宣稱完整 receipt chain，也不保留四筆 digest-only chain 欄位。
 
 ## Restart boundary
 
@@ -121,20 +130,20 @@ confidentiality 均為部署前提。
 | --- | ---: |
 | tree-post rows | 3,576 |
 | tree-post allocated wires | 2,412 |
-| private input artifacts | 6 |
+| private input artifacts | 7 |
 | private result bytes | 121,721 |
-| private result SHA-256 | `86b8b9e55e8b31f2dc85674521e47e42208d4a525f77bc8ca934c12ae04b65f3` |
-| receipt bytes | 2,804 |
-| receipt SHA-256 | `7161cbfbe1701ca09b8c9348cfb71b42857acc5011e633312642e1eab5a2457d` |
+| private result SHA-256 | `c250a462e1202c90a52fbf879270bd1a9d18592cfe1903be36a66f9b352a507c` |
+| receipt bytes | 2,821 |
+| receipt SHA-256 | `1097dee376f9e3a338362e6b74168f3e1e7ac8f772df13408fe0da785b45203c` |
 
 Journal identities：
 
 | Stage | Bytes | SHA-256 |
 | --- | ---: | --- |
-| publication plan | 1,573 | `044acd1595355e1d4d43c7f1eeda782a08650bcb6914c4f72fa745cdca1f3cf5` |
-| inputs committed | 1,398 | `ce0d7f9b824f7a921cba58bc3eaa7aeb16329ac7ebc5d90ccd314d933b5537da` |
-| result committed | 1,076 | `335067a3ac69572d379c8967ca71edebc255566c80bd0ff4e3e2bfbc3973d08d` |
-| complete | 1,218 | `b8af8825ee8969a1e498e66e65d0ddc50dd8160b68c80d281dfa00676069406c` |
+| publication plan | 1,709 | `72f97271f5383f13dfc939b2e9f418a478d3b4b767abadcb51c663df61f1b8da` |
+| inputs committed | 1,534 | `e136e95d7607a4e2a15bd6c5cd6192ab93e0b2e753231ea0cd0264decd073359` |
+| result committed | 1,076 | `33c22ef8592a23a1823a01247f84bdbd485224b1f5ceb53cbdba5d4c34abb5d8` |
+| complete | 1,218 | `fe2ebf511ad1c6c21a7d823c7b8990de41df1a08e93a6eed40ad3b226b11e1fb` |
 
 Fresh execution 與 inputs-committed 後 process restart 產生的所有 private files 完全相同。
 Completed-result consumer 不重播 tree-post 即可還原相同 2,412 values 與 xi output port。
@@ -155,10 +164,20 @@ git diff --check
 
 Production、large replay 與 large proving 沒有 command。
 
-Targeted regression：16 passed、0 failures/errors/skips，35.929 秒。完整 baseline 共 933
-tests，921 passed、12 個既有 optional external-artifact skips、0 failures/errors，
-1,364.046 秒，exit 0。V2.38／v2.39 的 19 份 historical bytes／SHA-256 已逐檔核對不變；
+Corrective combined targeted regression：38 passed、0 failures/errors/skips，114.929 秒；其中
+restart 模組 19 tests。完整 baseline 共 940 tests，928 passed、12 個既有 optional
+external-artifact skips、0 failures/errors，1,403.316 秒，exit 0。V2.38／v2.39 的 19 份
+historical bytes／SHA-256 已逐檔核對不變；
 `git diff --check` 與 prohibited-artifact inventory 另於 commit 前執行。
+
+Successor machine identities：
+
+| File | Bytes | SHA-256 |
+| --- | ---: | --- |
+| source | 51,763 | `96876c8060971dfafdb5c844f83055af48b5d67357705a561755d8bebb20473e` |
+| tests | 24,086 | `ad10d878ff5cf79d0f05c40a8261c1f34073162cbcafc5392a9bd6c5e06ec593` |
+| manifest | 7,559 | `ec87e2d3b42f6c2982596ef48060fd94bb2656fc7e7aec864bdecb21f28c8321` |
+| portable evidence | 2,526 | `682b064316f06bb08d0db10e03e41d85394d823de1978915f801486e850de45f` |
 
 ## Claim boundary
 
@@ -190,4 +209,5 @@ tests，921 passed、12 個既有 optional external-artifact skips、0 failures/
 真正的完整 legacy18 provider 仍依賴第 1 項 global-tail contract，因此 production profile
 freeze、18-tree fresh replay 與 parent I1--I5 composition 必須等待這個 serial dependency。下一
 個 critical-path gate 應先建立 **global-tail phase A/B read-only continuation preflight**，固定
-跨 tree results 的輸入集合、wire ownership、receipt chain 與不可序列化 hash/generator state。
+跨 tree results 的輸入集合、wire ownership、目前可驗證的 receipt suffix、若要擴大 claim
+所必須攜帶的 earlier receipt raws，以及不可序列化 hash/generator state。

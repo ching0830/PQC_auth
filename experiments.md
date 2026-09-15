@@ -197,6 +197,44 @@ PYTHONPATH=src python -m unittest discover -s tests -v
   batch、output與資源窗口的新operator reservation，再取得具名human independent
   review；通過後才建立launch manifest candidate並執行唯讀preflight。
 
+### EXP-20260915-01 — Multitree scheduler＋SRR-01 integration regression
+
+- 研究問題／假設：finding-free multitree scheduler `13a75945...`能否整合SRR-01
+  `64d0947d...`的verified ordinal 2→3 receipt suffix，同時維持scheduler durability、
+  closed-world inventory、sequential／parallel identity與保守claim boundary。
+- 日期與時區：2026-09-15，Asia/Taipei。
+- Git branch／基線／dirty state：`codex/pq-rbbc-multitree-srr01-integration`，直接基線
+  `13a75945a075630c1dc366615856239972efa6c6`；測試時含尚未commit的SRR-01移植、scheduler
+  1.2、successor evidence及文件。
+- 環境：Linux 6.8.0-138-generic x86_64；AMD Ryzen 5 7600X（6 cores／12 logical CPUs）；
+  30 GiB RAM；Python 3.12.9。
+- 輸入與artifact identities：SRR-01 source commit
+  `64d0947dada2dafb5eb8636f09ea868366e8ef49`；scheduler successor manifest
+  17,155 bytes／SHA-256
+  `98de9e5ecfe99cd9592d870504c2e4d05cf3f4648b856a873c4b5e2c0c7b8045`；portable evidence
+  4,529 bytes／SHA-256
+  `67235d27db2f0b19fac60f89ecb7d0b406613737344a01cf7a32e0750d5f5dd6`。
+- Scheduler targeted command：
+  `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python -m unittest tests.test_pq_rbbc_issuance_multitree_restart_scheduler_v1 -v`
+- Scheduler targeted結果：22 passed、0 failures／errors／skips，42.356秒。
+- Combined targeted command：
+  `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python -m unittest tests.test_pq_rbbc_issuance_tree_post_continuation_v1 tests.test_pq_rbbc_issuance_tree_post_restart_v1 tests.test_pq_rbbc_issuance_multitree_restart_scheduler_v1 -v`
+- Combined targeted結果：60 passed、0 failures／errors／skips，156.497秒。
+- Full command：
+  `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python -m unittest discover -s tests -q`
+- Full結果：962 tests，950 passed、12個既有optional-artifact skips、0 failures／errors；
+  unittest 1501.625秒，wall 1505.34秒，exit 0。
+- Controlled probe：`/tmp/pq-rbbc-multitree-srr01-integration-probe.py`；確認非法suffix在
+  scheduler publication／compute前拒絕且output不存在、兩個7-file child inputs、
+  sequential／parallel逐檔一致、completed capture與repeated resume不重算。Raw results留在
+  `/tmp`，不提交log或private artifacts。
+- 結論：支持combined bounded scheduler為Defined／Instantiated／Implemented／Tested，並可
+  重建metadata-only evidence；不支持將先前`13a75945...`的finding-free review直接套用到
+  combined tree，也不支持完整receipt chain、global-tail、legacy18 production provider、
+  production durable resume、formal proof、large-run或Production-closed宣稱。
+- 下一步：建立bounded commit後，以exact commit及tracked prompt交付新的獨立唯讀
+  technical/security re-review。
+
 ## 實驗模板
 
 ```markdown

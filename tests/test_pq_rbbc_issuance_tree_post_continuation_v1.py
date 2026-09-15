@@ -22,10 +22,13 @@ class TreePostContinuationTests(unittest.TestCase):
         cls.session.accept_handoff(
             cls.candidates, expected_handoff_sha256=cls.handoff_sha
         )
+        cls.receipt_suffix = gate.build_verified_receipt_suffix_snapshots(cls.session)
         cls.continuations = gate.build_continuation_snapshots(cls.session)
         cls.results = tuple(
             gate.execute_tree_post_insecure_test_only(
-                gate.TreePostInvocationInsecureTestOnly(cls.candidates, continuation),
+                gate.TreePostInvocationInsecureTestOnly(
+                    cls.candidates, continuation, cls.receipt_suffix
+                ),
                 expected_handoff_sha256=cls.handoff_sha,
                 expected_continuation_sha256=gate.sha256(continuation.raw),
             )
@@ -40,6 +43,7 @@ class TreePostContinuationTests(unittest.TestCase):
         return gate.TreePostInvocationInsecureTestOnly(
             self.candidates if candidates is None else candidates,
             self.continuations[index] if continuation is None else continuation,
+            self.receipt_suffix,
         )
 
     def execute(self, index=0, *, invocation=None, continuation_sha=None):
@@ -53,12 +57,53 @@ class TreePostContinuationTests(unittest.TestCase):
             ),
         )
 
+    def rebound_receipt_invocation(self, index, ordinal_2_raw, ordinal_3_raw):
+        ordinal_2 = (
+            self.receipt_suffix[0]
+            if ordinal_2_raw == self.receipt_suffix[0].raw
+            else replace(self.receipt_suffix[0], raw=ordinal_2_raw)
+        )
+        ordinal_3 = (
+            self.receipt_suffix[1]
+            if ordinal_3_raw == self.receipt_suffix[1].raw
+            else replace(self.receipt_suffix[1], raw=ordinal_3_raw)
+        )
+        candidates = self.candidates
+        if ordinal_3.raw != candidates.receipt.raw:
+            handoff_document = candidates.handoff.document()
+            handoff_document["receipt"] = ordinal_3.identity
+            changed_handoff = replace(
+                candidates.handoff, raw=gate.canonical_json(handoff_document)
+            )
+            candidates = replace(
+                candidates, handoff=changed_handoff, receipt=ordinal_3
+            )
+        continuation_document = self.continuations[index].document()
+        continuation_document["dependencies"]["handoff"] = candidates.handoff.identity
+        continuation_document["dependencies"]["ordinal_2_receipt"] = ordinal_2.identity
+        continuation_document["dependencies"]["global_a_receipt"] = ordinal_3.identity
+        continuation_document["verified_receipt_suffix"] = [
+            ordinal_2.identity,
+            ordinal_3.identity,
+        ]
+        changed_continuation = replace(
+            self.continuations[index],
+            raw=gate.canonical_json(continuation_document),
+        )
+        return (
+            gate.TreePostInvocationInsecureTestOnly(
+                candidates, changed_continuation, (ordinal_2, ordinal_3)
+            ),
+            gate.sha256(candidates.handoff.raw),
+            gate.sha256(changed_continuation.raw),
+        )
+
     def write_invocation(self, root):
         for snapshot in (
             self.candidates.handoff,
             *self.candidates.spools,
             self.candidates.points,
-            self.candidates.receipt,
+            *self.receipt_suffix,
             *self.continuations,
         ):
             (root / snapshot.location.name).write_bytes(snapshot.raw)
@@ -109,6 +154,10 @@ class TreePostContinuationTests(unittest.TestCase):
                 document["composition_boundary"]["legacy_stream_hash_continuation_supported"]
             )
             self.assertFalse(document["composition_boundary"]["tree_pre_replay_permitted"])
+            self.assertEqual(document["verified_receipt_suffix"], [
+                snapshot.identity for snapshot in self.receipt_suffix
+            ])
+            self.assertNotIn("receipt_chain_sha256", document)
             self.assertFalse(document["private_values_embedded"])
             self.assertNotIn(self.candidates.spools[index].raw, continuation.raw)
 
@@ -149,6 +198,7 @@ class TreePostContinuationTests(unittest.TestCase):
                     *predecessor.SPOOL_NAMES,
                     predecessor.POINT_NAME,
                     predecessor.RECEIPT_NAME,
+                    gate.PRIOR_RECEIPT_NAME,
                 ],
             )
             path = root / predecessor.SPOOL_NAMES[0]
@@ -196,7 +246,7 @@ class TreePostContinuationTests(unittest.TestCase):
             ("pre_interval", [43_838, 80_699]),
             ("post_interval", [80_699, 83_112]),
             ("native_prefix_sha256", "0" * 64),
-            ("receipt_chain_sha256", ["0" * 64] * 4),
+            ("verified_receipt_suffix", [{"filename": "wrong", "bytes": 1, "sha256": "0" * 64}] * 2),
             ("production", True),
             ("durable_resume", 0),
             ("unknown", None),
@@ -258,6 +308,130 @@ class TreePostContinuationTests(unittest.TestCase):
                     invocation=self.invocation(0, continuation=changed),
                     continuation_sha=gate.sha256(changed.raw),
                 )
+
+    def test_legacy_four_entry_chain_each_repinned_index_refuses_precompute(self):
+        legacy = ["1" * 64, "2" * 64, "3" * 64, "4" * 64]
+        for tree_index in (0, 1):
+            for chain_index in range(4):
+                document = self.continuations[tree_index].document()
+                changed_chain = list(legacy)
+                changed_chain[chain_index] = str(chain_index) * 64
+                document["receipt_chain_sha256"] = changed_chain
+                changed = replace(
+                    self.continuations[tree_index], raw=gate.canonical_json(document)
+                )
+                invocation = gate.TreePostInvocationInsecureTestOnly(
+                    self.candidates, changed, self.receipt_suffix
+                )
+                with self.subTest(tree=tree_index, chain_index=chain_index), patch.object(
+                    gate, "_PostSink", side_effect=AssertionError("compute")
+                ), self.assertRaises(gate.ContinuationError):
+                    gate.execute_tree_post_insecure_test_only(
+                        invocation,
+                        expected_handoff_sha256=self.handoff_sha,
+                        expected_continuation_sha256=gate.sha256(changed.raw),
+                    )
+
+    def test_receipt_suffix_stage_ordinal_invocation_and_link_refuse_precompute(self):
+        mutations = []
+        document = self.receipt_suffix[0].document()
+        document["ordinal"] = 1
+        mutations.append((gate.canonical_json(document), self.receipt_suffix[1].raw, "ordinal-2"))
+        document = self.receipt_suffix[0].document()
+        document["stage_id"] = "tree-pre[0]"
+        mutations.append((gate.canonical_json(document), self.receipt_suffix[1].raw, "stage-2"))
+        document = self.receipt_suffix[0].document()
+        document["invocation_sha256"] = "0" * 64
+        mutations.append((gate.canonical_json(document), self.receipt_suffix[1].raw, "invocation-2"))
+        document = self.receipt_suffix[1].document()
+        document["ordinal"] = 2
+        mutations.append((self.receipt_suffix[0].raw, gate.canonical_json(document), "ordinal-3"))
+        document = self.receipt_suffix[1].document()
+        document["stage_id"] = "global-b"
+        mutations.append((self.receipt_suffix[0].raw, gate.canonical_json(document), "stage-3"))
+        document = self.receipt_suffix[1].document()
+        document["invocation_sha256"] = "0" * 64
+        mutations.append((self.receipt_suffix[0].raw, gate.canonical_json(document), "invocation-3"))
+        document = self.receipt_suffix[1].document()
+        document["previous_receipt_sha256"] = "0" * 64
+        mutations.append((self.receipt_suffix[0].raw, gate.canonical_json(document), "broken-link"))
+        for tree_index in (0, 1):
+            for ordinal_2_raw, ordinal_3_raw, label in mutations:
+                invocation, handoff_sha, continuation_sha = self.rebound_receipt_invocation(
+                    tree_index, ordinal_2_raw, ordinal_3_raw
+                )
+                with self.subTest(tree=tree_index, mutation=label), patch.object(
+                    gate, "_PostSink", side_effect=AssertionError("compute")
+                ), self.assertRaises(gate.ContinuationError):
+                    gate.execute_tree_post_insecure_test_only(
+                        invocation,
+                        expected_handoff_sha256=handoff_sha,
+                        expected_continuation_sha256=continuation_sha,
+                    )
+
+    def test_receipt_suffix_swap_gap_duplicate_and_trailing_refuse(self):
+        with self.assertRaises(gate.ContinuationError):
+            gate.TreePostInvocationInsecureTestOnly(
+                self.candidates,
+                self.continuations[0],
+                tuple(reversed(self.receipt_suffix)),
+            )
+        with self.assertRaises(gate.ContinuationError):
+            gate.TreePostInvocationInsecureTestOnly(
+                self.candidates,
+                self.continuations[0],
+                (self.receipt_suffix[0],),
+            )
+        malformed = (
+            (self.receipt_suffix[0].raw + b"\n", self.receipt_suffix[1].raw),
+            (
+                self.receipt_suffix[0].raw.replace(
+                    b'"production":false',
+                    b'"production":false,"production":false',
+                ),
+                self.receipt_suffix[1].raw,
+            ),
+            (self.receipt_suffix[0].raw, self.receipt_suffix[1].raw + b"\n"),
+            (
+                self.receipt_suffix[0].raw,
+                self.receipt_suffix[1].raw.replace(
+                    b'"production":false',
+                    b'"production":false,"production":false',
+                ),
+            ),
+        )
+        for ordinal_2_raw, ordinal_3_raw in malformed:
+            invocation, handoff_sha, continuation_sha = self.rebound_receipt_invocation(
+                0, ordinal_2_raw, ordinal_3_raw
+            )
+            with patch.object(
+                gate, "_PostSink", side_effect=AssertionError("compute")
+            ), self.assertRaises(gate.ContinuationError):
+                gate.execute_tree_post_insecure_test_only(
+                    invocation,
+                    expected_handoff_sha256=handoff_sha,
+                    expected_continuation_sha256=continuation_sha,
+                )
+
+    def test_captured_receipt_raw_remains_authoritative_after_pathname_changes(self):
+        with TemporaryDirectory() as temp:
+            root = Path(temp)
+            self.write_invocation(root)
+            invocation = gate.capture_tree_post_invocation(
+                root,
+                1,
+                expected_handoff_sha256=self.handoff_sha,
+                expected_continuation_sha256=gate.sha256(self.continuations[1].raw),
+            )
+            (root / gate.PRIOR_RECEIPT_NAME).write_bytes(b'{"replaced":true}')
+            (root / predecessor.RECEIPT_NAME).write_bytes(b'{"replaced":true}')
+            with patch.object(io, "read_snapshot", side_effect=AssertionError("reopen")):
+                result = gate.execute_tree_post_insecure_test_only(
+                    invocation,
+                    expected_handoff_sha256=self.handoff_sha,
+                    expected_continuation_sha256=gate.sha256(self.continuations[1].raw),
+                )
+            self.assertEqual(result.receipt.raw, self.results[1].receipt.raw)
 
     def test_handoff_dependency_mutations_cannot_be_rebound_by_continuation(self):
         candidates = self.candidates
@@ -355,9 +529,12 @@ class TreePostContinuationTests(unittest.TestCase):
             candidates = session.export_candidates()
             handoff_sha = gate.sha256(candidates.handoff.raw)
             session.accept_handoff(candidates, expected_handoff_sha256=handoff_sha)
+            receipt_suffix = gate.build_verified_receipt_suffix_snapshots(session)
             continuation = gate.build_continuation_snapshots(session)[0]
             result = gate.execute_tree_post_insecure_test_only(
-                gate.TreePostInvocationInsecureTestOnly(candidates, continuation),
+                gate.TreePostInvocationInsecureTestOnly(
+                    candidates, continuation, receipt_suffix
+                ),
                 expected_handoff_sha256=handoff_sha,
                 expected_continuation_sha256=gate.sha256(continuation.raw),
             )

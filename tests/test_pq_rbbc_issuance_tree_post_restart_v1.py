@@ -68,12 +68,15 @@ class TreePostRestartTests(unittest.TestCase):
             session.accept_handoff(
                 cls.candidates, expected_handoff_sha256=cls.handoff_sha
             )
+            cls.receipt_suffix = continuation.build_verified_receipt_suffix_snapshots(
+                session
+            )
             cls.continuation = continuation.build_continuation_snapshots(session)[0]
             cls.continuation_sha = gate.sha256(cls.continuation.raw)
         finally:
             session.close()
         cls.invocation = continuation.TreePostInvocationInsecureTestOnly(
-            cls.candidates, cls.continuation
+            cls.candidates, cls.continuation, cls.receipt_suffix
         )
         cls.cached_result = continuation.execute_tree_post_insecure_test_only(
             cls.invocation,
@@ -130,6 +133,9 @@ class TreePostRestartTests(unittest.TestCase):
         self.assertEqual(evidence["restartable_boundary"], "inputs-committed")
         self.assertEqual(evidence["tree_post_rows"], 3_576)
         self.assertEqual(evidence["tree_post_allocated_wires"], 2_412)
+        self.assertEqual(evidence["input_artifact_count"], 7)
+        self.assertEqual(evidence["verified_receipt_suffix_ordinals"], [2, 3])
+        self.assertFalse(evidence["full_receipt_chain_verified"])
         self.assertFalse(evidence["incomplete_input_publication_recoverable"])
         self.assertFalse(evidence["production_durable_resume_implemented"])
         self.assertFalse(evidence["Proof-closed"])
@@ -245,6 +251,88 @@ class TreePostRestartTests(unittest.TestCase):
         with self.assertRaisesRegex(gate.RestartError, "incomplete"):
             self.resume()
         self.assertEqual(before, self.files())
+
+    def test_invalid_repinned_continuation_refuses_before_compute_and_output(self):
+        document = self.continuation.document()
+        document["receipt_chain_sha256"] = [str(index) * 64 for index in range(4)]
+        changed = io.Snapshot(
+            self.continuation.location, continuation.canonical_json(document)
+        )
+        invocation = continuation.TreePostInvocationInsecureTestOnly(
+            self.candidates, changed, self.receipt_suffix
+        )
+        with patch.object(
+            continuation, "_PostSink", side_effect=AssertionError("compute")
+        ), patch.object(
+            disk, "locked_output", side_effect=AssertionError("publication")
+        ), self.assertRaises(continuation.ContinuationError):
+            gate.run_bounded_tree_post(
+                self.output,
+                artifact_root=self.root,
+                fresh_invocation=invocation,
+                expected_handoff_sha256=self.handoff_sha,
+                expected_continuation_sha256=continuation.sha256(changed.raw),
+                fresh_output=True,
+            )
+        self.assertFalse(self.output.exists())
+
+    def test_resume_mutated_receipt_refuses_before_compute_or_new_output(self):
+        self.fresh()
+        path = self.output / gate.INPUT_DIRECTORY / continuation.PRIOR_RECEIPT_NAME
+        document = io.read_snapshot(path, external=True).document()
+        document["stage_id"] = "tree-pre[0]"
+        path.write_bytes(gate.canonical_json(document))
+        before = self.files()
+        with patch.object(
+            gate, "_compute_result", side_effect=AssertionError("compute")
+        ), self.assertRaises(gate.RestartError):
+            self.resume()
+        self.assertEqual(before, self.files())
+        self.assertEqual(list((self.output / gate.RESULT_DIRECTORY).iterdir()), [])
+
+    def test_tree_one_and_alternate_fixture_inputs_validate_before_compute(self):
+        for variant, tree_index in ((0, 1), (1, 0), (1, 1)):
+            with self.subTest(variant=variant, tree=tree_index):
+                session = handoff.HandoffSessionInsecureTestOnly(variant=variant)
+                try:
+                    session.run_to("global-a")
+                    candidates = session.export_candidates()
+                    handoff_sha = gate.sha256(candidates.handoff.raw)
+                    session.accept_handoff(
+                        candidates, expected_handoff_sha256=handoff_sha
+                    )
+                    receipt_suffix = continuation.build_verified_receipt_suffix_snapshots(
+                        session
+                    )
+                    selected = continuation.build_continuation_snapshots(session)[tree_index]
+                finally:
+                    session.close()
+                invocation = continuation.TreePostInvocationInsecureTestOnly(
+                    candidates, selected, receipt_suffix
+                )
+                output = self.root / f"variant-{variant}-tree-{tree_index}"
+                gate.run_bounded_tree_post(
+                    output,
+                    artifact_root=self.root,
+                    fresh_invocation=invocation,
+                    expected_handoff_sha256=handoff_sha,
+                    expected_continuation_sha256=gate.sha256(selected.raw),
+                    fresh_output=True,
+                    stop_after="inputs",
+                )
+                checkpoint = gate.latest_checkpoint(output, artifact_root=self.root)
+                plan = io.read_snapshot(
+                    output / gate.JOURNAL_DIRECTORY / gate.PLAN_NAME, external=True
+                ).document()
+                with patch.object(
+                    gate, "_compute_result", side_effect=AssertionError("compute")
+                ):
+                    loaded = gate._load_inputs(output, plan)
+                self.assertEqual(
+                    [item.identity for item in loaded.receipt_suffix],
+                    [item.identity for item in receipt_suffix],
+                )
+                self.assertEqual(checkpoint.location.name, gate.INPUTS_COMMITTED_NAME)
 
     def test_unknown_missing_and_gapped_artifacts_refuse(self):
         cases = (
