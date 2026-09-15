@@ -87,6 +87,13 @@
 | 撤銷快照／版本（revocation snapshot／generation） | FGS 某次檢查所依據的撤銷資料內容及其版本 | Reserve／Commit 時須防止沿用競爭期間已過時的結果；版本號本身不會證明來源可信 |
 | 可序列化順序（serializable order） | 多項交易的最終效果等同某個逐一執行順序 | 用於裁定撤銷與消耗競爭；與單一操作的線性一致性相關但著重整組交易結果 |
 | 一般拒絕（generic reject） | 對外不細分無效、過期、撤銷或已消耗原因的拒絕結果 | 可減少直接狀態探測，但 timing、大小與流量差異仍需量測；內部可保存受控 reason code |
+| 開啟請求（OpeningRequest／Q） | 將確切票券、案件、證據、用途、期限、nonce、設定與金鑰識別綁成 OA 可核驗的請求 | 不是只傳一段密文；更換任何受授權欄位都應使原 authorization 失效 |
+| 開啟授權（opening authorization） | 准許在指定案件、證據、用途與期限下開啟指定票券的認證資料 | 是案件治理權限，不是 OA 的解密秘密份額，也不是一般性的查詢許可 |
+| 開啟份額（OpenShare） | 一位 OA 在完整請求通過檢查後，以自己的秘密份額產生並認證的門檻輸入 | 必須綁定同一 request、ticket、case、epoch 與 key；不能把裸 partial-decrypt 結果任意混用 |
+| 合併器（Combiner） | 核對不同 OA 的有效份額數量與一致性，達門檻後重建追責明文的元件 | 只計算份額數不夠；還要防重複成員、混合請求並執行終點認證與序號比對 |
+| 追責認證（trace authentication） | 檢查解密出的追責資料確實帶有協定要求的完整性／來源綁定 | 能把 bytes 解密出來不表示可直接相信其身分；目前 production 機制仍未完成 |
+| Opening replay | 防止同一案件授權／開啟請求被反覆拿去取得 OA 份額的狀態控制 | 與 ticket consumption 不同；後者防止同一票券建立第二個 initial session |
+| 失敗關閉（fail closed） | 關鍵驗證或狀態不確定時拒絕輸出敏感結果 | 可能犧牲可用性；在 opening 中可避免釋出未被可靠記錄的份額或身分 |
 
 專案用語依 [架構](../ARCHITECTURE_zh-TW.md) 與
 [研究方法](../methodology.md) 解釋；本表不替代各模組正式規格。

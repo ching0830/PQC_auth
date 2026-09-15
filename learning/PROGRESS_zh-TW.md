@@ -1,6 +1,6 @@
 # 學習進度與接續紀錄
 
-最後更新：2026-09-14，Asia/Taipei。
+最後更新：2026-09-15，Asia/Taipei。
 
 ## 已確認的學習起點
 
@@ -30,7 +30,8 @@
 | 階段 3／第十堂：發行資料流 | 已提供基礎講解，理解待後續應用 | 已說明公開／秘密資料及發行綁定；學習者要求下一堂，未新增理解或操作證據 |
 | 階段 3／第十一堂：衛星接入 | 已提供基礎講解，正式低延遲設計待評估 | 已說明四訊息現況並更正它不是必要下界；低延遲候選已交由實作工作線進一步評估 |
 | 階段 3／第十二堂：一次性使用狀態 | 已提供基礎講解，理解待後續應用 | 已說明三狀態、並行 winner、同 attempt 重試、atomic commit 與中斷恢復；學習者要求接續下一堂 |
-| 階段 3／第十三堂：過期、撤銷與換手 | 進行中 | 已區分 acceptance predicates 與 consumption state，並說明撤銷競爭、retention、一般拒絕及 session-derived handover |
+| 階段 3／第十三堂：過期、撤銷與換手 | 已提供基礎講解，理解待後續應用 | 已區分 acceptance predicates 與 consumption state，並說明撤銷競爭、retention、一般拒絕及 session-derived handover |
+| 階段 3／第十四堂：受控身分開啟 | 進行中 | 已說明案件授權與門檻解密兩道門、OA share gate、opening replay、combiner 一致性與 serial equality；下一堂總整生命週期 |
 | 階段 4–5 | 未開始 | 後續補充設計取捨與程式閱讀工具 |
 | 階段 6／6-1 至 6-10 | 未開始 | 既有對話中的程式介紹不視為已掌握 |
 | 階段 7／證據與限制 | 未開始 | 每堂先保留研究目標與成果的區分，之後集中學習 |
@@ -497,6 +498,24 @@
 - 本次為教材與呈現更新，未執行協定測試或研究實驗，未變更正式協定或完成宣稱。
 - 助教核對 163 個學習文件本機連結，沒有缺失目標；以本機瀏覽器檢查生命週期圖在
   736 與 288 像素內容寬度下的呈現，三種原因、session 延續與換手邊界完整可見。
+
+### 2026-09-15 — 第十四堂：受控身分開啟的兩道門
+
+- 學習者要求「下一堂」，接續第十三堂預告；不把接續課程視為已掌握前一堂內容。
+- 新增第十四堂教材與直接呈現的流程圖，將 governance authorization 與 threshold
+  decryption 分成兩道必須同時通過的門，並說明 FAC／OA 金鑰與角色分離的理由。
+- 沿 canonical `OpeningRequest` 說明 ticket、case、evidence、purpose、expiry、nonce、
+  context／epoch 及 key IDs 的精確綁定；區分 authorization statement 與完整 request digest。
+- 說明 `OpenShareService` 必須先驗票、驗授權、期限及 replay，通過後才能呼叫 share backend；
+  API 不提供任意 ciphertext 的 partial-decrypt 入口。
+- 區分 opening replay 與 initial-access ticket consumption，並說明 reservation、commit-before-release
+  和狀態不確定時 fail closed 的可用性取捨。
+- 說明 Combiner 不只數份額，還需拒絕重複成員與混合 request／ticket／case／epoch／key；
+  重建後仍須驗 trace authentication 並確認 decoded `sn` 等於票券可見 `sn`。
+- 明列 5-of-7 是現有測試 fixture，並非已選定的正式部署門檻。現有 codecs、gate 與控制流測試
+  不代表 production PQ signature、OA DKG、robust decoder、share proof 或 threshold security proof 已完成。
+- 下一堂以完整案例整理設定、發行、接入、一次性狀態、換手與開啟，以及各角色可見資料，
+  作為階段 3 總複習後進入階段 4 的設計取捨。
 
 ## 後續更新方式
 

@@ -1,0 +1,105 @@
+<div id="pqc-learning-conditional-opening" role="img" aria-label="受控身分開啟的兩道門。完整 OpeningRequest 先通過票券、案件授權、期限與 replay 檢查；多位 OA 各自核驗同一份請求並產生綁定份額；Combiner 只接受至少 t O 位不同成員且屬於同一 request、ticket 與 case 的份額；最後驗證追責認證及解密序號等於票券序號，才輸出註冊身分。任一檢查失敗都不輸出份額或身分。">
+  <style>
+    #pqc-learning-conditional-opening { width: 100%; color: var(--foreground); }
+    #pqc-learning-conditional-opening .opening-diagram { display: block; width: 100%; }
+    #pqc-learning-conditional-opening .opening-diagram text { fill: var(--foreground); font-family: inherit; }
+    #pqc-learning-conditional-opening .opening-diagram .request { fill: color-mix(in srgb, var(--muted-foreground) 8%, var(--background)); stroke: var(--border); }
+    #pqc-learning-conditional-opening .opening-diagram .authorization { fill: color-mix(in srgb, var(--viz-series-1) 12%, var(--background)); stroke: var(--viz-series-1); }
+    #pqc-learning-conditional-opening .opening-diagram .members { fill: color-mix(in srgb, var(--viz-series-2) 12%, var(--background)); stroke: var(--viz-series-2); }
+    #pqc-learning-conditional-opening .opening-diagram .combine { fill: color-mix(in srgb, var(--viz-series-3) 12%, var(--background)); stroke: var(--viz-series-3); }
+    #pqc-learning-conditional-opening .opening-diagram .result { fill: color-mix(in srgb, var(--viz-series-4) 12%, var(--background)); stroke: var(--viz-series-4); }
+    #pqc-learning-conditional-opening .opening-diagram .flow { fill: none; stroke: var(--muted-foreground); stroke-width: 1.5; }
+    #pqc-learning-conditional-opening .opening-diagram .reject { fill: var(--destructive); }
+    #pqc-learning-conditional-opening .opening-diagram .note { fill: var(--muted-foreground); }
+  </style>
+  <svg class="opening-diagram" xmlns="http://www.w3.org/2000/svg" aria-labelledby="pqc-opening-title pqc-opening-desc">
+    <title id="pqc-opening-title">受控身分開啟的兩道門</title>
+    <desc id="pqc-opening-desc">完整開啟請求先通過授權與 replay 閘門，多位 OA 再各自核驗相同請求並提供份額。Combiner 只接受至少 t O 位不同成員且互相一致的份額，最後驗證追責認證及解密序號和票券序號相等，才輸出註冊身分。</desc>
+  </svg>
+  <script>
+    (() => {
+      const root = document.getElementById('pqc-learning-conditional-opening');
+      const svg = root.querySelector('.opening-diagram');
+      const ns = 'http://www.w3.org/2000/svg';
+      function add(name, attributes, parent) {
+        const item = document.createElementNS(ns, name);
+        for (const [key, value] of Object.entries(attributes)) item.setAttribute(key, String(value));
+        parent.appendChild(item);
+        return item;
+      }
+      function draw() {
+        const previous = svg.querySelector('[data-drawing]');
+        if (previous) previous.remove();
+        const width = Math.max(280, Math.round(root.getBoundingClientRect().width));
+        const narrow = width < 560;
+        const height = narrow ? 700 : 350;
+        svg.setAttribute('viewBox', '0 0 ' + width + ' ' + height);
+        svg.setAttribute('height', String(height));
+        const group = add('g', { 'data-drawing': '' }, svg);
+        function label(x, y, value, size = 13, weight = 400, className = '') {
+          const item = add('text', { x, y, 'text-anchor': 'middle', 'font-size': size, 'font-weight': weight, class: className }, group);
+          item.textContent = value;
+        }
+        function box(x, y, w, h, title, line1, line2, className) {
+          add('rect', { x, y, width: w, height: h, rx: 10, class: className }, group);
+          label(x + w / 2, y + 25, title, 14, 600);
+          label(x + w / 2, y + 49, line1, 11.5);
+          label(x + w / 2, y + 68, line2, 11.5);
+        }
+        function arrow(x1, y1, x2, y2) {
+          add('line', { x1, y1, x2, y2, class: 'flow' }, group);
+          const angle = Math.atan2(y2 - y1, x2 - x1);
+          const length = 7;
+          const spread = 0.55;
+          add('path', {
+            d: 'M ' + (x2 - length * Math.cos(angle - spread)) + ' ' + (y2 - length * Math.sin(angle - spread)) +
+              ' L ' + x2 + ' ' + y2 +
+              ' L ' + (x2 - length * Math.cos(angle + spread)) + ' ' + (y2 - length * Math.sin(angle + spread)),
+            class: 'flow'
+          }, group);
+        }
+        label(width / 2, 25, '受控身分開啟：授權與門檻是兩道不同的門', narrow ? 15 : 16, 600);
+        label(width / 2, 47, '正常接入不走這條路徑', 11.5, 400, 'note');
+        const items = [
+          ['OpeningRequest Q', '票券／案件／證據', '用途／期限／nonce', 'request'],
+          ['第一道門：授權', '驗票、authorization', 'expiry 與 replay', 'authorization'],
+          ['OA₁ … OAₙ', '各自核驗相同 Q', '產生綁定的 share', 'members'],
+          ['第二道門：合併', '至少 t_O 位不同成員', '同 Q／票券／案件', 'combine'],
+          ['輸出 rid, sn', 'trace 認證通過', '解密 sn ＝票券 sn', 'result']
+        ];
+        if (!narrow) {
+          const margin = 10;
+          const gap = 16;
+          const itemWidth = (width - margin * 2 - gap * 4) / 5;
+          const y = 78;
+          const h = 88;
+          items.forEach((item, index) => {
+            const x = margin + index * (itemWidth + gap);
+            box(x, y, itemWidth, h, item[0], item[1], item[2], item[3]);
+            if (index < items.length - 1) arrow(x + itemWidth, y + h / 2, x + itemWidth + gap - 2, y + h / 2);
+          });
+          label(width / 2, 210, '任一檢查失敗：不釋出 share 或不輸出 identity', 13, 600, 'reject');
+          label(width / 2, 240, 'OA 只接受完整 Q；沒有任意 ciphertext 的 partial-decrypt API', 12, 400, 'note');
+          label(width / 2, 282, '測試 fixture：5-of-7　｜　正式部署門檻尚未因此固定', 12, 400, 'note');
+        } else {
+          const boxWidth = Math.min(250, width - 28);
+          const x = (width - boxWidth) / 2;
+          const h = 82;
+          const gap = 25;
+          const top = 70;
+          items.forEach((item, index) => {
+            const y = top + index * (h + gap);
+            box(x, y, boxWidth, h, item[0], item[1], item[2], item[3]);
+            if (index < items.length - 1) arrow(width / 2, y + h, width / 2, y + h + gap - 3);
+          });
+          label(width / 2, 620, '任一檢查失敗：不釋出 share／identity', 12, 600, 'reject');
+          label(width / 2, 647, '沒有任意 ciphertext 的解密入口', 11.5, 400, 'note');
+          label(width / 2, 673, 'fixture 為 5-of-7；正式門檻尚未固定', 11.5, 400, 'note');
+        }
+      }
+      draw();
+      if (typeof ResizeObserver !== 'undefined') new ResizeObserver(draw).observe(root);
+      else window.addEventListener('resize', draw);
+    })();
+  </script>
+</div>
