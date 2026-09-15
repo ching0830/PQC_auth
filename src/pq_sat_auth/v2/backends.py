@@ -111,6 +111,14 @@ class KeyScheduleBackendV2(Protocol):
         fgs_authenticator_digest: bytes,
     ) -> bytes: ...
 
+    def verify_server_finished(
+        self,
+        key: bytes,
+        transcript_digest: bytes,
+        fgs_authenticator_digest: bytes,
+        confirmation: bytes,
+    ) -> bool: ...
+
     def client_finished(self, key: bytes, response_digest: bytes) -> bytes: ...
 
     def verify_finished(

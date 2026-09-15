@@ -243,6 +243,14 @@ M1或 ephemeral secret，FGS 已提交的 response無法讓 UE 恢復 session；
 consumed。Journal encryption、rollback protection、secure erasure及 device compromise
 不由此 reference spec 宣稱完成。
 
+Reference `UEAccessAttemptStateV2`將exact M1、authenticated configuration、
+`request_digest`、`attempt_id`、ticket expiry、creation time及ephemeral KEM secret視為
+一個protected typed handoff。UE response processor會strictly重新解析M1與ticket、重算
+ticket-use identity／request／attempt identities，並要求current authenticated
+configuration與journal snapshot完全一致。這是in-memory contract，不是crash-safe wallet
+store；同一M2 retry會重新decapsulate並導出相同session output，尚未實作已接受session的
+durable／idempotent wallet transition。
+
 ## 10. Reservation lease and recovery
 
 `RESERVED` lease到期本身不足以 abort。Recovery 必須證明：
@@ -313,3 +321,10 @@ revocation、process-local atomic activate及post-activate capability release；
 transition result。它仍未實作durable／distributed atomic revocation ordering、production
 session-state protection或first-record application side effect，`production_ready`維持
 false。
+
+2026-09-15 UE acceptance checkpoint在`src/pq_sat_auth/v2/ue.py`實作exact M1／M2及
+configuration binding、FGS-key lookup／authentication、KEM decapsulation、server／client
+Finished與`SessionActivateV2`產生。Honest output可直接通過FGS activation processor；
+但UE wallet仍只是protected in-memory input，沒有durability、rollback protection、
+secure erasure或production cryptographic backend，不能據此宣稱crash-safe session recovery
+或production PQ AKE。

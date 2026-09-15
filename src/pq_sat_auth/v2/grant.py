@@ -23,6 +23,7 @@ from .access import (
     REFERENCE_SUITE_REGISTRY,
     SESSION_ID_BYTES,
     AccessAcceptV2,
+    AccessRequestV2,
     ChannelBindingMode,
     ProofLimitsV2,
     SuiteLimitsV2,
@@ -44,6 +45,7 @@ from .backends import (
 )
 from .processor import (
     AccessClockV2,
+    AccessConfigurationSnapshotV2,
     AccessRevocationQueryV2,
     AccessRevocationSnapshotV2,
     AuthenticatedRevocationProviderV2,
@@ -264,17 +266,39 @@ class GrantProcessResultV2:
     reservation_held: bool
 
 
-def encode_key_schedule_context(
-    validated: ValidatedAccessRequestV2,
+def encode_key_schedule_context_fields(
+    request: AccessRequestV2,
+    configuration: AccessConfigurationSnapshotV2,
     *,
+    request_digest: bytes,
+    attempt_id: bytes,
     session_id: bytes,
 ) -> bytes:
-    """Freeze fixed-width suite and role context supplied to the KDF backend."""
+    """Encode the exact KDF context shared by the FGS and UE processors."""
 
-    if not isinstance(validated, ValidatedAccessRequestV2):
-        raise TypeError("validated must be ValidatedAccessRequestV2")
-    request = validated.request
-    configuration = validated.configuration
+    if not isinstance(request, AccessRequestV2):
+        raise TypeError("request must be an AccessRequestV2")
+    if not isinstance(configuration, AccessConfigurationSnapshotV2):
+        raise TypeError("configuration must be an AccessConfigurationSnapshotV2")
+    configuration.validate()
+    bindings = (
+        (request.system_config_digest, configuration.system_config_digest),
+        (request.ctx, configuration.ctx),
+        (request.epoch, configuration.epoch),
+        (request.target_fgs_id, configuration.fgs_id),
+        (request.fgs_auth_key_id, configuration.fgs_auth_key_id),
+        (
+            request.serving_context_digest,
+            configuration.serving_context_digest,
+        ),
+        (request.authorization_digest, configuration.authorization_digest),
+    )
+    if any(actual != expected for actual, expected in bindings):
+        raise ValueError("request and KDF configuration differ")
+    if request.suite_id not in configuration.allowed_suite_ids:
+        raise ValueError("request suite is not authorized for the KDF")
+    _fixed(request_digest, DIGEST_BYTES, "request_digest")
+    _fixed(attempt_id, DIGEST_BYTES, "attempt_id")
     _fixed(session_id, SESSION_ID_BYTES, "session_id", nonzero=True)
     return b"".join(
         (
@@ -297,14 +321,34 @@ def encode_key_schedule_context(
             request.serving_context_digest,
             request.authorization_digest,
             request.channel_binding_digest,
-            validated.request_digest,
-            validated.attempt_id,
+            request_digest,
+            attempt_id,
             session_id,
         )
     )
 
 
-def _authenticator_digest(authenticator: bytes) -> bytes:
+def encode_key_schedule_context(
+    validated: ValidatedAccessRequestV2,
+    *,
+    session_id: bytes,
+) -> bytes:
+    """Encode the KDF context from an FGS pure-check handoff."""
+
+    if not isinstance(validated, ValidatedAccessRequestV2):
+        raise TypeError("validated must be ValidatedAccessRequestV2")
+    return encode_key_schedule_context_fields(
+        validated.request,
+        validated.configuration,
+        request_digest=validated.request_digest,
+        attempt_id=validated.attempt_id,
+        session_id=session_id,
+    )
+
+
+def derive_fgs_authenticator_digest(authenticator: bytes) -> bytes:
+    """Return the fixed digest mixed into the server Finished input."""
+
     return hashlib.shake_256(_opaque(authenticator, "FGS authenticator")).digest(
         DIGEST_BYTES
     )
@@ -784,7 +828,7 @@ class FGSGrantProcessorV2:
             server_finished = self._key_schedule_backend.server_finished(
                 session_keys.server_finished_key,
                 transcript_digest,
-                _authenticator_digest(authenticator),
+                derive_fgs_authenticator_digest(authenticator),
             )
             _opaque(server_finished, "server key confirmation")
             response = replace(

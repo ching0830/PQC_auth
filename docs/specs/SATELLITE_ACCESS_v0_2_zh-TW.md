@@ -592,3 +592,21 @@ transition亦非同一authoritative transaction，存在明確TOCTOU邊界；con
 Finished suite仍待研究線選型與實例化。完整failure semantics、tests與claim boundary見
 `docs/artifacts/SATELLITE_ACCESS_v0_2_FGS_ACTIVATION_PROCESSOR_zh-TW.md`及
 `manifests/pq_sat_auth_fgs_activation_v0_2.json`。
+
+### 13.5 UE AccessAccept processor checkpoint
+
+後續checkpoint新增`src/pq_sat_auth/v2/ue.py`。UE從protected attempt state載入exact M1、
+authenticated configuration、request／attempt identities、ticket expiry及原始ephemeral
+KEM secret，strictly parse M2後依§8順序執行：current configuration與response binding、
+trusted time／policy期限、query-bound FGS verification key、FGS authentication、KEM
+decapsulation、與FGS共用的canonical KDF context、server Finished，最後產生client
+Finished及exact `SessionActivateV2`。
+
+FGS authentication刻意先於KEM decapsulation，且任何backend只有明確boolean `True`才算
+成功。成功輸出的application／exporter keys及activation bytes已與FGS activation
+processor做bounded end-to-end測試。Processor本身不更新wallet；protected journal的
+durability／rollback protection、production FGS-key distribution、concrete PQ KEM／
+authentication／KDF／Finished suite、secure erasure及first protected application record
+仍未完成。詳細設計與claim boundary見
+`docs/artifacts/SATELLITE_ACCESS_v0_2_UE_ACCEPT_PROCESSOR_zh-TW.md`及
+`manifests/pq_sat_auth_ue_accept_v0_2.json`。

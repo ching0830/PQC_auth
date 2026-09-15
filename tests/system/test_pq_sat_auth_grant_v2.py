@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import hmac
 import json
 import threading
 import unittest
@@ -97,7 +98,11 @@ class GrantKEMTestBackend:
         return b"test-only-kem-ciphertext", fixed(b"shared-secret")
 
     def decapsulate(self, secret_key: bytes, ciphertext: bytes) -> bytes:
-        raise NotImplementedError
+        if secret_key != b"test-only-ephemeral-kem-secret-key":
+            raise ValueError("unexpected test secret key")
+        if ciphertext != b"test-only-kem-ciphertext":
+            raise ValueError("unexpected test ciphertext")
+        return fixed(b"shared-secret")
 
 
 class FGSAuthenticationTestBackend:
@@ -127,7 +132,12 @@ class FGSAuthenticationTestBackend:
         message: bytes,
         authenticator: bytes,
     ) -> bool:
-        raise NotImplementedError
+        if not isinstance(verification_key, bytes):
+            return False
+        expected = hashlib.sha256(
+            b"TEST-ONLY/FGS-AUTH/" + verification_key + message
+        ).digest()
+        return hmac.compare_digest(expected, authenticator)
 
 
 class KeyScheduleTestBackend:
@@ -187,6 +197,20 @@ class KeyScheduleTestBackend:
         return hashlib.sha256(
             b"TEST-ONLY/CLIENT-FINISHED/" + key + response_digest
         ).digest()
+
+    def verify_server_finished(
+        self,
+        key: bytes,
+        transcript_digest: bytes,
+        fgs_authenticator_digest: bytes,
+        confirmation: bytes,
+    ) -> bool:
+        expected = self.server_finished(
+            key,
+            transcript_digest,
+            fgs_authenticator_digest,
+        )
+        return hmac.compare_digest(expected, confirmation)
 
     def verify_finished(
         self,
