@@ -1,6 +1,6 @@
 # PQ-RBBC Issuance Global-B bounded consumer／private restart v1
 
-日期：2026 年 9 月 15 日
+日期：2026 年 9 月 16 日
 
 ## 結論
 
@@ -64,12 +64,18 @@ wire locations。Source values 由同一批 CandidateSet snapshot raws 驗證後
 Fresh publication 在建立 output directory 前先完成 CandidateSet 的 identity、strict canonical
 JSON、closed schema、receipt graph、invocation/profile/plan、source value與target value驗證。
 
-Validated input publication 使用 32 個固定 role descriptors。每個 descriptor 同時固定：
+Validated input publication 使用 32 個固定 role descriptors。程式內獨立的
+`INPUT_ROLE_ORDER` 唯一固定 ordinal 0–31 的 role；validator 不從 plan 輸入自行推導順序。
+每個 descriptor 同時固定：
 
 - exact ordinal；
 - canonical role token；
 - private storage filename；
 - 原 snapshot 的 filename、bytes 與 SHA-256。
+
+即使同時交換完整 descriptors、重新編號、重新命名input files並重新計算內部checkpoint
+digests，也會在CandidateSet reconstruction與Global-B compute前拒絕；合法的role→raw binding
+不能取代canonical role→ordinal layout。
 
 Restart 從 private input directory 各做一次 bounded snapshot read，依 plan 驗證 storage
 pathname及raw identity，再以原 canonical filename重建同一組 immutable snapshots並完整重跑
@@ -116,7 +122,7 @@ checkpoint body或publication directory。
 | Defined | 32-role input inventory、8組equalities、Phase-B、publication/restart contract |
 | Instantiated | bounded two-tree／four-leaf `INSECURE-TEST-ONLY` fixture |
 | Implemented | independent Global-B consumer、private append-only publication、restart/capture |
-| Tested | positive、negative、mutation、wrong digest、trailing、orphan、resume/capture |
+| Tested | positive、negative、mutation、canonical-order re-pin、wrong digest、trailing、orphan、resume/capture |
 | Evidence-sealed | metadata-only portable evidence |
 | Proof-closed | false |
 | Production-closed | false |
@@ -145,7 +151,10 @@ git diff --check
 
 ## 下一個 serial gate
 
-本 commit 必須先接受 exact-commit 唯讀 technical/security re-review。Finding-free 後，才可建立
+本 gate 的初始 commit `4fdb3e3ffb391c3da65f05c98aef8269853c68e6` 的唯讀重審發現
+role→ordinal canonicality P3；本 corrective 以固定 `INPUT_ROLE_ORDER` 與完整 re-pin regression
+收斂該 finding。本 corrective commit 必須再接受 exact-commit 唯讀 technical/security re-review。
+Finding-free 後，才可建立
 **bounded global-tail completion sealer／parent-input CandidateSet preflight**，將已reviewed
 Global-A、兩個tree-post branches與本Global-B result做同 invocation/profile/plan 的唯讀聚合，
 但仍不得把分支 receipt graph宣稱為單一完整chain，也不得直接啟動legacy18或proving。

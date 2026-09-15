@@ -26,7 +26,14 @@ checkpoint的external exact SHA-256。Exact result orphan adoption、stale diges
 capture及repeated completed resume均已加入regression。這仍是bounded private engineering
 restart，不能宣稱production durable resume或filesystem/power-loss qualification。
 
-本gate的source、tests、manifest、portable evidence及artifact note需在bounded commit後接受
+初始Global-B commit `4fdb3e3ffb391c3da65f05c98aef8269853c68e6` 的唯讀重審發現一項P3：
+32-role inventory未獨立固定唯一role→ordinal mapping，整筆descriptor交換加上input rename與內部
+checkpoint re-pin可形成第二個合法layout。Corrective新增程式內固定`INPUT_ROLE_ORDER`，producer
+輸出與所有plan/checkpoint/resume/capture validators都要求ordinal 0–31精確對應該順序；新增
+完整re-pin的precompute/no-output及completed-capture rejection regression。Relation rows、private
+result、receipt與complete checkpoint的既有frozen outputs不變。
+
+本gate的corrective source、tests、manifest、portable evidence及artifact note需在bounded commit後接受
 exact-commit唯讀technical/security re-review。Finding-free後的下一個serial gate是
 **bounded global-tail completion sealer／parent-input CandidateSet preflight**。它只能聚合已reviewed
 Global-A、tree-post branches與Global-B result；receipt仍是branch graph，

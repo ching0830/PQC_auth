@@ -85,6 +85,40 @@ JOURNAL_NAMES = (PLAN_NAME, INPUTS_COMMITTED_NAME, RESULT_COMMITTED_NAME, COMPLE
 STOP_BOUNDARIES = frozenset(
     {"inputs", "result-payload", "result-receipt", "result-checkpoint", "complete"}
 )
+INPUT_ROLE_ORDER = (
+    "candidate-handoff",
+    "shared-inputs",
+    "tree-pre-handoff",
+    "tree-pre-result-0",
+    "tree-pre-result-1",
+    "adapter-receipt-0",
+    "adapter-receipt-1",
+    "adapter-receipt-2",
+    "global-a-result",
+    "global-a-points",
+    "global-a-receipt",
+    "global-a-complete",
+    "continuation-0",
+    "continuation-1",
+    "scheduler-receipt-2",
+    "scheduler-receipt-3",
+    "scheduler-plan",
+    "scheduler-complete",
+    "tree-post-0-result",
+    "tree-post-0-receipt",
+    "tree-post-0-complete",
+    "tree-post-1-result",
+    "tree-post-1-receipt",
+    "tree-post-1-complete",
+    "relocation-0",
+    "relocation-1",
+    "relocation-2",
+    "relocation-3",
+    "relocation-4",
+    "relocation-5",
+    "relocation-6",
+    "relocation-7",
+)
 
 MANIFEST_PATH = "manifests/pq_rbbc_issuance_global_b_restart_manifest_v1.json"
 EVIDENCE_PATH = (
@@ -860,8 +894,8 @@ def _candidate_roles(
         for index, snapshot in enumerate(candidate.relocations)
     )
     frozen = tuple(roles)
-    if len(frozen) != 32 or len({role for role, _ in frozen}) != 32:
-        raise GlobalBRestartError("exact 32-role CandidateSet inventory required")
+    if tuple(role for role, _ in frozen) != INPUT_ROLE_ORDER:
+        raise GlobalBRestartError("canonical 32-role CandidateSet order required")
     return frozen
 
 
@@ -896,6 +930,7 @@ def _validate_input_inventory(value: object) -> list[dict[str, object]]:
     seen_roles: set[str] = set()
     seen_names: set[str] = set()
     for index, item in enumerate(value):
+        expected_role = INPUT_ROLE_ORDER[index]
         current = _exact(
             item,
             {"ordinal", "role", "storage_filename", "snapshot_identity"},
@@ -908,7 +943,8 @@ def _validate_input_inventory(value: object) -> list[dict[str, object]]:
         if (
             type(role) is not str
             or type(name) is not str
-            or name != _storage_name(index, role)
+            or role != expected_role
+            or name != _storage_name(index, expected_role)
             or role in seen_roles
             or name in seen_names
         ):
@@ -1850,6 +1886,7 @@ def preflight() -> dict[str, object]:
         "restart_implemented": True,
         "restartable_boundary": "inputs-committed",
         "candidate_snapshot_roles_published": 32,
+        "canonical_input_role_order_enforced": True,
         "candidate_pathname_reopen_permitted": False,
         "full_execution_receipt_chain_verified": False,
         "full_global_tail_single_receipt_implemented": False,
@@ -2052,6 +2089,7 @@ def build_manifest() -> dict[str, object]:
         "frozen_bounded_qualification": qualification,
         "contract": {
             "candidate_snapshot_roles": 32,
+            "canonical_input_role_order": list(INPUT_ROLE_ORDER),
             "global_b_wire_interval": list(PHASE_B_INTERVAL),
             "native_relocation_rowsets": 8,
             "native_relocation_rows": RELOCATION_ROWS,
@@ -2069,7 +2107,7 @@ def build_manifest() -> dict[str, object]:
             "Defined": True,
             "Instantiated": "two-tree-4plus4-insecure-test-only",
             "Implemented": "bounded-global-b-consumer-and-private-restart",
-            "Tested": "positive-negative-mutation-orphan-restart-capture",
+            "Tested": "positive-negative-mutation-canonical-order-orphan-restart-capture",
             "Evidence-sealed": "metadata-only",
             "Proof-closed": False,
             "Production-closed": False,

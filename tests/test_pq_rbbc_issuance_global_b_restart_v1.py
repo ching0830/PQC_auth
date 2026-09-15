@@ -292,6 +292,111 @@ class GlobalBRestartTests(unittest.TestCase):
         with self.assertRaises(gate.GlobalBRestartError):
             gate._require_checkpoint(checkpoint, expected, gate.INPUTS_COMMITTED_NAME)
 
+    def test_re_pinned_role_permutation_rejects_resume_and_completed_capture(self):
+        def repin_publication(output, *, completed):
+            journal = output / gate.JOURNAL_DIRECTORY
+            plan_path = journal / gate.PLAN_NAME
+            plan_document = gate.disk.read(plan_path).document()
+            inventory = plan_document["input_inventory"]
+            original_names = tuple(
+                inventory[index]["storage_filename"] for index in (0, 1)
+            )
+            inventory[0], inventory[1] = inventory[1], inventory[0]
+            for index in (0, 1):
+                inventory[index]["ordinal"] = index
+                inventory[index]["storage_filename"] = gate._storage_name(
+                    index, inventory[index]["role"]
+                )
+            input_directory = output / gate.INPUT_DIRECTORY
+            temporary_name = input_directory / "descriptor-swap.private.tmp"
+            (input_directory / original_names[0]).replace(temporary_name)
+            (input_directory / original_names[1]).replace(
+                input_directory / inventory[0]["storage_filename"]
+            )
+            temporary_name.replace(
+                input_directory / inventory[1]["storage_filename"]
+            )
+            plan_raw = gate.canonical_json(plan_document)
+            plan_path.write_bytes(plan_raw)
+            plan = io.Snapshot(plan_path, plan_raw)
+            inputs_document = gate._checkpoint_document(
+                "inputs-committed",
+                1,
+                plan,
+                plan,
+                input_inventory=inventory,
+                output_identities=(),
+                complete=False,
+            )
+            inputs_path = journal / gate.INPUTS_COMMITTED_NAME
+            inputs_raw = gate.canonical_json(inputs_document)
+            inputs_path.write_bytes(inputs_raw)
+            inputs = io.Snapshot(inputs_path, inputs_raw)
+            if not completed:
+                return inputs
+            result_path = journal / gate.RESULT_COMMITTED_NAME
+            output_identities = gate.disk.read(result_path).document()[
+                "output_identities"
+            ]
+            result_document = gate._checkpoint_document(
+                "result-committed",
+                2,
+                inputs,
+                plan,
+                input_inventory=inventory,
+                output_identities=output_identities,
+                complete=False,
+            )
+            result_raw = gate.canonical_json(result_document)
+            result_path.write_bytes(result_raw)
+            result = io.Snapshot(result_path, result_raw)
+            complete_document = gate._checkpoint_document(
+                "complete",
+                3,
+                result,
+                plan,
+                input_inventory=inventory,
+                output_identities=output_identities,
+                complete=True,
+            )
+            complete_path = journal / gate.COMPLETE_NAME
+            complete_raw = gate.canonical_json(complete_document)
+            complete_path.write_bytes(complete_raw)
+            return io.Snapshot(complete_path, complete_raw)
+
+        self.assertIsNone(self.fresh(stop_after="inputs"))
+        inputs = repin_publication(self.output, completed=False)
+        with patch.object(
+            gate, "execute_global_b_insecure_test_only", side_effect=AssertionError("computed")
+        ), self.assertRaisesRegex(
+            gate.GlobalBRestartError, "publication input role or filename"
+        ):
+            gate.run_bounded_global_b(
+                self.output,
+                artifact_root=self.root,
+                resume=True,
+                expected_checkpoint_sha256=inputs.identity["sha256"],
+            )
+        self.assertEqual(list((self.output / gate.RESULT_DIRECTORY).iterdir()), [])
+
+        second_output = self.root / "completed-global-b"
+        completed = gate.run_bounded_global_b(
+            second_output,
+            artifact_root=self.root,
+            fresh_candidate=self.candidate,
+            expected_handoff_sha256=self.handoff_sha256,
+            fresh_output=True,
+        )
+        repinned_complete = repin_publication(second_output, completed=True)
+        with self.assertRaisesRegex(
+            gate.GlobalBRestartError, "publication input role or filename"
+        ):
+            gate.capture_completed_result(
+                second_output,
+                artifact_root=self.root,
+                expected_complete_sha256=repinned_complete.identity["sha256"],
+            )
+
     def test_production_refuses_before_io_and_claims_stay_closed(self):
         with patch.object(
             gate.disk, "locked_output", side_effect=AssertionError("production I/O")
@@ -301,6 +406,7 @@ class GlobalBRestartTests(unittest.TestCase):
         report = gate.preflight()
         self.assertTrue(report["independent_global_b_consumer_implemented"])
         self.assertTrue(report["private_append_only_publication_implemented"])
+        self.assertTrue(report["canonical_input_role_order_enforced"])
         self.assertEqual(report["global_b_constraints_replayed"], 35_494)
         self.assertFalse(report["full_execution_receipt_chain_verified"])
         self.assertFalse(report["safe_to_start_large_replay"])

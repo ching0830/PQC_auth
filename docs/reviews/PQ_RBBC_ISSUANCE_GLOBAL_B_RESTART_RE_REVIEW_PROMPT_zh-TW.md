@@ -6,7 +6,7 @@ branch之後移動而改變受審target。
 
 ## Lineage
 
-- Required base：`2779e845b53e5bd8c60a4cd45b932c69d0173529`
+- Required base：`4fdb3e3ffb391c3da65f05c98aef8269853c68e6`
 - Target：由交付方填入本checkpoint的exact commit SHA-1。
 - Branch：`codex/pq-rbbc-issuance-global-b-consumer-v1`
 - Target必須是required base的直接單一後繼；否則停止並回報。
@@ -24,7 +24,8 @@ branch之後移動而改變受審target。
    field order、padding與serialization是否和unchanged native relation一致；不得只比較名稱。
 5. Fresh publication是否在output建立前完成全部CandidateSet validation。32-role private input
    inventory、journal prefix、externally pinned resume、exact orphan adoption、completed capture及
-   repeated resume是否closed-world、append-only、fail closed。
+   repeated resume是否closed-world、append-only、fail closed。程式內獨立固定的
+   `INPUT_ROLE_ORDER` 是否唯一綁定ordinal 0–31；不得從plan本身推導可交換順序。
 6. Publication/capture validators是否拒絕unknown fields、wrong version/domain/invocation/profile/
    plan、wrong role/ordinal/storage name/original identity、bool-as-int、trailing bytes、output port
    mutation、assignment/commitment/request mismatch及re-pinned checkpoint chain。
@@ -42,6 +43,8 @@ branch之後移動而改變受審target。
   width、source locator、target locator及bool-as-int。
 - Candidate handoff、任一32-role raw、role ordinal/name/storage filename/original identity mutation；
   所有非法fresh input須在output建立前拒絕。
+- 將ordinal 0/1完整descriptor交換，重算ordinal與storage filename、重新命名input files，並重算
+  plan及ordinal 1/2/3 checkpoints；resume與completed capture都必須在compute／publication前拒絕。
 - Phase-B input、owned assignment、commitment、request hash、output port start/width、receipt summary
   digest及trailing bytes mutation。
 - Fresh→inputs stop→new call resume；result payload／receipt orphan；stale checkpoint；completed
