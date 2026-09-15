@@ -1,0 +1,29 @@
+{
+  "access_protocol_version": 2,
+  "activation_revocation_query_domain": "PQ-SAT/ACTIVATION-REVOCATION-QUERY/v2",
+  "claim_boundary": {
+    "activation_revocation_boundary_implemented": true,
+    "atomic_revocation_and_activation_implemented": false,
+    "capability_released_only_after_activate": true,
+    "client_finished_boundary_implemented": true,
+    "durable_or_distributed_store_implemented": false,
+    "explicit_session_activate_frame_implemented": true,
+    "first_protected_application_record_implemented": false,
+    "production_pq_ake_instantiated": false,
+    "production_ready": false,
+    "production_session_state_protection_instantiated": false,
+    "proof_closed": false,
+    "unique_session_index_implemented": true
+  },
+  "format": "PQ-SAT-FGS-ACTIVATION-PROCESSOR-v0.2",
+  "processing_order": [
+    "canonical_session_activate",
+    "session_index_lookup",
+    "exact_response_and_session_state_recovery",
+    "activation_binding_and_deadline",
+    "query_bound_activation_revocation",
+    "client_finished",
+    "atomic_activate",
+    "release_capability_after_activate"
+  ]
+}

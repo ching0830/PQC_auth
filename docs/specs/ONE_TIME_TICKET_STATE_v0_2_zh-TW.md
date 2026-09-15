@@ -1,7 +1,7 @@
 # One-Time Ticket 狀態與 1-RTT Access 邊界規格 v0.2
 
 > 狀態：Defined；process-local reference model 已 Implemented／Tested；尚未 durable／distributed／Production-closed
-> 日期：2026-09-14
+> 日期：2026-09-15
 > Access companion：`docs/specs/SATELLITE_ACCESS_v0_2_zh-TW.md`
 > Historical predecessor：`docs/specs/ONE_TIME_TICKET_STATE_v0_1_zh-TW.md`
 
@@ -33,6 +33,7 @@ authoritative indexes：
 UNIQUE(ctx, d_M)
 UNIQUE(ctx, sn)
 UNIQUE(use_key)
+UNIQUE(session_id)  # across all committed grants in one acceptance domain
 ```
 
 不得使用 `PQ-SAT/USE-KEY/v2` 另建平行 namespace，否則同一 ticket 可能在 V1、V2
@@ -176,6 +177,20 @@ FGS 收到 `SessionActivateV2` 或攜帶等價 header 的第一個 application A
 session、late confirmation或 competing attempt 均不得 activate。Invalid confirmation
 不會產生第二次 consumption，因為 ticket 在 grant commit 時已 consumed。
 
+Reference explicit-frame processor使用`session_id` index定位grant，再以record中的
+`use_key`及完整commit identity執行atomic transition。不同ticket若嘗試commit相同
+`session_id`必須fail closed。Processor必須recover並重新核對exact response與sealed
+session state；只有store回覆已完成new activation或同一confirmation的existing active
+record後，才能釋放內部session capability。Store commit後若caller收到exception、錯誤
+type或identity被改寫，結果為`COMMIT_UNCERTAIN`且不得釋放capability；exact retry可從
+authoritative active record恢復。
+
+Activation前的authenticated revocation snapshot必須綁定configuration、acceptance
+domain、ticket use key、原grant revocation query、FGS／key、request／response及session。
+然而外部snapshot與process-local activate不是同一transaction；production backend仍須
+提供authoritative ordering。Explicit `SessionActivateV2`也尚未實作第一個application
+record及其side-effect transaction，兩者不得被混稱為已完成。
+
 ## 7. Exact replay and retry semantics
 
 | 情境 | 對外結果 | State |
@@ -266,13 +281,16 @@ single-writer partitions。Store unavailable／timeout／partition時，新的 f
 7. Grant commit的revocation generation不得低於reservation generation。
 8. M2永遠不先於 durable `CONSUMED_PENDING_CONFIRM` publication。
 9. Pending session不得執行 application side effect。
-10. Correct client confirmation只能產生一次 activation。
-10. Wrong／late／cross-session confirmation不得 activate。
-11. 所有 consumed states永不回到 `UNSEEN`／`RESERVED`。
-12. Crash injection後不會形成第二個 response／session key。
-13. Store partition／timeout fail closed。
-14. Retention cleanup不會讓仍可能被任何版本 verifier接受的 ticket再用。
-15. Exact M1 replay不能使 attacker取得 UE session key。
+10. Correct client confirmation只能產生一次 activation transition；exact retry取得同一
+    active record。
+11. Wrong／late／cross-session confirmation不得 activate。
+12. 所有committed grants的`session_id`在acceptance domain內唯一。
+13. Store回覆不確定時不得釋放application capability。
+14. 所有 consumed states永不回到 `UNSEEN`／`RESERVED`。
+15. Crash injection後不會形成第二個 response／session key。
+16. Store partition／timeout fail closed。
+17. Retention cleanup不會讓仍可能被任何版本 verifier接受的 ticket再用。
+18. Exact M1 replay不能使 attacker取得 UE session key。
 
 ## 13. Claim boundary
 
@@ -287,3 +305,11 @@ activation idempotency、wrong／late／cross-session rejection、expiration、t
 evidence shape與跨版本共用identity namespace。它明確標記`durable = false`、
 `distributed = false`及`production_ready = false`；不應被解讀為§5的真實durability
 boundary或§11的多FGS authoritative store已完成。
+
+2026-09-15 activation checkpoint另在`src/pq_sat_auth/v2/activation.py`實作explicit
+`SessionActivateV2` strict processing、exact recovery、client Finished、activation-time
+revocation、process-local atomic activate及post-activate capability release；
+`src/pq_sat_auth/v2/replay.py`新增全域`session_id` index與可區分new／existing-active的
+transition result。它仍未實作durable／distributed atomic revocation ordering、production
+session-state protection或first-record application side effect，`production_ready`維持
+false。

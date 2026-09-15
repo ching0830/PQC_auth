@@ -64,6 +64,11 @@ class GrantStateV2(Enum):
     CONSUMED_EXPIRED = "consumed_expired"
 
 
+class ActivateDispositionV2(Enum):
+    NEW = "new"
+    EXISTING_ACTIVE = "existing_active"
+
+
 @dataclass(frozen=True)
 class ReservationV2:
     identity: TicketUseIdentity
@@ -219,6 +224,12 @@ class ReserveResultV2:
     record: UseRecordV2
 
 
+@dataclass(frozen=True)
+class ActivateResultV2:
+    disposition: ActivateDispositionV2
+    record: GrantRecordV2
+
+
 def _commit_identity(record: GrantRecordV2) -> tuple[object, ...]:
     """Return fields fixed by the unique CommitGrant operation."""
 
@@ -253,6 +264,7 @@ class InMemoryLinearizableReplayStoreV2:
         self._records: dict[bytes, UseRecordV2] = {}
         self._digest_index: dict[tuple[bytes, bytes], bytes] = {}
         self._serial_index: dict[tuple[bytes, bytes], bytes] = {}
+        self._session_index: dict[bytes, bytes] = {}
 
     def _check_identity_bindings(self, identity: TicketUseIdentity) -> bytes:
         if not isinstance(identity, TicketUseIdentity):
@@ -364,6 +376,9 @@ class InMemoryLinearizableReplayStoreV2:
                 if _commit_identity(existing) == _commit_identity(candidate):
                     return existing
                 raise InvalidTransition("consumed ticket cannot change grant")
+            session_binding = self._session_index.get(candidate.session_id)
+            if session_binding is not None and session_binding != use_key:
+                raise IdentityConflict("session ID belongs to another ticket")
             if (
                 existing.attempt_id != candidate.attempt_id
                 or existing.request_digest != candidate.request_digest
@@ -378,9 +393,10 @@ class InMemoryLinearizableReplayStoreV2:
             if candidate.consumed_at > existing.lease_deadline:
                 raise InvalidTransition("reservation lease expired before commit")
             self._records[use_key] = candidate
+            self._session_index[candidate.session_id] = use_key
             return candidate
 
-    def activate(
+    def activate_session(
         self,
         identity: TicketUseIdentity,
         *,
@@ -390,8 +406,8 @@ class InMemoryLinearizableReplayStoreV2:
         response_digest: bytes,
         client_confirmation_digest: bytes,
         activated_at: int,
-    ) -> GrantRecordV2:
-        """Atomically activate the exact pending session after Finished checks."""
+    ) -> ActivateResultV2:
+        """Atomically activate and report whether this call won the transition."""
 
         canonical_attempt = _fixed_bytes(attempt_id, DIGEST_BYTES, "attempt_id")
         canonical_request = _fixed_bytes(
@@ -439,7 +455,10 @@ class InMemoryLinearizableReplayStoreV2:
             if existing.state is GrantStateV2.CONSUMED_ACTIVE:
                 if existing.client_confirmation_digest != canonical_confirmation:
                     raise InvalidTransition("active grant confirmation cannot change")
-                return existing
+                return ActivateResultV2(
+                    ActivateDispositionV2.EXISTING_ACTIVE,
+                    existing,
+                )
             if canonical_time > existing.activation_deadline:
                 raise InvalidTransition("activation deadline has passed")
             active = replace(
@@ -449,7 +468,30 @@ class InMemoryLinearizableReplayStoreV2:
                 activated_at=canonical_time,
             )
             self._records[use_key] = active
-            return active
+            return ActivateResultV2(ActivateDispositionV2.NEW, active)
+
+    def activate(
+        self,
+        identity: TicketUseIdentity,
+        *,
+        attempt_id: bytes,
+        request_digest: bytes,
+        session_id: bytes,
+        response_digest: bytes,
+        client_confirmation_digest: bytes,
+        activated_at: int,
+    ) -> GrantRecordV2:
+        """Backward-compatible record-only activation API."""
+
+        return self.activate_session(
+            identity,
+            attempt_id=attempt_id,
+            request_digest=request_digest,
+            session_id=session_id,
+            response_digest=response_digest,
+            client_confirmation_digest=client_confirmation_digest,
+            activated_at=activated_at,
+        ).record
 
     def expire(
         self,
@@ -570,6 +612,25 @@ class InMemoryLinearizableReplayStoreV2:
         with self._lock:
             use_key = self._check_identity_bindings(identity)
             return self._records.get(use_key)
+
+    def lookup_session(self, session_id: bytes) -> GrantRecordV2 | None:
+        """Return the immutable committed record for an exact session ID."""
+
+        canonical_session = _fixed_bytes(
+            session_id,
+            SESSION_ID_BYTES,
+            "session_id",
+        )
+        with self._lock:
+            use_key = self._session_index.get(canonical_session)
+            if use_key is None:
+                return None
+            record = self._records.get(use_key)
+            if not isinstance(record, GrantRecordV2):
+                raise InvalidTransition("session index has no committed grant")
+            if record.session_id != canonical_session:
+                raise IdentityConflict("session index binding mismatch")
+            return record
 
     def __len__(self) -> int:
         with self._lock:

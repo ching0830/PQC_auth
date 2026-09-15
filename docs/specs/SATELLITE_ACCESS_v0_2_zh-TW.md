@@ -1,7 +1,7 @@
 # Satellite Access 與 PQ AKE 規格 v0.2
 
 > 狀態：Defined；bounded reference codecs／relation／interfaces 已 Implemented／Tested；尚未 Instantiated／Proof-closed／Production-closed
-> 日期：2026-09-14
+> 日期：2026-09-15
 > 所屬模組：M5 Satellite authentication、M6 Anti-replay／revocation／handover
 > State companion：`docs/specs/ONE_TIME_TICKET_STATE_v0_2_zh-TW.md`
 > Historical predecessor：`docs/specs/ONE_TIME_TICKET_STATE_v0_1_zh-TW.md`
@@ -574,3 +574,21 @@ ordering；crypto／sealing backends仍為test-only，activation processor亦未
 設計、failure semantics及claim boundary見
 `docs/artifacts/SATELLITE_ACCESS_v0_2_FGS_GRANT_PROCESSOR_zh-TW.md`與
 `manifests/pq_sat_auth_fgs_grant_v0_2.json`。
+
+### 13.4 FGS activation processor checkpoint
+
+後續checkpoint新增`src/pq_sat_auth/v2/activation.py`。FGS先以全域唯一`session_id`
+查找committed grant，recover並重新驗證exact `AccessAcceptV2`及sealed pending session
+state，再檢查activation binding、deadline／session expiry、query-bound configuration／
+FGS-key／ticket／session revocation，以及client Finished。只有process-local store完成
+atomic `CONSUMED_PENDING_CONFIRM -> CONSUMED_ACTIVE`後，processor才回傳包含application
+key與exporter key的內部capability；exact retry回傳同一active record與capability，平行
+重送只有一個transition winner。
+
+此capability不是application side effect本身，也不是network bearer token。第一個受保護
+application record、side-effect exactly-once transaction、production session-state
+protection及durable／distributed store仍未完成。Activation revocation snapshot與store
+transition亦非同一authoritative transaction，存在明確TOCTOU邊界；concrete PQ AKE／
+Finished suite仍待研究線選型與實例化。完整failure semantics、tests與claim boundary見
+`docs/artifacts/SATELLITE_ACCESS_v0_2_FGS_ACTIVATION_PROCESSOR_zh-TW.md`及
+`manifests/pq_sat_auth_fgs_activation_v0_2.json`。

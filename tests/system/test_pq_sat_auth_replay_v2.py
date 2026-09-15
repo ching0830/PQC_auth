@@ -385,6 +385,40 @@ class ReplayStoreV2Tests(unittest.TestCase):
                         revocation_generation=7,
                     )
 
+    def test_session_identifier_is_unique_across_committed_tickets(self) -> None:
+        self.reserve()
+        first = self.commit()
+        other_identity = identity(ctx=10, serial=11, digest=12)
+        self.store.reserve(
+            other_identity,
+            attempt_id=fixed(13),
+            request_digest=fixed(14),
+            serving_context_digest=fixed(15),
+            reserved_at=100,
+            lease_deadline=200,
+            revocation_generation=7,
+        )
+        with self.assertRaises(IdentityConflict):
+            self.store.commit_grant(
+                other_identity,
+                attempt_id=fixed(13),
+                request_digest=fixed(14),
+                transcript_digest=fixed(16),
+                session_id=first.session_id,
+                response_digest=fixed(17),
+                sealed_response=b"second-access-accept-v2",
+                sealed_session_state=b"second-sealed-session-state",
+                serving_context_digest=fixed(15),
+                fgs_id=fixed(18),
+                revocation_generation=7,
+                consumed_at=150,
+                activation_deadline=250,
+                session_expiry=500,
+                retention_deadline=900,
+            )
+        self.assertEqual(self.store.lookup_session(first.session_id), first)
+        self.assertIsInstance(self.store.lookup(other_identity), ReservationV2)
+
     def test_parallel_distinct_attempts_have_one_winner(self) -> None:
         workers = 24
         barrier = threading.Barrier(workers)

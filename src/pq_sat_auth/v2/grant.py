@@ -130,6 +130,7 @@ class PendingSessionStateV2:
     transcript_digest: bytes
     response_digest: bytes
     session_id: bytes
+    revocation_query: AccessRevocationQueryV2
     activation_deadline: int
     session_expiry: int
     client_finished_key: bytes
@@ -157,6 +158,9 @@ class PendingSessionStateV2:
         _u64(self.session_expiry, "session_expiry")
         if self.activation_deadline > self.session_expiry:
             raise ValueError("activation deadline follows session expiry")
+        if not isinstance(self.revocation_query, AccessRevocationQueryV2):
+            raise TypeError("revocation_query has the wrong type")
+        self.revocation_query.encode()
         for name in (
             "client_finished_key",
             "application_key",
@@ -191,6 +195,14 @@ class GrantRecoveryBackendV2(Protocol):
     ) -> bytes: ...
 
     def seal_session_state(self, state: PendingSessionStateV2) -> bytes: ...
+
+    def recover_session_state(
+        self,
+        sealed_session_state: bytes,
+        *,
+        session_id: bytes,
+        response_digest: bytes,
+    ) -> PendingSessionStateV2: ...
 
 
 class GrantReplayStoreV2(Protocol):
@@ -839,6 +851,7 @@ class FGSGrantProcessorV2:
                 transcript_digest=transcript_digest,
                 response_digest=response_digest,
                 session_id=session_id,
+                revocation_query=validated.revocation_query,
                 activation_deadline=activation_deadline,
                 session_expiry=session_expiry,
                 client_finished_key=session_keys.client_finished_key,

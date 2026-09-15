@@ -184,7 +184,9 @@ class KeyScheduleTestBackend:
         key: bytes,
         response_digest: bytes,
     ) -> bytes:
-        raise NotImplementedError
+        return hashlib.sha256(
+            b"TEST-ONLY/CLIENT-FINISHED/" + key + response_digest
+        ).digest()
 
     def verify_finished(
         self,
@@ -192,7 +194,7 @@ class KeyScheduleTestBackend:
         input_digest: bytes,
         confirmation: bytes,
     ) -> bool:
-        raise NotImplementedError
+        return confirmation == self.client_finished(key, input_digest)
 
 
 class SessionIdentifierTestSource:
@@ -215,7 +217,9 @@ class GrantRecoveryTestBackend:
         self.recover_response_calls = 0
         self.seal_session_calls = 0
         self.last_state: PendingSessionStateV2 | None = None
+        self._session_states: dict[bytes, PendingSessionStateV2] = {}
         self.tamper_recovery = False
+        self.tamper_session_state = False
         self.broken = False
 
     def seal_response(
@@ -250,12 +254,34 @@ class GrantRecoveryTestBackend:
             raise RuntimeError("session sealing failed")
         state.validate()
         self.last_state = state
-        return b"TEST-SEALED-SESSION/" + hashlib.sha256(
+        sealed = b"TEST-SEALED-SESSION/" + hashlib.sha256(
             state.response_digest
             + state.client_finished_key
             + state.application_key
             + state.exporter_key
         ).digest()
+        self._session_states[sealed] = state
+        return sealed
+
+    def recover_session_state(
+        self,
+        sealed_session_state: bytes,
+        *,
+        session_id: bytes,
+        response_digest: bytes,
+    ) -> PendingSessionStateV2:
+        state = self._session_states[sealed_session_state]
+        if (
+            state.session_id != session_id
+            or state.response_digest != response_digest
+        ):
+            raise ValueError("sealed session state binding mismatch")
+        if self.tamper_session_state:
+            return replace(
+                state,
+                system_config_digest=fixed(b"wrong-recovered-config"),
+            )
+        return state
 
 
 class CommitFailureStore(InMemoryLinearizableReplayStoreV2):
