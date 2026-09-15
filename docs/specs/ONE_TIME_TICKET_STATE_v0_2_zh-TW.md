@@ -1,6 +1,6 @@
 # One-Time Ticket 狀態與 1-RTT Access 邊界規格 v0.2
 
-> 狀態：Defined；process-local reference model 已 Implemented／Tested；尚未 durable／distributed／Production-closed
+> 狀態：Defined；FGS state仍為process-local；UE single-host SQLite wallet reference已 Implemented／Tested；尚未 distributed／Production-closed
 > 日期：2026-09-15
 > Access companion：`docs/specs/SATELLITE_ACCESS_v0_2_zh-TW.md`
 > Historical predecessor：`docs/specs/ONE_TIME_TICKET_STATE_v0_1_zh-TW.md`
@@ -328,3 +328,17 @@ Finished與`SessionActivateV2`產生。Honest output可直接通過FGS activatio
 但UE wallet仍只是protected in-memory input，沒有durability、rollback protection、
 secure erasure或production cryptographic backend，不能據此宣稱crash-safe session recovery
 或production PQ AKE。
+
+2026-09-15後續UE wallet checkpoint新增兩個UE-local states：`PREPARED`及
+`ACCEPTED_PENDING_ACTIVATION`。`Prepare`必須在M1可能送出前commit exact attempt；M2驗證
+成功後，coordinator先原子commit exact response、session keys與activation bytes，再
+read-back並核對protected record，最後才把session交給呼叫端。Same-attempt／same-M2 retry
+只回復既有record；不同attempt、不同M2、資料mutation或不確定commit回覆不得釋放session。
+
+`SQLiteUEWalletStoreV2`以per-operation connection、WAL、`synchronous=FULL`及
+`BEGIN IMMEDIATE`提供單機多程序serialization與restart recovery，並要求外部protection
+backend在資料進入SQLite前封裝整份canonical record。已測試commit後突然process exit，
+但沒有實體斷電、kernel crash、remount或hostile-filesystem evidence；test-only
+XOR／HMAC adapter也不是production cryptography。資料庫rollback protection、secure erasure
+及accepted後舊page／WAL中的ephemeral secret清除仍未實作，因此此checkpoint不能被解讀為
+production secure wallet或FGS authoritative distributed replay store已完成。

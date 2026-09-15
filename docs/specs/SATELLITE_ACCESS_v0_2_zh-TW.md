@@ -1,6 +1,6 @@
 # Satellite Access 與 PQ AKE 規格 v0.2
 
-> 狀態：Defined；bounded reference codecs／relation／interfaces 已 Implemented／Tested；尚未 Instantiated／Proof-closed／Production-closed
+> 狀態：Defined；bounded reference codecs／relation／processors／UE SQLite wallet 已 Implemented／Tested；尚未 Instantiated／Proof-closed／Production-closed
 > 日期：2026-09-15
 > 所屬模組：M5 Satellite authentication、M6 Anti-replay／revocation／handover
 > State companion：`docs/specs/ONE_TIME_TICKET_STATE_v0_2_zh-TW.md`
@@ -43,7 +43,7 @@ authorization；FGS 只在驗證它後把 pending session 標為 active。
 - access NIZK backend 已選定或具有 post-quantum simulation extractability；
 - production PQ KEM、FGS authentication、KDF 或 MAC suite 已選定；
 - FGS authentication key 已加入 production system-initialization ceremony；
-- durable／distributed replay store、UE wallet journal 或 session endpoint 已完成；
+- production durable／distributed replay store、secure UE wallet 或 session endpoint 已完成；
 - access authentication、session freshness、forward secrecy 或 availability 已證明；
 - 減少 message count 已經降低實測 latency、energy 或 communication bytes。
 
@@ -610,3 +610,27 @@ authentication／KDF／Finished suite、secure erasure及first protected applica
 仍未完成。詳細設計與claim boundary見
 `docs/artifacts/SATELLITE_ACCESS_v0_2_UE_ACCEPT_PROCESSOR_zh-TW.md`及
 `manifests/pq_sat_auth_ue_accept_v0_2.json`。
+
+### 13.6 UE durable wallet reference checkpoint
+
+後續checkpoint新增`src/pq_sat_auth/v2/wallet.py`與
+`src/pq_sat_auth/v2/storage/sqlite_wallet.py`。UE必須在傳送M1前呼叫`Prepare`，將exact
+request、authenticated configuration、request／attempt identities、ticket expiry及
+ephemeral KEM secret形成canonical、versioned record，交由獨立record-protection backend
+後才寫入SQLite。相同ticket的相同attempt為idempotent；不同attempt不得覆蓋原record。
+
+M2通過既有UE processor後，wallet在單一`BEGIN IMMEDIATE` transaction內執行
+`PREPARED -> ACCEPTED_PENDING_ACTIVATION`，保存exact M2、session identities／keys及
+`SessionActivateV2`。Coordinator只有在commit回覆、read-back及exact output validation
+全部成功後才釋放UE session；commit acknowledgment不確定或store output被改寫時不釋放，
+exact retry則從已提交record恢復同一session，不重新處理M2。
+
+SQLite profile固定application ID、schema version、WAL、`synchronous=FULL`、bounded
+canonical JSON及以`(use_key,state,revision)`組成的protection AAD。測試涵蓋thread／process
+race、restart、commit後突然process exit、corruption、schema／protection identity、lost
+ack及deadline recovery。這只支持可信單機filesystem與SQLite假設下的reference durability；
+test-only protection adapter不是production encryption。Rollback protection、hardware-backed
+key、secure erasure、實體斷電／kernel crash／remount、distributed wallet及first protected
+application record仍未完成。詳細evidence與machine claims見
+`docs/artifacts/SATELLITE_ACCESS_v0_2_UE_WALLET_SQLITE_zh-TW.md`及
+`manifests/pq_sat_auth_ue_wallet_v0_2.json`。

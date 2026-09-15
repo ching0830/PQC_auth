@@ -129,6 +129,121 @@ class UEAccessAttemptStateV2:
 
 
 @dataclass(frozen=True)
+class ValidatedUEAccessAttemptV2:
+    """Canonical identities recovered from one protected wallet attempt."""
+
+    state: UEAccessAttemptStateV2
+    request: AccessRequestV2
+    ticket: CanonicalTicket
+    identity: TicketUseIdentity
+    request_digest: bytes
+    attempt_id: bytes
+
+
+def validate_ue_access_attempt(
+    state: UEAccessAttemptStateV2,
+    *,
+    suite_registry: Mapping[int, SuiteLimitsV2] = REFERENCE_SUITE_REGISTRY,
+    proof_registry: Mapping[
+        int, ProofLimitsV2
+    ] = REFERENCE_PROOF_SUITE_REGISTRY,
+) -> ValidatedUEAccessAttemptV2:
+    """Rebuild the exact ticket, request, and attempt identities."""
+
+    if not isinstance(state, UEAccessAttemptStateV2):
+        raise TypeError("attempt state has the wrong type")
+    state.validate()
+    request = decode_access_request(
+        state.request_bytes,
+        suite_registry,
+        proof_registry,
+    )
+    if (
+        encode_access_request(request, suite_registry, proof_registry)
+        != state.request_bytes
+    ):
+        raise ValueError("wallet request is non-canonical")
+    ticket = CanonicalTicket.decode(request.ticket)
+    if ticket.encode() != request.ticket:
+        raise ValueError("wallet ticket is non-canonical")
+    if ticket.signing_role is not KeyRole.ISSUER_VERIFICATION:
+        raise ValueError("wallet ticket has the wrong signing role")
+    identity = TicketUseIdentity(
+        ctx=ticket.payload.ctx,
+        serial=ticket.payload.sn,
+        ticket_digest=ticket.payload_digest,
+    )
+    if identity.ctx != request.ctx:
+        raise ValueError("wallet ticket context differs from request")
+    request_digest = derive_request_digest(
+        request,
+        suite_registry,
+        proof_registry,
+    )
+    attempt_id = derive_attempt_id(identity.use_key, request_digest)
+    if request_digest != state.request_digest or attempt_id != state.attempt_id:
+        raise ValueError("wallet request identities are inconsistent")
+    return ValidatedUEAccessAttemptV2(
+        state=state,
+        request=request,
+        ticket=ticket,
+        identity=identity,
+        request_digest=request_digest,
+        attempt_id=attempt_id,
+    )
+
+
+def validate_ue_acceptance_time(
+    state: UEAccessAttemptStateV2,
+    response: AccessAcceptV2,
+    now: int,
+) -> None:
+    """Apply the same authenticated validity bounds at accept and recovery."""
+
+    if not isinstance(state, UEAccessAttemptStateV2):
+        raise TypeError("attempt state has the wrong type")
+    if not isinstance(response, AccessAcceptV2):
+        raise TypeError("response has the wrong type")
+    configuration = state.configuration
+    _u64(now, "UE acceptance time")
+    if not configuration.valid_from <= now < configuration.valid_until:
+        raise ValueError("access configuration is inactive")
+    if now >= state.ticket_expires_at:
+        raise ValueError("ticket expired before UE acceptance")
+    if now > response.activation_deadline:
+        raise ValueError("activation deadline expired before UE acceptance")
+    if now > response.session_expiry:
+        raise ValueError("session expired before UE acceptance")
+    if response.session_expiry > min(
+        configuration.valid_until,
+        state.ticket_expires_at,
+    ):
+        raise ValueError("response session exceeds authenticated validity")
+    activation_limit = _add_u64(
+        _add_u64(
+            now,
+            configuration.activation_window_seconds,
+            "UE activation window",
+        ),
+        configuration.maximum_clock_skew_seconds,
+        "UE activation clock skew",
+    )
+    session_limit = _add_u64(
+        _add_u64(
+            now,
+            configuration.session_lifetime_seconds,
+            "UE session lifetime",
+        ),
+        configuration.maximum_clock_skew_seconds,
+        "UE session clock skew",
+    )
+    if response.activation_deadline > activation_limit:
+        raise ValueError("response activation window exceeds policy")
+    if response.session_expiry > session_limit:
+        raise ValueError("response session lifetime exceeds policy")
+
+
+@dataclass(frozen=True)
 class FGSVerificationKeyQueryV2:
     suite_id: int
     system_config_digest: bytes
@@ -319,47 +434,18 @@ class UEAccessAcceptProcessorV2:
         bytes,
         bytes,
     ]:
-        if not isinstance(state, UEAccessAttemptStateV2):
-            raise TypeError("attempt state has the wrong type")
-        state.validate()
-        request = decode_access_request(
-            state.request_bytes,
-            self._suite_registry,
-            self._proof_registry,
+        validated = validate_ue_access_attempt(
+            state,
+            suite_registry=self._suite_registry,
+            proof_registry=self._proof_registry,
         )
-        if (
-            encode_access_request(
-                request,
-                self._suite_registry,
-                self._proof_registry,
-            )
-            != state.request_bytes
-        ):
-            raise ValueError("wallet request is non-canonical")
-        ticket = CanonicalTicket.decode(request.ticket)
-        if ticket.encode() != request.ticket:
-            raise ValueError("wallet ticket is non-canonical")
-        if ticket.signing_role is not KeyRole.ISSUER_VERIFICATION:
-            raise ValueError("wallet ticket has the wrong signing role")
-        identity = TicketUseIdentity(
-            ctx=ticket.payload.ctx,
-            serial=ticket.payload.sn,
-            ticket_digest=ticket.payload_digest,
+        return (
+            validated.request,
+            validated.ticket,
+            validated.identity,
+            validated.request_digest,
+            validated.attempt_id,
         )
-        if identity.ctx != request.ctx:
-            raise ValueError("wallet ticket context differs from request")
-        request_digest = derive_request_digest(
-            request,
-            self._suite_registry,
-            self._proof_registry,
-        )
-        attempt_id = derive_attempt_id(identity.use_key, request_digest)
-        if (
-            request_digest != state.request_digest
-            or attempt_id != state.attempt_id
-        ):
-            raise ValueError("wallet request identities are inconsistent")
-        return request, ticket, identity, request_digest, attempt_id
 
     @staticmethod
     def _validate_configuration_binding(
@@ -399,50 +485,6 @@ class UEAccessAcceptProcessorV2:
             is not ChannelBindingMode.AUTHENTICATED_EXPORTER
         ):
             raise ValueError("wallet request lacks required channel binding")
-
-    @staticmethod
-    def _validate_time(
-        state: UEAccessAttemptStateV2,
-        response: AccessAcceptV2,
-        now: int,
-    ) -> None:
-        configuration = state.configuration
-        _u64(now, "UE acceptance time")
-        if not configuration.valid_from <= now < configuration.valid_until:
-            raise ValueError("access configuration is inactive")
-        if now >= state.ticket_expires_at:
-            raise ValueError("ticket expired before UE acceptance")
-        if now > response.activation_deadline:
-            raise ValueError("activation deadline expired before UE acceptance")
-        if now > response.session_expiry:
-            raise ValueError("session expired before UE acceptance")
-        if response.session_expiry > min(
-            configuration.valid_until,
-            state.ticket_expires_at,
-        ):
-            raise ValueError("response session exceeds authenticated validity")
-        activation_limit = _add_u64(
-            _add_u64(
-                now,
-                configuration.activation_window_seconds,
-                "UE activation window",
-            ),
-            configuration.maximum_clock_skew_seconds,
-            "UE activation clock skew",
-        )
-        session_limit = _add_u64(
-            _add_u64(
-                now,
-                configuration.session_lifetime_seconds,
-                "UE session lifetime",
-            ),
-            configuration.maximum_clock_skew_seconds,
-            "UE session clock skew",
-        )
-        if response.activation_deadline > activation_limit:
-            raise ValueError("response activation window exceeds policy")
-        if response.session_expiry > session_limit:
-            raise ValueError("response session lifetime exceeds policy")
 
     @staticmethod
     def _key_query(
@@ -518,7 +560,7 @@ class UEAccessAcceptProcessorV2:
 
         try:
             now = self._clock.now()
-            self._validate_time(attempt_state, response, now)
+            validate_ue_acceptance_time(attempt_state, response, now)
         except Exception as error:
             return self._reject(f"acceptance_time:{type(error).__name__}")
 
