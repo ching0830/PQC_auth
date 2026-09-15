@@ -6,6 +6,35 @@
 
 日期：2026 年 9 月 15 日
 
+## Issuance Global-B bounded consumer／private restart（獨立 branch）
+
+從finding-free CandidateSet corrective commit
+`2779e845b53e5bd8c60a4cd45b932c69d0173529`建立
+`codex/pq-rbbc-issuance-global-b-consumer-v1`。本branch只支援two-tree／four-leaf
+`INSECURE-TEST-ONLY` profile；它消費finding-free gate固定的32-role immutable CandidateSet，
+不改寫CandidateSet predecessor或historical evidence。
+
+Independent consumer先驗證8組、共7,826條producer→tail native relocation equalities，再於
+`[23,094,43,837)`配置20,743個owned wires並重播35,494條Phase-B constraints；兩種row counts
+分開記錄，總檢查43,320 rows。Frozen commitment及request hash與unchanged bounded monolithic
+reference byte-identical，沒有external assertions；tree-pre、Global-A與tree-post均未重播，原
+CandidateSet pathname亦未重開。
+
+Private publication固定32個role-indexed inputs，fresh在output建立前先驗證CandidateSet。
+Append-only journal依plan→inputs committed→result committed→complete前進；resume須帶latest
+checkpoint的external exact SHA-256。Exact result orphan adoption、stale digest rejection、completed
+capture及repeated completed resume均已加入regression。這仍是bounded private engineering
+restart，不能宣稱production durable resume或filesystem/power-loss qualification。
+
+本gate的source、tests、manifest、portable evidence及artifact note需在bounded commit後接受
+exact-commit唯讀technical/security re-review。Finding-free後的下一個serial gate是
+**bounded global-tail completion sealer／parent-input CandidateSet preflight**。它只能聚合已reviewed
+Global-A、tree-post branches與Global-B result；receipt仍是branch graph，
+`full_execution_receipt_chain_verified=false`。Unified cross-root capture、mixed degree-12/13、
+legacy18 production provider、fresh parent I1–I5、formal `pi_issue`、qualified PQ-SE、large replay／
+proving、`Proof-closed`與`Production-closed`仍全部為false。詳細contract見
+[Global-B artifact note](../artifacts/PQ_RBBC_ISSUANCE_GLOBAL_B_RESTART_V1_zh-TW.md)。
+
 ## Issuance Global-B aggregate CandidateSet preflight（獨立 branch）
 
 從Global-A serial gate `278cdf4682b08b18afe83f63fcd51d660a5785b7`建立原preflight
