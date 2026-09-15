@@ -6,6 +6,34 @@
 
 日期：2026 年 9 月 15 日
 
+## Issuance Global-A serial gate successor（獨立 branch）
+
+從 finding-free multitree scheduler＋SRR-01 exact commit
+`2f1b674cf7afafebd1bdb4778ce456093a6c9005` 建立
+`codex/pq-rbbc-issuance-global-tail-serial-gate-v1`。本 branch 將較早、建立在
+`ca6d4a43...` 的 global-tail preflight／Global-A prototypes 移植成新的 1.1 successors；舊
+manifest、portable evidence、private result與checkpoint identities不得當作本branch結果。
+
+Global-tail preflight 1.1 固定 bounded two-tree／four-leaf Phase-A/B layout，並驗證目前
+scheduler 1.2 predecessor。Global-A CandidateSet 攜帶 ordinal `[0,1,2]` 的三份 receipt raws，
+逐份以同一 immutable `Snapshot.raw` 驗證 identity、strict canonical JSON、ordinal、stage、
+invocation與0→1→2 links；scheduler攜帶`[2,3]` suffix，兩者以ordinal 2相同bytes／SHA-256
+交會。Global-B尚未同時消費兩個completed roots，故
+`full_execution_receipt_chain_verified=false`。
+
+Independent Global-A 1.1 consumer不重跑tree-pre、不復原generator/hash/allocator state；bounded
+execution實際重播19,671條native constraints、配置12,179個owned wires，與unchanged live
+Phase-A逐值一致。Private append-only publication、externally pinned process restart、completed
+capture、repeated resume、0／1／2 re-pinned mutation及broken-link rejection均已測試。Global-A
+targeted 16 passed；preflight＋Global-A combined targeted 27 passed；五模組integration 87 passed；
+完整baseline共989 tests，977 passed、12個既有optional-artifact skips、0 failed/errors。
+
+下一個serial gate是 **Global-B same-invocation aggregate CandidateSet唯讀preflight**：同時綁定
+Global-A complete、scheduler complete、兩份ordered tree-post results、相同points raw、相同
+invocation/profile/plan及ordinal 2 raw overlap。Global-B consumer、完整global-tail、mixed
+degree-12/13、legacy18 production provider、production durable resume、正式`pi_issue`、PQ-SE、
+large replay/proving、`Proof-closed`與`Production-closed`仍全部為false。
+
 ## Multitree scheduler＋SRR-01 integration candidate（獨立 branch）
 
 以 finding-free scheduler commit `13a75945a075630c1dc366615856239972efa6c6` 為直接基準，
@@ -13,7 +41,7 @@
 `64d0947dada2dafb5eb8636f09ea868366e8ef49`。Scheduler 提升為
 `implementation_version=1.2`，並重建 continuation、one-tree與scheduler的successor
 identities；先前對`13a75945`的final security re-review不自動涵蓋combined tree，本
-integration candidate仍須另行綁定exact commit唯讀重審。
+integration candidate已另行綁定exact commit唯讀重審。
 
 Scheduler execution plan現在明確綁定ordinal 2 `tree-pre[1]`與ordinal 3 `global-a`的兩份
 receipt snapshot identities。Fresh scheduler在取得output lock、發布plan或建立child root前，
@@ -25,8 +53,11 @@ one-tree child的closed-world input set由6份增為7份。Sequential與bounded-
 Integration regression結果：scheduler targeted 22 passed；三模組combined targeted 60
 passed；完整suite共962 tests，950 passed、12個既有optional-artifact skips、0
 failed/errors。Controlled integration probe確認pre-publication拒絕、兩個7-file child input
-sets、sequential／parallel逐檔一致、completed capture與repeated resume不重算。這些結果尚未
-取代combined exact commit所需的獨立唯讀re-review。
+sets、sequential／parallel逐檔一致、completed capture與repeated resume不重算。其後對exact
+commit `2f1b674...` 的獨立AI technical/security re-review為finding-free：P0／P1／P2／P3
+皆0，combined targeted 60 passed，full suite 950 passed＋12 optional skips，independent probe
+PASS，19/19 historical identities相符。這仍不是human cryptographic review或production
+approval。
 
 這只整合bounded four-leaf test-only tree-post scheduler與verified ordinal 2→3 suffix；
 `full_receipt_chain_verified=false`。Global-tail、mixed degree-12/13、legacy18 production
