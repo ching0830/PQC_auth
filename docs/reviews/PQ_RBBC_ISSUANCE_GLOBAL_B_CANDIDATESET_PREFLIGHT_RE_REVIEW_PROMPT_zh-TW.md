@@ -1,13 +1,17 @@
 # PQ-RBBC issuance Global-B CandidateSet preflight 唯讀 re-review prompt
 
-請在新的獨立、乾淨worktree，唯讀審查呼叫者提供的完整exact target commit SHA。Target的直接
-parent必須是Global-A serial gate：
+請在新的獨立、乾淨worktree，唯讀審查呼叫者提供的完整exact corrective target commit SHA。
+Lineage必須是：
 
 ```text
 278cdf4682b08b18afe83f63fcd51d660a5785b7
+  -> 92bd287c5898468edb9250050d1a69926a85a61e
+  -> <exact corrective target>
 ```
 
-Target branch應為`codex/pq-rbbc-issuance-global-b-candidateset-preflight-v1`。不要修改repository、
+Corrective target branch應為
+`codex/pq-rbbc-issuance-global-b-candidateset-bool-corrective-v1`，且其直接parent必須是
+`92bd287c5898468edb9250050d1a69926a85a61e`。不要修改repository、
 commit、merge、push，也不要執行Global-B、production、large replay或proving。
 
 ## 必查 contract
@@ -27,6 +31,10 @@ commit、merge、push，也不要執行Global-B、production、large replay或pr
    trusted handoff、writer quiescence、permissions／ACL、writable FDs及mount controls仍為外部前提。
 8. Global-B consumer、35,494 constraints、native relocation rows、publication/restart、legacy18、
    production、formal `pi_issue`、PQ-SE、large-run、Proof/Production closure必須全部維持false。
+9. 所有被此module消費的numeric JSON/runtime fields都必須先要求exact `int`，不得讓Python
+   `bool`藉由`False == 0`或`True == 1`通過。至少包括handoff ordinal/branch arrays、shared-input
+   target/width、relocation ordinal/source/target/width、scheduler descriptor/inventory、continuation
+   與ordered result `tree_index`；binary value helper亦不得接受boolean。
 
 ## Independent probes
 
@@ -34,6 +42,9 @@ commit、merge、push，也不要執行Global-B、production、large replay或pr
 
 - 對8筆relocation逐項做re-pinned source/target/value/version/domain/claim mutation、swap、gap、
   duplicate key及trailing bytes，確認在compute/output前拒絕。
+- 重現GB-CANDIDATESET-RR-001的六種re-pinned boolean substitutions，並額外對handoff branch
+  array、shared-input numeric layout、relocation source/width及handoff ordered-result index注入
+  `false`／`true`；全部必須拒絕且不得建立output。不要只用不等於大整數的case掩蓋type檢查。
 - 對ordinal 2 prefix/suffix raw overlap、ordinal 2→3 link、兩份tree-post branches、points與ordered
   results做re-pinned mutation，確認fail closed。
 - Capture合法CandidateSet後改寫所有可用pathname，確認validator仍只消費captured raws；以mock或

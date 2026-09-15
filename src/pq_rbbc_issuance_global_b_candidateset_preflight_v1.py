@@ -267,6 +267,23 @@ def _is_int(value: object) -> bool:
     return type(value) is int
 
 
+def _require_exact_int(value: object, expected: int, label: str) -> None:
+    if not _is_int(value) or value != expected:
+        raise GlobalBCandidateSetError(label + " exact integer mismatch")
+
+
+def _require_exact_int_list(
+    value: object, expected: Sequence[int], label: str
+) -> None:
+    if (
+        type(value) is not list
+        or len(value) != len(expected)
+        or any(not _is_int(item) for item in value)
+        or value != list(expected)
+    ):
+        raise GlobalBCandidateSetError(label + " exact integer list mismatch")
+
+
 def _digest(value: object, label: str) -> str:
     if (
         type(value) is not str
@@ -314,7 +331,7 @@ def _identity_document(value: object, label: str) -> dict[str, object]:
 
 
 def _pack_bits(bits: Sequence[int]) -> bytes:
-    if any(value not in (0, 1) for value in bits):
+    if any(not _is_int(value) or value not in (0, 1) for value in bits):
         raise GlobalBCandidateSetError("non-binary relocation value")
     packed = bytearray((len(bits) + 7) // 8)
     for index, value in enumerate(bits):
@@ -414,17 +431,25 @@ def _validate_ordinal_three(
         raise GlobalBCandidateSetError("ordinal-3 native prefix inventory")
     for digest in prefixes.values():
         _digest(digest, "ordinal-3 native prefix")
+    owner_cursors = _exact(
+        current["owner_cursors"],
+        set(continuation.GLOBAL_A_CURSORS),
+        "ordinal-3 owner cursors",
+    )
+    if any(not _is_int(value) for value in owner_cursors.values()):
+        raise GlobalBCandidateSetError("ordinal-3 owner cursors require exact integers")
+    _require_exact_int(current["ordinal"], 3, "ordinal-3 receipt ordinal")
+    _require_exact_int(current["rows"], global_a.PHASE_A_ROWS, "ordinal-3 receipt rows")
+    _require_exact_int(current["total_rows"], 140_781, "ordinal-3 receipt total rows")
     if (
         current["format"] != base.FORMAT + "-RECEIPT"
         or current["relation_id"] != base.RELATION_ID
         or current["profile_fingerprint"] != PROFILE_FINGERPRINT
         or current["plan_sha256"] != PLAN_SHA256
         or current["invocation_sha256"] != INVOCATION_SHA256
-        or current["ordinal"] != 3
         or current["stage_id"] != "global-a"
         or current["previous_receipt_sha256"] != sha256(ordinal_two.raw)
-        or current["rows"] != global_a.PHASE_A_ROWS
-        or current["total_rows"] != 140_781
+        or owner_cursors != continuation.GLOBAL_A_CURSORS
         or current["relocation_ports"] != list(global_a.EXPECTED_RELOCATIONS[-1])
         or current["point_snapshot_sha256"] != point_snapshot.identity["sha256"]
         or current["production"] is not False
@@ -482,8 +507,13 @@ def _validate_predecessors(
         handoff_sha256=str(TREE_PRE_IDENTITIES["handoff"]["sha256"]),
     )
     if (
-        tuple(published.owned_values) != global_a_values
+        type(published.owned_values) is not tuple
+        or any(not _is_int(value) for value in published.owned_values)
+        or tuple(published.owned_values) != global_a_values
+        or not _is_int(published.h1)
         or published.h1 != h1
+        or type(published.points) is not tuple
+        or any(not _is_int(value) for value in published.points)
         or tuple(published.points) != points
         or receipt_document["previous_receipt_sha256"]
         != candidate.adapter_receipt_prefix[2].identity["sha256"]
@@ -523,11 +553,13 @@ def _validate_predecessors(
     _require_identity(schedule.execution_plan, SCHEDULER_IDENTITIES["plan"], limit=scheduler.CHECKPOINT_LIMIT)
     _require_identity(schedule.complete_checkpoint, SCHEDULER_IDENTITIES["complete"], limit=scheduler.CHECKPOINT_LIMIT)
     plan = scheduler._validate_plan(schedule.execution_plan)
+    _require_exact_int_list(
+        plan["ordered_tree_indices"], (0, 1), "scheduler ordered tree indices"
+    )
     if (
         type(schedule.ordered_results) is not tuple
         or len(schedule.ordered_results) != 2
         or schedule.adopted_orphan_tree_indices != ()
-        or plan["ordered_tree_indices"] != [0, 1]
     ):
         raise GlobalBCandidateSetError("scheduler order or completed capture mismatch")
 
@@ -537,14 +569,17 @@ def _validate_predecessors(
     for index, (snapshot, result, descriptor) in enumerate(
         zip(candidate.continuations, schedule.ordered_results, plan["trees"])
     ):
+        _require_exact_int(descriptor.get("tree_index"), index, "scheduler tree descriptor")
         _require_identity(snapshot, scheduler.CONTINUATION_IDENTITIES[index], limit=continuation.CONTINUATION_LIMIT)
         try:
             continuation_document = snapshot.document()
         except io.ValidationError as error:
             raise GlobalBCandidateSetError("continuation is not strict canonical JSON") from error
+        _require_exact_int(
+            continuation_document.get("tree_index"), index, "continuation tree index"
+        )
         if (
-            continuation_document.get("tree_index") != index
-            or continuation_document.get("profile_fingerprint") != PROFILE_FINGERPRINT
+            continuation_document.get("profile_fingerprint") != PROFILE_FINGERPRINT
             or continuation_document.get("plan_sha256") != PLAN_SHA256
             or continuation_document.get("invocation_sha256") != INVOCATION_SHA256
             or continuation_document.get("dependencies", {}).get("points")
@@ -576,8 +611,10 @@ def _validate_predecessors(
             continuation_document=continuation_document,
         )
         scheduler._validate_child_result(result, descriptor)
+        _require_exact_int(result.tree_index, index, "ordered tree result index")
         if (
-            result.tree_index != index
+            type(result.owned_values) is not tuple
+            or any(not _is_int(value) for value in result.owned_values)
             or tuple(result.owned_values) != values
             or result.output_port != port
             or tree_receipt["previous_receipt_sha256"]
@@ -673,10 +710,10 @@ def _shared_inputs_document(snapshot: io.Snapshot) -> Mapping[str, tuple[int, ..
         bits = _decode_bits(field["packed_bits_hex"], width)
         packed = _pack_bits(bits)
         _digest(field["packed_bits_sha256"], "shared input bits")
+        _require_exact_int(field["target_wire_start"], start, "shared input target wire")
+        _require_exact_int(field["bit_length"], width, "shared input bit length")
         if (
             field["field_id"] != field_id
-            or field["target_wire_start"] != start
-            or field["bit_length"] != width
             or field["packed_bits_sha256"] != sha256(packed)
         ):
             raise GlobalBCandidateSetError("shared input layout or value digest mismatch")
@@ -940,6 +977,16 @@ def _handoff_document(
         },
         "Global-B CandidateSet handoff",
     )
+    _require_exact_int_list(
+        current["adapter_receipt_prefix_ordinals_verified"],
+        (0, 1, 2, 3),
+        "handoff receipt ordinals",
+    )
+    _require_exact_int_list(
+        current["tree_post_receipt_branches_verified"],
+        (0, 1),
+        "handoff tree-post branches",
+    )
     if (
         current["format"] != HANDOFF_FORMAT
         or current["implementation_version"] != IMPLEMENTATION_VERSION
@@ -950,8 +997,6 @@ def _handoff_document(
         or current["invocation_sha256"] != INVOCATION_SHA256
         or current["stage_id"] != "global-b-candidateset"
         or current["next_stage"] != "global-b"
-        or current["adapter_receipt_prefix_ordinals_verified"] != [0, 1, 2, 3]
-        or current["tree_post_receipt_branches_verified"] != [0, 1]
         or current["same_points_raw_verified"] is not True
         or current["same_invocation_profile_plan_verified"] is not True
         or current["all_candidate_identity_parse_and_binding_use_same_raw"] is not True
@@ -1018,9 +1063,9 @@ def _check_handoff_inventory(
         raise GlobalBCandidateSetError("scheduler ordered result inventory")
     for index, (entry, result) in enumerate(zip(ordered, candidate.schedule.ordered_results)):
         current = _exact(entry, {"tree_index", "result", "receipt", "complete"}, "tree result inventory")
+        _require_exact_int(current["tree_index"], index, "handoff tree result index")
         if (
-            current["tree_index"] != index
-            or current["result"] != result.result.identity
+            current["result"] != result.result.identity
             or current["receipt"] != result.receipt.identity
             or current["complete"] != result.complete_checkpoint.identity
         ):
@@ -1082,6 +1127,18 @@ def _validate_relocations(
         )
         if role == "shared":
             source_identity = candidate.shared_inputs.identity
+        _require_exact_int(current["ordinal"], index, "relocation ordinal")
+        _require_exact_int(
+            current["target_wire_start"], target_start, "relocation target wire"
+        )
+        _require_exact_int(current["bit_length"], width, "relocation bit length")
+        if source_start is None:
+            if current["source_wire_start"] is not None:
+                raise GlobalBCandidateSetError("relocation source wire must be null")
+        else:
+            _require_exact_int(
+                current["source_wire_start"], source_start, "relocation source wire"
+            )
         if (
             current["format"] != RELOCATION_FORMAT
             or current["implementation_version"] != IMPLEMENTATION_VERSION
@@ -1090,14 +1147,10 @@ def _validate_relocations(
             or current["profile_fingerprint"] != PROFILE_FINGERPRINT
             or current["plan_sha256"] != PLAN_SHA256
             or current["invocation_sha256"] != INVOCATION_SHA256
-            or current["ordinal"] != index
             or current["port_id"] != port_id
             or current["source_role"] != role
             or current["source_snapshot"] != source_identity
-            or current["source_wire_start"] != source_start
             or current["source_field"] != source_field
-            or current["target_wire_start"] != target_start
-            or current["bit_length"] != width
             or current["packed_bits_sha256"] != sha256(packed)
             or current["value_binding_sha256"] != _value_digest(port_id, packed)
             or bits != source_bits
@@ -1197,6 +1250,7 @@ def preflight() -> dict[str, object]:
         "bounded_candidate_fixture_frozen": FROZEN["candidate_handoff_identity"]["bytes"] > 0,
         "same_invocation_profile_plan_required": True,
         "same_points_raw_required": True,
+        "numeric_json_fields_require_exact_int_not_bool": True,
         "adapter_receipt_prefix_ordinals_required": [0, 1, 2, 3],
         "tree_post_receipt_branches_required": [0, 1],
         "relocation_candidates_required": 8,
@@ -1269,6 +1323,7 @@ def build_manifest() -> dict[str, object]:
                 for index, spec in enumerate(RELOCATION_SPECS)
             ],
             "same_raw_for_identity_parse_binding_and_future_consumption": True,
+            "numeric_json_fields_require_exact_int_not_bool": True,
             "single_open_single_bounded_read_required_from_future_capture_api": True,
             "candidate_pathname_reopen_permitted": False,
             "metadata_proves_no_writer": False,

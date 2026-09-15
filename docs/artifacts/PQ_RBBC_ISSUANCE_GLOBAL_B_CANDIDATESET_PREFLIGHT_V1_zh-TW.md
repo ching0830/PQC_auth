@@ -1,8 +1,9 @@
 # PQ-RBBC issuance Global-B aggregate CandidateSet 唯讀 preflight v1
 
 日期：2026-09-15。Branch：
-`codex/pq-rbbc-issuance-global-b-candidateset-preflight-v1`；直接基線為 Global-A serial gate
-`278cdf4682b08b18afe83f63fcd51d660a5785b7`。本 checkpoint 不修改 `main`、system
+`codex/pq-rbbc-issuance-global-b-candidateset-bool-corrective-v1`；本 corrective 的直接基線為
+Global-B CandidateSet preflight `92bd287c5898468edb9250050d1a69926a85a61e`，其 parent 為
+Global-A serial gate `278cdf4682b08b18afe83f63fcd51d660a5785b7`。本 checkpoint 不修改 `main`、system
 architecture、ticket lifecycle、`pq_sat_auth`、legacy 18-tree profile 或歷史 evidence。
 
 ## 結論
@@ -16,6 +17,11 @@ Global-B relocation candidates 綁在同一份 versioned canonical handoff。
 equality rowsets 尚未執行；Global-B consumer、private publication、durable restart與production API
 皆未實作。`full_execution_receipt_chain_verified=false`、`Proof-closed=false`、
 `Production-closed=false`。
+
+原 target 的獨立審查發現 Python `bool` 可藉由 `False == 0`／`True == 1` 通過部分 integer
+欄位。Corrective 現在先要求 `type(value) is int`，再比較 ordinal、branch、tree index、wire
+offset與bit length；canonical JSON boolean 不再被視為integer。Canonical encoding及既有bounded
+CandidateSet raw identities未改變，改變的是validator的fail-closed接受集合。
 
 ## Protocol 位置
 
@@ -81,6 +87,12 @@ production = false
 因此這些 records 是下一步 native equality 的候選輸入，不是已完成的 relocation constraint
 receipts。
 
+所有numeric relocation欄位都使用exact integer type contract：`ordinal`、非null
+`source_wire_start`、`target_wire_start`及`bit_length`必須是JSON number解碼後的exact Python
+`int`；`true`／`false`即使與預期0／1等值也必須拒絕。相同規則也適用於handoff ordinal／branch
+arrays、shared-input layout、scheduler descriptors／inventory、continuation及runtime ordered
+result `tree_index`。
+
 ## Receipt graph 與 claim boundary
 
 目前 receipt 結構是分支圖，不是單一線性 execution chain：
@@ -125,6 +137,10 @@ namespace、filesystem/fsync semantics及private-state confidentiality仍是部�
   `b169c3ab2417e5d8b70fbce10d44a902ae4a852c2ea8acdd011168af9b1be1da`。
 - 八份relocation candidate identities逐項封存在manifest與portable evidence；private raw、salt、
   assignment values及published checkpoints皆未進Git。
+- Corrective source successor：58,869 bytes；SHA-256
+  `c6f482f022d13174633ac7612852b652febd3fb3c6d6f3feb0cc4142a2a79177`。
+- Corrective test successor：24,757 bytes；SHA-256
+  `7cb4234b54de13afd61557d380be165c7fbb02c94daba8205adee3acb3d8bfdd`。
 
 ## Resources 與 exact commands
 
@@ -145,15 +161,16 @@ Bounded Global-B、production、large replay與large proving commands全部為`n
 
 ## Validation
 
-- Targeted：16 passed、0 failed/errors/skipped，28.454秒。
-- 六模組continuation／restart／scheduler／Global-A／CandidateSet integration：103 passed、
-  0 failed/errors/skipped，195.823秒。
-- 完整unittest baseline：1,005 tests；993 passed、12個既有optional-artifact skips、
-  0 failed/errors，1502.584秒（wall 1506.38秒）。
-- Controlled external probe：8/8 checks通過，25.23秒；涵蓋re-pinned false native-equality
-  claim、capture後pathname mutation、ordinal 2 raw overlap與production pre-I/O refusal。
+- Corrective targeted：18 passed、0 failed/errors/skipped，30.883秒（wall 31.24秒）。
+- 完整unittest baseline：1,007 tests；995 passed、12個既有optional-artifact skips、
+  0 failed/errors，1510.035秒（wall 1513.86秒）。
+- 審查方independent probe的等價副本：165項必要拒絕全部通過，
+  `unexpected_acceptances=[]`，35.90秒；涵蓋原六個boolean bypass、8筆relocation逐項mutation、
+  capture後12個pathname改寫、fresh-process no-reopen、32 roles、7,826 bits及19/19 historical
+  identities。
 - 每一筆relocation的re-pinned target mutation、swap、gap、wrong version/domain/claim、duplicate及
-  trailing bytes均fail closed。
+  trailing bytes均fail closed；針對`false`／`true`替換ordinal、source/target wire、bit length、
+  handoff ordinal/branch arrays、shared-input target與runtime/handoff tree index的regression亦拒絕。
 - Wrong/stale handoff digest在dependency validation前拒絕；Global-A value、points、scheduler
   order與receipt overlap/link mutations皆拒絕。
 - Capture後pathname改寫不會取代CandidateSet內raw；validation不重開pathname、不產生constraints、

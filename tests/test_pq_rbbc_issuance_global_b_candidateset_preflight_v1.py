@@ -235,6 +235,114 @@ class GlobalBCandidateSetPreflightTests(unittest.TestCase):
             ):
                 self.validate(candidate)
 
+    def test_boolean_numeric_substitutions_reject_after_repin(self):
+        variants = []
+
+        for relocation_index, field, value in (
+            (0, "ordinal", False),
+            (1, "ordinal", True),
+            (0, "target_wire_start", True),
+            (0, "bit_length", True),
+            (2, "source_wire_start", True),
+        ):
+            relocations = list(self.candidate.relocations)
+            relocations[relocation_index] = self.mutate_snapshot(
+                relocations[relocation_index],
+                lambda document, field=field, value=value: document.__setitem__(
+                    field, value
+                ),
+            )
+            variants.append(
+                (
+                    f"relocation-{relocation_index}-{field}-{value}",
+                    self.repin_handoff(
+                        replace(self.candidate, relocations=tuple(relocations))
+                    ),
+                )
+            )
+
+        shared = self.mutate_snapshot(
+            self.candidate.shared_inputs,
+            lambda document: document["fields"][0].__setitem__(
+                "target_wire_start", True
+            ),
+        )
+        variants.append(
+            (
+                "shared-input-target-true",
+                self.repin_handoff(replace(self.candidate, shared_inputs=shared)),
+            )
+        )
+
+        for index, value in ((0, False), (1, True)):
+            ordered = list(self.candidate.schedule.ordered_results)
+            ordered[index] = replace(ordered[index], tree_index=value)
+            schedule = replace(
+                self.candidate.schedule, ordered_results=tuple(ordered)
+            )
+            variants.append(
+                (
+                    f"ordered-result-{index}-tree-index-{value}",
+                    self.repin_handoff(replace(self.candidate, schedule=schedule)),
+                )
+            )
+
+        for label, field, value in (
+            (
+                "handoff-receipt-ordinal-list-bools",
+                "adapter_receipt_prefix_ordinals_verified",
+                [False, True, 2, 3],
+            ),
+            (
+                "handoff-tree-branch-list-bools",
+                "tree_post_receipt_branches_verified",
+                [False, True],
+            ),
+        ):
+            document = self.candidate.handoff.document()
+            document[field] = value
+            variants.append(
+                (
+                    label,
+                    replace(
+                        self.candidate,
+                        handoff=replace(
+                            self.candidate.handoff, raw=gate.canonical_json(document)
+                        ),
+                    ),
+                )
+            )
+
+        for index, value in ((0, False), (1, True)):
+            document = self.candidate.handoff.document()
+            document["scheduler"]["ordered_results"][index]["tree_index"] = value
+            variants.append(
+                (
+                    f"handoff-ordered-result-{index}-tree-index-{value}",
+                    replace(
+                        self.candidate,
+                        handoff=replace(
+                            self.candidate.handoff, raw=gate.canonical_json(document)
+                        ),
+                    ),
+                )
+            )
+
+        forbidden = self.root / "boolean-mutation-output-must-not-exist"
+        for label, candidate in variants:
+            with self.subTest(label=label), self.assertRaises(
+                gate.GlobalBCandidateSetError
+            ):
+                self.validate(candidate)
+        self.assertFalse(forbidden.exists())
+
+    def test_binary_helper_rejects_boolean_values(self):
+        for value in (False, True):
+            with self.subTest(value=value), self.assertRaises(
+                gate.GlobalBCandidateSetError
+            ):
+                gate._pack_bits((value,))
+
     def test_relocation_swap_gap_wrong_claim_version_domain_and_trailing_reject(self):
         variants = []
         swapped = list(self.candidate.relocations)
@@ -400,6 +508,7 @@ class GlobalBCandidateSetPreflightTests(unittest.TestCase):
         self.assertFalse(forbidden.exists())
         report = gate.preflight()
         self.assertTrue(report["candidate_contract_defined"])
+        self.assertTrue(report["numeric_json_fields_require_exact_int_not_bool"])
         self.assertTrue(report["safe_to_implement_bounded_global_b_consumer"])
         self.assertFalse(report["unified_path_capture_api_implemented"])
         self.assertFalse(report["global_b_consumer_implemented"])
@@ -440,6 +549,9 @@ class GlobalBCandidateSetPreflightTests(unittest.TestCase):
             },
         )
         self.assertFalse(manifest["claim_status"]["global_b_consumer_implemented"])
+        self.assertTrue(
+            manifest["contract"]["numeric_json_fields_require_exact_int_not_bool"]
+        )
         self.assertFalse(manifest["claim_status"]["global_b_constraints_replayed"])
         self.assertFalse(manifest["claim_status"]["Production-closed"])
 

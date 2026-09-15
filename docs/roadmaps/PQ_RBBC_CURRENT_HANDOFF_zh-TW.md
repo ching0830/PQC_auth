@@ -8,8 +8,9 @@
 
 ## Issuance Global-B aggregate CandidateSet preflight（獨立 branch）
 
-從Global-A serial gate `278cdf4682b08b18afe83f63fcd51d660a5785b7`建立
-`codex/pq-rbbc-issuance-global-b-candidateset-preflight-v1`。本branch實作bounded two-tree／
+從Global-A serial gate `278cdf4682b08b18afe83f63fcd51d660a5785b7`建立原preflight
+`92bd287c5898468edb9250050d1a69926a85a61e`，再以它為直接parent建立
+`codex/pq-rbbc-issuance-global-b-candidateset-bool-corrective-v1`。本branch實作bounded two-tree／
 four-leaf `INSECURE-TEST-ONLY` aggregate CandidateSet builder／validator；它不改寫已reviewed
 Global-A或scheduler files，也不啟動Global-B、production、large replay或proving。
 
@@ -25,11 +26,22 @@ Ordinal 2在Global-A prefix與scheduler suffix使用不同filename，但raw byte
 raws，不重開pathname或重建monolithic reference。跨兩個published roots的unified filesystem
 capture API仍未實作，trusted handoff及writer quiescence仍是外部前提。
 
-驗證結果：targeted 16 passed；六模組integration 103 passed；完整baseline共1,005 tests，
-993 passed、12個既有optional-artifact skips、0 failed/errors。Controlled external probe 8/8
-checks通過；19份v2.38/v2.39 historical identities維持不變。
+原commit的獨立re-review發現一項P2：部分numeric欄位只比較數值，Python `bool`可用
+`False == 0`／`True == 1`通過。Corrective現在對handoff ordinal／branch arrays、shared-input
+layout、relocation ordinal/source/target/width、scheduler descriptor/inventory、continuation及
+runtime ordered-result index先要求exact `int`再比值，binary helper亦拒絕boolean。Canonical
+encoding與bounded CandidateSet raw identities不變，validator接受集合則縮限為closed-schema
+integer contract。
 
-下一個serial gate是 **bounded independently invocable Global-B consumer**：消費本CandidateSet，
+Corrective targeted新增re-pinned `false`／`true` regressions：18 passed、0 failed/errors/skipped；
+完整baseline共1,007 tests，995 passed、12個既有optional-artifact skips、0 failed/errors。
+審查方independent probe的等價副本有165項必要拒絕全部通過，`unexpected_acceptances=[]`；
+source/test successor identities、manifest與portable evidence已重建。下一個serial gate必須等
+corrective exact commit再次取得finding-free唯讀審查後才可開始；19份v2.38/v2.39 historical
+identities保持不變。
+
+Corrective finding-free後的下一個serial gate是 **bounded independently invocable Global-B
+consumer**：消費本CandidateSet，
 發出並驗證8組native relocation equalities與Phase-B constraints，再建立private append-only
 publication／restart。Global-B consumer、完整global-tail、mixed degree-12/13、legacy18 provider、
 fresh parent join、formal `pi_issue`、PQ-SE、large-run、`Proof-closed`與`Production-closed`目前皆為
