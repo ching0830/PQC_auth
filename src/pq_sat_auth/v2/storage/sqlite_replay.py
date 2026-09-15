@@ -28,30 +28,36 @@ from pq_sat_auth.replay import (
 from ..replay import (
     ActivateDispositionV2,
     ActivateResultV2,
+    FencedReservationV2,
     GrantRecordV2,
     GrantStateV2,
     ReservationAbortEvidenceV2,
     ReservationV2,
     ReserveDispositionV2,
     ReserveResultV2,
+    U64_MAX,
     UseRecordV2,
     _commit_identity,
+    _verify_reservation_abort_evidence,
+    reservation_abort_evidence_digest_v2,
 )
 
 
 APPLICATION_ID = 0x50515352
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 RECORD_FORMAT = "PQ-SAT-FGS-REPLAY-RECORD-v0.2"
 RECORD_AAD_LABEL = b"PQ-SAT/FGS-REPLAY-RECORD-AAD/v0.2"
 MAX_RECORD_BYTES = 4_500_000
 MAX_PROTECTED_RECORD_BYTES = 5_000_000
 MAX_EXPIRY_REASON_BYTES = 4_096
+SQLITE_INT_MAX = (1 << 63) - 1
 PRODUCTION_READY = False
 
 STATE_RESERVED = 1
 STATE_PENDING = 2
 STATE_ACTIVE = 3
 STATE_EXPIRED = 4
+STATE_FENCED = 5
 
 _SCHEMA_SQL = """CREATE TABLE fgs_replay_records (
     use_key BLOB PRIMARY KEY NOT NULL
@@ -62,14 +68,16 @@ _SCHEMA_SQL = """CREATE TABLE fgs_replay_records (
         CHECK(typeof(serial) = 'blob' AND length(serial) = 16),
     ticket_digest BLOB NOT NULL
         CHECK(typeof(ticket_digest) = 'blob' AND length(ticket_digest) = 32),
-    state INTEGER NOT NULL CHECK(state IN (1, 2, 3, 4)),
-    revision INTEGER NOT NULL CHECK(revision IN (1, 2, 3, 4)),
+    state INTEGER NOT NULL CHECK(state IN (1, 2, 3, 4, 5)),
+    revision INTEGER NOT NULL CHECK(revision IN (1, 2, 3, 4, 5)),
     protection_id TEXT NOT NULL
         CHECK(typeof(protection_id) = 'text'
               AND length(protection_id) BETWEEN 1 AND 128),
     session_id BLOB
         CHECK(session_id IS NULL
               OR (typeof(session_id) = 'blob' AND length(session_id) = 32)),
+    lease_deadline INTEGER
+        CHECK(lease_deadline IS NULL OR lease_deadline >= 0),
     protected_record BLOB NOT NULL
         CHECK(typeof(protected_record) = 'blob'
               AND length(protected_record) BETWEEN 1 AND 5000000),
@@ -77,8 +85,10 @@ _SCHEMA_SQL = """CREATE TABLE fgs_replay_records (
     UNIQUE(ctx, serial),
     UNIQUE(session_id),
     CHECK(state = revision),
-    CHECK((state = 1 AND session_id IS NULL)
-          OR (state IN (2, 3, 4) AND session_id IS NOT NULL))
+    CHECK((state IN (1, 5) AND session_id IS NULL
+           AND lease_deadline IS NOT NULL)
+          OR (state IN (2, 3, 4) AND session_id IS NOT NULL
+              AND lease_deadline IS NULL))
 ) WITHOUT ROWID"""
 
 
@@ -200,6 +210,8 @@ def _optional_integer(value: object, name: str) -> int | None:
 
 
 def _state_code(record: UseRecordV2) -> int:
+    if isinstance(record, FencedReservationV2):
+        return STATE_FENCED
     if isinstance(record, ReservationV2):
         return STATE_RESERVED
     if not isinstance(record, GrantRecordV2):
@@ -215,10 +227,30 @@ def _session_id(record: UseRecordV2) -> bytes | None:
     return None if isinstance(record, ReservationV2) else record.session_id
 
 
+def _lease_deadline(record: UseRecordV2) -> int | None:
+    return record.lease_deadline if isinstance(record, ReservationV2) else None
+
+
 def encode_replay_record(record: UseRecordV2) -> bytes:
-    if isinstance(record, ReservationV2):
+    if isinstance(record, FencedReservationV2):
+        value: dict[str, object] = {
+            "abort_evidence_digest": _hex(record.abort_evidence_digest),
+            "attempt_id": _hex(record.attempt_id),
+            "fenced_at": record.fenced_at,
+            "fencing_generation": record.fencing_generation,
+            "format": RECORD_FORMAT,
+            "identity": _identity_to_object(record.identity),
+            "kind": "FENCED_RESERVATION",
+            "lease_deadline": record.lease_deadline,
+            "request_digest": _hex(record.request_digest),
+            "reserved_at": record.reserved_at,
+            "revocation_generation": record.revocation_generation,
+            "serving_context_digest": _hex(record.serving_context_digest),
+        }
+    elif isinstance(record, ReservationV2):
         value: dict[str, object] = {
             "attempt_id": _hex(record.attempt_id),
+            "fencing_generation": record.fencing_generation,
             "format": RECORD_FORMAT,
             "identity": _identity_to_object(record.identity),
             "kind": "RESERVATION",
@@ -283,6 +315,7 @@ def decode_replay_record(encoded: bytes) -> UseRecordV2:
             item,
             {
                 "attempt_id",
+                "fencing_generation",
                 "format",
                 "identity",
                 "kind",
@@ -307,6 +340,53 @@ def decode_replay_record(encoded: bytes) -> UseRecordV2:
             revocation_generation=_integer(
                 item["revocation_generation"],
                 "revocation_generation",
+            ),
+            fencing_generation=_integer(
+                item["fencing_generation"],
+                "fencing_generation",
+            ),
+        )
+    elif kind == "FENCED_RESERVATION":
+        _exact_keys(
+            item,
+            {
+                "abort_evidence_digest",
+                "attempt_id",
+                "fenced_at",
+                "fencing_generation",
+                "format",
+                "identity",
+                "kind",
+                "lease_deadline",
+                "request_digest",
+                "reserved_at",
+                "revocation_generation",
+                "serving_context_digest",
+            },
+            "fenced reservation record",
+        )
+        record = FencedReservationV2(
+            identity=_identity_from_object(item["identity"]),
+            attempt_id=_unhex(item["attempt_id"], "attempt_id"),
+            request_digest=_unhex(item["request_digest"], "request_digest"),
+            serving_context_digest=_unhex(
+                item["serving_context_digest"],
+                "serving_context_digest",
+            ),
+            reserved_at=_integer(item["reserved_at"], "reserved_at"),
+            lease_deadline=_integer(item["lease_deadline"], "lease_deadline"),
+            revocation_generation=_integer(
+                item["revocation_generation"],
+                "revocation_generation",
+            ),
+            fencing_generation=_integer(
+                item["fencing_generation"],
+                "fencing_generation",
+            ),
+            fenced_at=_integer(item["fenced_at"], "fenced_at"),
+            abort_evidence_digest=_unhex(
+                item["abort_evidence_digest"],
+                "abort_evidence_digest",
             ),
         )
     elif kind == "GRANT":
@@ -592,17 +672,18 @@ class SQLiteFGSReplayStoreV2:
         return protected
 
     def _decode_row(self, row: tuple[object, ...]) -> UseRecordV2:
-        if len(row) != 9:
+        if len(row) != 10:
             raise FGSReplayIntegrityError("replay row has the wrong width")
         use_key, ctx, serial, ticket_digest = row[:4]
         state = _integer(row[4], "stored replay state")
         revision = _integer(row[5], "stored replay revision")
-        protection_id, session_id, protected = row[6:]
+        protection_id, session_id, lease_deadline, protected = row[6:]
         if state != revision or state not in (
             STATE_RESERVED,
             STATE_PENDING,
             STATE_ACTIVE,
             STATE_EXPIRED,
+            STATE_FENCED,
         ):
             raise FGSReplayIntegrityError("stored replay state is invalid")
         identity = TicketUseIdentity(
@@ -620,6 +701,11 @@ class SQLiteFGSReplayStoreV2:
             raise FGSReplayIntegrityError("replay protection identity mismatch")
         if session_id is not None:
             session_id = _fixed(session_id, 32, "stored session_id")  # type: ignore[arg-type]
+        if lease_deadline is not None:
+            lease_deadline = _integer(
+                lease_deadline,
+                "stored lease_deadline",
+            )
         if not isinstance(protected, bytes) or not protected:
             raise FGSReplayIntegrityError("protected replay record is invalid")
         if len(protected) > MAX_PROTECTED_RECORD_BYTES:
@@ -645,11 +731,13 @@ class SQLiteFGSReplayStoreV2:
             identity,
             state,
             session_id,
+            lease_deadline,
         )
         actual = (
             record.identity,
             _state_code(record),
             _session_id(record),
+            _lease_deadline(record),
         )
         if actual != expected:
             raise FGSReplayIntegrityError("replay row and protected record differ")
@@ -665,7 +753,7 @@ class SQLiteFGSReplayStoreV2:
             raise ValueError("unsupported replay lookup column")
         row = connection.execute(
             "SELECT use_key, ctx, serial, ticket_digest, state, revision, "
-            "protection_id, session_id, protected_record "
+            "protection_id, session_id, lease_deadline, protected_record "
             f"FROM fgs_replay_records WHERE {clause} = ?",
             (value,),
         ).fetchone()
@@ -708,8 +796,8 @@ class SQLiteFGSReplayStoreV2:
         connection.execute(
             "INSERT INTO fgs_replay_records "
             "(use_key, ctx, serial, ticket_digest, state, revision, "
-            "protection_id, session_id, protected_record) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            "protection_id, session_id, lease_deadline, protected_record) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             (
                 record.identity.use_key,
                 record.identity.ctx,
@@ -719,20 +807,23 @@ class SQLiteFGSReplayStoreV2:
                 state,
                 self._protection_id,
                 _session_id(record),
+                _lease_deadline(record),
                 protected,
             ),
         )
 
-    def _replace(self, connection: sqlite3.Connection, record: GrantRecordV2) -> None:
+    def _replace(self, connection: sqlite3.Connection, record: UseRecordV2) -> None:
         state = _state_code(record)
         protected = self._protect(record)
         cursor = connection.execute(
             "UPDATE fgs_replay_records SET state = ?, revision = ?, "
-            "session_id = ?, protected_record = ? WHERE use_key = ?",
+            "session_id = ?, lease_deadline = ?, protected_record = ? "
+            "WHERE use_key = ?",
             (
                 state,
                 state,
-                record.session_id,
+                _session_id(record),
+                _lease_deadline(record),
                 protected,
                 record.identity.use_key,
             ),
@@ -759,6 +850,7 @@ class SQLiteFGSReplayStoreV2:
             reserved_at=reserved_at,
             lease_deadline=lease_deadline,
             revocation_generation=revocation_generation,
+            fencing_generation=1,
         )
         connection = self._connect()
         try:
@@ -766,6 +858,18 @@ class SQLiteFGSReplayStoreV2:
             _, existing = self._check_identity_bindings(connection, identity)
             if existing is None:
                 self._insert(connection, candidate)
+                connection.execute("COMMIT")
+                return ReserveResultV2(ReserveDispositionV2.NEW, candidate)
+            if isinstance(existing, FencedReservationV2):
+                if existing.fencing_generation >= U64_MAX:
+                    raise InvalidTransition(
+                        "reservation fencing generation exhausted"
+                    )
+                candidate = replace(
+                    candidate,
+                    fencing_generation=existing.fencing_generation + 1,
+                )
+                self._replace(connection, candidate)
                 connection.execute("COMMIT")
                 return ReserveResultV2(ReserveDispositionV2.NEW, candidate)
             if (
@@ -791,6 +895,7 @@ class SQLiteFGSReplayStoreV2:
         self,
         identity: TicketUseIdentity,
         *,
+        fencing_generation: int,
         attempt_id: bytes,
         request_digest: bytes,
         transcript_digest: bytes,
@@ -827,7 +932,11 @@ class SQLiteFGSReplayStoreV2:
         connection = self._connect()
         try:
             connection.execute("BEGIN IMMEDIATE")
-            result = self._commit_grant_candidate(connection, candidate)
+            result = self._commit_grant_candidate(
+                connection,
+                candidate,
+                fencing_generation,
+            )
             connection.execute("COMMIT")
             return result
         except Exception:
@@ -841,9 +950,16 @@ class SQLiteFGSReplayStoreV2:
         self,
         connection: sqlite3.Connection,
         candidate: GrantRecordV2,
+        fencing_generation: int,
     ) -> GrantRecordV2:
         """Commit one candidate inside the caller's active write transaction."""
 
+        canonical_fencing_generation = _integer(
+            fencing_generation,
+            "fencing_generation",
+        )
+        if not 1 <= canonical_fencing_generation <= U64_MAX:
+            raise ValueError("fencing_generation is outside uint64")
         use_key, existing = self._check_identity_bindings(
             connection,
             candidate.identity,
@@ -854,6 +970,8 @@ class SQLiteFGSReplayStoreV2:
             if _commit_identity(existing) == _commit_identity(candidate):
                 return existing
             raise InvalidTransition("consumed ticket cannot change grant")
+        if isinstance(existing, FencedReservationV2):
+            raise ReservationNotFound("reservation worker has been fenced")
         session_owner = connection.execute(
             "SELECT use_key FROM fgs_replay_records WHERE session_id = ?",
             (candidate.session_id,),
@@ -863,6 +981,7 @@ class SQLiteFGSReplayStoreV2:
         if (
             existing.attempt_id != candidate.attempt_id
             or existing.request_digest != candidate.request_digest
+            or existing.fencing_generation != canonical_fencing_generation
             or existing.serving_context_digest
             != candidate.serving_context_digest
             or existing.revocation_generation > candidate.revocation_generation
@@ -1031,12 +1150,23 @@ class SQLiteFGSReplayStoreV2:
         self,
         identity: TicketUseIdentity,
         *,
+        fencing_generation: int,
         attempt_id: bytes,
         request_digest: bytes,
+        observed_at: int,
         evidence: ReservationAbortEvidenceV2,
-    ) -> None:
+    ) -> FencedReservationV2:
         canonical_attempt = _fixed(attempt_id, 32, "attempt_id")
         canonical_request = _fixed(request_digest, 32, "request_digest")
+        canonical_fencing_generation = _integer(
+            fencing_generation,
+            "fencing_generation",
+        )
+        if not 1 <= canonical_fencing_generation <= U64_MAX:
+            raise ValueError("fencing_generation is outside uint64")
+        canonical_time = _integer(observed_at, "abort observed_at")
+        if canonical_time > U64_MAX:
+            raise ValueError("abort observed_at does not fit uint64")
         if not isinstance(evidence, ReservationAbortEvidenceV2):
             raise TypeError("evidence must be ReservationAbortEvidenceV2")
         connection = self._connect()
@@ -1047,18 +1177,41 @@ class SQLiteFGSReplayStoreV2:
                 raise ReservationNotFound("cannot abort an unreserved ticket")
             if isinstance(existing, GrantRecordV2):
                 raise InvalidTransition("consumed ticket cannot be released")
+            if isinstance(existing, FencedReservationV2):
+                raise ReservationNotFound("reservation is already fenced")
             if (
                 existing.attempt_id != canonical_attempt
                 or existing.request_digest != canonical_request
+                or existing.fencing_generation != canonical_fencing_generation
             ):
                 raise ReservationNotFound("reservation belongs to another request")
-            cursor = connection.execute(
-                "DELETE FROM fgs_replay_records WHERE use_key = ?",
-                (use_key,),
+            if canonical_time <= existing.lease_deadline:
+                raise InvalidTransition("reservation lease has not expired")
+            _verify_reservation_abort_evidence(
+                existing,
+                canonical_time,
+                evidence,
             )
-            if cursor.rowcount != 1:
-                raise FGSReplayStorageError("abort changed wrong row count")
+            self._validate_reservation_abort_transaction(connection, existing)
+            if existing.fencing_generation >= U64_MAX:
+                raise InvalidTransition("reservation fencing generation exhausted")
+            fenced = FencedReservationV2(
+                identity=existing.identity,
+                attempt_id=existing.attempt_id,
+                request_digest=existing.request_digest,
+                serving_context_digest=existing.serving_context_digest,
+                reserved_at=existing.reserved_at,
+                lease_deadline=existing.lease_deadline,
+                revocation_generation=existing.revocation_generation,
+                fencing_generation=existing.fencing_generation + 1,
+                fenced_at=canonical_time,
+                abort_evidence_digest=reservation_abort_evidence_digest_v2(
+                    evidence
+                ),
+            )
+            self._replace(connection, fenced)
             connection.execute("COMMIT")
+            return fenced
         except Exception:
             if connection.in_transaction:
                 connection.execute("ROLLBACK")
@@ -1066,13 +1219,22 @@ class SQLiteFGSReplayStoreV2:
         finally:
             connection.close()
 
+    def _validate_reservation_abort_transaction(
+        self,
+        connection: sqlite3.Connection,
+        reservation: ReservationV2,
+    ) -> None:
+        """Successor profiles may reject recovery when dependent state exists."""
+
+        del connection, reservation
+
     def lookup(self, identity: TicketUseIdentity) -> UseRecordV2 | None:
         connection = self._connect()
         try:
             connection.execute("BEGIN")
             _, record = self._check_identity_bindings(connection, identity)
             connection.execute("COMMIT")
-            return record
+            return None if isinstance(record, FencedReservationV2) else record
         except Exception:
             if connection.in_transaction:
                 connection.execute("ROLLBACK")
@@ -1099,11 +1261,64 @@ class SQLiteFGSReplayStoreV2:
         finally:
             connection.close()
 
+    def lookup_reservation_fence(
+        self,
+        identity: TicketUseIdentity,
+    ) -> FencedReservationV2 | None:
+        connection = self._connect()
+        try:
+            connection.execute("BEGIN")
+            _, record = self._check_identity_bindings(connection, identity)
+            connection.execute("COMMIT")
+            return record if isinstance(record, FencedReservationV2) else None
+        except Exception:
+            if connection.in_transaction:
+                connection.execute("ROLLBACK")
+            raise
+        finally:
+            connection.close()
+
+    def expired_reservations(
+        self,
+        *,
+        observed_at: int,
+        limit: int = 1_000,
+    ) -> tuple[ReservationV2, ...]:
+        canonical_time = _integer(observed_at, "scan observed_at")
+        if canonical_time > SQLITE_INT_MAX:
+            raise ValueError("scan observed_at exceeds SQLite integer range")
+        if isinstance(limit, bool) or not isinstance(limit, int):
+            raise TypeError("reservation scan limit must be an integer")
+        if not 1 <= limit <= 10_000:
+            raise ValueError("reservation scan limit is outside bounds")
+        connection = self._connect()
+        try:
+            rows = connection.execute(
+                "SELECT use_key, ctx, serial, ticket_digest, state, revision, "
+                "protection_id, session_id, lease_deadline, protected_record "
+                "FROM fgs_replay_records WHERE state = ? "
+                "AND lease_deadline < ? ORDER BY use_key LIMIT ?",
+                (STATE_RESERVED, canonical_time, limit),
+            ).fetchall()
+            records = tuple(self._decode_row(row) for row in rows)
+            if not all(
+                isinstance(record, ReservationV2)
+                and not isinstance(record, FencedReservationV2)
+                for record in records
+            ):
+                raise FGSReplayIntegrityError(
+                    "expired reservation scan returned wrong record type"
+                )
+            return records  # type: ignore[return-value]
+        finally:
+            connection.close()
+
     def __len__(self) -> int:
         connection = self._connect()
         try:
             row = connection.execute(
-                "SELECT COUNT(*) FROM fgs_replay_records"
+                "SELECT COUNT(*) FROM fgs_replay_records WHERE state != ?",
+                (STATE_FENCED,),
             ).fetchone()
             if row is None:
                 raise FGSReplayStorageError("replay count is unavailable")
@@ -1121,6 +1336,7 @@ def sqlite_fgs_replay_manifest() -> dict[str, object]:
         "synchronous": "FULL",
         "states": [
             "RESERVED",
+            "FENCED_RESERVATION_INTERNAL",
             "CONSUMED_PENDING_CONFIRM",
             "CONSUMED_ACTIVE",
             "CONSUMED_EXPIRED",
@@ -1131,6 +1347,16 @@ def sqlite_fgs_replay_manifest() -> dict[str, object]:
             "record_protection_backend_boundary": True,
             "exact_m2_and_sealed_session_state_persisted": True,
             "session_index_unique": True,
+            "expired_reservation_reconciliation_available": True,
+            "bounded_expired_reservation_scan": True,
+            "canonical_abort_evidence_bound": True,
+            "caller_supplied_recovery_time": True,
+            "production_recovery_clock_instantiated": False,
+            "persistent_monotonic_worker_fencing": True,
+            "stale_worker_aba_commit_rejected": True,
+            "fenced_tombstone_hidden_from_public_lookup": True,
+            "automatic_reconciliation_scheduler_implemented": False,
+            "schema_migration_from_v1_implemented": False,
             "production_record_protection_instantiated": False,
             "hostile_filesystem_protection": False,
             "rollback_resistance": False,

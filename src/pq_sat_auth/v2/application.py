@@ -1182,6 +1182,8 @@ def first_application_checkpoint_manifest() -> dict[str, object]:
             "authenticated_revocation_ingestion_boundary_available": True,
             "general_scope_revocation_fanout_available": True,
             "atomic_grant_query_registration_available": True,
+            "bounded_expired_reservation_reconciliation_available": True,
+            "automatic_reservation_reconciliation_scheduler": False,
             "production_authenticated_revocation_writer_instantiated": False,
             "separate_inbox_mode_atomic_with_activation": False,
             "activation_and_delivery_same_transaction": False,

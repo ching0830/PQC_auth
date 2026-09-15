@@ -3,6 +3,7 @@ from __future__ import annotations
 import threading
 import unittest
 from concurrent.futures import ThreadPoolExecutor
+from dataclasses import replace
 
 from pq_sat_auth.identities import USE_KEY_LABEL, TicketUseIdentity
 from pq_sat_auth.replay import (
@@ -12,12 +13,14 @@ from pq_sat_auth.replay import (
     TicketUnavailable,
 )
 from pq_sat_auth.v2.replay import (
+    FencedReservationV2,
     GrantRecordV2,
     GrantStateV2,
     InMemoryLinearizableReplayStoreV2,
     ReservationAbortEvidenceV2,
     ReservationV2,
     ReserveDispositionV2,
+    derive_reservation_abort_evidence_v2,
 )
 
 
@@ -59,6 +62,7 @@ class ReplayStoreV2Tests(unittest.TestCase):
     def commit(self) -> GrantRecordV2:
         return self.store.commit_grant(
             self.identity,
+            fencing_generation=1,
             attempt_id=self.attempt,
             request_digest=self.request,
             transcript_digest=fixed(8),
@@ -76,11 +80,13 @@ class ReplayStoreV2Tests(unittest.TestCase):
         )
 
     @staticmethod
-    def abort_evidence() -> ReservationAbortEvidenceV2:
-        return ReservationAbortEvidenceV2(
-            no_grant_digest=fixed(80),
-            no_publication_digest=fixed(81),
-            fencing_digest=fixed(82),
+    def abort_evidence(
+        reservation: ReservationV2,
+        observed_at: int = 201,
+    ) -> ReservationAbortEvidenceV2:
+        return derive_reservation_abort_evidence_v2(
+            reservation,
+            observed_at,
         )
 
     def test_reserve_commit_and_exact_retry_are_idempotent(self) -> None:
@@ -136,6 +142,7 @@ class ReplayStoreV2Tests(unittest.TestCase):
         with self.assertRaises(ReservationNotFound):
             self.store.commit_grant(
                 self.identity,
+                fencing_generation=1,
                 attempt_id=fixed(40),
                 request_digest=self.request,
                 transcript_digest=fixed(8),
@@ -154,6 +161,7 @@ class ReplayStoreV2Tests(unittest.TestCase):
         with self.assertRaises(InvalidTransition):
             self.store.commit_grant(
                 self.identity,
+                fencing_generation=1,
                 attempt_id=self.attempt,
                 request_digest=self.request,
                 transcript_digest=fixed(8),
@@ -175,6 +183,7 @@ class ReplayStoreV2Tests(unittest.TestCase):
         self.reserve()
         advanced = self.store.commit_grant(
             self.identity,
+            fencing_generation=1,
             attempt_id=self.attempt,
             request_digest=self.request,
             transcript_digest=fixed(8),
@@ -205,6 +214,7 @@ class ReplayStoreV2Tests(unittest.TestCase):
         with self.assertRaises(ReservationNotFound):
             other_store.commit_grant(
                 self.identity,
+                fencing_generation=1,
                 attempt_id=self.attempt,
                 request_digest=self.request,
                 transcript_digest=fixed(8),
@@ -285,7 +295,14 @@ class ReplayStoreV2Tests(unittest.TestCase):
         )
 
     def test_pending_and_active_grants_expire_without_becoming_reusable(self) -> None:
-        self.reserve()
+        reserved = self.reserve()
+        self.assertIsInstance(reserved.record, ReservationV2)
+        reservation = reserved.record
+        self.assertEqual(self.store.expired_reservations(observed_at=200), ())
+        self.assertEqual(
+            self.store.expired_reservations(observed_at=201),
+            (reservation,),
+        )
         self.commit()
         with self.assertRaises(InvalidTransition):
             self.store.expire(
@@ -320,9 +337,11 @@ class ReplayStoreV2Tests(unittest.TestCase):
         with self.assertRaises(InvalidTransition):
             self.store.abort_reservation(
                 self.identity,
+                fencing_generation=reservation.fencing_generation,
                 attempt_id=self.attempt,
                 request_digest=self.request,
-                evidence=self.abort_evidence(),
+                observed_at=201,
+                evidence=self.abort_evidence(reservation),
             )
 
     def test_early_termination_keeps_ticket_consumed(self) -> None:
@@ -346,29 +365,102 @@ class ReplayStoreV2Tests(unittest.TestCase):
             )
 
     def test_abort_requires_exact_uncommitted_reservation_and_evidence(self) -> None:
-        self.reserve()
+        reserved = self.reserve()
+        self.assertIsInstance(reserved.record, ReservationV2)
+        reservation = reserved.record
         with self.assertRaises(TypeError):
             self.store.abort_reservation(
                 self.identity,
+                fencing_generation=reservation.fencing_generation,
                 attempt_id=self.attempt,
                 request_digest=self.request,
+                observed_at=201,
                 evidence=object(),  # type: ignore[arg-type]
+            )
+        with self.assertRaisesRegex(InvalidTransition, "has not expired"):
+            self.store.abort_reservation(
+                self.identity,
+                fencing_generation=reservation.fencing_generation,
+                attempt_id=self.attempt,
+                request_digest=self.request,
+                observed_at=200,
+                evidence=self.abort_evidence(reservation, 200),
+            )
+        valid_evidence = self.abort_evidence(reservation)
+        for field, value in (
+            ("no_grant_digest", fixed(80)),
+            ("no_publication_digest", fixed(81)),
+            ("fencing_digest", fixed(82)),
+        ):
+            with self.subTest(evidence_field=field):
+                with self.assertRaisesRegex(
+                    InvalidTransition,
+                    "evidence mismatch",
+                ):
+                    self.store.abort_reservation(
+                        self.identity,
+                        fencing_generation=reservation.fencing_generation,
+                        attempt_id=self.attempt,
+                        request_digest=self.request,
+                        observed_at=201,
+                        evidence=replace(valid_evidence, **{field: value}),
+                    )
+        with self.assertRaises(ReservationNotFound):
+            self.store.abort_reservation(
+                self.identity,
+                fencing_generation=reservation.fencing_generation + 1,
+                attempt_id=self.attempt,
+                request_digest=self.request,
+                observed_at=201,
+                evidence=valid_evidence,
             )
         with self.assertRaises(ReservationNotFound):
             self.store.abort_reservation(
                 self.identity,
+                fencing_generation=reservation.fencing_generation,
                 attempt_id=fixed(60),
                 request_digest=self.request,
-                evidence=self.abort_evidence(),
+                observed_at=201,
+                evidence=self.abort_evidence(reservation),
             )
-        self.store.abort_reservation(
+        fenced = self.store.abort_reservation(
             self.identity,
+            fencing_generation=reservation.fencing_generation,
             attempt_id=self.attempt,
             request_digest=self.request,
-            evidence=self.abort_evidence(),
+            observed_at=201,
+            evidence=self.abort_evidence(reservation),
         )
+        self.assertIsInstance(fenced, FencedReservationV2)
+        self.assertEqual(fenced.fencing_generation, 2)
         self.assertIsNone(self.store.lookup(self.identity))
-        self.assertEqual(self.reserve().disposition, ReserveDispositionV2.NEW)
+        self.assertEqual(self.store.expired_reservations(observed_at=201), ())
+        self.assertEqual(self.store.lookup_reservation_fence(self.identity), fenced)
+        replacement = self.reserve()
+        self.assertEqual(replacement.disposition, ReserveDispositionV2.NEW)
+        self.assertIsInstance(replacement.record, ReservationV2)
+        self.assertEqual(replacement.record.fencing_generation, 3)
+        with self.assertRaises(ReservationNotFound):
+            self.commit()
+        grant = self.store.commit_grant(
+            self.identity,
+            fencing_generation=replacement.record.fencing_generation,
+            attempt_id=self.attempt,
+            request_digest=self.request,
+            transcript_digest=fixed(8),
+            session_id=fixed(9),
+            response_digest=fixed(10),
+            sealed_response=b"exact-access-accept-v2",
+            sealed_session_state=b"sealed-kem-and-session-state",
+            serving_context_digest=fixed(6),
+            fgs_id=fixed(11),
+            revocation_generation=7,
+            consumed_at=150,
+            activation_deadline=250,
+            session_expiry=500,
+            retention_deadline=900,
+        )
+        self.assertIs(grant.state, GrantStateV2.CONSUMED_PENDING_CONFIRM)
 
     def test_serial_and_digest_cross_bindings_fail_closed(self) -> None:
         self.reserve()
@@ -401,6 +493,7 @@ class ReplayStoreV2Tests(unittest.TestCase):
         with self.assertRaises(IdentityConflict):
             self.store.commit_grant(
                 other_identity,
+                fencing_generation=1,
                 attempt_id=fixed(13),
                 request_digest=fixed(14),
                 transcript_digest=fixed(16),
@@ -493,6 +586,7 @@ class ReplayStoreV2Tests(unittest.TestCase):
             try:
                 return self.store.commit_grant(
                     self.identity,
+                    fencing_generation=1,
                     attempt_id=self.attempt,
                     request_digest=self.request,
                     transcript_digest=fixed(worker + 20),

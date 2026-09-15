@@ -233,6 +233,7 @@ class GrantReplayStoreV2(Protocol):
         self,
         identity: TicketUseIdentity,
         *,
+        fencing_generation: int,
         attempt_id: bytes,
         request_digest: bytes,
         transcript_digest: bytes,
@@ -258,6 +259,7 @@ class GrantCommitRequestV2:
     activation_revocation_query: "ActivationRevocationQueryV2"
     source_access_revocation_query: AccessRevocationQueryV2
     suite_id: int
+    fencing_generation: int
 
     def validate(self) -> None:
         from .activation import ActivationRevocationQueryV2
@@ -280,6 +282,12 @@ class GrantCommitRequestV2:
             raise TypeError("grant commit suite ID must be an integer")
         if not 0 <= self.suite_id < (1 << 16):
             raise ValueError("grant commit suite ID does not fit uint16")
+        canonical_fencing_generation = _u64(
+            self.fencing_generation,
+            "grant commit fencing generation",
+        )
+        if canonical_fencing_generation == 0:
+            raise ValueError("grant commit fencing generation must be positive")
         bindings = (
             (query.suite_id, self.suite_id),
             (query.ctx, self.record.identity.ctx),
@@ -1036,6 +1044,7 @@ class FGSGrantProcessorV2:
                 ),
                 validated.revocation_query,
                 validated.request.suite_id,
+                reservation.record.fencing_generation,
             )
             commit_request.validate()
         except Exception as error:
@@ -1045,6 +1054,7 @@ class FGSGrantProcessorV2:
             if self._atomic_activation_query_store is None:
                 record = self._replay_store.commit_grant(
                     candidate.identity,
+                    fencing_generation=commit_request.fencing_generation,
                     attempt_id=candidate.attempt_id,
                     request_digest=candidate.request_digest,
                     transcript_digest=candidate.transcript_digest,
@@ -1097,6 +1107,7 @@ def fgs_grant_processor_manifest() -> dict[str, object]:
             "key_schedule_fgs_authentication_server_finished",
             "pre_commit_revocation_recheck",
             "response_and_session_state_protection",
+            "bind_reservation_fencing_generation",
             "commit_grant_or_atomic_grant_query_registration",
             "existing_grant_query_registration_validation_when_composed",
             "return_response_after_commit",
@@ -1111,6 +1122,7 @@ def fgs_grant_processor_manifest() -> dict[str, object]:
             "atomic_query_store_identity_enforced": True,
             "source_access_revocation_query_bound": True,
             "existing_grant_query_validation_available": True,
+            "reservation_fencing_generation_bound_to_commit": True,
             "session_activation_implemented": False,
             "atomic_revocation_and_commit_implemented": False,
             "durable_or_distributed_store_implemented": False,

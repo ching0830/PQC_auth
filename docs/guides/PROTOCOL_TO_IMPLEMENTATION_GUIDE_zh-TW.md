@@ -284,9 +284,11 @@ Exact V2 bytes與acceptance events見
 - `src/pq_sat_auth/v2/backends.py`：NIZK／KEM／FGS authentication／key schedule的
   abstract interfaces及production fail-closed guard；
 - `src/pq_sat_auth/v2/replay.py`：process-local `RESERVED ->
-  CONSUMED_PENDING_CONFIRM -> CONSUMED_ACTIVE／EXPIRED` reference model；
+  CONSUMED_PENDING_CONFIRM -> CONSUMED_ACTIVE／EXPIRED` reference model，以及expired
+  reservation evidence、internal fence與stale-worker rejection；
 - `src/pq_sat_auth/v2/storage/sqlite_replay.py`：相同FGS state contract的單機SQLite
-  durable reference，保存exact sealed M2／session state並提供跨程序serialization；
+  durable reference，保存exact sealed M2／session state、protected recovery tombstone與
+  單調fencing generation，並提供bounded expired scan及跨程序serialization；
 - `src/pq_sat_auth/v2/application.py`：第一個受保護UE→FGS record的canonical
   bytes／AAD／sequence-zero identity、UE outbox coordinator與FGS一次性delivery
   capability；
@@ -314,6 +316,9 @@ Implemented／Tested。UE wallet／first-record outbox與FGS replay／delivery�
 已有單機SQLite reference；scoped successor已把grant-query registration、authenticated
 command ingestion、四種scope fanout、exact per-query fence、activation與inbox放進同一
 database ordering，idempotent dispatch composition以test-only application ledger驗證。
+Expired reservation另可在canonical evidence與fence rotation後安全重新進入public
+`UNSEEN` view，舊worker不能跨generation commit；background scheduler與schema migration
+仍未完成。
 Concrete suite、真實proof／AKE、
 獨立production revocation key／PQ verifier、authority rotation、production record／plaintext
 protection、distributed FGS store及production external application `apply_once`仍未完成。

@@ -23,11 +23,14 @@ from pq_sat_auth.v2.activation import FGSActivationProcessorV2
 from pq_sat_auth.v2.grant import GrantDispositionV2
 from pq_sat_auth.v2.replay import (
     ActivateDispositionV2,
+    FencedReservationV2,
     GrantRecordV2,
     GrantStateV2,
     ReservationAbortEvidenceV2,
     ReservationV2,
     ReserveDispositionV2,
+    derive_reservation_abort_evidence_v2,
+    reservation_abort_evidence_digest_v2,
 )
 from pq_sat_auth.v2.storage.sqlite_replay import (
     APPLICATION_ID,
@@ -112,6 +115,7 @@ def _reserve_arguments(worker: int = 0) -> dict[str, object]:
 
 def _commit_arguments(worker: int = 0) -> dict[str, object]:
     return {
+        "fencing_generation": 1,
         "attempt_id": fixed(4),
         "request_digest": fixed(5),
         "transcript_digest": fixed(20 + worker),
@@ -208,11 +212,13 @@ class SQLiteReplayFixture(unittest.TestCase):
         return self.store.commit_grant(self.identity, **_commit_arguments())
 
     @staticmethod
-    def abort_evidence() -> ReservationAbortEvidenceV2:
-        return ReservationAbortEvidenceV2(
-            no_grant_digest=fixed(90),
-            no_publication_digest=fixed(91),
-            fencing_digest=fixed(92),
+    def abort_evidence(
+        reservation: ReservationV2,
+        observed_at: int = 201,
+    ) -> ReservationAbortEvidenceV2:
+        return derive_reservation_abort_evidence_v2(
+            reservation,
+            observed_at,
         )
 
 
@@ -224,11 +230,28 @@ class SQLiteReplayCodecTests(SQLiteReplayFixture):
         )
 
     def test_reservation_and_each_grant_state_round_trip_canonically(self) -> None:
-        reservation = ReservationV2(self.identity, **_reserve_arguments())
+        reservation = ReservationV2(
+            self.identity,
+            **_reserve_arguments(),
+            fencing_generation=1,
+        )
+        abort_evidence = derive_reservation_abort_evidence_v2(reservation, 201)
+        fenced = FencedReservationV2(
+            **{
+                **reservation.__dict__,
+                "fencing_generation": 2,
+            },
+            fenced_at=201,
+            abort_evidence_digest=reservation_abort_evidence_digest_v2(
+                abort_evidence
+            ),
+        )
+        grant_fields = _commit_arguments()
+        grant_fields.pop("fencing_generation")
         pending = GrantRecordV2(
             state=GrantStateV2.CONSUMED_PENDING_CONFIRM,
             identity=self.identity,
-            **_commit_arguments(),
+            **grant_fields,
         )
         active = GrantRecordV2(
             **{
@@ -246,7 +269,7 @@ class SQLiteReplayCodecTests(SQLiteReplayFixture):
                 "expiry_reason": "測試終止",
             }
         )
-        for record in (reservation, pending, active, expired):
+        for record in (reservation, fenced, pending, active, expired):
             with self.subTest(record=type(record).__name__, state=getattr(record, "state", None)):
                 encoded = encode_replay_record(record)
                 self.assertEqual(decode_replay_record(encoded), record)
@@ -258,7 +281,11 @@ class SQLiteReplayCodecTests(SQLiteReplayFixture):
 
     def test_decoder_rejects_unknown_noncanonical_and_trailing_data(self) -> None:
         encoded = encode_replay_record(
-            ReservationV2(self.identity, **_reserve_arguments())
+            ReservationV2(
+                self.identity,
+                **_reserve_arguments(),
+                fencing_generation=1,
+            )
         )
         parsed = json.loads(encoded)
         cases = []
@@ -325,32 +352,64 @@ class SQLiteReplayLifecycleTests(SQLiteReplayFixture):
         self.assertEqual(len(restarted), 1)
 
     def test_abort_only_releases_exact_reservation(self) -> None:
-        self.reserve()
+        result = self.reserve()
+        self.assertIsInstance(result.record, ReservationV2)
+        reservation = result.record
+        self.assertEqual(
+            self.store.expired_reservations(observed_at=200),
+            (),
+        )
+        self.assertEqual(
+            _sqlite_store(self.path).expired_reservations(observed_at=201),
+            (reservation,),
+        )
         with self.assertRaises(ReservationNotFound):
             self.store.abort_reservation(
                 self.identity,
+                fencing_generation=reservation.fencing_generation,
                 attempt_id=fixed(40),
                 request_digest=fixed(5),
-                evidence=self.abort_evidence(),
+                observed_at=201,
+                evidence=self.abort_evidence(reservation),
             )
-        self.store.abort_reservation(
+        fenced = self.store.abort_reservation(
             self.identity,
+            fencing_generation=reservation.fencing_generation,
             attempt_id=fixed(4),
             request_digest=fixed(5),
-            evidence=self.abort_evidence(),
+            observed_at=201,
+            evidence=self.abort_evidence(reservation),
+        )
+        self.assertIsInstance(fenced, FencedReservationV2)
+        self.assertEqual(
+            fenced.fencing_generation,
+            reservation.fencing_generation + 1,
         )
         self.assertIsNone(_sqlite_store(self.path).lookup(self.identity))
-        self.assertIs(
-            self.reserve().disposition,
-            ReserveDispositionV2.NEW,
+        self.assertEqual(
+            self.store.expired_reservations(observed_at=201),
+            (),
         )
-        self.commit()
+        restarted = _sqlite_store(self.path)
+        self.assertEqual(restarted.lookup_reservation_fence(self.identity), fenced)
+        replacement = self.reserve()
+        self.assertIs(replacement.disposition, ReserveDispositionV2.NEW)
+        self.assertIsInstance(replacement.record, ReservationV2)
+        self.assertEqual(
+            replacement.record.fencing_generation,
+            fenced.fencing_generation + 1,
+        )
+        arguments = _commit_arguments()
+        arguments["fencing_generation"] = replacement.record.fencing_generation
+        self.store.commit_grant(self.identity, **arguments)
         with self.assertRaises(InvalidTransition):
             self.store.abort_reservation(
                 self.identity,
+                fencing_generation=replacement.record.fencing_generation,
                 attempt_id=fixed(4),
                 request_digest=fixed(5),
-                evidence=self.abort_evidence(),
+                observed_at=201,
+                evidence=self.abort_evidence(replacement.record),
             )
 
     def test_identity_session_and_transition_conflicts_fail_closed(self) -> None:
@@ -399,10 +458,11 @@ class SQLiteReplayLifecycleTests(SQLiteReplayFixture):
     def test_database_identity_protection_and_row_mutations_are_checked(self) -> None:
         self.reserve()
         self.assertEqual(APPLICATION_ID, 0x50515352)
-        self.assertEqual(SCHEMA_VERSION, 1)
+        self.assertEqual(SCHEMA_VERSION, 2)
         self.assertEqual(self.path.stat().st_mode & 0o777, 0o600)
         mutations = (
             ("state", 2),
+            ("lease_deadline", 199),
             ("ctx", fixed(33)),
             ("protected_record", b"corrupt"),
             ("protection_id", "OTHER/v1"),
@@ -432,7 +492,7 @@ class SQLiteReplayLifecycleTests(SQLiteReplayFixture):
         )
         connection = sqlite3.connect(wrong_schema)
         try:
-            connection.execute("PRAGMA user_version = 99")
+            connection.execute("PRAGMA user_version = 1")
         finally:
             connection.close()
         with self.assertRaises(FGSReplayIntegrityError):
@@ -479,6 +539,62 @@ class SQLiteReplaySemanticParityTests(
 
 
 class SQLiteReplayConcurrencyTests(SQLiteReplayFixture):
+    def test_expired_reconciliation_and_stale_commit_have_one_order(self) -> None:
+        reserved = self.reserve()
+        self.assertIsInstance(reserved.record, ReservationV2)
+        reservation = reserved.record
+        evidence = derive_reservation_abort_evidence_v2(reservation, 201)
+        barrier = threading.Barrier(2)
+
+        def commit():
+            barrier.wait()
+            try:
+                return ("commit", self.commit())
+            except Exception as error:
+                return ("commit_error", type(error).__name__)
+
+        def reconcile():
+            barrier.wait()
+            try:
+                return (
+                    "fence",
+                    self.store.abort_reservation(
+                        self.identity,
+                        fencing_generation=reservation.fencing_generation,
+                        attempt_id=reservation.attempt_id,
+                        request_digest=reservation.request_digest,
+                        observed_at=201,
+                        evidence=evidence,
+                    ),
+                )
+            except Exception as error:
+                return ("fence_error", type(error).__name__)
+
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            commit_future = executor.submit(commit)
+            reconcile_future = executor.submit(reconcile)
+            results = (
+                commit_future.result(timeout=10),
+                reconcile_future.result(timeout=10),
+            )
+        kinds = {result[0] for result in results}
+        self.assertIn(
+            kinds,
+            (
+                {"commit", "fence_error"},
+                {"commit_error", "fence"},
+            ),
+        )
+        if "commit" in kinds:
+            self.assertIsInstance(self.store.lookup(self.identity), GrantRecordV2)
+            self.assertIsNone(self.store.lookup_reservation_fence(self.identity))
+        else:
+            self.assertIsNone(self.store.lookup(self.identity))
+            self.assertIsInstance(
+                self.store.lookup_reservation_fence(self.identity),
+                FencedReservationV2,
+            )
+
     def _run_reserve_processes(self, same_attempt: bool):
         context = multiprocessing.get_context("spawn")
         start = context.Event()

@@ -1,7 +1,7 @@
 # One-Time Ticket 狀態與 1-RTT Access 邊界規格 v0.2
 
-> 狀態：Defined；FGS replay／delivery／protected application inbox、unified activation-inbox transaction、atomic grant-query registration、authenticated scoped-revocation ingestion／fanout與UE single-host SQLite references已 Implemented／Tested；尚未 distributed／Production-closed
-> 日期：2026-09-15
+> 狀態：Defined；FGS replay／delivery／protected application inbox、unified activation-inbox transaction、atomic grant-query registration、bounded expired-reservation reconciliation、authenticated scoped-revocation ingestion／fanout與UE single-host SQLite references已 Implemented／Tested；尚未 distributed／Production-closed
+> 日期：2026-09-16
 > Access companion：`docs/specs/SATELLITE_ACCESS_v0_2_zh-TW.md`
 > Historical predecessor：`docs/specs/ONE_TIME_TICKET_STATE_v0_1_zh-TW.md`
 
@@ -49,6 +49,10 @@ RESERVED
     唯一已完整驗證的 M1 正在建立可持久化 response；尚未發布 M2，尚可在嚴格
     recovery proof 後 abort。
 
+FENCED_RESERVATION_INTERNAL
+    SQLite／reference store內部recovery tombstone；對protocol caller呈現為`UNSEEN`，但保留
+    單調`fencing_generation`，使舊worker不能對後續reservation執行ABA commit。
+
 CONSUMED_PENDING_CONFIRM
     唯一 M2／session identity 已 durable commit，M2 可以送出／重送；ticket 永久
     consumed，但 session 尚未取得 client final-key confirmation。
@@ -74,7 +78,8 @@ RESERVED
   --CommitGrant(session + exact M2)--> CONSUMED_PENDING_CONFIRM
 
 RESERVED
-  --Abort(proved no response/session publication)--> UNSEEN
+  --ReconcileExpired(exact evidence + fence rotation)-->
+      FENCED_RESERVATION_INTERNAL --public view--> UNSEEN
 
 CONSUMED_PENDING_CONFIRM
   --Activate(valid client confirmation)--> CONSUMED_ACTIVE
@@ -114,7 +119,8 @@ Reserve(
     serving_context_digest,
     reserved_at,
     lease_deadline,
-    revocation_generation
+    revocation_generation,
+    fencing_generation
 )
 ```
 
@@ -129,6 +135,7 @@ boundary 內 commit：
 ```text
 CommitGrant(
     identity,
+    fencing_generation,
     attempt_id,
     request_digest,
     transcript_digest,
@@ -265,6 +272,20 @@ durable／idempotent wallet transition。
 只在四項皆成立時才能回到 `UNSEEN`。一旦進入任何 consumed state，即使未 activate
 也不得 rollback；pending timeout只可進 `CONSUMED_EXPIRED`。
 
+Bounded reference successor以單調`fencing_generation`具體化第4項。第一次reservation使用
+generation 1；expired reconciliation在同一write transaction驗證exact reservation、
+`observed_at > lease_deadline`與canonical evidence，接著把row改為generation 2的protected
+`FENCED_RESERVATION_INTERNAL`。下一次reservation使用generation 3；所有grant commit均必須
+攜帶取得reservation時的generation，因此generation 1的stale worker不能對generation 3
+執行commit。後續reconcile／reserve依序繼續單調增加，耗盡時fail closed。
+
+`no_grant_digest`、`no_publication_digest`與`fencing_digest`是綁定exact reservation及
+observation time的canonical audit identity，不是第三方簽署的publication proof。第2項只在
+所有M2 release皆通過「commit成功後才return」的`FGSGrantProcessorV2`邊界時成立；scoped
+store另拒絕已具有activation query的reservation recovery。Store提供bounded expired scan，
+但`observed_at`仍由caller提供，production recovery clock尚未實例化。Background scheduler、
+v1→v2 schema migration、distributed worker fencing及實體斷電驗證仍未實作。
+
 ## 11. Retention and backhaul
 
 Consumption record 至少保存至：
@@ -301,6 +322,9 @@ single-writer partitions。Store unavailable／timeout／partition時，新的 f
 16. Store partition／timeout fail closed。
 17. Retention cleanup不會讓仍可能被任何版本 verifier接受的 ticket再用。
 18. Exact M1 replay不能使 attacker取得 UE session key。
+19. Expired reservation reconciliation與grant commit只有一個linearized winner。
+20. Fence後的stale worker不能對新reservation執行ABA commit。
+21. Internal fence可跨restart驗證，但不會被public lookup誤當成consumed grant。
 
 ## 13. Claim boundary
 

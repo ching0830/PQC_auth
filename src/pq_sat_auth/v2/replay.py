@@ -7,6 +7,9 @@ replay backend.
 
 from __future__ import annotations
 
+import hashlib
+import hmac
+import struct
 import threading
 from dataclasses import dataclass, replace
 from enum import Enum
@@ -24,6 +27,19 @@ DIGEST_BYTES = 32
 SESSION_ID_BYTES = 32
 MAX_SEALED_RESPONSE_BYTES = 1_048_576
 MAX_SEALED_SESSION_STATE_BYTES = 1_048_576
+U64_MAX = (1 << 64) - 1
+RESERVATION_ABORT_NO_GRANT_LABEL = (
+    b"PQ-SAT/RESERVATION-ABORT/NO-GRANT/v0.2\x00"
+)
+RESERVATION_ABORT_NO_PUBLICATION_LABEL = (
+    b"PQ-SAT/RESERVATION-ABORT/NO-PUBLICATION-BEFORE-COMMIT/v0.2\x00"
+)
+RESERVATION_ABORT_FENCING_LABEL = (
+    b"PQ-SAT/RESERVATION-ABORT/FENCING/v0.2\x00"
+)
+RESERVATION_ABORT_EVIDENCE_LABEL = (
+    b"PQ-SAT/RESERVATION-ABORT/EVIDENCE/v0.2\x00"
+)
 
 
 def _fixed_bytes(value: bytes, size: int, name: str) -> bytes:
@@ -52,6 +68,13 @@ def _timestamp(value: int, name: str) -> int:
     return value
 
 
+def _uint64(value: int, name: str) -> int:
+    canonical = _timestamp(value, name)
+    if canonical > U64_MAX:
+        raise ValueError(f"{name} does not fit uint64")
+    return canonical
+
+
 class ReserveDispositionV2(Enum):
     NEW = "new"
     EXISTING_RESERVATION = "existing_reservation"
@@ -78,6 +101,7 @@ class ReservationV2:
     reserved_at: int
     lease_deadline: int
     revocation_generation: int
+    fencing_generation: int
 
     def __post_init__(self) -> None:
         if not isinstance(self.identity, TicketUseIdentity):
@@ -92,8 +116,30 @@ class ReservationV2:
         _timestamp(self.reserved_at, "reserved_at")
         _timestamp(self.lease_deadline, "lease_deadline")
         _timestamp(self.revocation_generation, "revocation_generation")
+        _uint64(self.fencing_generation, "fencing_generation")
+        if self.fencing_generation == 0:
+            raise ValueError("fencing_generation must be positive")
         if self.lease_deadline <= self.reserved_at:
             raise ValueError("lease_deadline must follow reserved_at")
+
+
+@dataclass(frozen=True)
+class FencedReservationV2(ReservationV2):
+    """Internal tombstone that prevents stale-worker ABA commits."""
+
+    fenced_at: int
+    abort_evidence_digest: bytes
+
+    def __post_init__(self) -> None:
+        super().__post_init__()
+        _timestamp(self.fenced_at, "fenced_at")
+        if self.fenced_at <= self.lease_deadline:
+            raise ValueError("fenced_at must follow lease_deadline")
+        _fixed_bytes(
+            self.abort_evidence_digest,
+            DIGEST_BYTES,
+            "abort_evidence_digest",
+        )
 
 
 @dataclass(frozen=True)
@@ -199,7 +245,7 @@ class GrantRecordV2:
 
 @dataclass(frozen=True)
 class ReservationAbortEvidenceV2:
-    """Opaque reference evidence required before RESERVED can be released."""
+    """Canonical bounded evidence for an expired reservation observation."""
 
     no_grant_digest: bytes
     no_publication_digest: bytes
@@ -215,7 +261,92 @@ class ReservationAbortEvidenceV2:
         _fixed_bytes(self.fencing_digest, DIGEST_BYTES, "fencing_digest")
 
 
-UseRecordV2 = ReservationV2 | GrantRecordV2
+def _reservation_abort_payload(
+    reservation: ReservationV2,
+    observed_at: int,
+) -> bytes:
+    if not isinstance(reservation, ReservationV2) or isinstance(
+        reservation,
+        FencedReservationV2,
+    ):
+        raise TypeError("reservation must be an active ReservationV2")
+    canonical_time = _uint64(observed_at, "abort observed_at")
+    return b"".join(
+        (
+            reservation.identity.use_key,
+            reservation.identity.ctx,
+            reservation.identity.serial,
+            reservation.identity.ticket_digest,
+            reservation.attempt_id,
+            reservation.request_digest,
+            reservation.serving_context_digest,
+            struct.pack(
+                ">QQQQ",
+                _uint64(reservation.reserved_at, "reserved_at"),
+                _uint64(reservation.lease_deadline, "lease_deadline"),
+                _uint64(
+                    reservation.revocation_generation,
+                    "revocation_generation",
+                ),
+                reservation.fencing_generation,
+            ),
+            struct.pack(">Q", canonical_time),
+        )
+    )
+
+
+def derive_reservation_abort_evidence_v2(
+    reservation: ReservationV2,
+    observed_at: int,
+) -> ReservationAbortEvidenceV2:
+    """Bind recovery evidence to one exact expired reservation observation."""
+
+    payload = _reservation_abort_payload(reservation, observed_at)
+    return ReservationAbortEvidenceV2(
+        hashlib.shake_256(
+            RESERVATION_ABORT_NO_GRANT_LABEL + payload
+        ).digest(DIGEST_BYTES),
+        hashlib.shake_256(
+            RESERVATION_ABORT_NO_PUBLICATION_LABEL + payload
+        ).digest(DIGEST_BYTES),
+        hashlib.shake_256(
+            RESERVATION_ABORT_FENCING_LABEL + payload
+        ).digest(DIGEST_BYTES),
+    )
+
+
+def reservation_abort_evidence_digest_v2(
+    evidence: ReservationAbortEvidenceV2,
+) -> bytes:
+    if not isinstance(evidence, ReservationAbortEvidenceV2):
+        raise TypeError("evidence must be ReservationAbortEvidenceV2")
+    return hashlib.shake_256(
+        RESERVATION_ABORT_EVIDENCE_LABEL
+        + evidence.no_grant_digest
+        + evidence.no_publication_digest
+        + evidence.fencing_digest
+    ).digest(DIGEST_BYTES)
+
+
+def _verify_reservation_abort_evidence(
+    reservation: ReservationV2,
+    observed_at: int,
+    evidence: ReservationAbortEvidenceV2,
+) -> None:
+    expected = derive_reservation_abort_evidence_v2(reservation, observed_at)
+    comparisons = (
+        (evidence.no_grant_digest, expected.no_grant_digest),
+        (evidence.no_publication_digest, expected.no_publication_digest),
+        (evidence.fencing_digest, expected.fencing_digest),
+    )
+    if not all(
+        hmac.compare_digest(actual, wanted)
+        for actual, wanted in comparisons
+    ):
+        raise InvalidTransition("reservation abort evidence mismatch")
+
+
+UseRecordV2 = ReservationV2 | FencedReservationV2 | GrantRecordV2
 
 
 @dataclass(frozen=True)
@@ -308,12 +439,24 @@ class InMemoryLinearizableReplayStoreV2:
             reserved_at=reserved_at,
             lease_deadline=lease_deadline,
             revocation_generation=revocation_generation,
+            fencing_generation=1,
         )
         with self._lock:
             use_key = self._check_identity_bindings(identity)
             existing = self._records.get(use_key)
             if existing is None:
                 self._bind_identity(identity, use_key)
+                self._records[use_key] = candidate
+                return ReserveResultV2(ReserveDispositionV2.NEW, candidate)
+            if isinstance(existing, FencedReservationV2):
+                if existing.fencing_generation >= U64_MAX:
+                    raise InvalidTransition(
+                        "reservation fencing generation exhausted"
+                    )
+                candidate = replace(
+                    candidate,
+                    fencing_generation=existing.fencing_generation + 1,
+                )
                 self._records[use_key] = candidate
                 return ReserveResultV2(ReserveDispositionV2.NEW, candidate)
             if (
@@ -332,6 +475,7 @@ class InMemoryLinearizableReplayStoreV2:
         self,
         identity: TicketUseIdentity,
         *,
+        fencing_generation: int,
         attempt_id: bytes,
         request_digest: bytes,
         transcript_digest: bytes,
@@ -367,6 +511,10 @@ class InMemoryLinearizableReplayStoreV2:
             session_expiry=session_expiry,
             retention_deadline=retention_deadline,
         )
+        canonical_fencing_generation = _uint64(
+            fencing_generation,
+            "fencing_generation",
+        )
         with self._lock:
             use_key = self._check_identity_bindings(identity)
             existing = self._records.get(use_key)
@@ -376,12 +524,15 @@ class InMemoryLinearizableReplayStoreV2:
                 if _commit_identity(existing) == _commit_identity(candidate):
                     return existing
                 raise InvalidTransition("consumed ticket cannot change grant")
+            if isinstance(existing, FencedReservationV2):
+                raise ReservationNotFound("reservation worker has been fenced")
             session_binding = self._session_index.get(candidate.session_id)
             if session_binding is not None and session_binding != use_key:
                 raise IdentityConflict("session ID belongs to another ticket")
             if (
                 existing.attempt_id != candidate.attempt_id
                 or existing.request_digest != candidate.request_digest
+                or existing.fencing_generation != canonical_fencing_generation
                 or existing.serving_context_digest
                 != candidate.serving_context_digest
                 or existing.revocation_generation
@@ -571,15 +722,16 @@ class InMemoryLinearizableReplayStoreV2:
         self,
         identity: TicketUseIdentity,
         *,
+        fencing_generation: int,
         attempt_id: bytes,
         request_digest: bytes,
+        observed_at: int,
         evidence: ReservationAbortEvidenceV2,
-    ) -> None:
-        """Release RESERVED only with caller-supplied bounded recovery evidence.
+    ) -> FencedReservationV2:
+        """Fence and release one exact expired reservation.
 
-        The reference model validates evidence shape, not its real-world truth.
-        A production backend must prove grant absence, publication absence, and
-        worker fencing in its own transactional failure model.
+        The evidence binds one store observation; publication absence additionally
+        relies on all M2 release passing through the commit-before-return processor.
         """
 
         canonical_attempt = _fixed_bytes(attempt_id, DIGEST_BYTES, "attempt_id")
@@ -588,6 +740,11 @@ class InMemoryLinearizableReplayStoreV2:
             DIGEST_BYTES,
             "request_digest",
         )
+        canonical_fencing_generation = _uint64(
+            fencing_generation,
+            "fencing_generation",
+        )
+        canonical_time = _uint64(observed_at, "abort observed_at")
         if not isinstance(evidence, ReservationAbortEvidenceV2):
             raise TypeError("evidence must be ReservationAbortEvidenceV2")
         with self._lock:
@@ -597,21 +754,81 @@ class InMemoryLinearizableReplayStoreV2:
                 raise ReservationNotFound("cannot abort an unreserved ticket")
             if isinstance(existing, GrantRecordV2):
                 raise InvalidTransition("consumed ticket cannot be released")
+            if isinstance(existing, FencedReservationV2):
+                raise ReservationNotFound("reservation is already fenced")
             if (
                 existing.attempt_id != canonical_attempt
                 or existing.request_digest != canonical_request
+                or existing.fencing_generation != canonical_fencing_generation
             ):
                 raise ReservationNotFound("reservation belongs to another request")
-            del self._records[use_key]
-            self._digest_index.pop((identity.ctx, identity.ticket_digest), None)
-            self._serial_index.pop((identity.ctx, identity.serial), None)
+            if canonical_time <= existing.lease_deadline:
+                raise InvalidTransition("reservation lease has not expired")
+            _verify_reservation_abort_evidence(
+                existing,
+                canonical_time,
+                evidence,
+            )
+            if existing.fencing_generation >= U64_MAX:
+                raise InvalidTransition("reservation fencing generation exhausted")
+            fenced = FencedReservationV2(
+                identity=existing.identity,
+                attempt_id=existing.attempt_id,
+                request_digest=existing.request_digest,
+                serving_context_digest=existing.serving_context_digest,
+                reserved_at=existing.reserved_at,
+                lease_deadline=existing.lease_deadline,
+                revocation_generation=existing.revocation_generation,
+                fencing_generation=existing.fencing_generation + 1,
+                fenced_at=canonical_time,
+                abort_evidence_digest=reservation_abort_evidence_digest_v2(
+                    evidence
+                ),
+            )
+            self._records[use_key] = fenced
+            return fenced
 
     def lookup(self, identity: TicketUseIdentity) -> UseRecordV2 | None:
         """Return the immutable record for an exact identity, if present."""
 
         with self._lock:
             use_key = self._check_identity_bindings(identity)
-            return self._records.get(use_key)
+            record = self._records.get(use_key)
+            return None if isinstance(record, FencedReservationV2) else record
+
+    def lookup_reservation_fence(
+        self,
+        identity: TicketUseIdentity,
+    ) -> FencedReservationV2 | None:
+        """Return the internal recovery tombstone for audit/restart tests."""
+
+        with self._lock:
+            use_key = self._check_identity_bindings(identity)
+            record = self._records.get(use_key)
+            return record if isinstance(record, FencedReservationV2) else None
+
+    def expired_reservations(
+        self,
+        *,
+        observed_at: int,
+        limit: int = 1_000,
+    ) -> tuple[ReservationV2, ...]:
+        """List a bounded snapshot of expired active reservations."""
+
+        canonical_time = _uint64(observed_at, "scan observed_at")
+        if isinstance(limit, bool) or not isinstance(limit, int):
+            raise TypeError("reservation scan limit must be an integer")
+        if not 1 <= limit <= 10_000:
+            raise ValueError("reservation scan limit is outside bounds")
+        with self._lock:
+            candidates = tuple(
+                record
+                for _, record in sorted(self._records.items())
+                if isinstance(record, ReservationV2)
+                and not isinstance(record, FencedReservationV2)
+                and record.lease_deadline < canonical_time
+            )
+            return candidates[:limit]
 
     def lookup_session(self, session_id: bytes) -> GrantRecordV2 | None:
         """Return the immutable committed record for an exact session ID."""
@@ -634,4 +851,7 @@ class InMemoryLinearizableReplayStoreV2:
 
     def __len__(self) -> int:
         with self._lock:
-            return len(self._records)
+            return sum(
+                not isinstance(record, FencedReservationV2)
+                for record in self._records.values()
+            )

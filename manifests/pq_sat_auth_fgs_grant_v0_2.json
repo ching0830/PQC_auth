@@ -15,6 +15,7 @@
     "pure_check_output_integrated": true,
     "reserve_before_expensive_grant_construction": true,
     "response_returned_only_after_commit": true,
+    "reservation_fencing_generation_bound_to_commit": true,
     "same_attempt_retry_avoids_second_kem": true,
     "source_access_revocation_query_bound": true,
     "session_activation_implemented": false
@@ -29,6 +30,7 @@
     "key_schedule_fgs_authentication_server_finished",
     "pre_commit_revocation_recheck",
     "response_and_session_state_protection",
+    "bind_reservation_fencing_generation",
     "commit_grant_or_atomic_grant_query_registration",
     "existing_grant_query_registration_validation_when_composed",
     "return_response_after_commit"

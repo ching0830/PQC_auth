@@ -55,7 +55,7 @@ from .sqlite_replay import (
 
 
 APPLICATION_ID = 0x50515355
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 PRODUCTION_READY = False
 
 
@@ -583,6 +583,10 @@ def sqlite_unified_activation_inbox_manifest() -> dict[str, object]:
             "competing_first_record_rejected": True,
             "direct_activation_disabled": True,
             "pending_scan_for_restart_recovery": True,
+            "expired_reservation_reconciliation_available": True,
+            "bounded_expired_reservation_scan": True,
+            "persistent_monotonic_worker_fencing": True,
+            "schema_migration_from_v1_implemented": False,
             "application_apply_once_required": True,
             "production_record_protection_instantiated": False,
             "production_plaintext_protection_instantiated": False,

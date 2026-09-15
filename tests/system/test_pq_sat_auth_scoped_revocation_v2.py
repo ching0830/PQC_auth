@@ -28,7 +28,11 @@ from pq_sat_auth.v2.grant import (
     GrantCommitRequestV2,
     GrantDispositionV2,
 )
-from pq_sat_auth.v2.replay import GrantStateV2, ReservationV2
+from pq_sat_auth.v2.replay import (
+    GrantStateV2,
+    ReservationV2,
+    derive_reservation_abort_evidence_v2,
+)
 from pq_sat_auth.v2.storage.sqlite_scoped_revocation import (
     ACCESS_PROTOCOL_VERSION,
     APPLICATION_ID,
@@ -181,6 +185,7 @@ class ScopedRevocationFixture(FirstApplicationFixture):
                 query,
                 self.validated.revocation_query,
                 self.validated.request.suite_id,
+                1,
             )
         )
 
@@ -431,8 +436,11 @@ class ScopedGrantRegistrationTests(ScopedRevocationFixture):
             self.query,
             self.validated.revocation_query,
             self.validated.request.suite_id,
+            1,
         )
         request.validate()
+        with self.assertRaisesRegex(ValueError, "must be positive"):
+            replace(request, fencing_generation=0).validate()
         mutations = (
             {"suite_id": self.query.suite_id ^ 1},
             {
@@ -466,6 +474,7 @@ class ScopedGrantRegistrationTests(ScopedRevocationFixture):
                         replace(self.query, **changes),
                         self.validated.revocation_query,
                         self.validated.request.suite_id,
+                        1,
                     ).validate()
 
         mutated_source = replace(
@@ -478,6 +487,7 @@ class ScopedGrantRegistrationTests(ScopedRevocationFixture):
                 self.query,
                 mutated_source,
                 self.validated.request.suite_id,
+                1,
             ).validate()
 
     def test_session_and_ticket_cannot_bind_another_registered_query(
@@ -503,6 +513,41 @@ class ScopedGrantRegistrationTests(ScopedRevocationFixture):
             )
         with self.assertRaisesRegex(InvalidTransition, "atomic grant"):
             store.commit_grant()
+
+    def test_reservation_with_registered_query_cannot_be_reconciled(self) -> None:
+        path = Path(self.temporary.name) / "query-dependent-reservation.sqlite3"
+        store = self.open_scoped(path)
+        grant = self.grant_record
+        reserved = store.reserve(
+            grant.identity,
+            attempt_id=grant.attempt_id,
+            request_digest=grant.request_digest,
+            serving_context_digest=grant.serving_context_digest,
+            reserved_at=max(0, grant.consumed_at - 1),
+            lease_deadline=grant.consumed_at,
+            revocation_generation=grant.revocation_generation,
+        )
+        self.assertIsInstance(reserved.record, ReservationV2)
+        reservation = reserved.record
+        store.register_activation_query(
+            self.query,
+            base_generation=grant.revocation_generation,
+        )
+        observed_at = grant.consumed_at + 1
+        with self.assertRaisesRegex(InvalidTransition, "activation query"):
+            store.abort_reservation(
+                grant.identity,
+                fencing_generation=reservation.fencing_generation,
+                attempt_id=reservation.attempt_id,
+                request_digest=reservation.request_digest,
+                observed_at=observed_at,
+                evidence=derive_reservation_abort_evidence_v2(
+                    reservation,
+                    observed_at,
+                ),
+            )
+        self.assertEqual(store.lookup(grant.identity), reservation)
+        self.assertEqual(store.registered_query_count(), 1)
 
     def test_registration_failure_rolls_grant_back_to_reservation(self) -> None:
         path = Path(self.temporary.name) / "registration-failure.sqlite3"

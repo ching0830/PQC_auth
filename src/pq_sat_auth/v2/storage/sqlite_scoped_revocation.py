@@ -32,7 +32,7 @@ from ..activation import (
     ActivationRevocationSnapshotV2,
 )
 from ..grant import GrantCommitRequestV2
-from ..replay import GrantRecordV2
+from ..replay import GrantRecordV2, ReservationV2
 from .sqlite_authoritative import (
     ActivationRevocationFenceRecordV2,
     ActivationRevocationFenceUnavailable,
@@ -55,7 +55,7 @@ from .sqlite_unified import (
 
 
 APPLICATION_ID = 0x50515357
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 ACCESS_PROTOCOL_VERSION = 2
 PRODUCTION_READY = False
 SQLITE_INT_MAX = (1 << 63) - 1
@@ -850,7 +850,11 @@ class SQLiteFGSScopedRevocationStoreV2(
         connection = self._connect()
         try:
             connection.execute("BEGIN IMMEDIATE")
-            record = self._commit_grant_candidate(connection, candidate)
+            record = self._commit_grant_candidate(
+                connection,
+                candidate,
+                request.fencing_generation,
+            )
             snapshot = self._register_activation_query_in_transaction(
                 connection,
                 query,
@@ -892,6 +896,17 @@ class SQLiteFGSScopedRevocationStoreV2(
             raise
         finally:
             connection.close()
+
+    def _validate_reservation_abort_transaction(
+        self,
+        connection: sqlite3.Connection,
+        reservation: ReservationV2,
+    ) -> None:
+        for query in self._registered_queries(connection):
+            if query.ticket_use_key == reservation.identity.use_key:
+                raise InvalidTransition(
+                    "reservation with activation query cannot be released"
+                )
 
     def publish_activation_revocation(self, *_args: object, **_kwargs: object):
         raise InvalidTransition(
@@ -1166,6 +1181,11 @@ def sqlite_scoped_revocation_manifest() -> dict[str, object]:
             "matching_preexisting_revocation_rejects_grant_commit": True,
             "existing_grant_query_validation_before_retry_release": True,
             "direct_grant_commit_without_query_disabled": True,
+            "expired_reservation_reconciliation_available": True,
+            "bounded_expired_reservation_scan": True,
+            "persistent_monotonic_worker_fencing": True,
+            "reservation_query_dependency_guard": True,
+            "schema_migration_from_v1_implemented": False,
             "configuration_scope_implemented": True,
             "fgs_authentication_key_scope_implemented": True,
             "ticket_use_scope_implemented": True,

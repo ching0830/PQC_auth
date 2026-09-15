@@ -1,7 +1,7 @@
 # Satellite Access 與 PQ AKE 規格 v0.2
 
-> 狀態：Defined；bounded reference codecs／relation／processors、UE SQLite wallet、FGS single-host SQLite replay／delivery／protected application inbox、unified activation-inbox transaction、atomic grant-query registration、authenticated scoped-revocation ingestion及fanout已 Implemented／Tested；尚未 Instantiated／distributed／Proof-closed／Production-closed
-> 日期：2026-09-15
+> 狀態：Defined；bounded reference codecs／relation／processors、UE SQLite wallet、FGS single-host SQLite replay／delivery／protected application inbox、unified activation-inbox transaction、atomic grant-query registration、expired-reservation reconciliation、authenticated scoped-revocation ingestion及fanout已 Implemented／Tested；尚未 Instantiated／distributed／Proof-closed／Production-closed
+> 日期：2026-09-16
 > 所屬模組：M5 Satellite authentication、M6 Anti-replay／revocation／handover
 > State companion：`docs/specs/ONE_TIME_TICKET_STATE_v0_2_zh-TW.md`
 > Historical predecessor：`docs/specs/ONE_TIME_TICKET_STATE_v0_1_zh-TW.md`
@@ -954,3 +954,35 @@ cryptographic backends。完整evidence見
 `docs/artifacts/SATELLITE_ACCESS_v0_2_ATOMIC_GRANT_QUERY_REGISTRATION_zh-TW.md`；machine claims見
 `manifests/pq_sat_auth_fgs_grant_v0_2.json`及
 `manifests/pq_sat_auth_fgs_scoped_revocation_sqlite_v0_2.json`。
+
+### 13.15 FGS expired-reservation reconciliation checkpoint
+
+Grant或grant-query建構失敗時，fail-closed processor可能留下`RESERVED`。Lease expiry只能表示
+原worker不應再開始新工作，不能單獨證明舊worker不會稍後commit。本checkpoint因此在
+reservation與grant commit之間加入store-issued、單調`fencing_generation`：
+
+```text
+Reserve generation 1
+  -> lease expires
+  -> BEGIN IMMEDIATE
+       verify exact active reservation and canonical observation evidence
+       verify no scoped activation-query dependency
+       replace it with protected FENCED_RESERVATION_INTERNAL generation 2
+     COMMIT
+  -> public lookup reports UNSEEN
+  -> next Reserve receives generation 3
+  -> old generation-1 CommitGrant fails
+```
+
+`CommitGrant`與atomic `GrantCommitRequestV2`都必須攜帶當次reservation generation。Commit與
+reconciliation使用同一SQLite write order：commit先完成時reconciliation看到consumed grant並
+拒絕；reconciliation先完成時舊commit看到fenced row／generation mismatch並拒絕。Protected
+tombstone及metadata `lease_deadline`跨restart保留，bounded scan可列出已過期但尚未fence的
+reservation；fence不計入public live-record count。
+
+三個evidence digests只凍結exact reservation、lease、generation與observation time。它們不是
+外部publication log的密碼學證明；`no publication`仍依賴所有M2只經由commit-before-return
+processor發布，`observed_at`也仍由caller提供而非production clock backend。此reference也沒有
+background scheduler、v1 schema自動migration、distributed lease authority、rollback resistance
+或實體斷電證據。因此本checkpoint只把可信單機SQLite
+的stale-worker／ABA gap提升為Implemented／Tested，不構成Production-closed。

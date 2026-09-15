@@ -41,7 +41,7 @@ from .sqlite_unified import (
 
 
 APPLICATION_ID = 0x50515356
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 PRODUCTION_READY = False
 SQLITE_INT_MAX = (1 << 63) - 1
 FENCE_RECORD_MAGIC = b"PQ-SAT/ACTIVATION-REVOCATION-FENCE/v0.2\x00"
@@ -510,6 +510,10 @@ def sqlite_authoritative_activation_inbox_manifest() -> dict[str, object]:
             "single_database_connection": True,
             "sqlite_attach_used": False,
             "activation_and_inbox_same_transaction": True,
+            "expired_reservation_reconciliation_available": True,
+            "bounded_expired_reservation_scan": True,
+            "persistent_monotonic_worker_fencing": True,
+            "schema_migration_from_v1_implemented": False,
             "authenticated_production_writer_instantiated": False,
             "general_scope_revocation_fanout_implemented": False,
             "distributed_revocation_store": False,

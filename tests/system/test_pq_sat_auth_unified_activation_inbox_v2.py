@@ -125,6 +125,7 @@ class UnifiedActivationInboxTests(FirstApplicationFixture):
         )
         self.unified.commit_grant(
             grant.identity,
+            fencing_generation=1,
             attempt_id=grant.attempt_id,
             request_digest=grant.request_digest,
             transcript_digest=grant.transcript_digest,
