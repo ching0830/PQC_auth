@@ -1,6 +1,6 @@
 # One-Time Ticket 狀態與 1-RTT Access 邊界規格 v0.2
 
-> 狀態：Defined；FGS state仍為process-local；UE single-host SQLite wallet reference已 Implemented／Tested；尚未 distributed／Production-closed
+> 狀態：Defined；FGS與UE single-host SQLite reference已 Implemented／Tested；尚未 distributed／Production-closed
 > 日期：2026-09-15
 > Access companion：`docs/specs/SATELLITE_ACCESS_v0_2_zh-TW.md`
 > Historical predecessor：`docs/specs/ONE_TIME_TICKET_STATE_v0_1_zh-TW.md`
@@ -304,10 +304,12 @@ single-writer partitions。Store unavailable／timeout／partition時，新的 f
 
 ## 13. Claim boundary
 
-Reference state-model tests只能支持 transition／idempotency／race wiring正確；不證明
-distributed linearizability、filesystem durability、wallet security、cryptographic AKE、
-access-NIZK soundness或 availability。Production claims必須另外取得 concrete backend、
-fault/recovery evidence、security proof、independent review與 satellite-path benchmark。
+Reference state-model tests支持transition／idempotency／race wiring；single-host SQLite
+checkpoint另支持其明定假設下的cross-process serialization與restart recovery。兩者皆不
+證明distributed linearizability、hostile-filesystem／physical-power-loss durability、wallet
+security、cryptographic AKE、access-NIZK soundness或availability。Production claims必須
+另外取得concrete backend、fault/recovery evidence、security proof、independent review與
+satellite-path benchmark。
 
 2026-09-14 checkpoint已在`src/pq_sat_auth/v2/replay.py`建立加鎖的process-local model，
 並測試distinct／same-attempt reservation races、competing M2 commit、exact response retry、
@@ -353,3 +355,12 @@ process-local claim只釋放一次plaintext capability。它已測試restart、t
 race、lost acknowledgement、ciphertext mutation及competing sequence-zero record，但
 FGS delivery不durable／distributed，activation與external side effect也不是同一
 transaction，故不構成crash-safe exactly-once保證。
+
+2026-09-15 FGS replay SQLite checkpoint將同一完整state contract接到單機durable store。
+`use_key`、ticket digest／serial與session ID均有唯一index；canonical record經獨立
+protection backend後保存exact sealed M2與sealed session state。`BEGIN IMMEDIATE`、WAL、
+`synchronous=FULL`及parent-directory fsync提供可信單機假設下的跨程序serialization與
+restart recovery；process-local transition suite、跨程序races、突然process exit與實際
+grant→restart→activation pipeline均已測試。它不是多FGS authoritative store，也未提供
+rollback／hostile-filesystem／實體斷電證據；revocation snapshot atomicity、durable delivery
+及external side-effect transaction仍未完成。

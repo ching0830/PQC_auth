@@ -285,6 +285,8 @@ Exact V2 bytes與acceptance events見
   abstract interfaces及production fail-closed guard；
 - `src/pq_sat_auth/v2/replay.py`：process-local `RESERVED ->
   CONSUMED_PENDING_CONFIRM -> CONSUMED_ACTIVE／EXPIRED` reference model；
+- `src/pq_sat_auth/v2/storage/sqlite_replay.py`：相同FGS state contract的單機SQLite
+  durable reference，保存exact sealed M2／session state並提供跨程序serialization；
 - `src/pq_sat_auth/v2/application.py`：第一個受保護UE→FGS record的canonical
   bytes／AAD／sequence-zero identity、UE outbox coordinator與FGS一次性delivery
   capability；
@@ -294,10 +296,10 @@ Exact V2 bytes與acceptance events見
   binding、retry、race、activation與test-only production rejection。
 
 這使V2的bounded byte／relation／M1-M2／activation／first-record state boundary達
-Implemented／Tested。UE單機wallet與first-record outbox已有SQLite reference；FGS
-replay／delivery仍是process-local。Concrete suite、真實proof／AKE、production
-record protection、durable／distributed FGS store及external side-effect exactly-once
-transaction仍未完成。
+Implemented／Tested。UE wallet／first-record outbox與FGS replay已有單機SQLite reference；
+FGS delivery仍是process-local。Concrete suite、真實proof／AKE、production record
+protection、distributed FGS store、atomic revocation ordering及external side-effect
+exactly-once transaction仍未完成。
 
 ## 7. Conditional opening：逐行對應
 

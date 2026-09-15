@@ -1,6 +1,6 @@
 # Satellite Access 與 PQ AKE 規格 v0.2
 
-> 狀態：Defined；bounded reference codecs／relation／processors／UE SQLite wallet 已 Implemented／Tested；尚未 Instantiated／Proof-closed／Production-closed
+> 狀態：Defined；bounded reference codecs／relation／processors、UE SQLite wallet及FGS single-host SQLite replay store已 Implemented／Tested；尚未 Instantiated／distributed／Proof-closed／Production-closed
 > 日期：2026-09-15
 > 所屬模組：M5 Satellite authentication、M6 Anti-replay／revocation／handover
 > State companion：`docs/specs/ONE_TIME_TICKET_STATE_v0_2_zh-TW.md`
@@ -719,3 +719,34 @@ effect也不具crash-safe exactly-once保證；concrete production AEAD、secure
 實體斷電測試仍未完成。完整evidence與machine claims見
 `docs/artifacts/SATELLITE_ACCESS_v0_2_FIRST_APPLICATION_RECORD_zh-TW.md`及
 `manifests/pq_sat_auth_first_application_v0_2.json`。
+
+### 13.8 FGS single-host durable replay store checkpoint
+
+後續checkpoint新增`src/pq_sat_auth/v2/storage/sqlite_replay.py`，將既有
+`src/pq_sat_auth/v2/replay.py`的完整state contract接到單機SQLite：
+
+```text
+RESERVED
+  -> CONSUMED_PENDING_CONFIRM
+  -> CONSUMED_ACTIVE
+  -> CONSUMED_EXPIRED
+```
+
+Store以`use_key`為primary identity，並對`(ctx,ticket_digest)`、`(ctx,serial)`與
+`session_id`建立unique indexes。每一列保存canonical、versioned record，包含exact sealed
+M2與sealed pending session state；整份record在進入SQLite前交給獨立protection backend，
+AAD綁定use identity、state／revision及session identity。所有mutation使用
+`BEGIN IMMEDIATE`、WAL及`synchronous=FULL`，資料庫建立後另執行parent-directory fsync。
+
+測試把process-local store的完整transition suite重播到SQLite，另涵蓋thread／process
+reservation、competing grant及activation races、restart、commit後突然process exit、
+schema／application identity、row metadata／protected bytes mutation，以及實際FGS grant
+processor在store restart後回復exact M2再完成activation。
+
+這支持可信單一host與SQLite／filesystem假設下的cross-process serialization及restart
+durability，不支持多FGS／多host linearizability。Test-only protector不是production record
+protection；rollback、hostile filesystem、kernel crash／remount與實體斷電仍未驗證。
+外部revocation snapshot與store transition也尚非同一authoritative transaction，FGS
+delivery claim及application side effect仍未durable整合。詳細evidence與machine claims見
+`docs/artifacts/SATELLITE_ACCESS_v0_2_FGS_REPLAY_SQLITE_zh-TW.md`及
+`manifests/pq_sat_auth_fgs_replay_sqlite_v0_2.json`。
