@@ -102,11 +102,12 @@ checkout 補出「概念 → 檔案 → 函式 → 測試 → 目前限制」的
 | [第十七堂：流程不同，怎麼公平比較衛星認證論文](lessons/17_FAIR_SATELLITE_AUTH_COMPARISON_zh-TW.md) | 階段 4；能區分 related work、comparison paper 與 baseline，依相同事件、在線邊界和證據等級比較異構協定，不把原作者數值冒充同環境 benchmark |
 | [第十八堂：One-use ticket 與 reusable anonymous Show](lessons/18_ONE_USE_VS_REUSABLE_SHOW_zh-TW.md) | 階段 4；能說明固定票券重用不等於匿名 Show，並比較 one-use 與 multi-show 在不可連結性、quota、計算位置、狀態、庫存和失竊風險上的取捨 |
 | [第十九堂：Blind issuance 與普通 signed ticket](lessons/19_BLIND_VS_ORDINARY_ISSUANCE_zh-TW.md) | 階段 4；能說明 issuer unlinkability 保護的配對、NIZK 對 hidden ticket 的檢查責任，以及 honest-protocol、共同 metadata、opening threshold 與 traffic analysis 的限制 |
+| [第二十堂：角色分離、最小權限與共謀邊界](lessons/20_ROLE_SEPARATION_AND_COLLUSION_zh-TW.md) | 階段 4；能指出各角色掌握的資料／key role，說明 least privilege、separation of duties、compromise domain、角色合併風險及門檻共謀條件 |
 
 目前單元與理解狀態只在 [學習進度](PROGRESS_zh-TW.md) 更新。第二至七堂已提供必要概念的
 入門說明；第八至十五堂已完成階段 3 的教材範圍，涵蓋共同設定、發行、接入、使用狀態、
 換手／撤銷、受控身分開啟及資料可見性總整理。第十六堂已分析高成本 PQ 運算的前移邊界，
 第十七堂建立異構衛星認證論文的公平比較方法，第十八堂比較 one-use ticket 與 reusable anonymous
-`Show`，第十九堂分析 blind issuance 與普通 signed ticket；下一堂分析發行、接入驗證與開啟的
-角色分離。仍於應用時補課，不以教材
+`Show`，第十九堂分析 blind issuance 與普通 signed ticket，第二十堂分析發行、接入驗證與開啟的
+角色分離；下一堂分析 FGS 與 LEO／FLEO 的工作分配。仍於應用時補課，不以教材
 建立視為已掌握，尚未進入逐模組或逐行程式閱讀。

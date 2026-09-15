@@ -36,7 +36,8 @@
 | 階段 4／第十六堂：PQ 計算前移與 Replay | 已提供基礎講解，理解待後續應用 | 依學習者更正，以降低高成本 PQ 在線運算為主要動機；已區分可前移 issuance work、當下 access work 與 Replay |
 | 階段 4／第十七堂：異構衛星認證論文的公平比較 | 已提供基礎講解，理解待後續應用 | 已建立相同事件、成本邊界與證據等級三項條件，沒有將不同流程或證據來源強制合併排名 |
 | 階段 4／第十八堂：One-use ticket 與 reusable anonymous Show | 已提供基礎講解，理解待後續應用 | 已區分固定 ticket reuse 與 randomized Show，並整理 v0.1 選擇、系統代價及未來擴充條件 |
-| 階段 4／第十九堂：Blind issuance 與普通 signed ticket | 進行中 | 已定位 issuer unlinkability、blindness／NIZK 分工及共謀／metadata 限制；下一堂分析角色分離 |
+| 階段 4／第十九堂：Blind issuance 與普通 signed ticket | 已提供基礎講解，理解待後續應用 | 已定位 issuer unlinkability、blindness／NIZK 分工及共謀／metadata 限制 |
+| 階段 4／第二十堂：角色分離與共謀邊界 | 進行中 | 已分開 HNCC／FGS／FAC／OA／Operator／LEO 權力，並說明角色合併、key role 與 threshold 限制 |
 | 階段 5／程式閱讀工具 | 未開始 | 後續補充 repository、Python module、bytes、測試與 Git 工作流 |
 | 階段 6／6-1 至 6-10 | 未開始 | 既有對話中的程式介紹不視為已掌握 |
 | 階段 7／證據與限制 | 未開始 | 每堂先保留研究目標與成果的區分，之後集中學習 |
@@ -634,6 +635,28 @@
   分析發行、接入驗證與身分開啟的角色分離。
 - 助教核對 205 個學習文件本機連結，沒有缺失目標；以本機瀏覽器檢查 ordinary／blind issuance
   比較圖在 736 與 288 像素內容寬度下的呈現，兩條配對路徑、三項責任及限制完整可見。
+
+### 2026-09-15 — 第二十堂：角色分離、最小權限與共謀邊界
+
+- 學習者要求下一堂，接續第十九堂；不把接續課程視為已獨立掌握 blind issuance 取捨。
+- 以三種敏感能力整理角色分離：HNCC 知道註冊身分並發行、FGS 看見 access 並建立 session、OA
+  threshold 在案件授權後開啟；FAC／governance 認證共同設定與 issuer grant，Operator 提出政策，
+  LEO／FLEO 只中繼或做明確的輕量檢查。
+- 介紹 least privilege、separation of duties 與 compromise domain，說明增加角色名稱不足以建立
+  隔離；keys、thresholds、ceremonies、storage、rotation、accounts 與 audit 也需分開。
+- 分析 HNCC+FGS、FGS+至少 `t_O` OA、opening authorization+至少 `t_O` OA、FAC+HNCC 及在 LEO
+  保存高價值 secrets 的風險；保留 blind issuer unlinkability 只處理限定模型內配對的細節。
+- 說明角色分離不能防止所有共謀，只能把攻擊成功所需 key roles、shares、corruption assumptions
+  與 audit evidence 寫清楚；達 threshold 的 OA compromise 會超出 privacy 假設。
+- 對照 `SystemInitializationBundle` 五種 key roles、跨角色不同 key identity、分離的 FAC／OA
+  threshold，以及 issuer／opening wrong-role fail-closed tests。
+- 保留目前只有 canonical contracts、bounded issuer grant、opening gate／combiner control-flow
+  prototypes；production PQ authentication、FAC／OA DKG、key ceremony、HSM isolation 與部署共謀
+  證據仍未完成。
+- 本堂只更新學習文件，未修改 canonical trust model、key roles、thresholds 或實作狀態。下一堂
+  分析 FGS 與 LEO／FLEO 的工作分配。
+- 助教核對 212 個學習文件本機連結，沒有缺失目標；以本機瀏覽器檢查角色分離圖在 736 與
+  288 像素內容寬度下的呈現，治理路徑、三種敏感能力、衛星邊界與合併風險完整可見。
 
 ## 後續更新方式
 

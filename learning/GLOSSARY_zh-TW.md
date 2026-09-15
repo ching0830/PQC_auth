@@ -122,6 +122,11 @@
 | 盲簽署回應（blind-signing response） | Issuer 對 blind request 執行簽署端運算後回傳的中間結果，本專案記為 `z` | `z` 不是最終 signature；UE 還要以本機 blinding data 執行 `Finalize` |
 | 浮水印攻擊（watermarking attack） | 發行端在 metadata、參數、格式或其他可見欄位放入特定使用者專屬標記 | Blind-signature primitive 不會自動清除協定外層的唯一標記；需共同設定與治理限制 |
 | 流量關聯（traffic correlation） | 依發行與使用的時間、封包大小、路徑、位置或頻率推測兩筆活動的關係 | Cryptographic issuer unlinkability 通常不隱藏這些 metadata；需要 batching、延遲、padding 或網路層措施另行分析 |
+| 最小權限（least privilege） | 每個角色、程序或帳號只取得完成工作所需的最少資料、金鑰與操作權 | 權限越多，單一 compromise 的影響範圍越大；最小權限不會阻止多角色共謀 |
+| 職責分離（separation of duties） | 把批准、執行、驗證或解密等高風險能力交給不同權限角色 | 只改角色名稱不夠；若共用 key、帳號、seed 或管理控制域，實際仍可能集中 |
+| 失陷範圍（compromise domain） | 一次漏洞、憑證外洩或管理失誤可能同時控制的一組元件、keys 或角色 | 不同 key IDs 不保證獨立；還要檢查生成、storage、帳號、備份與 rotation 是否共用 |
+| 金鑰角色（key role） | 限制一把 key 只能驗證、簽署或解密特定類型資料的用途標記 | 已知且有效的錯誤角色 key 仍必須拒絕；需搭配 domain-separated message encoding |
+| 門檻腐化（threshold compromise） | 攻擊者取得至少門檻數量的有效 secret shares | 少於 `t_O` 的 privacy 結論不涵蓋達到門檻的攻擊者；治理 gate 也不能替代秘密份額安全 |
 
 專案用語依 [架構](../ARCHITECTURE_zh-TW.md) 與
 [研究方法](../methodology.md) 解釋；本表不替代各模組正式規格。
