@@ -4,7 +4,39 @@
 
 > **模組範圍：**這是 PQ-RBBC 的操作交接，不是整篇論文 roadmap。專案級背景請先讀 [../../ARCHITECTURE_zh-TW.md](../../ARCHITECTURE_zh-TW.md)、[../../RESEARCH_STATUS_zh-TW.md](../../RESEARCH_STATUS_zh-TW.md) 與 [../../ROADMAP_zh-TW.md](../../ROADMAP_zh-TW.md)。
 
-日期：2026 年 9 月 15 日
+日期：2026 年 9 月 16 日
+
+## Issuance Global-tail completion sealer／parent-input CandidateSet（獨立 branch）
+
+從 finding-free Global-B corrective commit
+`6b27800a2be000b3dd1c67ce25112a0fbba2e495` 建立
+`codex/pq-rbbc-issuance-global-tail-completion-sealer-v1`。本 branch 只完成 bounded
+two-tree／four-leaf `INSECURE-TEST-ONLY` completion sealer；它不修改既有 Global-B、v2.38／
+v2.39 historical evidence、system architecture、ticket lifecycle或`pq_sat_auth`。
+
+Sealer以固定36-entry `SNAPSHOT_ROLE_ORDER`聚合Global-B CandidateSet的32個immutable roles、
+Global-B result、fragment receipt、terminal complete checkpoint與一份canonical private parent
+input。Parent input精確綁定511-byte `c_r`及72-byte request hash的版本、domain、encoding、length、
+source identities與SHA-256。External handoff digest先於dependent snapshot存取驗證；所有identity、
+strict parse、closed schema、binding與future consumption都使用CandidateSet內相同`Snapshot.raw`，
+不得重開pathname後替換。
+
+已由predecessor gates檢查的Global-A、tree-post、native relocation與Global-B rows合計70,143；
+本sealer新重播0 rows，parent constraints重播0。Receipt evidence仍是ordinal 0→3加上兩個tree-post
+branches與Global-B terminal receipt的branch graph，不能宣稱完整線性chain，故
+`full_execution_receipt_chain_verified=false`。
+
+Frozen completion handoff為9,110 bytes／SHA-256
+`e81c3b3aa5d7ffc60a00fc61ce9a8063ed3a4f88d591f482ca0e8c8836b1a521`；private parent input為
+2,623 bytes／SHA-256
+`97c97f163736965b04fac4636b27ab21245ff51a7bb9d240b55f2cba432eda59`。Portable evidence只含
+metadata，不含任何private raw、assignment、checkpoint body或proving output。
+
+本exact commit必須先取得finding-free唯讀technical/security re-review。通過後，下一個serial
+gate是 **fresh parent I1–I5 CandidateSet read-only preflight**。Fresh parent composition、parent
+replay、mixed degree-12/13 legacy18 production provider、formal `pi_issue`、qualified PQ-SE、large
+replay/proving、`Proof-closed`與`Production-closed`仍全部為false。詳細contract見
+[Global-tail completion artifact note](../artifacts/PQ_RBBC_ISSUANCE_GLOBAL_TAIL_COMPLETION_SEALER_V1_zh-TW.md)。
 
 ## Issuance Global-B bounded consumer／private restart（獨立 branch）
 
