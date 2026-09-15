@@ -58,13 +58,17 @@ blind-signing response，也不代表完整 issuance transaction 已完成。
 - SQLite application id：`0x50514731`（`PQG1`）；schema version：1；
 - 從實際 `sqlite_schema.sql` 取得 canonical `CREATE TABLE` bytes 並重算 schema
   SHA-256；metadata row 必須等於這個實際 digest，不能以 forged self-report 取代；
-- `sqlite_schema` object set 必須精確，任何額外 table/index/trigger/view 都拒絕；
+- 完整 `sqlite_schema` inventory 必須精確：只允許三張 canonical tables 與兩個
+  `sql IS NULL` 的 canonical PK autoindexes；任何其他 table/index/trigger/view，包含
+  `sqlite_sequence`／`sqlite_stat*` internal tables，都預設拒絕；
 - `PRAGMA table_list` 必須證明三張表皆為 `STRICT` 且不是 `WITHOUT ROWID`；
 - `PRAGMA table_xinfo` 必須匹配 columns、types、`NOT NULL`、defaults、PK ordinal 與
   hidden/generated flags；
 - canonical DDL digest／exact DDL 驗證涵蓋全部 `CHECK` expressions；
 - `PRAGMA foreign_key_list` 必須匹配 FK source/target、column mapping、`MATCH` 與
   `ON UPDATE/DELETE RESTRICT` actions，另執行 `foreign_key_check` 驗證現存資料；
+- `PRAGMA index_list`／`index_xinfo` 必須匹配 autoindex owner、`origin=pk`、unique、
+  partial flag、columns/order/collation/key flags 與 rowid auxiliary entry；
 - quota 以 canonical 8-byte `u64le` BLOB 保存，避免 SQLite signed integer 截斷；
 - `issuer_grants` 保存 initial/remaining quota；`consumed_issuer_sids` 以
   `(grant_digest, issuer_sid)` 為 primary key；
@@ -107,6 +111,23 @@ Corrective validation profile `PQRBBC-SQLITE-SCHEMA-VALIDATION-V1` 改為從實�
 所以 store schema version 與 schema SHA-256 維持 1／原值；改變的是 fail-closed
 validator，不是資料遷移或 protocol semantic。
 
+### 3.5 2026-09-15 schema-inventory corrective
+
+對 `b13cad8` 的獨立唯讀重審發現 High finding：兩個 inventory query 使用
+`WHERE name NOT LIKE 'sqlite_%'`，但 SQL `LIKE` 的 `_` 是單字元 wildcard，導致合法
+名稱 `sqliteX...` 的額外 explicit index／trigger 被錯誤排除；`table_list` 又不列
+index/trigger，因此原本的完整 extra-object rejection claim 尚未成立。
+
+Validation profile V2 移除名稱過濾，讀取完整 persistent `sqlite_schema`，並以 exact
+allowlist 接受三張 tables 與兩個 SQLite PK autoindexes。Autoindexes 另經
+`index_list`／`index_xinfo` 驗證 owner、origin、uniqueness、partial、column order、
+collation 與 `sql IS NULL` inventory identity。除了 exact allowlist 外的 user/internal
+objects 一律拒絕；本 store 不執行 `AUTOINCREMENT` 或 `ANALYZE`，所以
+`sqlite_sequence`／`sqlite_stat*` 也不列為合法狀態。
+
+這仍是 validator hardening：on-disk tables、schema version、schema SHA-256、quota/SID
+transaction 與 public API 都沒有改變。
+
 ## 4. 實作與測試證據
 
 程式與 machine-readable claim boundary：
@@ -125,6 +146,8 @@ validator，不是資料遷移或 protocol semantic。
 - writer busy/locked、corrupt bytes、unknown version、schema drift、wrong app id；
 - forged expected metadata 搭配全弱化 schema，以及逐項缺 STRICT、改 CHECK、移除
   FK、改 FK actions、改 PK ordinal、加入額外 index；
+- `sqliteX...` wildcard-name index/trigger regression、一般 view/trigger、canonical PK
+  autoindex 正例，以及 `sqlite_sequence`／`sqlite_stat*` default-reject；
 - connection 關閉／writer lock 釋放與 full-u64 quota；
 - 透過既有 `authorize_issuance()` 的全部 validation-before-consumption 控制流。
 
@@ -132,14 +155,14 @@ Targeted command：
 
 ```text
 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python -m unittest discover -s tests/system_modules/governance/storage -v
-Ran 27 tests in 1.918s — passed 27, failures 0, errors 0, skipped 0
+Ran 33 tests in 1.874s — passed 33, failures 0, errors 0, skipped 0
 ```
 
 完整 baseline command：
 
 ```text
 PYTHONPATH=src python -m unittest discover -s tests -v
-Ran 715 tests in 754.689s — passed 703, failures 0, errors 0, skipped 12
+Ran 721 tests in 742.372s — passed 709, failures 0, errors 0, skipped 12
 ```
 
 12 個 skips 都是既有 optional external artifacts 未安裝。Targeted／baseline pass 只支持

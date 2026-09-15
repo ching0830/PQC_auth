@@ -87,13 +87,30 @@ SCHEMA_SHA256 = _schema_sql_digest(
 
 _EXPECTED_SCHEMA_RECORDS = tuple(
     sorted(
-        (
-            "table",
-            table,
-            table,
-            statement.strip(),
+        tuple(
+            (
+                "table",
+                table,
+                table,
+                statement.strip(),
+            )
+            for table, statement in _SCHEMA_TABLES
         )
-        for table, statement in _SCHEMA_TABLES
+        + (
+            (
+                "index",
+                "sqlite_autoindex_consumed_issuer_sids_1",
+                "consumed_issuer_sids",
+                None,
+            ),
+            (
+                "index",
+                "sqlite_autoindex_issuer_grants_1",
+                "issuer_grants",
+                None,
+            ),
+        ),
+        key=lambda record: (record[0], record[1]),
     )
 )
 
@@ -135,6 +152,28 @@ _EXPECTED_FOREIGN_KEYS = {
             "RESTRICT",
             "NONE",
         ),
+    ),
+}
+
+_EXPECTED_INDEX_LISTS = {
+    "quota_store_metadata": (),
+    "issuer_grants": (
+        (0, "sqlite_autoindex_issuer_grants_1", 1, "pk", 0),
+    ),
+    "consumed_issuer_sids": (
+        (0, "sqlite_autoindex_consumed_issuer_sids_1", 1, "pk", 0),
+    ),
+}
+
+_EXPECTED_INDEX_COLUMNS = {
+    "sqlite_autoindex_issuer_grants_1": (
+        (0, 0, "grant_digest", 0, "BINARY", 1),
+        (1, -1, None, 0, "BINARY", 0),
+    ),
+    "sqlite_autoindex_consumed_issuer_sids_1": (
+        (0, 0, "grant_digest", 0, "BINARY", 1),
+        (1, 1, "issuer_sid", 0, "BINARY", 1),
+        (2, -1, None, 0, "BINARY", 0),
     ),
 }
 
@@ -233,39 +272,35 @@ class SQLiteIssuerQuotaStore:
         return application_id, user_version
 
     @staticmethod
-    def _user_objects(connection: sqlite3.Connection) -> tuple[tuple[str, str], ...]:
-        rows = connection.execute(
-            """
-            SELECT type, name
-            FROM sqlite_master
-            WHERE name NOT LIKE 'sqlite_%'
-            ORDER BY type, name
-            """
-        ).fetchall()
-        return tuple((str(row[0]), str(row[1])) for row in rows)
-
-    @staticmethod
-    def _user_schema_records(
+    def _schema_records(
         connection: sqlite3.Connection,
-    ) -> tuple[tuple[str, str, str, str], ...]:
+    ) -> tuple[tuple[str, str, str, str | None], ...]:
         rows = connection.execute(
             """
             SELECT type, name, tbl_name, sql
-            FROM sqlite_schema
-            WHERE name NOT LIKE 'sqlite_%'
+            FROM main.sqlite_schema
             ORDER BY type, name
             """
         ).fetchall()
-        if any(not all(isinstance(value, str) for value in row) for row in rows):
-            raise SQLiteQuotaStoreSchemaError("non-text SQLite schema record")
+        if any(
+            not all(isinstance(value, str) for value in row[:3])
+            or (row[3] is not None and not isinstance(row[3], str))
+            for row in rows
+        ):
+            raise SQLiteQuotaStoreSchemaError("invalid SQLite schema record")
         return tuple(
-            (str(row[0]), str(row[1]), str(row[2]), str(row[3]).strip())
+            (
+                str(row[0]),
+                str(row[1]),
+                str(row[2]),
+                None if row[3] is None else str(row[3]).strip(),
+            )
             for row in rows
         )
 
     @classmethod
     def _is_unclaimed_empty(cls, connection: sqlite3.Connection) -> bool:
-        return cls._database_identity(connection) == (0, 0) and not cls._user_objects(
+        return cls._database_identity(connection) == (0, 0) and not cls._schema_records(
             connection
         )
 
@@ -280,18 +315,16 @@ class SQLiteIssuerQuotaStore:
     @classmethod
     def _validate_schema(cls, connection: sqlite3.Connection) -> None:
         cls._require_known_identity(connection)
-        expected_objects = tuple(
-            ("table", name) for name in sorted(_EXPECTED_TABLE_COLUMNS)
-        )
-        if cls._user_objects(connection) != expected_objects:
-            raise SQLiteQuotaStoreSchemaError("unexpected SQLite schema objects")
-
-        schema_records = cls._user_schema_records(connection)
+        schema_records = cls._schema_records(connection)
         if schema_records != _EXPECTED_SCHEMA_RECORDS:
             raise SQLiteQuotaStoreSchemaError(
-                "SQLite CREATE statements do not match canonical schema"
+                "complete SQLite schema inventory does not match canonical schema"
             )
-        schema_sql_by_table = {record[1]: record[3] for record in schema_records}
+        schema_sql_by_table = {
+            record[1]: record[3]
+            for record in schema_records
+            if record[0] == "table" and isinstance(record[3], str)
+        }
         actual_schema_sha256 = _schema_sql_digest(
             tuple(schema_sql_by_table[table] for table, _ in _SCHEMA_TABLES)
         )
@@ -301,7 +334,7 @@ class SQLiteIssuerQuotaStore:
         table_properties = {
             str(row[1]): (str(row[2]), int(row[3]), int(row[4]), int(row[5]))
             for row in connection.execute("PRAGMA main.table_list").fetchall()
-            if str(row[0]) == "main" and not str(row[1]).startswith("sqlite_")
+            if str(row[0]) == "main" and str(row[1]) != "sqlite_schema"
         }
         if table_properties != _EXPECTED_TABLE_PROPERTIES:
             raise SQLiteQuotaStoreSchemaError(
@@ -344,6 +377,40 @@ class SQLiteIssuerQuotaStore:
             if actual_foreign_keys != _EXPECTED_FOREIGN_KEYS[table]:
                 raise SQLiteQuotaStoreSchemaError(
                     f"unexpected SQLite foreign keys for {table}"
+                )
+            actual_indexes = tuple(
+                (
+                    int(row[0]),
+                    str(row[1]),
+                    int(row[2]),
+                    str(row[3]),
+                    int(row[4]),
+                )
+                for row in connection.execute(
+                    f"PRAGMA main.index_list({table})"
+                ).fetchall()
+            )
+            if actual_indexes != _EXPECTED_INDEX_LISTS[table]:
+                raise SQLiteQuotaStoreSchemaError(
+                    f"unexpected SQLite indexes for {table}"
+                )
+        for index, expected_columns in _EXPECTED_INDEX_COLUMNS.items():
+            actual_columns = tuple(
+                (
+                    int(row[0]),
+                    int(row[1]),
+                    None if row[2] is None else str(row[2]),
+                    int(row[3]),
+                    str(row[4]),
+                    int(row[5]),
+                )
+                for row in connection.execute(
+                    f"PRAGMA main.index_xinfo({index})"
+                ).fetchall()
+            )
+            if actual_columns != expected_columns:
+                raise SQLiteQuotaStoreSchemaError(
+                    f"unexpected SQLite index columns for {index}"
                 )
         metadata = connection.execute(
             """
@@ -549,7 +616,7 @@ def sqlite_quota_store_manifest() -> dict[str, object]:
         "sqlite_application_id": SQLITE_APPLICATION_ID,
         "schema_sha256": SCHEMA_SHA256,
         "schema_digest_source": "canonical-actual-sqlite_schema-create-table-sql",
-        "schema_validation_profile": "PQRBBC-SQLITE-SCHEMA-VALIDATION-V1",
+        "schema_validation_profile": "PQRBBC-SQLITE-SCHEMA-VALIDATION-V2",
         "journal_mode": "WAL",
         "synchronous": "FULL",
         "transaction_begin": "IMMEDIATE",
@@ -560,11 +627,14 @@ def sqlite_quota_store_manifest() -> dict[str, object]:
         "default_busy_timeout_ms": DEFAULT_BUSY_TIMEOUT_MS,
         "schema_validation": {
             "actual_create_sql_digest_verified": True,
+            "canonical_pk_autoindexes_verified": True,
             "canonical_create_sql_verified": True,
             "check_constraints_verified": True,
             "columns_defaults_pk_and_hidden_verified": True,
             "extra_tables_indexes_triggers_views_rejected": True,
             "foreign_key_definitions_and_actions_verified": True,
+            "full_sqlite_schema_inventory_verified": True,
+            "sqlite_internal_objects_default_reject": True,
             "strict_tables_verified": True,
         },
         "claim_boundary": {

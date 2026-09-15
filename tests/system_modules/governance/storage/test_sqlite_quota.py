@@ -198,6 +198,41 @@ class SQLiteQuotaSemanticsTests(unittest.TestCase):
             self.assertEqual(second.status, QuotaConsumeStatus.CONSUMED)
             self.assertEqual(second.remaining, 1)
 
+    def test_canonical_pk_autoindexes_are_exact_and_accepted(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            database_path = str(Path(temporary_directory) / "quota.sqlite3")
+            SQLiteIssuerQuotaStore(database_path)
+            connection = sqlite3.connect(database_path)
+            try:
+                autoindexes = connection.execute(
+                    """
+                    SELECT type, name, tbl_name, sql
+                    FROM sqlite_schema
+                    WHERE type = 'index'
+                    ORDER BY name
+                    """
+                ).fetchall()
+            finally:
+                connection.close()
+            self.assertEqual(
+                autoindexes,
+                [
+                    (
+                        "index",
+                        "sqlite_autoindex_consumed_issuer_sids_1",
+                        "consumed_issuer_sids",
+                        None,
+                    ),
+                    (
+                        "index",
+                        "sqlite_autoindex_issuer_grants_1",
+                        "issuer_grants",
+                        None,
+                    ),
+                ],
+            )
+            SQLiteIssuerQuotaStore(database_path)
+
     def test_same_sid_under_different_grant_digest_is_not_global_replay(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
             store = SQLiteIssuerQuotaStore(
@@ -631,6 +666,95 @@ class SQLiteQuotaFailureTests(unittest.TestCase):
                     ON issuer_grants(remaining_quota)
                     """,
                 ),
+            )
+            with self.assertRaises(SQLiteQuotaStoreSchemaError):
+                SQLiteIssuerQuotaStore(database_path)
+
+    def test_sqlite_like_wildcard_name_cannot_hide_extra_index(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            database_path = str(Path(temporary_directory) / "quota.sqlite3")
+            _forge_schema_with_expected_metadata(
+                database_path,
+                {},
+                extra_statements=(
+                    """
+                    CREATE INDEX sqliteX_extra_index
+                    ON issuer_grants(remaining_quota)
+                    """,
+                ),
+            )
+            with self.assertRaises(SQLiteQuotaStoreSchemaError):
+                SQLiteIssuerQuotaStore(database_path)
+
+    def test_sqlite_like_wildcard_name_cannot_hide_extra_trigger(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            database_path = str(Path(temporary_directory) / "quota.sqlite3")
+            _forge_schema_with_expected_metadata(
+                database_path,
+                {},
+                extra_statements=(
+                    """
+                    CREATE TRIGGER sqliteX_extra_trigger
+                    AFTER INSERT ON consumed_issuer_sids
+                    BEGIN
+                        SELECT 1;
+                    END
+                    """,
+                ),
+            )
+            with self.assertRaises(SQLiteQuotaStoreSchemaError):
+                SQLiteIssuerQuotaStore(database_path)
+
+    def test_extra_views_and_triggers_are_rejected(self) -> None:
+        statements = {
+            "view": """
+                CREATE VIEW unexpected_quota_view AS
+                SELECT grant_digest, remaining_quota FROM issuer_grants
+            """,
+            "trigger": """
+                CREATE TRIGGER unexpected_quota_trigger
+                AFTER UPDATE ON issuer_grants
+                BEGIN
+                    SELECT 1;
+                END
+            """,
+        }
+        for name, statement in statements.items():
+            with self.subTest(name=name), tempfile.TemporaryDirectory() as directory:
+                database_path = str(Path(directory) / "quota.sqlite3")
+                _forge_schema_with_expected_metadata(
+                    database_path,
+                    {},
+                    extra_statements=(statement,),
+                )
+                with self.assertRaises(SQLiteQuotaStoreSchemaError):
+                    SQLiteIssuerQuotaStore(database_path)
+
+    def test_sqlite_sequence_is_rejected_by_internal_object_policy(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            database_path = str(Path(temporary_directory) / "quota.sqlite3")
+            _forge_schema_with_expected_metadata(
+                database_path,
+                {},
+                extra_statements=(
+                    """
+                    CREATE TABLE transient_sequence_source (
+                        identifier INTEGER PRIMARY KEY AUTOINCREMENT
+                    )
+                    """,
+                    "DROP TABLE transient_sequence_source",
+                ),
+            )
+            with self.assertRaises(SQLiteQuotaStoreSchemaError):
+                SQLiteIssuerQuotaStore(database_path)
+
+    def test_sqlite_stat_tables_are_rejected_by_internal_object_policy(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            database_path = str(Path(temporary_directory) / "quota.sqlite3")
+            _forge_schema_with_expected_metadata(
+                database_path,
+                {},
+                extra_statements=("ANALYZE",),
             )
             with self.assertRaises(SQLiteQuotaStoreSchemaError):
                 SQLiteIssuerQuotaStore(database_path)
