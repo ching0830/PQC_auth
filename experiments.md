@@ -1,6 +1,6 @@
 # 實驗紀錄（Experiments）
 
-> 最後更新：2026-09-14
+> 最後更新：2026-09-16
 > 用途：保存可重現的實驗環境、命令、結果、artifact identity 與結論。不得只寫「測試通過」。文件權責見 `docs/DOCUMENTATION_POLICY_zh-TW.md`。
 
 ## 記錄規範
@@ -273,6 +273,37 @@ PYTHONPATH=src python -m unittest discover -s tests -v
 - 下一步：先把stable `VerifyTicket` adapter、authenticated configuration／time／
   revocation pure checks接成fail-closed FGS processor；平行研究D-002 concrete PQ suite。
   Durable store與wallet crash model須使用獨立checkpoint及fault-injection evidence。
+
+### EXP-20260916-01 — Project reorganization integration regression
+
+- 研究問題／假設：把已完成的 CAP v2.43、bounded issuance、system governance S0–S2、
+  satellite access V1／V2、opening integration、one-time admission、threshold research
+  candidates 與 D4／D4b access prototypes 整合至單一整理分支後，是否仍能保持所有既有
+  regression 與 fail-closed claim boundary。
+- 日期與時區：2026-09-16，Asia/Taipei。
+- Git commit／branch／dirty state：`codex/project-reorganization-v0-1`，exact tested
+  commit `1f251e1153de72461b9a35a9f6be686bac4aa95e`；執行前工作樹乾淨。
+- 環境：Linux x86_64；Python 3.12.9；未 provision repository 外的 optional
+  assignments、recovery artifacts 或 external FAEST reference library。
+- 輸入與 artifact：只使用 tracked repository inputs；沒有啟動 production、large replay、
+  proving 或建立新的大型 binary artifact。
+- targeted command：
+  `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python -m unittest -v tests.test_project_module_registry`
+- targeted 結果：5 passed、0 skipped、0 failures／errors。
+- full command：
+  `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python -m unittest discover -s tests -v`
+- full 結果：`Ran 1682 tests in 1774.017s`；1659 passed、23 skipped、0 failures／errors，
+  exit code 0。23 skips皆由測試明確標示為未安裝的 optional external artifacts／libraries，
+  不被記為通過或用來擴張 claim。
+- 整理驗證：新增的 `project_module_registry_v0_1.json` 以 closed schema 記錄七個論文機制、
+  source checkpoint 與保守狀態；測試會拒絕遺失路徑、非完整 commit identity、重複／缺少
+  模組或 production claim 擴張。
+- 結論：支持此 commit 作為「目前成果的整合與導覽 baseline」；不代表 attachment 中的
+  candidate `ctx` access 機制已採用，也不提升任何 Proof-closed、Production-closed、
+  distributed deployment 或具名獨立人員核准宣稱。
+- 限制與下一步：先以 D5 量測 `R_key` 成本並選定下一版 access 機制；新機制應進入新的
+  versioned package，現有 V1／V2 與 D4／D4b 保留為可比較 baseline，待決策後再逐項標示
+  reuse／superseded／historical，而不是立即刪除或搬移。
 
 ## 實驗模板
 
