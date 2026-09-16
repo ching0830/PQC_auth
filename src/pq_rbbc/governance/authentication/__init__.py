@@ -1,0 +1,63 @@
+"""Real S2 authentication plumbing for the non-threshold staging profile."""
+
+from .openssl_mldsa import (
+    DEFAULT_COMMAND_TIMEOUT_SECONDS,
+    MAX_AUTHENTICATED_MESSAGE_BYTES,
+    MLDSA65_PUBLIC_KEY_DER_BYTES,
+    MLDSA65_RAW_PUBLIC_KEY_BYTES,
+    MLDSA65_SIGNATURE_BYTES,
+    MLDSA65_SPKI_PREFIX,
+    SYSTEM_GOVERNANCE_MLDSA_CONTEXT,
+    MLDSABackendError,
+    OpenSSLMLDSA65NonThresholdSigner,
+    PinnedOpenSSLMLDSA65,
+    RegistryBackedMLDSA65Verifier,
+    mldsa65_spki_from_raw,
+)
+from .service import (
+    PinnedSystemGovernanceService,
+    assemble_initialization_bundle,
+    publish_initialization,
+    publish_issuer_grant,
+)
+from .trust_registry import (
+    MLDSA65_STAGING_PROFILE,
+    TRUST_REGISTRY_FILENAME,
+    TRUST_REGISTRY_FORMAT,
+    TRUST_REGISTRY_SCHEMA_VERSION,
+    TRUSTED_AUTHENTICATION_ROLES,
+    PinnedTrustRegistry,
+    TrustedPublicKey,
+    TrustRegistryError,
+    canonical_registry_bytes,
+    trust_registry_document,
+)
+
+__all__ = [
+    "DEFAULT_COMMAND_TIMEOUT_SECONDS",
+    "MAX_AUTHENTICATED_MESSAGE_BYTES",
+    "MLDSA65_PUBLIC_KEY_DER_BYTES",
+    "MLDSA65_RAW_PUBLIC_KEY_BYTES",
+    "MLDSA65_SIGNATURE_BYTES",
+    "MLDSA65_SPKI_PREFIX",
+    "MLDSA65_STAGING_PROFILE",
+    "SYSTEM_GOVERNANCE_MLDSA_CONTEXT",
+    "TRUSTED_AUTHENTICATION_ROLES",
+    "TRUST_REGISTRY_FILENAME",
+    "TRUST_REGISTRY_FORMAT",
+    "TRUST_REGISTRY_SCHEMA_VERSION",
+    "MLDSABackendError",
+    "OpenSSLMLDSA65NonThresholdSigner",
+    "PinnedOpenSSLMLDSA65",
+    "PinnedSystemGovernanceService",
+    "PinnedTrustRegistry",
+    "RegistryBackedMLDSA65Verifier",
+    "TrustedPublicKey",
+    "TrustRegistryError",
+    "assemble_initialization_bundle",
+    "canonical_registry_bytes",
+    "mldsa65_spki_from_raw",
+    "publish_initialization",
+    "publish_issuer_grant",
+    "trust_registry_document",
+]
