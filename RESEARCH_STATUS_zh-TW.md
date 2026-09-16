@@ -2,7 +2,7 @@
 
 # 研究狀態
 
-依 2026 年 9 月 10 日整合 checkpoint 更新，包含 system vertical slice、system
+依 2026 年 9 月 14 日 access-v0.2 design checkpoint 更新，包含 system vertical slice、system
 initialization／issuer authorization／conditional opening control plane，以及 PQ-RBBC
 v2.27–v2.42。精確發布位置仍以 Git commit 與 branch 為準。
 
@@ -15,8 +15,8 @@ v2.27–v2.42。精確發布位置仍以 Git commit 與 branch 為準。
 | PQ-RBBC issuance 與 ticket | formal core 已定義 | research relation、大量 circuit implementation與v2.42 bounded recovery／provenance successor | bounded corrective AI technical re-review通過；formal human review與production closure仍為false |
 | Opening authorization | v0.1 canonical request、authorization statement、replay與share gate | bounded fail-closed `OpenShareService` control flow | deterministic codecs與gate tests；production signature／share proof未完成 |
 | Threshold trace opening | abstract construction與v0.1 share／combiner boundary已定義 | test-only backend下的share consistency、threshold combine及serial check | robust threshold decoder、OA DKG、real keys與production transcript未完成 |
-| Satellite access 與 PQ AKE | v0.1 access object layouts、transcript／attempt identities與test-only suite profile；PQ AKE尚未選定 | ServingContext與AccessInit／Challenge／Finish／Accept codecs已實作；無holder authenticator或AKE | object／binding tests；未宣稱authentication security或production closure |
-| Anti-replay 與 revocation | v0.1 one-time state、原子消耗、retry／crash semantics與framing已有draft；G1尚未freeze | canonical frame／opaque parser、use identity與test-only process-local linearizable replay model已實作 | replay／framing tests；尚非durable／distributed store，未宣稱production closure |
+| Satellite access 與 PQ AKE | v0.1四訊息layout保留；v0.2已定義兩個access messages、獨立`pi_access` relation、abstract KEM／FGS-auth／Finished及acceptance時點；concrete suite尚未選定 | V1 codecs保留；V2 frame／request／accept／activation codecs、direct relation evaluator與abstract backend contracts已實作 | V2 deterministic／mutation／binding／production-gate tests通過；完整FGS processor、真實PQ backends、安全proof與production closure未完成 |
+| Anti-replay 與 revocation | v0.1 state保留；v0.2已定義跨版本共用`use_key`、`CONSUMED_PENDING_CONFIRM／ACTIVE`、exact retry、early-burn與wallet邊界；G1尚未freeze | V1 model保留；V2 process-local linearizable reservation／grant／activation model已實作 | V2 retry／race／expiry／termination tests通過；尚非durable／distributed store，未宣稱production closure |
 | Handover | 只有 requirements | 未開始 | 未宣稱 |
 | End-to-end evaluation | 已辨識 metrics | 未開始 | 無 system benchmark |
 
@@ -153,6 +153,9 @@ v2.27–v2.42。精確發布位置仍以 Git commit 與 branch 為準。
 - 合格 PQ zero-knowledge／simulation-extractable backend；
 - real trace-encryption key 與 robust threshold transcript；
 - 新的 size、time、memory benchmarks；
+- v0.2完整FGS processor、concrete PQ AKE／access-NIZK backend、FGS authentication key
+  configuration、durable／distributed replay backend、UE wallet與satellite-path latency
+  benchmark；
 - production closure。
 
 RBBC 操作上的 authoritative handoff 仍為 [docs/roadmaps/PQ_RBBC_CURRENT_HANDOFF_zh-TW.md](docs/roadmaps/PQ_RBBC_CURRENT_HANDOFF_zh-TW.md)。

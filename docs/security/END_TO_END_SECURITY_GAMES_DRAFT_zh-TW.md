@@ -2,7 +2,7 @@
 
 > 狀態：研究草稿；非 canonical architecture、非 proof-closure 或 production-closure 宣告
 >
-> 適用 profile：system profile v0.1（short-lived、strictly one-use ticket）
+> 適用 profile：system profile v0.1／v0.2（short-lived、strictly one-use ticket；access message topology分版）
 >
 > 依據：`ARCHITECTURE_zh-TW.md`、`methodology.md`、`research-notes.md`、`docs/proof/source/pq_rbbc_sgtd_core_proof_v1.tex` 與 `docs/DOCUMENTATION_POLICY_zh-TW.md`
 > 初稿日期：2026-08-30；文獻術語與比較更新：2026-08-31
@@ -81,8 +81,8 @@ Core proof 明確不宣稱：malicious-issuer security、metadata／timing anony
 - **P-A2 Configuration authenticity。** FAC authentication 唯一綁定 version、epoch、domain、policy、expiry bucket、issuer／OA key identifiers 與 context digest；不同 anonymity-set 使用者不帶個人化 metadata。
 - **P-A3 Honest FGS state transition。** 至少一個負責接受決策的 FGS 正確驗證並以 linearizable／serializable transaction 原子執行 check-and-consume；state 不會無偵測 rollback、fork 或遺失。
 - **P-A4 Single consumption authority semantics。** 多 FGS／region 間有明確一致性協定或不可重疊的 acceptance authority；partition 期間不得由兩個 authority 各自成功消耗同一 ticket。
-- **P-A5 Freshness source。** FGS nonce 不可預測且不重複；epoch／expiry 判斷有明定 clock-skew；counter、nonce cache 或 channel transcript 不會因 restart 靜默重用。
-- **P-A6 Access transcript binding。** PQ AKE／authentication transcript 綁定完整 canonical ticket digest、visible serial、FGS identity、serving context、protocol version、roles、fresh nonces、negotiated algorithms 與 relevant channel binding。
+- **P-A5 Freshness source。** V1的FGS nonce不可預測且不重複；V2則以authenticated epoch／trusted verifier time、UE nonces及fresh FGS KEM encapsulation共同建立freshness。各版本的clock-skew、counter、nonce cache、KEM randomness或channel transcript不得因restart靜默重用。Time／epoch不取代one-time store。
+- **P-A6 Access transcript binding。** PQ AKE／authentication transcript綁定完整canonical ticket digest／bytes、visible serial、FGS identity／key、serving與service authorization context、protocol version、roles、freshness fields、negotiated algorithms、UE KEM material與relevant channel binding。V2的`pi_access`綁定M1 core；FGS authentication、KDF與Finished再綁定M2的新KEM ciphertext。
 - **P-A7 AKE primitive security。** 未來選定的 PQ KEM／signature／KDF／key-confirmation composition 在所選 multi-session、active、quantum attacker 與 reveal model 下安全。
 - **P-A8 Revocation authenticity and monotonicity。** Revocation objects 經 federation authentication，帶 version／epoch／effective time；verifier 不接受 stale rollback，並對缺資料採明確 fail-open 或 fail-closed policy。
 - **P-A9 Handover authorization。** 舊與新 FGS、source／target context、session identifier、fresh handover nonce、key epoch 與 transcript digest 被完整綁定；handover credential 不等同可再次使用的 access ticket。
@@ -98,8 +98,8 @@ Core proof 明確不宣稱：malicious-issuer security、metadata／timing anony
 ```text
 pp, federation configuration, issuer/FAC/OA/FGS keys
 IssueLog[dT]       = (rid, sn, ctx, policy, expiry, issuance status)
-Consume[dT]        = unused | pending(txid) | consumed(session_id, transcript_hash)
-Session[sid]       = (UE role, FGS, context, transcript_hash, key state, status)
+Consume[dT]        = unused | reserved(txid) | consumed-pending-confirm(session_id, transcript_hash) | consumed-active(...) | consumed-expired(...)
+Session[sid]       = (UE role, FGS, context, transcript_hash, key state, authorized/active/expired status)
 Handover[hctx]     = (source sid/context, target context, nonce, status)
 Revoke[obj]        = (version, effective_time, reason/status)
 OpenAuth[auth_id]  = (dT, case_id, evidence_digest, purpose, expiry, used/status)
@@ -115,6 +115,18 @@ Oracle 至少應區分 `Issue`、`Deliver／Send`、`AccessStart`、`AccessFinis
 **[OPEN-GAME]** 攻擊者完全控制 network 與 LEO／FLEO relay，並可驅動多個 UE／FGS sessions。若 honest FGS 接受 session，則除 negligible probability 外，必須存在唯一 partnered UE session，該 UE 持有對應 ticket／holder state，雙方同意 ticket digest、FGS identity、serving context、roles、algorithms 與 transcript。若 honest UE 接受，亦須存在唯一 partnered honest／authorized FGS session。未知 key-share、role confusion、identity misbinding 與 downgrade 都計為勝利。
 
 此 game 必須以 RBBC certified-language soundness／one-more unforgeability 作為「ticket 合法來源」的組合 lemma，但仍需 AKE authentication、holder-possession（若 protocol 要求）、transcript binding 與 FAC configuration authenticity 的 reduction。
+
+V2必須把acceptance event分開：
+
+- `FGS_AUTHORIZED_PENDING`只表示FGS已驗證M1並durable commit唯一grant；不得把它當成
+  UE liveness或client final-key confirmation；
+- `UE_ACCEPTED`發生於UE驗證M2的FGS authentication、KEM decapsulation與server
+  Finished；
+- `FGS_ACTIVE`只在FGS驗證client Finished／第一個受保護application record後發生。
+
+若`G-ACCESS-AUTH`的FGS winning event要求explicit final-key confirmation與live
+partner，應以`FGS_ACTIVE`而非`FGS_AUTHORIZED_PENDING`作為acceptance。這不妨礙UE在
+M2後一趟往返取得grant，但禁止以message count模糊安全事件。
 
 ### 6.2 `G-SESSION-FRESH`：fresh session-key indistinguishability
 
@@ -136,22 +148,28 @@ Oracle 至少應區分 `Issue`、`Deliver／Send`、`AccessStart`、`AccessFinis
 
 ### 7.1 `G-ONE-CONSUME`：最多一次成功
 
-**[OPEN-GAME]** 對任一 canonical ticket digest `dT`，即使 attacker 複製 ticket、建立任意多平行 connections、選擇不同 LEO／FLEO relay 或不同 FGS ingress，所有 honest acceptance authorities 中最多一個 access session 能進入 `accepted-and-consumed`。Winning event 是兩個不同 session IDs／transcript hashes 對同一 `dT` 都成功接受；單純重送而全部被拒絕不算勝利。
+**[OPEN-GAME]** 對任一 canonical ticket digest `dT`，即使 attacker 複製 ticket、建立任意多平行 connections、選擇不同 LEO／FLEO relay、不同 FGS ingress或不同V1／V2 wire version，所有 honest acceptance authorities 中最多一個 access grant 能進入任何 `consumed-*` state，且最多一個session能進入active。Winning event 是兩個不同 session IDs／transcript hashes 對同一 `dT` 都成功grant或active；單純相同attempt重送並回復同一response不算勝利。
 
 原子操作應具備語意：
 
 ```text
 Verify all immutable ticket/context/expiry/revocation/AKE preconditions
-CAS Consume[dT]: unused -> pending(txid)
-Complete key confirmation and durable decision
-Commit pending(txid) -> consumed(session_id, transcript_hash)
+CAS Consume[dT]: unused -> reserved(txid)
+Build and durably commit the unique response/session identity
+Commit reserved(txid) -> consumed-pending-confirm(session_id, transcript_hash)
+Verify client Finished before application side effects
+Activate -> consumed-active(session_id, transcript_hash)
 ```
 
 何時 reserve、何時 commit、失敗是否釋放、timeout 後由誰恢復，須在 protocol specification 固定。安全性要求不能與 availability recovery 使用互相矛盾的 rollback 規則。
 
+V2 latency-first profile在發布final M2前永久consumes ticket；若不允許client
+confirmation前的early burn，就必須把M2改成provisional grant並另定acceptance game，
+不能同時保留兩種相衝突語意。
+
 ### 7.2 `G-REPLAY`：sequential／cross-context replay
 
-**[OPEN-GAME]** attacker 記錄一個完整或部分 access transcript，之後在同一或不同 FGS、epoch、serving context、relay path 重送。若沒有 fresh partnered UE execution，honest endpoint 仍建立新 session 或接受舊 key，attacker 勝利。已消耗 ticket 的任何後續 access 均須拒絕；未完成 transcript 的 message replay 亦不得繞過 nonce／transcript checks。
+**[OPEN-GAME]** attacker 記錄一個完整或部分 access transcript，之後在同一或不同 FGS、epoch、serving context、relay path或protocol version重送。若它建立第二個grant／session或讓attacker取得原UE session key，attacker勝利。V2允許bitwise-identical M1 retry只回復同一durable M2；它不算fresh session。已消耗ticket的不同attempt／version必須拒絕，未完成transcript的replay不得繞過freshness／transcript checks。
 
 ### 7.3 `G-PARALLEL-REPLAY`：racing requests
 
@@ -163,7 +181,7 @@ Commit pending(txid) -> consumed(session_id, transcript_hash)
 
 ### 7.5 可測但不能代替 proof
 
-**[IMPLEMENTATION-TEST]** 至少包含：相同 ticket 的 2、N 與跨-region barrier-synchronized races；transaction abort；process kill；disk／replica delay；leader failover；stale snapshot；duplicate delivery；不同 context 同票 race；key confirmation 前後 crash；timeout retry；已消耗 state restart 後持久性。測試應斷言 successful session count `<= 1`、失敗不誤消耗，以及 audit／store state 一致。有限 schedules 的通過不能證明所有並行 interleavings 或 Byzantine storage 下的 theorem。
+**[IMPLEMENTATION-TEST]** 至少包含：相同 ticket 的 2、N、跨-version與跨-region barrier-synchronized races；transaction abort；process kill；disk／replica delay；leader failover；stale snapshot；bitwise duplicate delivery；不同 context 同票 race；grant commit與client confirmation前後crash；timeout retry；exact M2 recovery；已消耗 state restart 後持久性。測試應斷言 successful grant／active session count `<= 1`、pure validation失敗不誤消耗、pending session不執行side effect，以及audit／store state一致。有限 schedules的通過不能證明所有並行interleavings或Byzantine storage下的theorem。
 
 ## 8. Handover
 

@@ -12,8 +12,8 @@
 | T1 — PQ-RBBC core | legacy 18-tree relation／parent join 已有 executable evidence；完成 unified-tree 真實 launch artifacts、production qualification、fork proof、backend 與 benchmarks | v2.42 bounded recovery／provenance、可信 artifact root、外部 operator／reviewer | 可以；下一個 bounded gate 是新的 v2.42 reservation 與 human independent review |
 | T2 — Federation authorization | 定義 FAC threshold issuer／configuration authorization 與 evidence format | T0 | 可以 |
 | T3 — Opening governance | 定義 case authorization、OA gate、robust shares、combine 與 public audit evidence | T0；穩定 RBBC ticket digest | 可以 |
-| T4 — Satellite access 與 PQ AKE | draft access codecs 與 transcript identities 已建立；選定 holder authenticator／PQ AKE，並定義 UE–FGS state machine、LEO／FLEO 角色與 session keys | T0；穩定 VerifyTicket interface | 可以 |
-| T5 — Replay 與 lifecycle | v0.1 draft 與 test-only state model 已建立；review 並 freeze production store、suite、revocation、expiry 與 recovery interfaces | T0；T4 interfaces | 可以 |
+| T4 — Satellite access 與 PQ AKE | V1四訊息reference保留；V2 codecs／`pi_access` direct relation／abstract backend contracts已建立，下一步接VerifyTicket boundary並選定concrete suite | T0；穩定 VerifyTicket interface；D-002 | 可以；先做完整FGS pure-check processor與PQ suite研究 |
+| T5 — Replay 與 lifecycle | V1 reference保留；V2 process-local pending-confirm／active state與race tests已建立，下一步做crash／wallet model及durable distributed store design | T0；T4 V2 interface | 可以；先做fault model與authoritative store contract |
 | T6 — Handover | 定義 serving-context transition 與 continuous authentication | T4；T5 | 可先做 specification |
 | T7 — Security proof composition | 將各模組 games 組合成 end-to-end theorems | 穩定 T1–T6 semantics | 稍後 |
 | T8 — Evaluation | communication、computation、storage、latency、throughput、jitter 與 baselines | executable modules | 可先做 instrumentation |
@@ -29,7 +29,7 @@
 
 1. 將已選定的 short-lived、strictly one-use ticket policy 固定為 exact state-transition specification；unlinkable presentation 保留為未來擴充。
 2. 固定 UE、HNCC、FAC、OA、FGS、FLEO／LEO 與 Operator API。
-3. 固定 access 與 opening transcripts。
+3. Review並凍結V2 access與opening transcripts；V1 access bytes維持歷史相容。
 4. 撰寫 end-to-end threat model 與 security games。
 5. 加入 machine-readable protocol schemas 與 cross-module conformance tests。
 

@@ -1,0 +1,64 @@
+{
+  "runner": {
+    "claim_boundary": {
+      "append_only_public_api": true,
+      "automatic_background_scheduler_implemented": false,
+      "distributed_coordination_implemented": false,
+      "exact_recorded_retry_avoids_coordinator_rerun": true,
+      "incomplete_intent_blocks_automatic_rerun": true,
+      "incomplete_run_automatic_reconstruction": false,
+      "intent_before_replay_mutation": true,
+      "intent_receipt_policy_binding_enforced": true,
+      "journal_and_replay_atomic_transaction": false,
+      "lost_receipt_ack_readback_recovery": true,
+      "operator_authentication_instantiated": false,
+      "physical_power_loss_tested": false,
+      "production_clock_instantiated": false,
+      "production_ready": false,
+      "production_record_protection_instantiated": false,
+      "receipt_before_completed_return": true,
+      "rollback_resistance": false,
+      "separate_journal_and_replay_databases": true,
+      "single_host_persistent_intent_receipt_journal": true
+    },
+    "format": "PQ-SAT-FGS-RECONCILIATION-AUDIT-v0.2",
+    "processing_order": [
+      "load_exact_intent_and_receipt",
+      "append_intent_before_coordinator",
+      "read_back_exact_intent",
+      "execute_bounded_coordinator_once",
+      "append_exact_receipt",
+      "read_back_exact_receipt_before_return"
+    ]
+  },
+  "sqlite_journal": {
+    "application_id": "0x5051534A",
+    "claims": {
+      "append_only_intent_receipt_api": true,
+      "atomic_with_replay_state": false,
+      "canonical_bounded_records": true,
+      "cross_process_serialization": true,
+      "distributed": false,
+      "exact_retry_idempotent": true,
+      "incomplete_intent_reconstruction_implemented": false,
+      "intent_primary_key_unique": true,
+      "intent_receipt_policy_binding_enforced": true,
+      "physical_power_loss_tested": false,
+      "production_ready": false,
+      "production_record_protection_instantiated": false,
+      "receipt_requires_intent": true,
+      "record_protection_backend_boundary": true,
+      "rollback_resistance": false,
+      "separate_from_replay_database": true,
+      "single_host_restart_durable_reference": true
+    },
+    "format": "PQ-SAT-FGS-RECONCILIATION-AUDIT-SQLITE-v0.2",
+    "journal_mode": "WAL",
+    "schema_version": 1,
+    "synchronous": "FULL",
+    "tables": [
+      "reconciliation_audit_intents",
+      "reconciliation_audit_receipts"
+    ]
+  }
+}

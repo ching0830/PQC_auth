@@ -1,0 +1,34 @@
+{
+  "access_protocol_version": 2,
+  "claim_boundary": {
+    "authenticated_configuration_boundary_implemented": true,
+    "client_finished_generation_implemented": true,
+    "durable_wallet_transition_implemented": false,
+    "exact_wallet_request_revalidated": true,
+    "fgs_authentication_precedes_kem_decapsulation": true,
+    "first_protected_application_record_implemented": false,
+    "production_fgs_key_distribution_instantiated": false,
+    "production_pq_ake_instantiated": false,
+    "production_ready": false,
+    "proof_closed": false,
+    "query_bound_fgs_key_boundary_implemented": true,
+    "secure_key_erasure_implemented": false,
+    "server_finished_boundary_implemented": true,
+    "session_activate_output_implemented": true
+  },
+  "fgs_key_query_domain": "PQ-SAT/UE-FGS-KEY-QUERY/v2",
+  "format": "PQ-SAT-UE-ACCESS-ACCEPT-PROCESSOR-v0.2",
+  "processing_order": [
+    "canonical_access_accept",
+    "protected_wallet_attempt_and_exact_m1",
+    "authenticated_current_configuration",
+    "response_request_and_policy_binding",
+    "trusted_acceptance_time",
+    "query_bound_fgs_verification_key",
+    "fgs_authentication_before_decapsulation",
+    "kem_decapsulation_and_shared_kdf_context",
+    "server_finished",
+    "client_finished_and_session_activate",
+    "release_ue_session_material"
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "claim_boundary": {
+    "automatic_background_scheduler_implemented": false,
+    "bounded_expiry_takeover": true,
+    "distributed_consensus_lease": false,
+    "distinct_owner_single_host_cross_process_lease": true,
+    "immutable_generation_fencing": true,
+    "operator_authentication_instantiated": false,
+    "physical_power_loss_tested": false,
+    "production_clock_instantiated": false,
+    "production_ready": false,
+    "progress_append_atomically_lease_fenced": true,
+    "receipt_append_atomically_lease_fenced": true,
+    "renewal_before_expiry": true,
+    "replay_mutation_and_journal_atomic": false,
+    "rollback_resistance": false,
+    "stale_executor_journal_writes_rejected": true,
+    "stale_executor_replay_call_prevented_after_lease_loss": false,
+    "unique_owner_id_enforced": false
+  },
+  "format": "PQ-SAT-FGS-RECONCILIATION-EXECUTION-LEASE-v0.2",
+  "processing_order": [
+    "establish_resumable_intent",
+    "acquire_or_recover_single_host_lease",
+    "persist_exact_plan_before_replay_mutation",
+    "assert_or_renew_lease_before_each_item",
+    "execute_exact_plan_item",
+    "atomically_assert_lease_and_append_progress",
+    "atomically_assert_lease_and_append_receipt",
+    "fence_stale_executor_after_takeover"
+  ]
+}

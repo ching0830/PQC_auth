@@ -1,0 +1,33 @@
+{
+  "access_protocol_version": 2,
+  "activation_revocation_query_domain": "PQ-SAT/ACTIVATION-REVOCATION-QUERY/v2",
+  "claim_boundary": {
+    "activation_revocation_boundary_implemented": true,
+    "atomic_revocation_and_activation_implemented": false,
+    "capability_released_only_after_activate": true,
+    "client_finished_boundary_implemented": true,
+    "composed_activation_commit_hook_implemented": true,
+    "durable_or_distributed_store_implemented": false,
+    "explicit_session_activate_frame_implemented": true,
+    "first_protected_application_record_implemented": false,
+    "production_pq_ake_instantiated": false,
+    "production_ready": false,
+    "production_session_state_protection_instantiated": false,
+    "pre_activation_check_hook_implemented": true,
+    "proof_closed": false,
+    "revocation_context_in_commit_request_implemented": true,
+    "unique_session_index_implemented": true
+  },
+  "format": "PQ-SAT-FGS-ACTIVATION-PROCESSOR-v0.2",
+  "processing_order": [
+    "canonical_session_activate",
+    "session_index_lookup",
+    "exact_response_and_session_state_recovery",
+    "activation_binding_and_deadline",
+    "query_bound_activation_revocation",
+    "client_finished",
+    "optional_pure_pre_activation_check",
+    "atomic_activate_or_composed_commit",
+    "release_capability_after_activate"
+  ]
+}

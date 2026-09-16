@@ -1,0 +1,46 @@
+{
+  "access_protocol_version": 2,
+  "claim_boundary": {
+    "distributed_wallet_implemented": false,
+    "durable_sqlite_reference_store_implemented": true,
+    "exact_m1_restart_recovery_implemented": true,
+    "first_protected_application_record_implemented": false,
+    "idempotent_accept_transition_implemented": true,
+    "physical_power_loss_tested": false,
+    "production_ready": false,
+    "production_record_protection_instantiated": false,
+    "proof_closed": false,
+    "record_protection_backend_boundary_implemented": true,
+    "release_after_commit_implemented": true,
+    "rollback_protection_implemented": false,
+    "secure_key_erasure_implemented": false
+  },
+  "format": "PQ-SAT-UE-WALLET-CHECKPOINT-v0.2",
+  "release_order": [
+    "load_and_validate_protected_attempt",
+    "verify_access_accept",
+    "atomic_wallet_accept_commit",
+    "validate_committed_exact_output",
+    "release_ue_session_material"
+  ],
+  "sqlite_profile": {
+    "application_id": 1347507031,
+    "canonical_record_format": "PQ-SAT-UE-WALLET-RECORD-v0.2",
+    "journal_mode": "WAL",
+    "maximum_protected_record_bytes": 2359296,
+    "maximum_record_bytes": 2097152,
+    "record_aad_domain": "PQ-SAT/UE-WALLET-RECORD-AAD/v0.2",
+    "schema_version": 2,
+    "synchronous": "FULL"
+  },
+  "states": [
+    "PREPARED",
+    "ACCEPTED_PENDING_ACTIVATION"
+  ],
+  "transitions": [
+    "absent_to_prepared",
+    "prepared_to_accepted_pending_activation",
+    "exact_prepare_retry_returns_existing",
+    "exact_accept_retry_returns_existing"
+  ]
+}

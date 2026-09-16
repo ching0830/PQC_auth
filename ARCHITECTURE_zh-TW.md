@@ -28,8 +28,8 @@ flowchart TD
 | --- | --- | --- |
 | Federation governance | configuration、issuer authorization、opening authorization、獨立門檻金鑰 | 架構已定義；具體 DKG 與協定實作未完成 |
 | Credential 與 accountability | PQ-RBBC issuance、compact ticket verification、trace binding、signature-gated threshold opening | 形式化核心與 executable relation 部分完成 |
-| Satellite authentication | UE access、FGS verification、FLEO／LEO relay、freshness、anti-replay | 介面尚待定義 |
-| Session 與 handover | PQ AKE、key confirmation、serving-context binding、roaming／handover continuity | 未完成 |
+| Satellite authentication | UE access、FGS verification、FLEO／LEO relay、freshness、anti-replay | v0.1 四訊息 reference 已實作；v0.2 兩訊息 candidate 已定義 |
+| Session 與 handover | PQ AKE、key confirmation、serving-context binding、roaming／handover continuity | v0.2 abstract AKE／activation boundary 已定義；concrete suite與handover未完成 |
 
 ## 角色
 
@@ -92,18 +92,53 @@ $$
 
 ### M5. Satellite authentication 與 PQ AKE
 
-輸入已驗證 ticket、verifier nonce 與 serving context，建立新鮮 session key。具體 KEM／signature composition、mutual-authentication transcript、channel binding 及 forward／backward secrecy games 尚未完成；本模組必須維持 FLEO／LEO 的低運算與低通訊負擔。
+現行 v0.1 reference 採 `AccessInit -> AccessChallenge -> AccessFinish ->
+AccessAccept`，以逐次 `fgs_nonce`／cookie綁定 holder authenticator及雙方key shares。
+它的canonical codecs與transcript identities已實作／測試，但holder authenticator及PQ
+AKE尚未實作。
+
+新的 v0.2 candidate 改採 `AccessRequestV2 -> AccessAcceptV2`：UE第一則即提交ticket、
+time／epoch freshness、serving／authorization／channel context、UE ephemeral KEM key及
+獨立的 `pi_access`，證明持有ticket中`h=H_hold(k_hold)`對應的holder secret。FGS第二則
+以fresh KEM encapsulation、獨立FGS authentication及server key confirmation回傳結果，
+使UE在一趟往返內得到authenticated grant。逐次`fgs_nonce`不是v0.2必要輸入；完整
+request replay仍由atomic one-time state處理。
+
+若FGS需要UE對最終key的explicit confirmation，第一個受保護application packet必須
+攜帶client Finished；FGS在此之前只能是`FGS_AUTHORIZED_PENDING`，不能執行application
+side effect。Exact bytes、relation與state semantics見
+[docs/specs/SATELLITE_ACCESS_v0_2_zh-TW.md](docs/specs/SATELLITE_ACCESS_v0_2_zh-TW.md)及
+[docs/specs/ONE_TIME_TICKET_STATE_v0_2_zh-TW.md](docs/specs/ONE_TIME_TICKET_STATE_v0_2_zh-TW.md)。
+V2 frame／request／accept／activation codecs、direct relation evaluator、abstract crypto
+contracts及process-local state model已建立並通過bounded tests；尚未建立完整FGS processor
+或接入真實ticket／NIZK／AKE backends。
+具體NIZK／KEM／FGS-auth／KDF／MAC composition、channel exporter、forward-secrecy games
+與成本仍未Instantiated／Proof-closed；本模組必須維持FLEO／LEO低運算與低通訊負擔。
 
 ### M6. Anti-replay、revocation 與 handover
 
-System profile v0.1 使用 short-lived、strictly one-use ticket。FGS 維護具 epoch／expiry 邊界的 consumption state，並以 ticket digest、serial、serving context 與 access transcript 執行原子 check-and-consume；任何並行重複、失敗後重送或跨 context replay 的狀態轉移都必須明確定義。Draft state machine、crash semantics 與 access-object framing 見 [docs/specs/ONE_TIME_TICKET_STATE_v0_1_zh-TW.md](docs/specs/ONE_TIME_TICKET_STATE_v0_1_zh-TW.md)。此模組亦負責 revocation distribution、handover authorization、failure recovery 與 availability；這些功能不屬於 RBBC core。
+System profile 使用 short-lived、strictly one-use ticket。FGS 維護具 epoch／expiry 邊界
+的 consumption state，並以 ticket digest、serial、serving context 與 access transcript
+執行原子 check-and-consume；任何並行重複、失敗後重送或跨 context／version replay的
+狀態轉移都必須明確定義。V1四訊息歷史規格見
+[docs/specs/ONE_TIME_TICKET_STATE_v0_1_zh-TW.md](docs/specs/ONE_TIME_TICKET_STATE_v0_1_zh-TW.md)；
+V2一趟往返candidate延用同一`use_key`，並區分`CONSUMED_PENDING_CONFIRM`與
+`CONSUMED_ACTIVE`。此模組亦負責revocation distribution、wallet／server failure
+recovery、handover authorization與availability；這些功能不屬於RBBC core。
+目前V2只有加鎖的process-local reference model；它不具durability、跨程序或跨FGS
+linearizability，不能作為production authoritative store。
 
 ## 協定階段
 
 1. **System initialization：**建立獨立 FAC 與 OA keys、issuer keys、共同 configuration 與 public parameters。
 2. **Issuer authorization：**由 (t_F)-of-(n) FAC 批准 HNCC 在限定 epoch、policy、quota 與 expiry 中發行。
 3. **Enrollment and offline issuance：**HNCC 驗證 UE 身分；PQ-RBBC 綁定 hidden ticket、blind request、holder secret、registered identity、serial 與 trace ciphertext。
-4. **Access authentication：**UE 提交 ticket 與 freshness／session data；指定 verifier 驗證 policy、context、signature、replay state 及 PQ AKE transcript，並在成功狀態轉移中原子消耗 one-time ticket。驗證失敗不得消耗，成功後的相同 ticket 不得再次建立 session。
+4. **Access authentication：**UE以V1四訊息reference或authenticated configuration明確
+   啟用的V2兩訊息candidate提交ticket與freshness／session data。指定verifier驗證
+   policy、context、ticket signature、holder-possession proof、replay state及PQ AKE
+   transcript，並在送出final grant前原子消耗one-time ticket。驗證失敗不得消耗，成功
+   後相同ticket不得跨protocol version再次建立session。V2 session在client Finished前
+   不得執行application side effect。
 5. **Handover／continuous authentication：**session 重新綁定新 serving context，不暴露 registered identity，也不在線呼叫 HNCC。
 6. **Conditional opening：**有效 case authorization 控制 (t_O)-of-(n) OA shares、reconstruction、serial consistency、evidence generation 與 audit。
 7. **Revocation and lifecycle：**散布並執行 expired、consumed、compromised 或 revoked credentials／keys。
@@ -137,5 +172,6 @@ re-review未發現blocking finding；這不等於具名獨立人員核准或實�
 qualification。V2.41 reservation只屬歷史，新的v2.42 operator reservation、external human
 independent review、launch identity freeze及execution authorization仍未建立。Filesystem
 強不可變性仍是部署前提。Fork-specific reductions、合格 PQ SE-NIZK backend、real trace key、robust
-opening transcript、satellite AKE、durable/distributed anti-replay 與 handover 仍未封閉；
+opening transcript、v0.2 access NIZK／satellite AKE、durable/distributed anti-replay 與
+handover 仍未封閉；
 production closure 為 false。

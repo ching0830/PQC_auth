@@ -1,6 +1,6 @@
 # 研究筆記（Research Notes）
 
-> 最後更新：2026-09-10
+> 最後更新：2026-09-14
 > 用途：保存文獻脈絡、理論基礎、研究問題與概念上的研究缺口。新任務開始時應優先閱讀本文件及 `methodology.md`。文件權責見 `docs/DOCUMENTATION_POLICY_zh-TW.md`。
 
 ## 研究主題
@@ -67,7 +67,9 @@ PQ-RBBC 是目前最成熟的密碼學核心，但不是整篇論文。完整系
 | 待補 | PQ satellite authentication | baseline 與 threat model | 未開始 | 第 2、3 章 |
 | 待補 | blind／anonymous credentials | unlinkability 與 ticket lifecycle | 未開始 | 第 2、4 章 |
 | 待補 | robust threshold opening | opening governance 與 audit | 未開始 | 第 2、4、5 章 |
-| 待補 | PQ AKE／KEM composition | session establishment | 未開始 | 第 2、4、5 章 |
+| [NIST SP 800-227](https://doi.org/10.6028/NIST.SP.800-227) | KEM usage、context與key confirmation | 支撐ephemeral UE KEM key、server ciphertext／MAC及單向／雙向confirmation邊界 | §4.4已核對 | 第 2、4、5 章 |
+| [RFC 8446](https://www.rfc-editor.org/rfc/rfc8446.html) | Finished、0-RTT anti-replay與shared state | 區分server grant、client liveness／Finished與distributed replay state | §4.4.4、§8、Appendix E.5已核對 | 第 2、4、5、7 章 |
+| [RFC 9180](https://www.rfc-editor.org/rfc/rfc9180.html) | KEM context binding與authentication modes | 說明KEM-derived MAC不自動等於FGS identity authentication | §8.1、§9.1已核對 | 第 2、4、5 章 |
 
 ## 筆記更新規則
 
