@@ -328,6 +328,27 @@ Commit(
 
 只有四項都成立時才能執行 `Abort`。若結果不確定，保持 `RESERVED` 並 fail closed，交由 reconciliation／operator recovery；不得為 availability 猜測「大概沒有成功」。
 
+Reference resumable reconciliation必須在第一個`Abort`前持久保存同一次clock observation與
+exact reservation candidate list，並在每筆fence read-back後append contiguous progress。
+重啟只能從該plan的下一個未保存index繼續，不得重新取樣clock或換一批candidate。若replay
+mutation已commit但progress acknowledgement／commit遺失，允許以相同plan item重試並由exact
+fence read-back收斂；audit journal與replay store分離時，這是可恢復composition，不是跨store
+atomicity。Single-host lease-fenced profile另以immutable generation、bounded expiry／renewal與
+transactional journal-write fencing限制current executor；takeover後舊generation不得再提交
+progress或receipt。它仍不能撤回已通過lease check但尚未送到replay store的舊call，因此該call
+必須保持exact-plan idempotent並由fence read-back收斂。跨主機consensus與partition availability
+不在此reference claim內，衝突／不確定輸出必須fail closed。
+
+Production-gated reconciliation入口不得再接受未驗證的raw executor `owner_id`。Reference
+successor以canonical execution scope綁定system context、replay／journal identities、lease
+policy、clock domain與credential-verifier identity；具時效的executor authorization再綁定exact
+invocation、operator、executor instance及credential identity。只有credential authentication、
+scope、半開有效期間與backend readiness全部通過後，才從authorization導出lease owner ID。
+每次後續lease clock取樣皆重查同一runner內的時間單調性與credential validity。這仍只是
+backend contract：具體operator credential scheme、credential anti-replay／revocation、可信clock
+與reboot rollback detection尚未實例化，相同credential被兩個process複製使用也尚未由reference
+自動阻止。
+
 ## 9. Revocation ordering
 
 Revocation check 必須在 pure validation 時執行，並在 reserve／commit transaction 內再次確認同一或更新的 revocation generation。
@@ -370,6 +391,12 @@ retention_deadline = ticket_expiry + maximum_clock_skew + replay_grace
 12. Handover 不改變 ticket consumption record，也不建立第二個 initial session。
 13. Store partition／timeout 時 fail closed。
 14. Retention cleanup 不會使仍可被 verifier 接受的 ticket 再次可用。
+15. Credentialed reconciliation在credential、scope、clock或backend readiness失敗時，不得寫入
+    intent／plan／lease或呼叫replay mutation。
+16. Credentialed reconciliation的lease owner ID只能由已驗證的exact authorization導出，不得由
+    caller另行覆寫。
+17. Executor authorization在`not_before`以前、`not_after`當下或之後，以及同一runner觀察到clock
+    rollback時，必須fail closed。
 
 ## 13. 安全性與 availability 限制
 

@@ -1,0 +1,141 @@
+<div id="pqc-learning-end-to-end-lifecycle" role="img" aria-label="票券從共同設定、盲發行、衛星接入、一次性狀態、既有連線與換手，到獨立的受控身分開啟分支。正常接入不輸出註冊身分，HNCC 不在衛星在線路徑，conditional opening 只有在案件授權與 OA 門檻份額都通過後才輸出 rid 與 sn。">
+  <style>
+    #pqc-learning-end-to-end-lifecycle { width: 100%; color: var(--foreground); }
+    #pqc-learning-end-to-end-lifecycle .lifecycle { display: block; width: 100%; }
+    #pqc-learning-end-to-end-lifecycle .lifecycle text { fill: var(--foreground); font-family: inherit; }
+    #pqc-learning-end-to-end-lifecycle .lifecycle .setup { fill: color-mix(in srgb, var(--viz-series-1) 11%, var(--background)); stroke: var(--viz-series-1); }
+    #pqc-learning-end-to-end-lifecycle .lifecycle .issue { fill: color-mix(in srgb, var(--viz-series-2) 11%, var(--background)); stroke: var(--viz-series-2); }
+    #pqc-learning-end-to-end-lifecycle .lifecycle .access { fill: color-mix(in srgb, var(--viz-series-3) 11%, var(--background)); stroke: var(--viz-series-3); }
+    #pqc-learning-end-to-end-lifecycle .lifecycle .session { fill: color-mix(in srgb, var(--viz-series-4) 11%, var(--background)); stroke: var(--viz-series-4); }
+    #pqc-learning-end-to-end-lifecycle .lifecycle .opening { fill: color-mix(in srgb, var(--viz-series-5) 11%, var(--background)); stroke: var(--viz-series-5); }
+    #pqc-learning-end-to-end-lifecycle .lifecycle .flow { fill: none; stroke: var(--muted-foreground); stroke-width: 1.5; }
+    #pqc-learning-end-to-end-lifecycle .lifecycle .lane { fill: var(--muted-foreground); }
+    #pqc-learning-end-to-end-lifecycle .lifecycle .privacy { fill: var(--destructive); }
+  </style>
+  <svg class="lifecycle" xmlns="http://www.w3.org/2000/svg" aria-labelledby="pqc-lifecycle-summary-title pqc-lifecycle-summary-desc">
+    <title id="pqc-lifecycle-summary-title">一張票券的完整生命週期</title>
+    <desc id="pqc-lifecycle-summary-desc">共同設定與發行授權完成後，UE 和 HNCC 進行盲發行，票券與持票者秘密留在 UE。正常分支經衛星到 FGS 驗證，原子提交一次性狀態與 session，再以 session 授權換手。獨立案件分支以票券、案件、證據及用途建立請求，通過授權和 OA 門檻後才輸出 rid 與 sn。</desc>
+  </svg>
+  <script>
+    (() => {
+      const root = document.getElementById('pqc-learning-end-to-end-lifecycle');
+      const svg = root.querySelector('.lifecycle');
+      const ns = 'http://www.w3.org/2000/svg';
+      function add(name, attributes, parent) {
+        const item = document.createElementNS(ns, name);
+        for (const [key, value] of Object.entries(attributes)) item.setAttribute(key, String(value));
+        parent.appendChild(item);
+        return item;
+      }
+      function draw() {
+        const old = svg.querySelector('[data-drawing]');
+        if (old) old.remove();
+        const width = Math.max(280, Math.round(root.getBoundingClientRect().width));
+        const narrow = width < 560;
+        const height = narrow ? 970 : 535;
+        svg.setAttribute('viewBox', '0 0 ' + width + ' ' + height);
+        svg.setAttribute('height', String(height));
+        const group = add('g', { 'data-drawing': '' }, svg);
+        function label(x, y, value, size = 12, weight = 400, className = '', anchor = 'middle') {
+          const item = add('text', { x, y, 'text-anchor': anchor, 'font-size': size, 'font-weight': weight, class: className }, group);
+          item.textContent = value;
+        }
+        function box(x, y, w, h, title, line1, line2, className) {
+          add('rect', { x, y, width: w, height: h, rx: 9, class: className }, group);
+          label(x + w / 2, y + 24, title, 13, 500);
+          label(x + w / 2, y + 47, line1, 11.5);
+          label(x + w / 2, y + 65, line2, 11.5);
+        }
+        function arrow(x1, y1, x2, y2) {
+          add('line', { x1, y1, x2, y2, class: 'flow' }, group);
+          const angle = Math.atan2(y2 - y1, x2 - x1);
+          const len = 7;
+          const spread = 0.55;
+          add('path', {
+            d: 'M ' + (x2 - len * Math.cos(angle - spread)) + ' ' + (y2 - len * Math.sin(angle - spread)) +
+              ' L ' + x2 + ' ' + y2 +
+              ' L ' + (x2 - len * Math.cos(angle + spread)) + ' ' + (y2 - len * Math.sin(angle + spread)),
+            class: 'flow'
+          }, group);
+        }
+        function elbow(points) {
+          add('polyline', { points: points.map(p => p.join(',')).join(' '), class: 'flow' }, group);
+          const a = points[points.length - 2];
+          const b = points[points.length - 1];
+          const angle = Math.atan2(b[1] - a[1], b[0] - a[0]);
+          const len = 7;
+          const spread = 0.55;
+          add('path', {
+            d: 'M ' + (b[0] - len * Math.cos(angle - spread)) + ' ' + (b[1] - len * Math.sin(angle - spread)) +
+              ' L ' + b[0] + ' ' + b[1] +
+              ' L ' + (b[0] - len * Math.cos(angle + spread)) + ' ' + (b[1] - len * Math.sin(angle + spread)),
+            class: 'flow'
+          }, group);
+        }
+        label(width / 2, 24, narrow ? '票券從發行到受控開啟' : '一張票券的完整生命週期與兩條後續路徑', narrow ? 15 : 16, 500);
+        label(width / 2, 46, '正常接入不輸出 rid；開啟是獨立案件分支', 11.5, 400, 'lane');
+        if (!narrow) {
+          const laneX = 44;
+          const start = 98;
+          const right = width - 12;
+          const gap = 14;
+          const nodeW = (right - start - gap * 2) / 3;
+          const x1 = start;
+          const x2 = start + nodeW + gap;
+          const x3 = start + (nodeW + gap) * 2;
+          const h = 76;
+          label(laneX, 103, '準備', 12, 500, 'lane');
+          box(x1, 66, nodeW, h, '共同設定', 'Operator 提案；FAC 認證', 'ctx／epoch／keys／policy', 'setup');
+          box(x2, 66, nodeW, h, '發行授權', '限定 HNCC、期間與 quota', '接著才可發行', 'setup');
+          arrow(x1 + nodeW, 104, x2 - 2, 104);
+          label(laneX, 218, '發行', 12, 500, 'lane');
+          box(x1, 178, nodeW, h, 'UE ↔ HNCC 盲發行', 'HNCC 認證 rid、驗 pi_issue', 'UE 保留隱藏 M 與 k_hold', 'issue');
+          box(x2, 178, nodeW, h, '票券留在 UE', 'T = (M, sigma)', 'k_hold 另存於裝置', 'issue');
+          box(x3, 178, nodeW, h, '衛星中繼 → FGS', '驗票、持票者、服務與 AKE', 'HNCC 不在在線路徑', 'access');
+          arrow(x1 + nodeW, 216, x2 - 2, 216);
+          arrow(x2 + nodeW, 216, x3 - 2, 216);
+          elbow([[x2 + nodeW / 2, 142], [x2 + nodeW / 2, 159], [x1 + nodeW / 2, 159], [x1 + nodeW / 2, 176]]);
+          label(laneX, 330, '連線', 12, 500, 'lane');
+          box(x3, 290, nodeW, h, '一次性提交', 'Reserve → Commit', 'session 與 CONSUMED', 'access');
+          box(x2, 290, nodeW, h, 'Active session', '同一 session 內可連結', '後續通訊不再用票券', 'session');
+          box(x1, 290, nodeW, h, 'Handover', 'session-derived authorization', '不重用已消耗票券', 'session');
+          arrow(x3 + nodeW / 2, 254, x3 + nodeW / 2, 288);
+          arrow(x3, 328, x2 + nodeW + 2, 328);
+          arrow(x2, 328, x1 + nodeW + 2, 328);
+          label(laneX, 443, '案件', 12, 500, 'lane');
+          box(x1, 402, nodeW, h, '開啟請求 Q', 'T＋case＋evidence＋purpose', 'expiry／nonce／authorization', 'opening');
+          box(x2, 402, nodeW, h, 'OA 門檻', '各自驗 Q；至少 t_O 份', '同一 request／ticket／case', 'opening');
+          box(x3, 402, nodeW, h, '受控輸出', '驗 trace authentication', 'rid, sn 且解密 sn 相等', 'opening');
+          arrow(x1 + nodeW, 440, x2 - 2, 440);
+          arrow(x2 + nodeW, 440, x3 - 2, 440);
+          label(width / 2, 512, '正常路徑隱藏 rid；只有合格案件授權＋OA 門檻才開啟', 12, 500, 'privacy');
+        } else {
+          const x = 14;
+          const w = width - 28;
+          const h = 76;
+          label(width / 2, 76, '準備', 12, 500, 'lane');
+          box(x, 88, w, h, '共同設定與發行授權', 'Operator 提案；FAC 門檻認證', '限定 ctx／keys／HNCC／quota', 'setup');
+          label(width / 2, 192, '正常發行與接入路徑', 12, 500, 'lane');
+          box(x, 204, w, h, 'UE ↔ HNCC 盲發行', 'HNCC 認證 rid、驗 pi_issue', 'UE 保留隱藏 M 與 k_hold', 'issue');
+          box(x, 300, w, h, '票券留在 UE', 'T = (M, sigma)', 'k_hold 另存於裝置', 'issue');
+          box(x, 396, w, h, '衛星中繼 → FGS', '驗票、持票者、服務與 AKE', 'HNCC 不在在線路徑', 'access');
+          box(x, 492, w, h, '一次性提交與 session', 'Reserve → Commit → CONSUMED', '成功 session 可持續通訊', 'access');
+          box(x, 588, w, h, 'Handover', '以原 session 授權延續', '不重用已消耗票券', 'session');
+          arrow(width / 2, 280, width / 2, 298);
+          arrow(width / 2, 376, width / 2, 394);
+          arrow(width / 2, 472, width / 2, 490);
+          arrow(width / 2, 568, width / 2, 586);
+          label(width / 2, 704, '獨立案件分支：由票券 T 另行啟動', 12, 500, 'lane');
+          box(x, 716, w, h, '開啟請求與 OA 門檻', 'Q 綁 ticket／case／purpose', '授權、replay、至少 t_O 份', 'opening');
+          box(x, 812, w, h, '受控輸出 rid, sn', '驗 trace authentication', '解密 sn 必須等於票券 sn', 'opening');
+          arrow(width / 2, 792, width / 2, 810);
+          label(width / 2, 930, '正常接入不輸出 rid', 12, 500, 'privacy');
+          label(width / 2, 952, '只有案件授權＋OA 門檻才開啟', 11.5, 400, 'privacy');
+        }
+      }
+      draw();
+      if (typeof ResizeObserver !== 'undefined') new ResizeObserver(draw).observe(root);
+      else window.addEventListener('resize', draw);
+    })();
+  </script>
+</div>

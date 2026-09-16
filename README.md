@@ -2,6 +2,10 @@
 
 # Post-quantum accountable satellite authentication
 
+> For the current, mechanism-oriented repository map, start with the
+> [Traditional Chinese guide](START_HERE_zh-TW.md). It separates day-to-day
+> module entry points from long historical evidence filenames.
+
 This repository is the research and implementation workspace for a complete
 post-quantum, privacy-preserving, accountable satellite authentication
 mechanism.
@@ -14,16 +18,11 @@ satellite-path evaluation.
 
 ## Start here
 
-1. [ARCHITECTURE.md](ARCHITECTURE.md) — system layers, roles, modules, phases,
-   trust assumptions, and security boundaries.
-2. [RESEARCH_STATUS.md](RESEARCH_STATUS.md) — what is defined, implemented,
-   tested, proved, or still open.
-3. [ROADMAP.md](ROADMAP.md) — whole-thesis work tracks, parallel lanes, and
-   integration gates.
-4. [modules/README.md](modules/README.md) — module registry and current path
-   ownership.
-5. [docs/roadmaps/PQ_RBBC_CURRENT_HANDOFF.md](docs/roadmaps/PQ_RBBC_CURRENT_HANDOFF.md)
-   — operational handoff for ongoing RBBC tree work.
+1. [START_HERE_zh-TW.md](START_HERE_zh-TW.md) — current human-oriented map.
+2. [modules/README_zh-TW.md](modules/README_zh-TW.md) — mechanism entry points.
+3. [RESEARCH_STATUS_zh-TW.md](RESEARCH_STATUS_zh-TW.md) — canonical current claims.
+4. [ARCHITECTURE_zh-TW.md](ARCHITECTURE_zh-TW.md) and
+   [ROADMAP_zh-TW.md](ROADMAP_zh-TW.md) — canonical semantics and next gates.
 
 ## Architecture at a glance
 
@@ -67,13 +66,14 @@ The current paths are intentionally preserved during architecture migration so
 ongoing RBBC tree-producer work and sealed artifact identities are not
 disrupted.
 
-## Current implementation checkpoint
+## Current integration snapshot
 
-Integrated RBBC checkpoint v2.26 has materialized and independently replayed
-planned tree positions 0 through 10 (11 of 18). Positions 11 through 17, all 72
-relocations, complete 18-tree replay, cross-segment identity, parent join,
-fork-specific reductions, qualified PQ proof backend, robust threshold
-opening, satellite AKE, production replay/revocation, and handover remain open.
+The consolidated research branch contains the v2.43 PQ-RBBC reservation-binding
+checkpoint, the bounded issuance chain through fresh-parent I1–I5 preflight,
+satellite-access v0.2 reference processors and single-host durable state, system
+governance checkpoints, opening integration, and isolated access/threshold
+prototypes. Named independent human approval, qualified production PQ proof/AKE
+backends, distributed deployment, and end-to-end proof closure remain open.
 `production_closed = false`.
 
 ## Running current RBBC tests

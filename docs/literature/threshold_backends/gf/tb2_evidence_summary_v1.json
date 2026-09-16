@@ -1,0 +1,193 @@
+{
+  "schema": "pqc_auth.threshold_gf_tb2_evidence_summary.v1",
+  "date": "2026-09-13",
+  "main_at_start": "6f6d8c832c0f90d69d96ffe3abd0dcc8b8c562bb",
+  "base_commit": "6bb4dab80fe577041b7eb517be11f0e2ef2e9c9c",
+  "branch": "codex/threshold-gf-tb2-reference",
+  "paper_source": {
+    "filename": "2021-096.pdf",
+    "title": "Gladius: LWR based efficient hybrid public key encryption with distributed decryption",
+    "bytes": 695683,
+    "sha256": "b730d4640218b5ea86b019a52501be2e4682b562e61a468abd08658ee393678e",
+    "revision_attribution": "catalog_and_pdf_metadata_consistent; publisher_revision_byte_match_unconfirmed",
+    "catalog_revision": "2021-08-31 last of 5 revisions; received 2021-01-27",
+    "remote_pdf_identity_verified": false,
+    "reviewed_locators": [
+      "pp. 8-10",
+      "pp. 23-24",
+      "pp. 44-46; Fig. 14 p. 45 also visually inspected"
+    ]
+  },
+  "source_identities": [
+    {
+      "path": "docs/literature/threshold_backends/gf/reference_profile_v1.json",
+      "bytes": 2107,
+      "sha256": "999ff0f050044b022bf7ece99cb8b44d4d6e704295b79e7b92926737bfcfa1cc"
+    },
+    {
+      "path": "docs/literature/threshold_backends/gf/reference_vectors_v1.json",
+      "bytes": 800,
+      "sha256": "56f4d3eba568d41ad8c5911a2983598150fe46d5a63ba3e1fda8a689176c206e"
+    },
+    {
+      "path": "src/pq_threshold_candidates/gf/__init__.py",
+      "bytes": 645,
+      "sha256": "1ee5988d4b05d9f43c62e931f16e2d24e5615c4455c0521482c4a0dcffcc5bd4"
+    },
+    {
+      "path": "src/pq_threshold_candidates/gf/__main__.py",
+      "bytes": 3888,
+      "sha256": "3ee165447e463b57928c4d86d46965cde57d0ae41d25e78e684500d12d497101"
+    },
+    {
+      "path": "src/pq_threshold_candidates/gf/arithmetic.py",
+      "bytes": 3391,
+      "sha256": "b90cd6afc93f52f81c312f8daec3e121bd8d38720740bea0dd1693eda0e3b4d2"
+    },
+    {
+      "path": "src/pq_threshold_candidates/gf/profile.py",
+      "bytes": 3064,
+      "sha256": "b487267210e80b9424b269d75772ff49668d73ccef80127753b59841604a47b0"
+    },
+    {
+      "path": "src/pq_threshold_candidates/gf/reference.py",
+      "bytes": 11058,
+      "sha256": "58362248066333fcecada7960ab6951f08a7316a0a9a064a7ef09ec3a375ef06"
+    },
+    {
+      "path": "tests/threshold_candidates/gf/__init__.py",
+      "bytes": 62,
+      "sha256": "c954ca2819c69360ee12c5538d99bdb57fc59fb354c6aad85be3691806bd53e0"
+    },
+    {
+      "path": "tests/threshold_candidates/gf/test_experiment.py",
+      "bytes": 2635,
+      "sha256": "0a6d8874352da3aaf5c4e2f4af8dbd669215db74802b1a7fdd51d7a74cc4401a"
+    },
+    {
+      "path": "tests/threshold_candidates/gf/test_reference.py",
+      "bytes": 16211,
+      "sha256": "9c2afd8ea20dd30b620561dd2122234f411ceb88bb0d2d43b5d6228c3fbdf525"
+    }
+  ],
+  "unchanged_audit": {
+    "repository_source_count": 19,
+    "existing_TB1_and_source_audit_file_count": 19,
+    "source_inventory_identity": {
+      "bytes": 13449,
+      "sha256": "8450774feaa2a1e91e394cfbccdc5bc33ac17106a1330be3ef56bccb3cd3ddb5"
+    }
+  },
+  "targeted_tests": {
+    "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python -m unittest discover -s tests/threshold_candidates -v",
+    "total": 54,
+    "passed": 54,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "elapsed_seconds": 4.932,
+    "log_identity": {
+      "bytes": 7151,
+      "sha256": "7cfe46b9d8b694be8fbd688f26e400ff3c42091a26a6a186aec0db3abb9f83e0"
+    },
+    "skip_reasons": {}
+  },
+  "full_regression": {
+    "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python -m unittest discover -s tests -v",
+    "total": 742,
+    "passed": 730,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 12,
+    "elapsed_seconds": 751.137,
+    "log_identity": {
+      "bytes": 125379,
+      "sha256": "abc8044d99ffe4f4ce32aca5de24c48fbe18ccd2c578a59eaf6ea23fb7a53ee8"
+    },
+    "skip_reasons": {
+      "trusted external v2.19 recovery artifacts are not installed": 1,
+      "external v2.20 global-tail archive is not installed": 1,
+      "external v2.15 relocation assignment is not installed": 1,
+      "external v2.13 tree-0 assignment is not installed": 1,
+      "external v2.13 tree-0 execution cache is not installed": 1,
+      "external v2.14 replay artifacts are not installed": 1,
+      "external v2.14 tree-2 assignment is not installed": 1,
+      "external v2.22 tree-1 artifacts are not installed": 1,
+      "external v2.21 tree-2 artifacts are not installed": 1,
+      "external v2.23 tree-3 artifacts are not installed": 1,
+      "external v2.24 tree-4 artifacts are not installed": 1,
+      "external v2.25 batch artifacts are not installed": 1
+    }
+  },
+  "reference_measurement": {
+    "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python -m pq_threshold_candidates.gf --samples 8",
+    "report_identity": {
+      "bytes": 1278,
+      "sha256": "cc043569453c1a022c42ec4370d282036d744680487a963675c0865a1d72de60"
+    },
+    "conditions": "Final measurement executed after full regression; one keypair, eight fresh witnesses; not a controlled performance benchmark. Timing medians are lower medians.",
+    "summary": {
+      "claims": {
+        "constant_time": false,
+        "empirical_failure_probability_bound": null,
+        "non_threshold_reference_only": true,
+        "production_qualified": false,
+        "proof_closed": false
+      },
+      "environment": {
+        "machine": "x86_64",
+        "platform": "Linux",
+        "python": "3.12.9"
+      },
+      "estimated": {
+        "evidence_kind": "estimated",
+        "extra_bytes": null,
+        "known_ticket_bytes": 14572,
+        "sigma_bytes": 11644,
+        "sigma_status": "provisional_estimate",
+        "total_ticket_bytes": null
+      },
+      "measured_threshold": null,
+      "observed": {
+        "ciphertext_payload_bytes": 2848,
+        "ciphertext_record_bytes": 2910,
+        "evidence_kind": "measured_reference",
+        "keygen_ns": 128643787,
+        "keypairs": 1,
+        "median_ns": {
+          "decrypt_ns": 93504114,
+          "encrypt_ns": 61347142,
+          "relation_evaluator_ns": 61536469
+        },
+        "public_key_payload_bytes": 22528,
+        "public_key_record_bytes": 22590,
+        "samples": 8,
+        "successful_decryptions": 8,
+        "successful_relation_evaluations": 8
+      },
+      "profile_descriptor_sha256": "3077ddb7e9f90c2a551c0fccff8719655b5e852394aa4e9326c9a7801225a9b7",
+      "profile_id": "gf-hybrid2-pompeii-d4-shake256-otp-ref-v1",
+      "satellite_online_observation": null,
+      "schema": "pq-th-gf-tb2-reference-measurement-v1"
+    }
+  },
+  "claims": {
+    "reference_contract_implemented": true,
+    "reference_correctness_tests_passed": true,
+    "independent_equation_checks": true,
+    "external_KAT_or_independent_cryptographic_review": false,
+    "common_ABI_changed": false,
+    "B_issuance_ABI_integrated": false,
+    "opening_ABI_integrated": false,
+    "threshold_implemented": false,
+    "evidence_sealed": false,
+    "proof_closed": false,
+    "production_closed": false
+  },
+  "limitations": [
+    "Local regression digests are not paper/upstream KATs.",
+    "Source identity plus passing tests are not cryptographic qualification.",
+    "No empirical rare-failure bound or threshold/runtime extrapolation.",
+    "Original PDFs, raw logs, raw reports, secret key and witness bytes remain outside Git."
+  ]
+}

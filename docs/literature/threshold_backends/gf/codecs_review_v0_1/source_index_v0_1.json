@@ -1,0 +1,222 @@
+{
+  "schema": "pqc_auth.gf_codecs_review_sources.v0_1",
+  "date": "2026-09-14",
+  "review_target_commit": "8782d8ccd6bd77b52dd1b54d69fc1ff37d53a048",
+  "review_target_tree": "5819d211a718f15759c4b34cb22e2c18d2e00393",
+  "prior_implementation_index": {
+    "path": "docs/literature/threshold_backends/gf/research_codecs_v0_1/source_index_v0_1.json",
+    "bytes": 6059,
+    "sha256": "fe89847e37873f21dbb9cc1cf3e64405f282ac4e23bd9dd7e45df486f1f0d166",
+    "revision": "8782d8ccd6bd77b52dd1b54d69fc1ff37d53a048"
+  },
+  "prior_validation_summary": {
+    "path": "docs/literature/threshold_backends/gf/research_codecs_v0_1/validation_summary_v0_1.json",
+    "bytes": 7774,
+    "sha256": "859257dd2f0590ef251c85b3e1922554723f7350fc9acbd61df33edd5734977d",
+    "revision": "8782d8ccd6bd77b52dd1b54d69fc1ff37d53a048"
+  },
+  "prior_inventory": {
+    "path": "docs/literature/threshold_backends/source_inventory_v1.json",
+    "bytes": 13449,
+    "sha256": "8450774feaa2a1e91e394cfbccdc5bc33ac17106a1330be3ef56bccb3cd3ddb5",
+    "revision": "8782d8ccd6bd77b52dd1b54d69fc1ff37d53a048"
+  },
+  "identity_rechecks": {
+    "canonical_research_policy": 19,
+    "attachments": 5,
+    "implementation": 10,
+    "additional_sources": 13,
+    "matched": true
+  },
+  "target_sources": [
+    {
+      "path": "src/pq_threshold_candidates/gf/research_abi_v0_1/__init__.py",
+      "bytes": 874,
+      "sha256": "fd29a3e7ad3e8dee265fd8055a764f2efff2f395b13444a151093021676d33f5",
+      "revision": "8782d8ccd6bd77b52dd1b54d69fc1ff37d53a048",
+      "locators": "Complete file; exact reviewed implementation or its recorded validation context"
+    },
+    {
+      "path": "src/pq_threshold_candidates/gf/research_abi_v0_1/bindings.py",
+      "bytes": 5509,
+      "sha256": "57514f6d22f8f9bce6b5d11208687b7834156ccdbb5b087dc4a5a6a1ed13de89",
+      "revision": "8782d8ccd6bd77b52dd1b54d69fc1ff37d53a048",
+      "locators": "Complete file; exact reviewed implementation or its recorded validation context"
+    },
+    {
+      "path": "src/pq_threshold_candidates/gf/research_abi_v0_1/codecs.py",
+      "bytes": 8822,
+      "sha256": "6c7d58803181291fb579cbbfe03f9603bf4d8fcb71aa76ca17648dbbc2f867be",
+      "revision": "8782d8ccd6bd77b52dd1b54d69fc1ff37d53a048",
+      "locators": "Complete file; exact reviewed implementation or its recorded validation context"
+    },
+    {
+      "path": "tests/threshold_candidates/gf/research_abi_v0_1/__init__.py",
+      "bytes": 74,
+      "sha256": "109f89748d7add9b29b45902b9f2d857a0c77fd1e3495fa195531f4dc4b5ab61",
+      "revision": "8782d8ccd6bd77b52dd1b54d69fc1ff37d53a048",
+      "locators": "Complete file; exact reviewed implementation or its recorded validation context"
+    },
+    {
+      "path": "tests/threshold_candidates/gf/research_abi_v0_1/_fixtures.py",
+      "bytes": 3557,
+      "sha256": "27e0325afa82afc7fe4f72e1a5fd95e5ca900b8aea6dfda5eb535612d538bff1",
+      "revision": "8782d8ccd6bd77b52dd1b54d69fc1ff37d53a048",
+      "locators": "Complete file; exact reviewed implementation or its recorded validation context"
+    },
+    {
+      "path": "tests/threshold_candidates/gf/research_abi_v0_1/test_bindings.py",
+      "bytes": 9834,
+      "sha256": "476ec6271d53f7b1884f313cb7f28fbd3c30b5c69c3c8801c5dc896ae5d96c98",
+      "revision": "8782d8ccd6bd77b52dd1b54d69fc1ff37d53a048",
+      "locators": "Complete file; exact reviewed implementation or its recorded validation context"
+    },
+    {
+      "path": "tests/threshold_candidates/gf/research_abi_v0_1/test_codecs.py",
+      "bytes": 11343,
+      "sha256": "36c5beb39c3afefd73ac803ae72aa27d21d546046dc3e31766ce2890fc43f9f0",
+      "revision": "8782d8ccd6bd77b52dd1b54d69fc1ff37d53a048",
+      "locators": "Complete file; exact reviewed implementation or its recorded validation context"
+    },
+    {
+      "path": "docs/literature/threshold_backends/gf/README_zh-TW.md",
+      "bytes": 2331,
+      "sha256": "e5c36d905264952cde9b66c63bf626dd689132938200542793f9fe4f4206fb59",
+      "revision": "8782d8ccd6bd77b52dd1b54d69fc1ff37d53a048",
+      "locators": "Complete file; exact reviewed implementation or its recorded validation context"
+    },
+    {
+      "path": "docs/literature/threshold_backends/gf/research_codecs_v0_1/IMPLEMENTATION_zh-TW.md",
+      "bytes": 10838,
+      "sha256": "6ec00f18967a843e05aa8b9e723624c58b2014674b033a6b8bbb374a5a0e91a2",
+      "revision": "8782d8ccd6bd77b52dd1b54d69fc1ff37d53a048",
+      "locators": "Complete file; exact reviewed implementation or its recorded validation context"
+    },
+    {
+      "path": "docs/literature/threshold_backends/gf/research_codecs_v0_1/source_index_v0_1.json",
+      "bytes": 6059,
+      "sha256": "fe89847e37873f21dbb9cc1cf3e64405f282ac4e23bd9dd7e45df486f1f0d166",
+      "revision": "8782d8ccd6bd77b52dd1b54d69fc1ff37d53a048",
+      "locators": "Complete file; exact reviewed implementation or its recorded validation context"
+    }
+  ],
+  "additional_sources": [
+    {
+      "source_id": "frozen_abi",
+      "path": "docs/literature/threshold_backends/gf/abi_v0_1/contract_v0_1.json",
+      "revision": "1eb44e912cee6f69c77b859cebae748fd12131c1",
+      "bytes": 9376,
+      "sha256": "1f269b737a067f4647c1e6b64b4dbff3194bf24638be682c85ac2dc25c7c50a3",
+      "locators": "Complete normative layouts and canonical ABI fingerprint input"
+    },
+    {
+      "source_id": "specification",
+      "path": "docs/literature/threshold_backends/gf/abi_v0_1/SPEC_zh-TW.md",
+      "revision": "1eb44e912cee6f69c77b859cebae748fd12131c1",
+      "bytes": 12924,
+      "sha256": "6545058672be4bbc2f1c55a2cae7511e16de31b9f170eb62da2f4ae9d77df724",
+      "locators": "Sections 2-4 exact grammar, pinned input identity, private partition"
+    },
+    {
+      "source_id": "acceptance",
+      "path": "docs/literature/threshold_backends/gf/abi_v0_1/ACCEPTANCE_zh-TW.md",
+      "revision": "1eb44e912cee6f69c77b859cebae748fd12131c1",
+      "bytes": 5883,
+      "sha256": "f79d7d7813bad93b21bed74acd683cd0cc77d4d5f22eea77281df9aeef713160",
+      "locators": "A01-A24; implementation scope mapping"
+    },
+    {
+      "source_id": "historical_validation",
+      "path": "docs/literature/threshold_backends/gf/abi_v0_1/validation_summary_v0_1.json",
+      "revision": "1eb44e912cee6f69c77b859cebae748fd12131c1",
+      "bytes": 5603,
+      "sha256": "a0fe677bfa6d067312820f9a08be775e00be710980003f880829566663b849fe",
+      "locators": "Frozen synthetic vector identities; not cryptographic KATs"
+    },
+    {
+      "source_id": "common_research",
+      "path": "src/pq_threshold_candidates/contracts.py",
+      "revision": "1eb44e912cee6f69c77b859cebae748fd12131c1",
+      "bytes": 9123,
+      "sha256": "8cca77c341bce8bca3a78824ad1ecf59c1a87ecfc135992721582c759200596c",
+      "locators": "L62-71 strict bytes/uint; L183-232 unchanged unavailable backends"
+    },
+    {
+      "source_id": "gf_profile",
+      "path": "src/pq_threshold_candidates/gf/profile.py",
+      "revision": "1eb44e912cee6f69c77b859cebae748fd12131c1",
+      "bytes": 3064,
+      "sha256": "b487267210e80b9424b269d75772ff49668d73ccef80127753b59841604a47b0",
+      "locators": "Parameters and canonical compact JSON descriptor"
+    },
+    {
+      "source_id": "gf_reference",
+      "path": "src/pq_threshold_candidates/gf/reference.py",
+      "revision": "1eb44e912cee6f69c77b859cebae748fd12131c1",
+      "bytes": 11058,
+      "sha256": "58362248066333fcecada7960ab6951f08a7316a0a9a064a7ef09ec3a375ef06",
+      "locators": "L34-126 full canonical key/C/u records; L230-281 reference encryption/decryption/I5"
+    },
+    {
+      "source_id": "system_bundle",
+      "path": "src/pq_rbbc/contracts/system.py",
+      "revision": "1eb44e912cee6f69c77b859cebae748fd12131c1",
+      "bytes": 14030,
+      "sha256": "4063a8ef0ad45e74f52abe4423c396b1668176d2f9ada4b24bea2724af17c4fc",
+      "locators": "SystemConfiguration; KeyRole; SystemInitializationBundle.decode and role separation; no authentication claim"
+    },
+    {
+      "source_id": "system_auth",
+      "path": "src/pq_rbbc/governance/system_init.py",
+      "revision": "1eb44e912cee6f69c77b859cebae748fd12131c1",
+      "bytes": 7610,
+      "sha256": "d31867c4520ba9ba28fcac5578b53c147245270f3645a05cb5d03991e4e93df2",
+      "locators": "Authenticated wrapper and verifier explicitly remain separate; not called by new research checker"
+    },
+    {
+      "source_id": "cap_serializer",
+      "path": "src/pq_rbbc_cap_commit.py",
+      "revision": "1eb44e912cee6f69c77b859cebae748fd12131c1",
+      "bytes": 32526,
+      "sha256": "be3a2a767561f009acc2a274a85410ae6e02e23abd24145aa1d61883dd2dceee",
+      "locators": "L122-133 legacy18; L335-353 CAPRandomness.serialize"
+    },
+    {
+      "source_id": "cap_field",
+      "path": "src/pq_rbbc_anemoi_f193.py",
+      "revision": "1eb44e912cee6f69c77b859cebae748fd12131c1",
+      "bytes": 30852,
+      "sha256": "3e402afd4ce5544e141146593603ffc0edb39363a5593c0c627325c12bcdc54f",
+      "locators": "L43-49 GF(2^193), 25-byte field encoding"
+    },
+    {
+      "source_id": "blind_request",
+      "path": "src/pq_rbbc_blind_uov_abi.py",
+      "revision": "1eb44e912cee6f69c77b859cebae748fd12131c1",
+      "bytes": 47227,
+      "sha256": "575de440a2477e24e562ceb0f3049a13deff6031f3aa434609b7752b631491a2",
+      "locators": "L151-172 MESSAGE/MASK/TARGET widths and raw masked_target encoding"
+    },
+    {
+      "source_id": "B_preflight",
+      "path": "src/pq_rbbc_issuance_zk_backend_preflight.py",
+      "revision": "ff4341bfa18f4cd77c2811e26a7753397cfe7fe8",
+      "bytes": 47151,
+      "sha256": "00c0119596983b94bdfd1dcaffe58f0c2f847ca0092c5c53d8f073285092e836",
+      "locators": "L214-245 exact legacy CAP salt/root canonical parser; read-only snapshot, never imported or edited",
+      "access": "read_only; other-lane source not edited or imported"
+    }
+  ],
+  "review_program": {
+    "path": "docs/literature/threshold_backends/gf/codecs_review_v0_1/check_review_v0_1.py",
+    "bytes": 11835,
+    "sha256": "dbcaab2b90185e1031b50b80d87b574b88821cc94d7ea7e677346ec78aacd4b2",
+    "revision": "New file in enclosing review commit; exact bytes identified here",
+    "locators": "ShapeOracle; check_packets; check_key_coefficients; alternate_graph; check_binding_graph"
+  },
+  "limitations": [
+    "Same-author technical review; no external independent attestation.",
+    "Attachment names/revisions/bytes/digests remain in the linked exact inventory; identity rechecks are not new paper verification.",
+    "No publisher-byte equivalence, cryptographic proof, or production qualification is asserted."
+  ]
+}

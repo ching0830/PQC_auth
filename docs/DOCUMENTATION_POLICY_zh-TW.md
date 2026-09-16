@@ -1,9 +1,22 @@
 # 文件權責與更新規則
 
-> 最後更新：2026-08-30
+> 最後更新：2026-09-16
 > 目的：避免研究工作台、正式規格、歷史 checkpoint 與機器證據互相覆寫或產生不一致。
 
 ## 文件層級
+
+### 0. 人類入口與模組地圖（持續更新）
+
+| 文件 | 責任 |
+| --- | --- |
+| `START_HERE_zh-TW.md` | 最短閱讀路徑、資料夾分層及 active／historical 邊界 |
+| `modules/README_zh-TW.md` | 依 protocol 機制分組的 module registry |
+| `modules/<mechanism>/README_zh-TW.md` | 該機制的用途、程式位置、版本線與保守狀態摘要 |
+| `src/README_zh-TW.md`、`tests/README_zh-TW.md` | 程式與測試的導航，不建立新 claim |
+| `manifests/project_module_registry_v0_1.json` | 上述模組與路徑的 machine-testable registry |
+
+入口文件不得取代 canonical status、module handoff 或 machine evidence。它們的目的正是讓
+一般閱讀者不用先穿越歷史長檔名。
 
 ### 1. 研究工作台（持續更新）
 
@@ -24,6 +37,7 @@
 | `RESEARCH_STATUS_zh-TW.md` | 全專案最新 implementation、test、proof、evidence 與 claim boundary |
 | `ROADMAP_zh-TW.md` | 工作線、相依關係、integration gates 與優先順序 |
 | `docs/roadmaps/PQ_RBBC_CURRENT_HANDOFF_zh-TW.md` | 目前 PQ-RBBC checkpoint 的操作交接與下一個 bounded task |
+| `docs/roadmaps/PQ_RBBC_ISSUANCE_CURRENT_HANDOFF_zh-TW.md` | 目前離線發行 relation／execution chain 的交接與下一個 bounded task |
 
 當其他文件的狀態摘要與本層衝突時，以本層相應的 canonical 文件為準。
 
@@ -32,6 +46,7 @@
 | 文件 | 責任 | 不應承擔的內容 |
 | --- | --- | --- |
 | `docs/guides/PROTOCOL_TO_IMPLEMENTATION_GUIDE_zh-TW.md` | 將 protocol 公式對應到 canonical bytes、relation、circuit、assignment、tests 與 evidence，並提供 handoff 閱讀方法 | 最新 completion／production claim、raw result 或 artifact identity 的唯一來源 |
+| `docs/README_zh-TW.md` | 區分 active specs、guides、literature、security 與歷史 evidence | module completion claim |
 
 導覽文件必須引用正式專案定義與機器證據，不能建立另一份互相競爭的工程狀態。
 若狀態例子過時，以 `RESEARCH_STATUS_zh-TW.md`、module handoff 及 machine evidence
@@ -43,6 +58,10 @@
 - `docs/artifacts/`：artifact 產生、重建與 evidence 說明。
 - `docs/roadmaps/PQ_RBBC_CRYPTO_CORE_ROADMAP_v*.md`：當時版本的 roadmap snapshot。
 - `docs/proof/releases/`：形式化 proof PDF snapshot。
+
+歷史 checkpoint 的長檔名可保留 exact version、profile 與用途。不得為了目錄外觀而批次
+改名；若需要封存，先建立短入口／index，再以獨立 migration checkpoint 驗證所有 imports、
+links、manifests、checksums 與 external review references。
 
 舊文件可以保留當時的未完成事項或舊 claim boundary；它們代表歷史，不應改寫成最新狀態。最新狀態由 `RESEARCH_STATUS_zh-TW.md` 與 `PQ_RBBC_CURRENT_HANDOFF_zh-TW.md` 提供。
 

@@ -1,0 +1,384 @@
+{
+  "schema": "pqc_auth.gf_binding_abi_candidate.v0_1",
+  "abi_id": "pq-th-gf/binding-issuance/legacy18-reference-bridge/v0.1",
+  "wire_version": 1,
+  "status": "candidate_specification_only",
+  "candidate": "TH-GF",
+  "crypto_profile_id": "gf-hybrid2-pompeii-d4-shake256-otp-ref-v1",
+  "crypto_profile_sha256": "3077ddb7e9f90c2a551c0fccff8719655b5e852394aa4e9326c9a7801225a9b7",
+  "abi_fingerprint_rule": "SHA256(ASCII JSON of this entire document: sort_keys=true, separators=(comma,colon), ensure_ascii=true, no terminal newline; reject duplicate keys and non-JSON-number constants)",
+  "layouts": {
+    "trace_binding": {
+      "bytes": 315,
+      "fields": [
+        {
+          "name": "magic",
+          "bytes": 14,
+          "literal_hex": "50512d54482d47462d42494e4400",
+          "offset": 0
+        },
+        {
+          "name": "version",
+          "bytes": 2,
+          "literal_hex": "0100",
+          "offset": 14
+        },
+        {
+          "name": "abi_sha256",
+          "bytes": 32,
+          "derived": "abi_sha256",
+          "offset": 16
+        },
+        {
+          "name": "crypto_profile_sha256",
+          "bytes": 32,
+          "literal_hex": "3077ddb7e9f90c2a551c0fccff8719655b5e852394aa4e9326c9a7801225a9b7",
+          "offset": 48
+        },
+        {
+          "name": "configuration_sha256",
+          "bytes": 32,
+          "nonzero": true,
+          "offset": 80
+        },
+        {
+          "name": "ctx",
+          "bytes": 32,
+          "offset": 112
+        },
+        {
+          "name": "epoch",
+          "bytes": 8,
+          "encoding": "u64le",
+          "offset": 144
+        },
+        {
+          "name": "oa_role",
+          "bytes": 2,
+          "literal_hex": "0500",
+          "offset": 152
+        },
+        {
+          "name": "purpose",
+          "bytes": 1,
+          "literal_hex": "01",
+          "offset": 154
+        },
+        {
+          "name": "oa_key_id",
+          "bytes": 32,
+          "nonzero": true,
+          "offset": 155
+        },
+        {
+          "name": "tpk_record_sha256",
+          "bytes": 32,
+          "nonzero": true,
+          "offset": 187
+        },
+        {
+          "name": "issuer_key_id",
+          "bytes": 32,
+          "nonzero": true,
+          "offset": 219
+        },
+        {
+          "name": "issuer_public_key_sha256",
+          "bytes": 32,
+          "nonzero": true,
+          "offset": 251
+        },
+        {
+          "name": "key_origin_evidence_sha256",
+          "bytes": 32,
+          "nonzero": true,
+          "offset": 283
+        }
+      ]
+    },
+    "ticket_m": {
+      "bytes": 3005,
+      "fields": [
+        {
+          "name": "magic",
+          "bytes": 11,
+          "literal_hex": "50512d54482d47462d4d00",
+          "offset": 0
+        },
+        {
+          "name": "version",
+          "bytes": 2,
+          "literal_hex": "0100",
+          "offset": 11
+        },
+        {
+          "name": "abi_sha256",
+          "bytes": 32,
+          "derived": "abi_sha256",
+          "offset": 13
+        },
+        {
+          "name": "common_pp_sha256",
+          "bytes": 32,
+          "nonzero": true,
+          "offset": 45
+        },
+        {
+          "name": "ctx",
+          "bytes": 32,
+          "offset": 77
+        },
+        {
+          "name": "sn",
+          "bytes": 16,
+          "offset": 109
+        },
+        {
+          "name": "h",
+          "bytes": 32,
+          "offset": 125
+        },
+        {
+          "name": "ciphertext_payload",
+          "bytes": 2848,
+          "offset": 157
+        }
+      ]
+    },
+    "common_pp": {
+      "bytes": 489,
+      "fields": [
+        {
+          "name": "magic",
+          "bytes": 12,
+          "literal_hex": "50512d54482d47462d505000",
+          "offset": 0
+        },
+        {
+          "name": "version",
+          "bytes": 2,
+          "literal_hex": "0100",
+          "offset": 12
+        },
+        {
+          "name": "abi_sha256",
+          "bytes": 32,
+          "derived": "abi_sha256",
+          "offset": 14
+        },
+        {
+          "name": "trace_binding",
+          "bytes": 315,
+          "nested": "trace_binding",
+          "offset": 46
+        },
+        {
+          "name": "issue_backend_pp_sha256",
+          "bytes": 32,
+          "nonzero": true,
+          "offset": 361
+        },
+        {
+          "name": "gf_full_relation_manifest_sha256",
+          "bytes": 32,
+          "nonzero": true,
+          "offset": 393
+        },
+        {
+          "name": "cap_profile_sha256",
+          "bytes": 32,
+          "literal_hex": "2ac471f8d7c6cb4e6352bbc5a2eb7f9394b807ff132aec8cadebd696f7b1fa38",
+          "offset": 425
+        },
+        {
+          "name": "h_rbbc_profile_sha256",
+          "bytes": 32,
+          "literal_hex": "4fa0eb276ebba70a9f6c2f38f3f55d197c094121a2b614cc6ef9b7e8522cac87",
+          "offset": 457
+        }
+      ]
+    },
+    "issue_statement": {
+      "bytes": 251,
+      "fields": [
+        {
+          "name": "magic",
+          "bytes": 17,
+          "literal_hex": "50512d54482d47462d49535355452d5800",
+          "offset": 0
+        },
+        {
+          "name": "version",
+          "bytes": 2,
+          "literal_hex": "0100",
+          "offset": 17
+        },
+        {
+          "name": "abi_sha256",
+          "bytes": 32,
+          "derived": "abi_sha256",
+          "offset": 19
+        },
+        {
+          "name": "common_pp_sha256",
+          "bytes": 32,
+          "nonzero": true,
+          "offset": 51
+        },
+        {
+          "name": "ctx",
+          "bytes": 32,
+          "offset": 83
+        },
+        {
+          "name": "sid",
+          "bytes": 32,
+          "offset": 115
+        },
+        {
+          "name": "rid",
+          "bytes": 32,
+          "offset": 147
+        },
+        {
+          "name": "beta",
+          "bytes": 72,
+          "offset": 179
+        }
+      ]
+    },
+    "issue_witness": {
+      "bytes": 4324,
+      "fields": [
+        {
+          "name": "magic",
+          "bytes": 17,
+          "literal_hex": "50512d54482d47462d49535355452d5700",
+          "offset": 0
+        },
+        {
+          "name": "version",
+          "bytes": 2,
+          "literal_hex": "0100",
+          "offset": 17
+        },
+        {
+          "name": "abi_sha256",
+          "bytes": 32,
+          "derived": "abi_sha256",
+          "offset": 19
+        },
+        {
+          "name": "ticket_m",
+          "bytes": 3005,
+          "nested": "ticket_m",
+          "offset": 51
+        },
+        {
+          "name": "blind_mask",
+          "bytes": 72,
+          "offset": 3056
+        },
+        {
+          "name": "cap_randomness",
+          "bytes": 1036,
+          "external_codec": "pinned_B_legacy_18_tree_CAP_randomness",
+          "offset": 3128
+        },
+        {
+          "name": "holder_key",
+          "bytes": 32,
+          "offset": 4164
+        },
+        {
+          "name": "trace_u",
+          "bytes": 128,
+          "offset": 4196
+        }
+      ]
+    }
+  },
+  "raw_trace_witness_slot": {
+    "bytes": 128,
+    "encoding": "d=4 polynomials times n=256 coefficients in {0,1}; increasing polynomial/coefficient order; lsb0",
+    "version_source": "enclosing issue_witness ABI identity",
+    "zero_witness_allowed": true,
+    "secret": true,
+    "independent_dem_coins": false
+  },
+  "ciphertext_component_ranges": {
+    "c1": [
+      0,
+      2560
+    ],
+    "c2": [
+      2560,
+      2688
+    ],
+    "c3": [
+      2688,
+      2720
+    ],
+    "c4": [
+      2720,
+      2848
+    ]
+  },
+  "identities": {
+    "configuration_sha256": "SHA256(SystemConfiguration.encode())",
+    "tpk_record_sha256": "SHA256(exact 22590-byte ReferencePublicKey.encode())",
+    "common_pp_sha256": "SHA256(exact common_pp packet bytes)",
+    "d_M": "SHAKE256(ASCII(PQ-RBBC/TICKET) || exact ticket_m packet, 32 bytes)",
+    "transport_ticket_sha256": "SHA256(exact full ticket transport bytes); distinct from d_M",
+    "crypto_profile_sha256": "canonical compact descriptor fingerprint; not SHA256(pretty JSON file)"
+  },
+  "partition": {
+    "public_semantic": [
+      "pp",
+      "ctx",
+      "sid",
+      "rid",
+      "beta"
+    ],
+    "private_semantic": [
+      "M",
+      "r",
+      "rho",
+      "k_hold",
+      "u"
+    ],
+    "never_publish_as_issuance_statement": [
+      "M",
+      "sn",
+      "h",
+      "C",
+      "d_M",
+      "u",
+      "k_hold"
+    ],
+    "ad": "ctx||M.sn||M.h; 80 bytes",
+    "plaintext": "rid||M.sn; 48 bytes",
+    "M_header_binding": "M.common_pp_sha256 equals statement.common_pp_sha256 and SHA256(captured common_pp); header included in I2 and signature digest"
+  },
+  "bridge": {
+    "cap_profile_sha256": "2ac471f8d7c6cb4e6352bbc5a2eb7f9394b807ff132aec8cadebd696f7b1fa38",
+    "h_rbbc_profile_sha256": "4fa0eb276ebba70a9f6c2f38f3f55d197c094121a2b614cc6ef9b7e8522cac87",
+    "cap_tree_count": 18,
+    "cap_randomness_bytes": 1036,
+    "beta_and_blind_mask_bytes": 72,
+    "qualified_proof_backend": false,
+    "unified_tree_compatible": false
+  },
+  "claims": {
+    "candidate_bytes_defined": true,
+    "production_codec_implemented": false,
+    "trusted_binding_implemented": false,
+    "I1_I5_circuit_integrated": false,
+    "B_ABI_integrated": false,
+    "opening_integrated": false,
+    "threshold_implemented": false,
+    "paper_verified_full_instantiation": false,
+    "proof_closed": false,
+    "production_closed": false
+  }
+}

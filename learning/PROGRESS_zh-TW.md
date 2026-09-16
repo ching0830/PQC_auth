@@ -1,0 +1,788 @@
+# 學習進度與接續紀錄
+
+最後更新：2026-09-15，Asia/Taipei。
+
+## 已確認的學習起點
+
+- 學習者會基礎 Python；部分 library 與工程用語需要解釋。
+- 目標是能解釋設計取捨、獨立修改並驗證自己的論文實作。
+- 學習者要求先建立從零開始的完整路線，再依順序教學。
+- 先前過早進入 replay 狀態機；該次介紹不算通過理解檢查。
+- 2026-09-14 學習者明確表示不清楚助教在問什麼；目前改採完整情境示範，暫停連續符號追問，不要求逐題過關。
+- 2026-09-14 學習者要求流程圖直接畫出來，不提供圖表原始碼；這項偏好適用後續教學呈現。
+- 2026-09-14 學習者強調採 NIZK 的動機包含減少衛星驗證往返與 backhaul delay；
+  後續設計比較須保留此目標，不以四訊息草稿排除首則認證／單往返候選。
+
+## 目前位置
+
+| 項目 | 狀態 | 依據／下一步 |
+| --- | --- | --- |
+| 全程規劃 | 已接受並保存 | 學習者要求將規劃存入專案並開始第一堂 |
+| 階段 1／第一堂：研究問題 | 完成（入門概念範圍） | 已回述研究目標，並經情境問答分辨隱私／連結、授權／門檻及無效票券的追責限制 |
+| 階段 2／第二堂：票券與持票者 | 已提供基礎講解，理解待後續應用 | 保留已確認的回答與未確認部分；不以逐題過關阻擋接續概念學習 |
+| 階段 2／第三堂：票券簽章與金鑰 | 已提供基礎講解，理解待後續應用 | 已提供私鑰、公鑰與驗票資料流示範；沒有將要求繼續視為已掌握 |
+| 階段 2／第四堂：盲發行 | 已提供基礎講解，理解待後續應用 | 已示範盲發行與 NIZK 分工；沒有新增學習者解釋或操作證據 |
+| 階段 2／第五堂：摘要與追責密文 | 已提供基礎講解，理解待後續應用 | 已提供摘要與密文的用途比較；沒有新增學習者解釋或操作證據 |
+| 階段 2／第六堂：隨機資料 | 已提供基礎講解，理解待後續應用 | 已提供用途比較與助教 Python 示範，尚無學習者獨立操作證據 |
+| 階段 2／第七堂：後量子 | 已提供基礎講解，理解待後續應用 | 已解釋元件安全依賴；沒有新增學習者解釋或操作證據 |
+| 階段 3／第八堂：完整生命週期 | 已提供基礎講解，理解待後續應用 | 已提供角色與生命週期示範；學習者要求接續並改用直接可見的流程圖 |
+| 階段 3／第九堂：設定與發行授權 | 已提供基礎講解，理解待後續應用 | 已說明信任起點與有限授權；學習者要求下一堂，未新增理解或操作證據 |
+| 階段 3／第十堂：發行資料流 | 已提供基礎講解，理解待後續應用 | 已說明公開／秘密資料及發行綁定；學習者要求下一堂，未新增理解或操作證據 |
+| 階段 3／第十一堂：衛星接入 | 已提供基礎講解，正式低延遲設計待評估 | 已說明四訊息現況並更正它不是必要下界；低延遲候選已交由實作工作線進一步評估 |
+| 階段 3／第十二堂：一次性使用狀態 | 已提供基礎講解，理解待後續應用 | 已說明三狀態、並行 winner、同 attempt 重試、atomic commit 與中斷恢復；學習者要求接續下一堂 |
+| 階段 3／第十三堂：過期、撤銷與換手 | 已提供基礎講解，理解待後續應用 | 已區分 acceptance predicates 與 consumption state，並說明撤銷競爭、retention、一般拒絕及 session-derived handover |
+| 階段 3／第十四堂：受控身分開啟 | 已提供基礎講解，理解待後續應用 | 已說明案件授權與門檻解密兩道門、OA share gate、opening replay、combiner 一致性與 serial equality |
+| 階段 3／第十五堂：完整生命週期與資料可見性 | 已提供總整理，理解待後續應用 | 已將設定、發行、接入、session／handover 與 opening 串成完整案例；未以教材建立視為能獨立口述 |
+| 階段 4／第十六堂：PQ 計算前移與 Replay | 已提供基礎講解，理解待後續應用 | 依學習者更正，以降低高成本 PQ 在線運算為主要動機；已區分可前移 issuance work、當下 access work 與 Replay |
+| 階段 4／第十七堂：異構衛星認證論文的公平比較 | 已提供基礎講解，理解待後續應用 | 已建立相同事件、成本邊界與證據等級三項條件，沒有將不同流程或證據來源強制合併排名 |
+| 階段 4／第十八堂：One-use ticket 與 reusable anonymous Show | 已提供基礎講解，理解待後續應用 | 已區分固定 ticket reuse 與 randomized Show，並整理 v0.1 選擇、系統代價及未來擴充條件 |
+| 階段 4／第十九堂：Blind issuance 與普通 signed ticket | 已提供基礎講解，理解待後續應用 | 已定位 issuer unlinkability、blindness／NIZK 分工及共謀／metadata 限制 |
+| 階段 4／第二十堂：組織拓撲與角色分離 | 進行中 | 學習者已指出初版組織圖錯誤；已改為 FAC／OA 同屬最高治理組織、HGS 隸屬 HNCC、FGS 隸屬其他 NCC、NCC 與 satellite operator 合作，並區分行政隸屬與 key-role separation |
+| 階段 4／第二十一堂：地面站與衛星的工作分配 | 已提供基礎講解，理解待後續應用 | 已區分工作放置與行政隸屬，對照 FGS／LEO／state backend；說明 1 RTT access NIZK 候選仍需 state backhaul，HGS protocol role 保持未定 |
+| 階段 4／第二十二堂：票券有效期與庫存 | 已提供基礎講解，理解待後續應用 | 已區分四種 expiry、共同 bucket、batch 容量與 low-watermark 補發；UE wallet journal 與實際參數均尚未實作／選定 |
+| 階段 4／第二十三堂：Threat model 與安全邊界 | 已提供階段總整理，理解待後續應用 | 已逐角色區分 honest-but-curious、malicious、compromised、untrusted、unavailable，並將核心／系統／可用性主張對回各自 assumptions；未視為學習者已能獨立撰寫 game |
+| 階段 5／第二十四堂：Repository 地圖與證據路徑 | 進行中 | 已辨認研究、canonical、source、tests、manifests／artifacts 與導覽層；助教沿 framing 執行 6 項測試，學習者尚未親自操作 |
+| 階段 6／6-1 至 6-10 | 未開始 | 既有對話中的程式介紹不視為已掌握 |
+| 階段 7／證據與限制 | 未開始 | 每堂先保留研究目標與成果的區分，之後集中學習 |
+| 階段 8／獨立修改 | 未開始 | 尚無學習者獨立修改與驗證的紀錄 |
+
+## 第一堂理解檢查
+
+課程：[論文要解決什麼問題](lessons/01_RESEARCH_PROBLEM_zh-TW.md)。
+
+| 問題 | 學習者回答 | 目前判斷 |
+| --- | --- | --- |
+| 一位已註冊的使用者接入服務時，驗證端需要確認什麼？是否必須每次取得其註冊身分？ | 「地面站要確認使用者票券是否合法 是否行使的是範圍內的服務 不用取得使用者身分 避免紀錄連結以及身份暴露」 | 已能指出票券有效性、授權範圍與保護身分的目的；身分隱藏與不可連結性的區別由第二題確認，持票者秘密證明需求已於第二堂第一題確認 |
+| 每次使用同一個假名，能否避免不同連線被串起來？ | 「這樣還沒達到不可連結性 地面戰仍然能知道一位使用者的使用紀錄 只是暫時無法確定該使用者的確切身分」 | 已能區分隱藏註冊身分與不可連結性；確認理解固定假名仍可串起使用紀錄 |
+| 為什麼身分開啟需要明確授權與多人共同控制？ | 對「三個開啟單位願意合作，但沒有有效案件授權」回答：「不應該 避免共謀的情況發生」 | 已能判斷缺少有效授權應拒絕；共謀份額數量的限制經後續例子確認能應用，尚不推定已掌握全部開啟安全條件 |
+| 第三題追問：3-of-5 中，三個成員把秘密份額交給同一攻擊者，是否符合信任假設？ | 「不符合 因為原本是假設一個個體掌握一份祕密」 | 當時結論正確但理由需修正；經說明合計不同份額後，後續 4-of-7 回答已能正確套用數量限制 |
+| 第三題應用：4-of-7 中，三位成員各持一份並共謀，是否超出少於門檻的份額數量假設？ | 「否 因為至少要4份」 | 回答正確：共謀者合計三份，仍少於四份門檻；支持能應用這項數量限制 |
+| 用 2–3 句話說明這篇論文的研究問題 | 「希望使用者接入時 能在被確認票券合法且使用授權服務的情況下 同時保持對NCC匿名性和不可連結性 不符合資格的也能事後被追責」 | 已能連結資格、授權、隱私與追責；原先角色與追責範圍的概括已經後續說明及情境問答釐清到入門程度 |
+| 第四題追問：HNCC 已知道註冊身分，對其不可連結希望阻止哪兩件事被對應？ | 「持票者以及票券使用紀錄」 | 已能指出要保護的人與使用紀錄之間的關係；助教補充發行端視角是某人的發行紀錄與後續出示票券之間的對應 |
+| 第四題追問：能否保證從隨機編造且驗證失敗的票券恢復真實身分？ | 「不能找出真實身分 因為那張冒充票券並不符合正確格式 沒有綁定身分的秘密 另外他大概率會在票券格式檢查就被擋下來」 | 已理解不能保證從任意冒充資料恢復身分，且注意到檢查順序；助教補充偽造資料也可能格式正確，以及可信身分綁定與持票者秘密的差別 |
+
+第一堂四題與追問已完成入門範圍的理解檢查；格式有效性與持票者秘密的細節接入第二堂。
+教材中的示範說法是助教提供的例子，不填入「學習者回答」。
+
+## 第二堂理解檢查
+
+課程：[票券有效，為什麼還要驗證持票者](lessons/02_TICKET_AND_HOLDER_AUTH_zh-TW.md)。
+
+| 問題 | 學習者回答 | 目前判斷 |
+| --- | --- | --- |
+| 小華只有小明有效票券的完整副本，沒有相應持票者秘密。能否只因票券驗證成功就接入？還缺哪項驗證？ | 「不行 還要驗證是否擁有使用者秘密」 | 已理解只驗票券不夠，還需驗證掌握相應秘密；不推定已掌握具體證明機制 |
+| 格式正確但簽章驗證失敗，能否因掌握新的秘密就允許接入？ | 「不行 因為一張票券只有一個使用者秘密 說真的 我不清楚你在問什麼」 | 拒絕結論正確；學習者明確表示題意不清，助教應改善範圍交代。直接拒絕理由為已給定的簽章驗證失敗，不以此回答宣稱已理解全部分工 |
+| 為什麼不能直接在接入訊息中交出持票者秘密？ | 接續回應：「好的 我理解了 我忘記使用者秘密只會留在裝置中了 請繼續」 | 已回想起秘密應留在裝置內；助教限定為正常協定要求，不把這句話視為已解釋全部洩漏風險 |
+| 為什麼持票者認證還需要綁定接入內容？NIZK 有效是否就代表請求未被重送？ | 尚未回答；先處理學習者對非互動式設計的提醒 | 原 A／B 題只適用所示草稿例子；已更正教學範圍，不把使用者的設計質疑記為答錯 |
+| 補充：若只檢查秘密 k 的長度，而不檢查 H(k) 是否等於指定 h，還能確認兩者綁定嗎？ | 「不能 因為只檢查長度並不代表就是真的那個k」 | 已理解長度相同不保證與指定摘要相符；以此意理解「那個 k」，不延伸為雜湊只有唯一原像的宣稱 |
+| 補充：測試時同時把 k 換成 k_B、h 換成 H(k_B)，能測出漏掉摘要相等檢查的錯誤嗎？ | 「不行 因為使用者祕密被改成k_B了 因此另一個有k_B的人也能通過檢查」 | 結論正確，已注意到持有新秘密者可符合新配對；助教補充測試失去區辨能力的原因是正確及錯誤實作都通過，不把局部檢查通過推成完整票券接入成功 |
+
+### 學習者主動提問
+
+| 原文 | 本次處理 | 後續確認 |
+| --- | --- | --- |
+| 「另外這部分我有問題 與票券綁定的秘密一起被複製走怎麼辦 通常都會一起複製走吧」 | 說明票券與可使用秘密同時外洩時，僅依靠該秘密的認證無法區分竊取者；比較網路觀察、檔案讀取與裝置控制，補充保護方式及其限制 | 已提出合理攻擊情境；助教提供的回答不直接記為學習者已掌握，第二堂維持進行中 |
+| 「我記得不適這樣吧 應該是使用NIZK 直接產生挑戰值 避免兩次來回傳送」 | 核對 NIZK／Fiat–Shamir 概念與 repo：離線 issuance NIZK、四訊息 access draft 及尚未選定的 holder authenticator 是不同層次；修正前一版教材的過度概括 | 已能提出非互動式證明降低互動成本的方向；未據此推定已掌握 replay、Fiat–Shamir 或目前全部實作 |
+| 「我不太清楚 意思是我現在時做的東西不是使用NIZK 嗎」 | 改用設計／規則與電路／完整證明流程三層說明，並以 `verify_relation()` 接收秘密資料的本機檢查作例子 | 學習者明確表示仍不清楚；先補足說明，不把上一則助教解釋視為已理解 |
+
+學習者後續表示理解並回想起秘密應留在裝置內，原文已保存在上方表格；依其要求繼續課程。
+保留失竊問題與說明，沒有把「留在裝置內」改寫成「裝置被攻陷也不會外洩」。
+
+## 待後續確認
+
+- 已能指出不必在一般接入時取得註冊身分，也已理解「票券有效」之外還需持票者秘密證明；證明如何運作留待後續概念課程。
+- 已主動提出票券與秘密一起外洩的情境；後續確認是否能區分秘密持有證明、裝置秘密保護與一次性使用各自的責任。
+- 已主動指出 NIZK 的非互動方向；後續釐清證明的互動次數與完整接入往返數，並保留導覽兩訊息圖和四訊息草稿的對應疑點。
+- 學習者對「設計採用 NIZK」和「程式完整實作 NIZK」仍有疑問；已改用本機規則檢查與零知識驗證的資料流解釋，待後續回應確認。
+- 已能指出持票者與使用紀錄的連結目標；HNCC／FGS 的完整角色流程在階段 3 再具體展開。
+- 已理解無法保證從任意無效票券恢復身分；「格式正確不等於有效」在第二堂應用，持票者秘密與開啟秘密的用途亦在第二堂區分。
+- 已使用「希望」表達研究目標；仍需在後續整合說明中補上衛星路徑成本與後量子安全背景。
+
+以上分別記錄尚未檢查的能力與回答中需要修正的理由；不因某題結論正確就推定相關概念均已掌握。
+
+## 課程紀錄
+
+### 2026-09-12 — 建立學習工作區並開始第一堂
+
+- 保存八階段路線、階段 6 的十個實作單元、library／數學補充時機及修改練習安排。
+- 建立第一堂教材與初始術語表。
+- 教材對照基線：`6f6d8c832c0f90d69d96ffe3abd0dcc8b8c562bb`（v2.42 整合狀態）。
+- 本次是教學文件工作；沒有執行新的密碼學實驗或完成研究功能。
+- 下一步：先讓學習者回答第一堂第一題，回饋後記錄其原意與需要補充之處。
+
+### 2026-09-13 — 第一堂第一題回饋
+
+- 學習者原文已保存在上方問答表。
+- 回答支持已理解：票券應有效、操作應在授權範圍內、一般接入不必直接取得註冊身分。
+- 助教補充：數位票券可以被複製；依本專案設計，接入還需證明掌握與票券綁定的秘密，
+  並把證明綁定此次接入。這項需求不等於目前已有完整持票者認證實作。
+- 助教補充：隱藏註冊身分有助於減少身分暴露，但固定假名或相同票券仍可能連結多次紀錄。
+  學習者的回答尚不足以判斷是否已掌握這項區別，不能直接記為已理解或誤解。
+- 下一步：以三筆相同識別值的接入紀錄詢問第二題，請學習者說明能判斷什麼、不能判斷什麼。
+- 第一堂維持進行中；未執行程式操作、測試或研究實驗。
+
+### 2026-09-13 — 第一堂第二題回饋
+
+- 學習者原文已保存在上方問答表，保留原用字。
+- 已確認理解：固定假名仍允許整理同一識別值的使用紀錄；未知註冊身分不等於不可連結。
+- 助教延伸情境：若日後其他資訊把該假名對應到註冊身分，先前紀錄也可能一起被對回身分。
+  這是假設例子，不表示該對應一定會發生，也不表示已確認學習者掌握所有隱私限制。
+- 下一步：第三題介紹兩個必要條件——符合案件、用途與票券範圍的有效授權，以及足夠的
+  有效開啟份額；用「有足夠成員合作但缺少有效授權」檢查是否理解兩者都需要。
+- 教學若使用 3-of-5，只作門檻概念的假設例子，不是目前專案的固定參數。
+- 第一堂維持進行中；持票者驗證與完整研究問題回述仍待確認。
+
+### 2026-09-13 — 第一堂第三題回饋
+
+- 學習者對無有效授權的情境回答「不應該 避免共謀的情況發生」，已保存於問答表。
+- 已確認能判斷：足夠成員願意參與，仍不能讓正常開啟介面接受未授權請求。
+- 助教補充前例未說清楚的界線：正常介面必須驗證授權；若攻擊者掌握達門檻的秘密金鑰
+  份額並自行計算，不能僅憑該介面的授權檢查宣稱可阻止私下開啟。
+- 已查閱核心 proof 的信任假設與開啟隱私模型，其攻擊者取得的秘密份額少於門檻；
+  production 門檻密碼學亦未完成。將此界線補入第一堂教材，沒有修改研究規格或安全宣稱。
+- 學習者的「避免共謀」可能是在描述設計目的；尚不直接認定其宣稱任何共謀都能被阻止。
+- 下一步：確認在 3-of-5 教學例子中，三份秘密份額被控制是否超出目前信任假設。
+  然後回到第四題，用自己的話說明研究問題。
+- 第一堂維持進行中；本次只更新教材與學習紀錄。
+
+### 2026-09-13 — 第三題追問：份額分配與共謀總量
+
+- 學習者回答「不符合 因為原本是假設一個個體掌握一份祕密」，原文已保存於問答表。
+- 已確認能對先前情境給出正確結論；尚未正確說明信任假設的理由。
+- 助教修正：每位成員初始分得一份，是分配方式；安全分析計算攻擊者及共謀者合計控制的
+  不同份額數。三人各持一份並合作，也能達到三份，不必先把秘密交給同一人。
+- 教材新增三種 3-of-5 情境，比較一人掌握兩份、三人各一份共謀、一人掌握三份。
+- 下一步：用「七位成員、四份才能開啟，其中三人各控制一份並共謀」檢查是否理解
+  「少於門檻」的數量限制。這是教學例子，不是專案參數變更。
+- 第一堂仍進行中；確認這項區別後回到研究問題回述。
+
+### 2026-09-13 — 第三題應用：4-of-7
+
+- 學習者回答「否 因為至少要4份」，原文已保存於問答表。
+- 已確認能在新數字情境比較共謀者合計份額與門檻：三份小於四份，未超出此份額數量假設。
+- 此結果只支持這項概念應用；不推定已掌握完整開啟 proof 或所有信任假設。
+- 下一步：回到第一堂第四題，請學習者用 2–3 句話說明論文的使用情境、要保護的資訊，
+  以及驗證資格與受控追責如何共同出現在研究目標中；視回述補充衛星成本與持票者驗證。
+- 第一堂維持進行中，待研究問題回述；沒有開始第二階段或執行程式練習。
+
+### 2026-09-13 — 第四題：研究問題回述
+
+- 學習者原文已保存於問答表；已能把票券有效性、服務授權、隱私與追責連成研究目標。
+- 使用「希望」描述目標，未把目前所有功能都宣稱為完成。
+- 助教釐清 NCC 的角色歧義：本專案 HNCC 註冊／發行端知道註冊身分；對其不可連結的
+  目標是限制發行紀錄與後續出示票券的對應。FGS 是接入驗證地面站，預定不直接取得註冊身分。
+- 助教修正追責範圍：不符接入資格應拒絕；拒絕結果不自動構成案件授權。身分開啟還需要
+  符合開啟條件的有效票券及案件授權，不能假設無效票券或任意資料一定能恢復正確身分。
+- 已把兩項區分補入第一堂教材，並在術語表加入 HNCC 與 FGS；未改動研究規格或實作。
+- 下一步：請學習者說明 HNCC 已知道註冊身分時，對 HNCC 的不可連結性希望阻止哪兩個
+  階段被對應起來；再確認接入拒絕與追責的差別。
+- 第一堂維持進行中，尚未將助教補充視為學習者已掌握。
+
+### 2026-09-13 — 第四題追問：發行端不可連結
+
+- 學習者回答「持票者以及票券使用紀錄」，原文已保存於問答表。
+- 已能指出要保護的人與使用紀錄之間的對應關係；這是正確的隱私方向。
+- 助教補充較精確的發行端視角：HNCC 知道某人曾取得票券，但希望它無法把該人的
+  發行紀錄對應到日後出示的某張票券。此說明沿用既有模型假設，不擴張成任意資訊下的匿名保證。
+- 不再要求重答同一個措辭問題；下一步以「隨機編造且驗證失敗的票券」確認不能保證
+  恢復正確身分，以及拒絕接入與有授權追責的區別。
+- 持票者證明的細節留在階段 2，完整角色流程留在階段 3；第一堂先完成研究問題與基本邊界。
+- 本次只更新學習紀錄，未修改研究定義或程式。
+
+### 2026-09-13 — 第一堂完成，開始第二堂
+
+- 學習者對冒充票券的完整回答已保存於第一堂問答表。
+- 已理解任意無效資料不能提供可恢復正確身分的保證，並主動提到格式檢查。
+- 助教補充：偽造資料也能具有正確格式；格式檢查能擋下哪些輸入需看實際內容，不估計
+  未經量測的比例。缺少可信的身分綁定是追責限制，不能簡化為所有偽造票券都缺欄位。
+- 「沒有綁定身分的秘密」先視為對資料缺少可靠綁定的描述；持票者秘密與追責資料的角色
+  在第二堂釐清，不推定使用者已掌握具體編碼或密碼學關係。
+- 第一堂的研究問題與基本邊界達到入門理解條件，因此標記完成；此完成不表示程式、
+  library、proof、實作修改或整套系統安全已掌握。
+- 新增第二堂教材、更新課程入口與術語表。第二堂屬階段 2，先用完整複製有效票券的情境
+  說明票券有效性與持票者認證的差別，尚未進入程式閱讀。
+- 下一步：請學習者判斷只有有效票券副本、沒有持票者秘密時，還缺哪項接入驗證。
+- 本次是教學文件工作，未執行新的程式測試或研究實驗。
+
+### 2026-09-13 — 第二堂第一題與票券／秘密同時失竊
+
+- 學習者第一題回答與主動提問已分別保存在上方表格。
+- 已確認理解接入還需證明掌握相應持票者秘密；本次先完整回應失竊問題，沒有立即追加測驗。
+- 助教說明：若有效票券與可使用的相應秘密一起外洩，僅憑該秘密的認證無法分辨原持有人
+  與竊取者。是否一起被複製取決於攻擊者的存取能力，不估計未經量測的發生頻率。
+- 對照端到端安全模型草稿 P-A12 與 canonical status，明列端點秘密未外洩的假設，以及
+  尚無完整 holder authenticator、使用者票券管理程式與撤銷實作的邊界。
+- 教材補充受保護儲存、不可匯出金鑰與使用限制、撤銷及短效票券的用途和代價；
+  Android Keystore 例子引用官方文件，並保留硬體／演算法相容性與裝置內盜用的限制。
+  這些是候選設計說明，不是已採用的新研究決策。
+- 補充一次性使用不能保證原持有人先用，身分開啟亦不能單憑綁定身分判定失竊後的實際操作者。
+- 第二堂維持進行中；未將助教說明當成學習者回答，未變更研究定義、程式或正式實驗紀錄。
+
+### 2026-09-13 — 接續秘密不外傳與新挑戰
+
+- 學習者表示理解並要求繼續，已保存原文；確認其回想起秘密在正常協定中應留在使用者端。
+- 助教簡短保留前一段限制：秘密的本機保存是需求，仍須實作保護，不能推成永不外洩。
+- 教材新增概念流程圖，說明裝置在本機使用秘密產生證明，地面站以票券中的驗證資料及
+  此次預期的接入內容檢查。此流程沒有指定新的密碼學方案，完整 holder authenticator 仍未完成。
+- 介紹新挑戰、綁定與重放；以 `A`／`B` 代表不同挑戰，避免把短字串當成實際安全參數。
+- 下一步：用舊挑戰 `A` 的證明回覆新挑戰 `B` 的情境檢查第二堂第四題；暫先沿用
+  學習者「秘密不外傳」的思路接續，不要求先重答尚未應用的格式分類題。
+- 第二堂仍進行中；本次只有教學文件更新，未執行程式實驗或擴張研究成果宣稱。
+
+### 2026-09-13 — 更正證明挑戰與接入互動的教學範圍
+
+- 保存學習者對 NIZK 的提醒，承認前一版從證明可複製直接接到地面站出題，未充分
+  區分一般證明需求與目前 access draft；不把這項提醒視為未通過 A／B 題。
+- 教材明確標示互動流程只對應目前草稿，加入 NIZK、Fiat–Shamir challenge 與 FGS nonce
+  的差別。參考 RFC 8235 的非互動轉換及 replay 討論，但不採用其 Schnorr 演算法。
+- 核對核心 proof 的離線 `pi_issue`、架構 M2、access spec §2／§5、程式訊息定義與
+  RESEARCH_STATUS；沒有找到在線 holder authenticator 已採 NIZK 的完成依據。
+- 記錄導覽 §6 兩則訊息圖尚未交代和四則訊息草稿的對應；未變更 canonical 定義、程式、
+  往返數決策或正式研究狀態。D-002 仍待研究。
+- 下一步沿著非互動式證明與接入防重放的分工繼續，不要求先接受地面站現場出題為通用前提。
+- 本次只有教學更正與來源核對；未執行新的程式測試或研究實驗。
+
+### 2026-09-13 — 先釐清設計使用 NIZK 與程式完成程度
+
+- 保存學習者表示仍不清楚的原文；承認前一段同時介紹太多層次，沒有先直答專案是否採用 NIZK。
+- 直接說明：核心發行設計有 NIZK，已有大量規則／電路實作，但完整合格的證明產生與驗證仍未完成。
+- 核對 `verify_relation()` 與 `IssueWitness.holder_key`，用本機檢查需要秘密資料的例子，
+  對比目標 NIZK 驗證端只取得公開資料及證明。沒有把本機檢查誤寫成對外傳送秘密的協定。
+- 保留發行與接入階段的區分，不再展開新的 Fiat–Shamir 或 replay 細節；本次不追加測驗。
+- 只更新教材與進度，未變更研究設計、程式或正式成果狀態，未執行新實驗。
+
+### 2026-09-13 — 接續公開輸入、秘密見證與規則
+
+- 學習者回覆「好的 請繼續帶我學習」，依要求繼續階段 2 的概念課，不把這句話記成已通過全部理解檢查。
+- 用獨立例子的 `h = H(k)` 說明公開輸入、秘密見證與規則，並以短段 Python 寫法呈現
+  本機檢查。`H` 尚未實作，未執行程式，也不把這段示意當成 NIZK 實作。
+- 核對核心發行 relation 的 I4 及 reference code：教學例子將 h 給驗證者看，但正式盲發行
+  proof 的票券 M 屬 witness；沒有把 reference evaluator 的輸入誤當成發行端收到的訊息。
+- 下一步：以「只查 k 長度、刪掉摘要相等條件」讓學習者推演缺少哪種保證，連結規則的正確性
+  與未來獨立修改／驗證能力。第二堂仍進行中，其他待確認項目保留。
+- 本次只有教材、術語與進度更新，未變更研究設計或程式，未執行正式實驗。
+
+### 2026-09-14 — 長度與綁定的回答，接續規則檢查
+
+- 學習者回答「不能 因為只檢查長度並不代表就是真的那個k」，原文已保存。
+- 已確認能判斷長度檢查不足以支持摘要綁定；助教精確表達為仍需確認 `H(k) == h`，
+  不推定學習者已掌握 hash 的所有安全性質或完整 relation。
+- 接續說明：NIZK 只能針對已指定的規則提供相應保證，不能補回漏寫的綁定條件。
+- 用正常配對及「固定 h、改用同長度但摘要不相符的 k」推演正確檢查應如何接受／拒絕，
+  並比較只查長度的錯誤規則。這是未來獨立驗證的入門練習，沒有實際修改或執行程式。
+- 下一步讓學習者判斷同時更換 k 與對應 h 的案例是否能測出漏檢查；不重考已答對的長度題。
+- 第二堂仍進行中；僅更新教學文件，未新增正式測試、實驗或研究宣稱。
+
+### 2026-09-14 — 同時更換秘密與摘要，接回票券有效性
+
+- 學習者回答已保存在問答表；結論「不能測出」正確，且指出知道新秘密者可符合新配對。
+- 助教補充：`k_B` 與 `H(k_B)` 仍滿足相等規則，正確檢查與只查長度都通過；這才是
+  本題無法暴露漏檢查的直接原因。更換測試輸入不等於實際替使用者變更或發行憑證。
+- 核對核心 `VerifyTicket`：票券簽章綁定包含 h 的完整票券內容摘要。攻擊者自行配出
+  k_B／h_B，不能據此讓任意修改的原票券通過票券驗證；教材不宣稱完整認證實作已完成。
+- 下一步用「格式合規但修改後票券的原簽章驗證失敗」確認票券有效性與持票者認證都需要，
+  回到第二堂原先待確認的檢查分工，而不繼續重考相同摘要配對題。
+- 本次僅更新學習文件；沒有執行程式、重發票券或修改正式設計。
+
+### 2026-09-14 — 停止連續追問，改為完整示範
+
+- 學習者的完整回答與題意不清的回饋已保存在問答表。
+- 助教承認從局部配對切到整張票券時沒有交代清楚，且連續更換抽象符號使學習偏離目的。
+- 直接解釋：題目已設定票券簽章驗證失敗，因此票券有效性檢查即應拒絕；不需要藉該題推論
+  秘密數量或要求學習者猜測其他失敗原因。
+- 教材開頭新增完整示範，固定小明／小華角色，比較正常票券、僅複製票券及修改後簽章失敗。
+  說明兩項驗證的用途，同時保留其他接入條件與尚未完成實作的邊界。
+- 更新學習工作區的教學方式：暫停目前連續追問，先完整講解，再自然安排有明確用途的練習；
+  不以逐題答完作為繼續的必要條件，也不擅自把尚未展示的理解標成完成。
+- 本次不追加題目。只修改教學文件，未變更程式、研究定義或執行正式實驗。
+
+### 2026-09-14 — 開始第三堂：簽章與金鑰的用途
+
+- 學習者回覆「好的 繼續」，依已調整的教學方式接續，不再逐題追問。
+- 第二堂的基礎說明與示範已提供；保留既有理解證據及未確認部分，不宣稱全部掌握。
+- 新增第三堂教材與路線入口，說明發行端簽署私鑰、驗證公鑰及使用者 holder secret 的分工。
+- 以小明取得票券、向地面站出示、地面站重算內容摘要並驗證簽章的完整情境，對照核心
+  `VerifyTicket` 定義。Python 片段只作資料流示意，沒有實際函式、執行或部署宣稱。
+- 保留盲簽章邊界：發行端處理隱藏內容的請求，由使用者完成最終簽章；不畫成直接讀取
+  最終票券再簽名。公鑰來源需要可信設定，票券簽章不取代持票者認證或身分開啟。
+- 下一段從盲簽章的用途與完整發行情境接回不可連結性；仍先示範，再於自然應用時確認理解。
+- 本次只更新學習文件，未修改程式、選定新演算法或執行正式實驗。
+
+### 2026-09-14 — 第四堂：盲發行與 NIZK 的分工
+
+- 學習者回覆「繼續」，接續完整例子的教學方式，本次不追加測驗。
+- 新增第四堂教材、課程入口及兩項術語，以發行時直接保存身分／票券對照的情境說明設計動機。
+- 沿小明完成註冊認證、本機組票、盲化與產生 NIZK、HNCC 檢查及回應、裝置完成簽章，
+  再到日後向 FGS 出示票券的順序，說明各方看到的資料。
+- 對照核心 I1–I5 與 Blind relation-bound issuance：整份 M 是發行證明的秘密見證之一；
+  NIZK 綁定隱藏票券、持票者秘密、追責密文、已認證身分與同一次請求。
+- 說明最終 T 不附帶 `pi_issue`；票券內仍有追責密文。保留最終簽章底層證明與發行 NIZK
+  的差別，不推論所有證明計算都已離開接入路徑。
+- 第三堂改記為已提供基礎講解，理解待後續應用；第四堂進行中。沒有新增學習者回答或操作證據。
+- 下一段從票券內的持票者摘要與追責密文，補充雜湊和加密的用途及差別。
+- 本次只有學習文件更新；沒有修改程式、執行研究實驗或提升實作／安全宣稱。
+
+### 2026-09-14 — 第五堂：雜湊、加密與票券欄位
+
+- 學習者回覆「繼續」，依完整情境示範方式接續，不把此回覆記為已掌握第四堂。
+- 新增第五堂教材，從票券 `h` 與 `C` 的輸入、可見性、用途與恢復能力解釋雜湊和加密。
+- 核對核心 I4／I5、opening definition、reference `_derive_trace()` 與接入規格：持票者摘要
+  對應裝置秘密；追責明文是註冊身分與序號，不包含持票者秘密。
+- 說明摘要本身不證明持有秘密、密文本身不能驗證出示者；發行 NIZK 將兩項資料綁定於
+  同一張票券與已認證申請。保留真實 holder authenticator 與 production opening 的實作缺口。
+- 核對 NIST 官方術語定義，補充雜湊原像難求的計算意義及加密／解密用語；沒有指定新演算法。
+- 用固定身分摘要的情境說明可連結性與候選比對風險，接回每張票券的新 holder secret；
+  不宣稱單靠新摘要就完成整體不可連結性。
+- 第四堂改記為已提供基礎講解，理解待後續應用；第五堂進行中，未新增測驗或虛構回答。
+- 下一段沿小明取得兩張票券，解釋秘密、序號及加密隨機資料各自的用途。
+- 本次只有教學文件更新與來源核對，未修改或執行協定程式，未新增研究實驗或安全宣稱。
+
+### 2026-09-14 — 第六堂：不同用途的隨機資料
+
+- 學習者要求「下一堂」，接續第五堂預告，保留未確認理解的狀態，不追加測驗。
+- 新增第六堂教材，以小明申請兩張票券解釋新的 holder secret、serial 與 trace randomness；
+  分開記錄不可預測、避免重複及是否保密的需求。
+- 核對核心新取樣要求與 N1–N7：`e` 有特定格式和分布，trace privacy 明列不重用前提；
+  在相同公鑰與 context 下，重用它會重複部分密文結構與遮蔽資料。
+- 核對 reference 的 `reference_fixture()`、`sample_weight_error()` 與 `build_honest_instance()`，
+  說明固定測試資料、呼叫端輸入及正式安全取樣之間的區別，未修改既有程式。
+- 依 Python 官方文件加入 `secrets.token_bytes()`、bytes 長度與預設 `random` 用途的入門說明。
+  教學片段只產生秘密與序號，不是完整票券產生器或 `e` 的 sampler。
+- 助教以本機 Python 3.12.9 執行第六堂完整 Python 片段，輸出 `32 16`，程序正常結束。
+  此結果只核對示範可執行與輸出長度，不是亂數安全性證明；沒有執行協定測試或正式研究實驗。
+- 第五堂改記為已提供基礎講解，理解待後續應用；第六堂進行中，未把助教示範當成學習者操作。
+- 下一堂補足後量子概念，再接續完整系統流程；沒有新增研究決策或提升安全／實作宣稱。
+
+### 2026-09-14 — 第七堂：後量子目標與元件安全
+
+- 學習者要求「下一堂」，接續後量子入門概念；沒有新增測驗或推定已掌握第六堂。
+- 核對 NIST 官方 PQC 入門／FAQ 及 Shor 原始研究，說明一般電腦執行後量子運算與量子
+  攻擊者能力之間的區別；小數字分解只作概念示範，沒有預測實際破解日期或時間。
+- 沿小明票券推演簽章、盲性、追責加密與 NIZK 的不同失效影響，說明單一元件不能代表
+  整體後量子安全；保存密文後再解密亦可能影響已過期票券的身分隱私。
+- 補充 NIZK、門檻與後量子是不同要求；Grover 只介紹量子搜尋與實際成本需區分，沒有
+  將所有安全強度一律折半或宣稱某個秘密長度直接證明整體安全。
+- 對照核心攻擊模型、條件式安全論證與 `PQ-RBBC-BUOV-336` fork 界線，保留實作與證據缺口。
+- 第六堂改記為已提供基礎講解，理解待後續應用；第七堂進行中。下一堂進入階段 3，
+  先把票券生命週期、角色與資料可見性串成完整流程，不要求前面每段逐題過關。
+- 本次只有教學文件與來源核對，未執行程式或量子實驗，未新增研究決策或提升安全宣稱。
+
+### 2026-09-14 — 進入階段三：第八堂票券生命週期
+
+- 學習者要求「進入階段三」，依原路線開始完整系統流程；不推定前七堂已全部掌握。
+- 新增第八堂角色表與生命週期圖，沿小明的票券串起設定／發行授權、盲發行、衛星接入、
+  初始連線與票券使用狀態、通訊與換手，以及獨立的受控開啟分支。
+- 明列離線發行仍需和 HNCC 通訊，但不放在每次接入的即時路徑；日常接入由 UE／FGS
+  執行，衛星中繼，發行 NIZK 不隨票券出示。
+- 核對接入規格的四訊息草稿與使用狀態：驗證失敗不消耗，成功後不再建立第二份初始
+  連線，同次合法重試可恢復原結果；未以總覽圖解決先前兩訊息導覽與四訊息草稿的對應疑點。
+- 說明 session 可以包含多筆通訊，FGS 可辨認同一連線的活動；不把不可連結性擴張成
+  同一 session 內所有資料均不可關聯。新增 session key 等必要術語，未選定新協定。
+- 開啟圖由票券另行分支，不畫成每次接入必經步驟；保留授權、門檻與身分恢復的證據限制。
+- 新增資料可見性與程式入口表，只作後續導航；保留 reference、test-only 與 production 缺口。
+- 第七堂改記已提供基礎講解；第八堂進行中。下一堂從共同設定與發行授權，回答公鑰與政策
+  如何取得可信依據，再深入發行及接入。
+- 本次只更新學習文件，未執行協定、新增研究實驗或提升系統完成宣稱。
+
+### 2026-09-14 — 第九堂：信任起點與有限發行授權
+
+- 學習者原文：「之後給的流程圖可以直接畫出來 不用給程式碼 下一堂」。已將呈現偏好保存
+  於入口與學習起點，後續流程圖直接繪製，不把偏好擴張成禁止教學用 Python。
+- 新增第九堂教材與直接呈現的信任關係圖，從小明的票券驗證需要可信公鑰開始，區分
+  共同設定認證與 HNCC 的有限發行授權。
+- 核對 `verify_initialization()`：信任起點由呼叫端另外提供，收到的設定不可自行認證自身。
+- 核對 `SystemInitializationBundle`：目前保存公開金鑰參照與摘要，並非完整公鑰或秘密份額；
+  `ctx` 是共同設定的摘要，不是認證或整份 bundle 的摘要。
+- 核對 `authorize_issuance()` 與 quota store：通過管理檢查即記錄發行 session 並扣額度，
+  本函式不執行身分驗證、NIZK 或盲簽署；未把它當成完整票券成功發行或接入消耗。
+- 教材以假設的 100 次發行授權說明限制，不當成實際部署參數；保留真實後端、信任起點配置
+  及跨機器／耐故障額度管理的未完成項目。
+- 第八堂改記為已提供基礎講解，第九堂進行中；未新增學習者回答、協定執行或安全宣稱。
+- 助教以本機瀏覽器檢查流程圖在 736 與 288 像素內容寬度下的實際呈現，文字與連線完整可見；
+  此為教材呈現驗證，未執行協定測試。另核對學習文件的 108 個本機連結，沒有缺失目標。
+
+### 2026-09-14 — 第十堂：發行資料流與證明的輸入輸出
+
+- 學習者要求「下一堂」，接續第九堂預告；不新增測驗或將接續課程當成已掌握。
+- 新增第十堂教材，沿小明的申請區分 `rid`、`sid`、`sn`、隱藏票券、請求 `β`、
+  發行證明 `pi_issue`、回應 `z` 與最終票券 `T`，保留直接呈現流程圖的偏好。
+- 核對正式核心的公開輸入 `x`、秘密見證 `w`、I1–I5 與 `Respond`／`Finalize`：
+  「公開」相對於 HNCC；不把秘密交給驗證者，也不把發行身分或證明附到接入票券。
+- 用小華以自己的身分申請、卻企圖加密小明身分的例子，解釋 I5 的身分綁定用途；
+  另說明合規內容與不同請求不能混用。情境不是本堂新增的安全證明或測試結果。
+- 核對 reference 的 `IssueStatement` 含 `payload`、沒有完整協定的 `sid`，增量電路
+  亦將 payload 欄位列為公開輸入；明列此表示不能直接作為正式發行 NIZK 的公開訊息。
+- 核對 `verify_relation()` 接收 witness，`BlindUOVRequest` 不含 `pi_issue`；
+  保留本機關係檢查、對外證明驗證與完整發行後端之間的界線，未修改既有原始碼。
+- 第九堂改記已提供基礎講解，第十堂進行中。下一堂沿小明的票券進入 UE／衛星／FGS
+  接入，分開介紹驗票、持票者認證、新鮮值與連線建立。
+- 本次為教材與呈現更新，未執行協定測試或研究實驗，未提升安全／完成宣稱。
+- 助教核對 118 個學習文件本機連結，沒有缺失目標；以本機瀏覽器檢查流程圖在
+  736 與 288 像素內容寬度下的呈現，文字、節點與箭頭完整可見。
+
+### 2026-09-14 — 第十一堂：衛星中繼與四種接入訊息
+
+- 學習者要求「下一堂」，接續小明持票接入的預告；保留直接呈現流程圖及完整情境講解。
+- 核對 one-time access 草稿、四種 `Access*V1`、transcript 計算與既有測試；
+  沿 Init、Challenge、Finish、Accept 說明角色、資料流、必要驗證與接受時點。
+- 區分持票者秘密、nonce、key share、session key 與 key confirmation；接入新鮮值
+  不等於發行 NIZK 內部挑戰，實際 holder authenticator／PQ AKE 仍未選定與完成。
+- 補充 serving context 與 transcript 綁定的情境：小明對 FGS 甲的認證不能直接搬到乙，
+  或搭配被替換的 key share 使用；此為設計要求說明，未執行新的攻擊測試。
+- 明列 Init 不得 reserve／consume；Finish 的必要驗證通過後才進入狀態管理，
+  session、接受回應與 consumption 需可靠共同提交；回應遺失不恢復票券可用性。
+- 不把衛星中繼視為機密性保證；FGS 可關聯同一 session 的活動。HNCC 不加入每次接入路徑。
+- 保留導覽兩列概念訊息與四訊息草稿的細部對照事項；本堂未選定新協定、變更正式規格，
+  或宣稱兩訊息／四訊息流程已具完整密碼學實作。
+- 教材明列 opaque／codec 與認證的界線，既有測試使用佔位 bytes，不能當成真實登入測試。
+- 第十堂改記已提供基礎講解，第十一堂進行中；下一堂從並行申請、回應遺失與中斷，
+  深入一次性使用狀態。未新增學習者測驗回答或操作紀錄。
+- 本次只更新教材與呈現，未執行協定測試或研究實驗，未提升安全／完成宣稱。
+- 助教核對 132 個學習文件本機連結，沒有缺失目標；以本機瀏覽器檢查流程圖在
+  736 與 288 像素內容寬度下的呈現，文字、節點與箭頭完整可見。
+
+### 2026-09-14 — 接入往返疑問與教學更正
+
+- 學習者原文：「為了減少衛星網路驗證的時間, backhaul delay 是其中的一個limit 因此我才會採用NIZK希望可以避免兩次來回傳送訊息 照你的意思是一定要先傳一次nonce才能傳驗證訊息 沒有其他方法了嗎」。
+- 回答確認逐次 FGS nonce 是現有草稿的設計選擇，不是所有安全接入的必要條件；
+  助教前一堂未把草稿與低延遲動機連接清楚，新增補充並於第二、十一堂加上更正入口。
+- 初步比較首則接入 NIZK＋期間／使用紀錄、預先認證的共用時段資料與短期／一次性 prekey。
+  這些是候選組件，沒有修改 canonical access protocol、D-002 或現有 bytes 介面。
+- 核對 RFC 8235、RFC 8446 與 Signal PQXDH 的第一手文件，分清非互動性、重放、
+  狀態一致性、預先金鑰與認證界線；不把 Schnorr 或 PQXDH 直接選為本專案 PQ 方案。
+- 補充完整複製、搶先轉送、窗口內重放與 session-key binding，避免把只加 timestamp／nonce
+  或只檢查一次性狀態誤當成完整認證。兩端金鑰確認的時間要求須依候選另行定義。
+- 已詢問 backhaul 具體指 UE–FGS 路徑、FGS 的後端查詢或兩者；答覆前分開分析，
+  不擅自把 FGS 驗證改為衛星驗證。未虛構使用者已選定方案或理解程度。
+- 第十一堂維持進行中；先處理這項設計疑問，再回到使用狀態與重試。未執行協定測試、
+  benchmark 或新增安全／完成宣稱。
+- 助教核對 140 個學習文件本機連結，沒有缺失目標；以本機瀏覽器檢查候選流程圖在
+  736 與 288 像素內容寬度下的呈現，文字、節點與箭頭完整可見。此為教材呈現驗證。
+
+### 2026-09-14 — 正式文件的 NIZK 與接入時序對照
+
+- 學習者原文：「我現在的正式資料是怎麼說的」。於接入延遲補充加入正式來源對照。
+- 核對文件政策、頂層架構／狀態／研究方法、形式化核心發行段落與接入草稿：
+  `pi_issue` 留在離線發行，M5 列 verifier nonce，§5 定義四個依序接入訊息。
+- 區分「不傳 issuance proof」與「禁止接入 NIZK」；現有文件沒有選定後者，
+  holder authenticator 與 PQ AKE 仍待 D-002，不能把 bytes 介面當成完整認證。
+- 記錄導覽 §6 的兩列概念訊息與四個工程物件尚未逐則對齊；不能據此宣稱單往返。
+- 記錄低在線負擔的正式目標與首則 NIZK 減少往返需求之間的缺口，以及共享使用狀態
+  仍可能帶來後端等待。約 2 RTT 是草稿時序推論，不是已量測的端到端結果。
+- 本次僅更新學習來源對照；沒有修改正式協定、執行協定測試或提升完成／安全宣稱。
+
+### 2026-09-14 — 第十二堂：一次性票券狀態與失敗恢復
+
+- 學習者要求先繼續下一堂，接續第十一堂原定的並行申請、回應遺失與程序中斷主題。
+- 新增第十二堂教材與直接呈現的狀態流程圖，沿 `UNSEEN`、`RESERVED`、`CONSUMED`
+  說明驗證、原子 Reserve、共同 Commit、受條件限制的 Abort 與禁止轉移。
+- 以兩個不同 attempts 同時查到未使用的情境，說明一般「先查後寫」不能保證一次性；
+  另區分不同 attempt 的競爭與同 attempt 的 idempotent retry。
+- 說明 commit 後回應遺失不得釋出票券，commit 前中斷也不能只靠 lease 到期 Abort；
+  session、接受回應與 consumption 必須有共同 durability boundary。
+- 將單往返候選接回狀態語意：減少 UE–FGS RTT 不會移除共享 replay store 的權威決定，
+  後續實驗仍需分開量測衛星 RTT、NIZK 驗證與 store backhaul。
+- 對照 `InMemoryLinearizableReplayStore` 與既有並行測試，保留單程序、記憶體內、
+  `production_ready = False` 的界線；沒有把 reference 行為擴張成跨 FGS 或耐中斷實作。
+- 第十一堂改記已提供基礎講解，第十二堂進行中；未將「下一堂」視為已掌握。
+- 本次為教材與呈現更新，未執行協定測試或研究實驗，未變更正式協定或完成宣稱。
+- 助教核對 157 個學習文件本機連結，沒有缺失目標；以本機瀏覽器檢查狀態圖在
+  736 與 288 像素內容寬度下的呈現，狀態、轉移及重試／拒絕標籤完整可見。
+
+### 2026-09-14 — 第十三堂：過期、撤銷、已消耗與換手
+
+- 學習者要求「下一堂」，接續第十二堂預告；不把接續課程當成前一堂已掌握。
+- 新增第十三堂教材與直接呈現的生命週期圖，區分 `EXPIRED`／`REVOKED` acceptance
+  predicates 和 `CONSUMED` 使用狀態，避免把三者合成語意不明的 `INVALID`。
+- 說明過期不會使已消耗紀錄復原，retention cleanup 也不能讓舊票券重新可用；
+  可信時鐘、clock skew、replay grace 與 audit retention 屬於部署條件。
+- 沿 revocation generation 說明 pure validation 與交易內重查，以及撤銷／消耗競爭需要
+  serializable order；既有 session 是否中止仍待 session-revocation policy。
+- 說明外部 generic reject 與內部 audit reason 的分工，保留 timing／traffic leakage
+  仍需評估的限制。
+- 說明 handover 使用綁定原 session、目標 serving context、新鮮值與 sequence 的授權，
+  不重用已消耗票券；無法核驗時需改用另一張未使用票券執行 full access。
+- 保留 Handover 只有 requirements、尚未實作的正式研究狀態；未虛構訊息數、PQ primitive、
+  延遲改善或完整不可連結性。
+- 本次為教材與呈現更新，未執行協定測試或研究實驗，未變更正式協定或完成宣稱。
+- 助教核對 163 個學習文件本機連結，沒有缺失目標；以本機瀏覽器檢查生命週期圖在
+  736 與 288 像素內容寬度下的呈現，三種原因、session 延續與換手邊界完整可見。
+
+### 2026-09-15 — 第十四堂：受控身分開啟的兩道門
+
+- 學習者要求「下一堂」，接續第十三堂預告；不把接續課程視為已掌握前一堂內容。
+- 新增第十四堂教材與直接呈現的流程圖，將 governance authorization 與 threshold
+  decryption 分成兩道必須同時通過的門，並說明 FAC／OA 金鑰與角色分離的理由。
+- 沿 canonical `OpeningRequest` 說明 ticket、case、evidence、purpose、expiry、nonce、
+  context／epoch 及 key IDs 的精確綁定；區分 authorization statement 與完整 request digest。
+- 說明 `OpenShareService` 必須先驗票、驗授權、期限及 replay，通過後才能呼叫 share backend；
+  API 不提供任意 ciphertext 的 partial-decrypt 入口。
+- 區分 opening replay 與 initial-access ticket consumption，並說明 reservation、commit-before-release
+  和狀態不確定時 fail closed 的可用性取捨。
+- 說明 Combiner 不只數份額，還需拒絕重複成員與混合 request／ticket／case／epoch／key；
+  重建後仍須驗 trace authentication 並確認 decoded `sn` 等於票券可見 `sn`。
+- 明列 5-of-7 是現有測試 fixture，並非已選定的正式部署門檻。現有 codecs、gate 與控制流測試
+  不代表 production PQ signature、OA DKG、robust decoder、share proof 或 threshold security proof 已完成。
+- 下一堂以完整案例整理設定、發行、接入、一次性狀態、換手與開啟，以及各角色可見資料，
+  作為階段 3 總複習後進入階段 4 的設計取捨。
+
+### 2026-09-15 — 第十五堂：完整生命週期與資料可見性總整理
+
+- 學習者要求「下一堂」，接續階段 3 總整理；不把要求接續視為已獨立掌握第十四堂。
+- 新增完整生命週期教材與直接呈現的流程圖，依序整理共同設定／issuer authorization、
+  blind issuance、FGS access、one-time consumption、active session／handover 與獨立 opening 分支。
+- 以 `rid`、`k_hold`、`sn`、`C` 四項資料貫穿流程，區分 HNCC 在註冊時已知身分、FGS
+  日常驗證看到票券、UE 保留 holder secret，以及 OA 達門檻後才受控恢復 `(rid, sn)`。
+- 說明 issuer unlinkability、FGS anonymity、同 session 可連結、同票券 replay 可連結與
+  satellite-path metadata 是不同範圍，不能用一句「系統匿名」概括。
+- 保留接入四訊息草稿不是必要往返下界；將首則 NIZK／低 RTT 候選、replay-store backhaul
+  與正式 holder authenticator／PQ AKE 的缺口一起放回完整流程。
+- 整理各模組目前已有的 interface／codec／reference／test 邊界及未封閉項目，避免從任一
+  unit test、circuit checkpoint 或抽象 proof 擴張成端到端 production claim。
+- 階段 3 的教材範圍至此完成，但學習者尚未獨立畫圖或口述，因此不標記理解完成。
+  下一堂進入階段 4，分析高成本 PQ issuance work 與當下 access work 的切分。
+- 助教核對 179 個學習文件本機連結，沒有缺失目標；以本機瀏覽器檢查完整生命週期圖在
+  736 與 288 像素內容寬度下的呈現，正常路徑、handover 與獨立 opening 分支皆完整可見。
+
+### 2026-09-15 — 第十六堂：離線發行、在線驗證的設計取捨
+
+- 學習者要求進入階段四；第十五堂改記為已提供總整理，不因接續而標記獨立掌握。
+- 初版誤將「每次 FGS 在線查 HNCC」標成 comparison baseline；學習者指出論文應與實際衛星
+  驗證論文比較，而它們的機制並非統一採用這個流程。教材與圖已移除該錯誤 baseline。
+- 依學習者說明，將主要理由更正為 PQ cryptographic components 運算成本高，因此把不依賴
+  當次接入的 identity verification、hidden-ticket construction、`pi_issue`、blind issuance／
+  Finalize 提前完成；privacy 與移除 HNCC 在線依賴記為重要附帶效益。
+- 區分必須留在接入當下的 serving context、freshness、holder authentication、ticket／policy
+  verification、PQ AKE、replay Reserve／Commit 與 session establishment。
+- 區分 offline `pi_issue` 與尚待設計的 access holder authenticator；首則 access NIZK 可能省去
+  即時 challenge 往返，仍需 freshness、anti-replay、PQ AKE、prekey 與 atomic state binding。
+- 依學習者詢問新增 Replay 入門：攻擊者複製先前真實有效訊息再送一次，不需偽造簽章或知道
+  holder secret；NIZK 有效不表示訊息新鮮，仍需 freshness／context binding 與權威使用狀態。
+- 區分攻擊 replay 與同 `attempt_id` 的合法 retry，並定位 access、issuance、opening 與 handover
+  各自需要的 replay control。
+- 另區分 PQ-RBBC 文件中的 relation／row／aggregate replay：這些是重新代入 assignment 或中間
+  結果檢查限制式的工程驗證，不是網路重放攻擊。
+- 整理離線發行的代價：UE 票券庫存、短效期、撤銷散布、一致消耗狀態、裝置保護及預取政策；
+  不把工作移出接入路徑誤寫為工作消失。
+- 明列正式 related-work／evaluation baseline 必須逐篇核對真實衛星認證流程，再比較 security
+  level、precomputation、online computation／bytes／RTT、backhaul、privacy、state 與測試環境；
+  目前不虛構論文名稱、流程或結果。
+- 本堂只修正學習文件，沒有新增正式 D-編號決策、修改 access protocol、執行 benchmark 或
+  提高 implementation／security／production claim。下一堂先建立衛星論文公平比較方法。
+- 助教核對 187 個學習文件本機連結，沒有缺失目標；以本機瀏覽器檢查修正後的 computation
+  placement 圖與 Replay 圖在 736／288 像素內容寬度下的呈現，運算前移邊界及重放流程完整可見。
+
+### 2026-09-15 — 第十七堂：異構衛星認證論文的公平比較
+
+- 學習者要求下一堂，接續其對錯誤 comparison baseline 的更正；不把接續課程視為已獨立掌握
+  第十六堂。
+- 以 AnFRA、PkT-SIN、N3PA-STIN、QPCASIN 四篇現有候選比較文本為例，保留 roaming、periodic
+  `k`-time、three-party／batch、PQ continuous／preemptive handover 等原始研究焦點，不將其改畫成
+  本研究 HNCC–FGS 流程。
+- 區分 related work、comparison paper 與可重現 performance baseline；目前已有 security-property
+  對齊草稿，但正式 bibliography、完整 protocol extraction 與同比 benchmark 尚未封閉。
+- 建立公平比較三項條件：相同事件、相同成本邊界與相同證據等級；initial access、roaming、
+  handover、continuous authentication、batch authentication 分開處理。
+- 將效能拆成 precomputation／offline cost、online critical path 與 amortized cost，另列 messages、
+  bytes、RTT、每角色計算、backhaul、state、queue、batch size、security level 與測試環境。
+- 區分 paper-reported、共同模型換算及同環境實測；無法對齊的項目使用質性比較、`NR`、`NA` 或
+  `OPEN`，不以不同硬體或計時範圍的總延遲做排名。
+- 明列 AnFRA roaming、本研究 initial access、PkT-SIN bounded-use、N3PA-STIN batch 及 QPCASIN PQ
+  目標之間不可直接等同的例子；保留本研究 access protocol、PQ AKE 與 benchmark 尚未封閉的狀態。
+- 本堂只更新學習文件，未修改 canonical related-work、security-game 或 evaluation 文件，未執行
+  協定 benchmark，也未提高研究完成宣稱。下一堂比較 one-use ticket 與 reusable anonymous Show。
+- 助教核對 191 個學習文件本機連結，沒有缺失目標；以本機瀏覽器檢查比較框架圖在 736 與
+  288 像素內容寬度下的呈現，五篇研究焦點、三項比較條件及判斷結果完整可見。
+
+### 2026-09-15 — 第十八堂：One-use ticket 與 reusable anonymous Show
+
+- 學習者要求下一堂，接續第十七堂；不把接續課程視為已獨立掌握文獻比較方法。
+- 先區分重送固定 `T=(M,σ)` 與真正 reusable `Show`：後者需以每次新 randomness 產生新的
+  randomized ZK presentation，不能靠在固定 ticket 旁附加亂數取得 unlinkability。
+- 說明 core `VerifyTicket(T)` 是 stateless validity check；strict one-use 是另由 holder authentication、
+  authoritative consumption state 與 lifecycle assumptions 組成的 M6 system property。
+- 比較兩種模型的 privacy：one-use 以不同 tickets 避免正常使用時重複同一固定物件；multi-show
+  以 presentation randomization 隱藏共同 credential，兩者皆不自動隱藏 timing／location metadata。
+- 區分 transcript replay、合法物件重用、quota 與 double-spend；v0.1 要求 online prevention，
+  disconnected FGS 事後才偵測重複不能仍宣稱 strictly one-use。
+- 將 one-use 的 offline issuance／wallet 與 online state commit，對照 reusable Show 的較低發行頻率、
+  較高在線 ZK presentation、revocation 與 quota 擴充成本。
+- 接回先前的秘密外洩問題：ticket 與 `k_hold` 同時外洩時，one-use 只能限制每張 ticket 的成功次數；
+  reusable credential 與秘密外洩可能持續產生 Shows，兩者都仍需裝置保護和撤銷。
+- 說明 D-001 選擇 one-use 的理由是現有 fixed ticket core、清楚的一次成功 invariant、計算前移及
+  較少新增密碼假設；同時保留 wallet、補發、durable state、backhaul 和 partition availability 代價。
+- 本堂只更新學習文件，未修改 D-001、canonical protocol、實作或測試狀態，亦未新增 reusable
+  `Show` construction 或效能數值。下一堂比較 blind issuance 與普通 signed ticket。
+- 助教核對 198 個學習文件本機連結，沒有缺失目標；以本機瀏覽器檢查 one-use／multi-show
+  比較圖在 736 與 288 像素內容寬度下的呈現，兩條流程、責任差異與 v0.1 選擇完整可見。
+
+### 2026-09-15 — 第十九堂：Blind issuance 與普通 signed ticket
+
+- 學習者要求下一堂，接續第十八堂；不把接續課程視為已獨立掌握 one-use／multi-show 取捨。
+- 以 ordinary signed ticket 的 issuance log 示範：即使 ticket 只含 encrypted identity，HNCC 在發行
+  時看過相同 payload／digest，日後取得 FGS ticket contents 仍能 equality-match 回 `rid`。
+- 將 issuer unlinkability 定位為「HNCC 已知 enrollment identity，但不能把 issuance session 配到
+  最終 ticket」，而不是對 HNCC 隱藏註冊身分。
+- 說明 relation-bound blind issuance 的 `β → z → Finalize` 資料流；blindness 隱藏配對，`pi_issue`
+  則在不公開 witness 下證明 I1–I5，避免 issuer 對任意 hidden message 盲目簽署。
+- 沿 I1–I5 說明 ticket shape／context、canonical digest、blind request、holder secret 與 trace
+  ciphertext 對 authenticated `rid`／同一 serial 的綁定。
+- 說明追責密文與 blind issuance 的相容性：正常 issuance／access 不取得 `rid` 配對，合法 opening
+  仍須案件授權及至少 `t_O` 個 OA shares。
+- 明列跨域資料共同分析的邊界：核心 game 可涵蓋 curious HNCC 取得其他 NCC 所屬 FGS 的最終
+  ticket contents 後的配對嘗試，
+  但要求 honest-protocol、common metadata、HNCC 無 opening threshold，且不涵蓋 traffic analysis、
+  active watermark 或 malicious-issuer framing。
+- 將 Blind-UOV／`pi_issue` 的 proving、verification、response／Finalize 成本放回 offline issuance，
+  不讓大型 issuance proof 進入衛星接入路徑；同時保留其 proof 與 production blockers。
+- 本堂只更新學習文件，未改寫 canonical architecture／methodology、實作或安全完成宣稱。下一堂
+  分析發行、接入驗證與身分開啟的角色分離。
+- 助教核對 205 個學習文件本機連結，沒有缺失目標；以本機瀏覽器檢查 ordinary／blind issuance
+  比較圖在 736 與 288 像素內容寬度下的呈現，兩條配對路徑、三項責任及限制完整可見。
+
+### 2026-09-15 — 第二十堂：角色分離、最小權限與共謀邊界
+
+- 學習者要求下一堂，接續第十九堂；不把接續課程視為已獨立掌握 blind issuance 取捨。
+- 以三種敏感能力整理角色分離：HNCC 知道註冊身分並發行、FGS 看見 access 並建立 session、OA
+  threshold 在案件授權後開啟；FAC／governance 認證共同設定與 issuer grant，Operator 提出政策，
+  LEO／FLEO 只中繼或做明確的輕量檢查。
+- 介紹 least privilege、separation of duties 與 compromise domain，說明增加角色名稱不足以建立
+  隔離；keys、thresholds、ceremonies、storage、rotation、accounts 與 audit 也需分開。
+- 初版曾分析 HNCC+FGS、FGS+至少 `t_O` OA、opening authorization+至少 `t_O` OA、FAC+HNCC 及在
+  LEO 保存高價值 secrets 的風險；其中以角色合併描述 HNCC／FGS 的方式已由下方更正取代。
+- 說明角色分離不能防止所有共謀，只能把攻擊成功所需 key roles、shares、corruption assumptions
+  與 audit evidence 寫清楚；達 threshold 的 OA compromise 會超出 privacy 假設。
+- 對照 `SystemInitializationBundle` 五種 key roles、跨角色不同 key identity、分離的 FAC／OA
+  threshold，以及 issuer／opening wrong-role fail-closed tests。
+- 保留目前只有 canonical contracts、bounded issuer grant、opening gate／combiner control-flow
+  prototypes；production PQ authentication、FAC／OA DKG、key ceremony、HSM isolation 與部署共謀
+  證據仍未完成。
+- 本堂只更新學習文件，未修改 canonical trust model、key roles、thresholds 或實作狀態。下一堂
+  分析 FGS 與 LEO／FLEO 的工作分配。
+- 助教核對 212 個學習文件本機連結，沒有缺失目標；以本機瀏覽器檢查角色分離圖在 736 與
+  288 像素內容寬度下的呈現，治理路徑、三種敏感能力、衛星邊界與合併風險完整可見。
+
+### 2026-09-15 — 第二十堂更正：組織拓撲與控制邊界
+
+- 學習者指出初版把協定／key-role separation 誤畫成組織分離，並把「HNCC＋FGS 合併／共謀」
+  當成主要結構風險，與預定系統及真實部署不符。
+- 依作者更正固定預定行政拓撲：FAC 與 OA 是同一最高治理組織內的功能；HGS 隸屬 HNCC；FGS
+  隸屬其他／受訪 NCC；NCC 與 satellite operator 是合作關係；LEO／FLEO 由 satellite operator 營運。
+- 將組織圖、協定角色圖與 key-role map 分開。FAC／OA 同組織不表示 configuration、opening
+  authorization 與 threshold shares 能共用 key、帳號或批准流程，也不能據此宣稱抵抗完整治理域失陷。
+- 將風險敘述改為 home-domain issuance records、visited-domain access logs 與 satellite/network
+  metadata 的跨域共同分析；既有 HNCC–HGS 與 NCC–FGS 隸屬本身不是 collusion event。
+- 核對 `ServingContextV1` 目前只有 operator、FGS、relay／cell scope、epoch 與 policy digests；
+  沒有 HGS、home／visited NCC identity 或行政隸屬編碼。
+- 現有 canonical architecture 未出現 HGS，也未完整記錄上述組織邊，因此本次只在學習資料保存
+  作者確認的 intended topology；HGS 協定責任與 `Operator`／satellite operator 名稱關係仍待
+  integration lane 正式同步，不提高 Defined／Implemented claim。
+- 助教核對 211 個學習文件本機連結，沒有缺失目標；以本機瀏覽器重新檢查組織／密碼功能圖在
+  736 與 288 像素內容寬度下的呈現，階層、隸屬、合作關係與文字均無重疊或裁切。
+
+### 2026-09-15 — 第二十一堂：地面站與衛星的工作分配
+
+- 學習者要求下一堂；以前一堂修正後的組織拓撲為前提，不把 HNCC／HGS、其他 NCC／FGS 與
+  satellite operator 的行政歸屬再次抽象成彼此獨立角色。
+- 分開 administrative ownership、work placement 與 message round count。說明 HGS 歸屬已知但
+  protocol role 未定；FGS 是目前 verifier／session endpoint，LEO／FLEO 只中繼或執行明確輕量子集。
+- 說明 FGS 放置重型驗證的資源／更新理由，並以 linearizable replay state、PQ AKE endpoint 與
+  session commit 解釋為何只把 ticket verification 搬到衛星不能取代地面端。
+- 更正「衛星驗簽需要 issuer secret」的潛在誤解：初步 signature verification 只需 public key；
+  主要代價是 configuration／revocation freshness、衛星計算、重複驗證與仍需 FGS state decision。
+- 對照四訊息草稿約 2 RTT 與首則 access NIZK 候選約 1 RTT。候選仍由衛星中繼、FGS 驗證，
+  因此減少逐次 challenge 不要求把完整 verifier 搬到衛星。
+- 將 satellite-path delay、FGS 到 authoritative state 的 state-backhaul delay，以及目前不需要的
+  FGS 到 HNCC／HGS home lookup 分開；NIZK 只能直接降低第一項的訊息輪數。
+- 列出 replay backend 共置、以 `use_key` 分片到 unique writer、縮小 acceptance domain 與 offline
+  double-spend detection 的代價；後者不符合目前 strictly one-use claim。
+- 本堂只新增學習材料，沒有將 1 RTT 候選、HGS protocol role 或分散式 replay backend 提升為
+  canonical／Implemented／Tested 狀態。下一堂分析 short-lived ticket 的有效期與預先發行策略。
+- 助教核對 218 個學習文件本機連結，沒有缺失目標；以本機瀏覽器檢查 work-placement 圖在 736
+  與 288 像素內容寬度下的呈現，角色配置、2 RTT／1 RTT 流程及三種延遲均無重疊或裁切。
+
+### 2026-09-15 — 第二十一堂追問：Replay backend 是什麼
+
+- 學習者直接詢問工程術語「Replay backend」的意思，不據此推定已理解分散式狀態或一致性。
+- 補充 backend 是 FGS 後方的內部狀態服務／交易式資料庫；它不驗證 NIZK，而是以 ticket-derived
+  `use_key` 和 `attempt_id` 原子裁決哪個通過驗證的 attempt 能建立唯一 initial session。
+- 以 FGS-A／FGS-B 同時收到同一張合法 ticket 為例：兩者的 stateless ticket verification 都可能
+  通過，但 Replay backend 只允許一個 `Reserve` winner，成功後提交為 `CONSUMED`；同 attempt
+  retry 恢復同一結果，另一 attempt 不得建立第二個 session。
+- 說明 backend 可以和 FGS 共置，也可以是共享地面服務；production 需要 durable、cross-process、
+  cross-FGS linearizable transactions。目前只有 `InMemoryLinearizableReplayStore` 單程序模型，且
+  `production_ready = False`。
+- 明列最小保存範圍為 ticket identity／`use_key`、attempt、state、期限與回應恢復資料；不應保存
+  `k_hold`、`rid`、session key 或不必要的完整 ticket。
+
+### 2026-09-16 — 第二十二堂：短效票券的有效期、庫存與補發策略
+
+- 學習者要求下一堂；不把其接續視為已掌握 Replay backend 或第 21 課的分散式狀態取捨。
+- 區分 configuration `expiry_bucket`、`IssuerGrant.not_before／expiry`、`challenge_expiry` 與
+  `session_expiry`，避免將票券、發行權、單次 challenge 和 session 的期限混為一談。
+- 核對 ticket payload `M=(ctx,sn,h,C)` 沒有 per-ticket expiry；`SystemConfiguration.expiry_bucket`
+  被 canonical encoding 並綁入 `ctx`。目前 contract 只檢查 `u64` 與 encoding，exact 時間語意、bucket
+  長度及 overlap policy 尚未凍結。
+- 說明共同 expiry bucket 可擴大 anonymity set、降低個人化 expiry watermark，並支援 Replay
+  backend 按期間清理；代價是 bucket 尾端發行的票券可用時間縮短。
+- 比較短／長有效期在 disconnected availability、wallet theft、revocation lag、FGS retention、
+  issuance frequency 與 metadata linkage 的交換，並重申 short expiry 不取代有效期內 revocation。
+- 以 `B ≥ N+R+S` 作容量模型，分開預估 initial access、結果不確定／handover fallback 與安全餘裕；
+  這是待實測參數，不是安全公式或目前採用數值。
+- 引入 low watermark `L`、相鄰 bucket 預先補發及 UE `unused → reserved → outcome-known` journal；
+  回應遺失、crash、backup rollback 與多裝置複製均不能讓可能已消耗 ticket 恢復 unused。
+- 區分 `IssuerGrant.quota` 與單一 UE batch size；前者是 federation 限制 HNCC 發行權的 control-plane
+  quota，後者是 wallet inventory policy。
+- 保留 `expiry_bucket` encoding／binding 已實作，exact lifetime、`B`／`L`、wallet journal、補發與
+  production Replay retention 均未完成。下一堂整理 honest-but-curious／malicious／compromised／
+  unavailable threat model。
+- 助教核對 226 個學習文件本機連結，沒有缺失目標；以本機瀏覽器檢查 ticket-lifetime 圖在 736
+  與 288 像素內容寬度下的呈現，共同 bucket、wallet inventory、長短期限與 journal 均無重疊或裁切。
+
+### 2026-09-16 — 第二十三堂：Threat Model 與安全邊界
+
+- 學習者要求下一堂；不將課程接續當成已掌握 ticket lifetime、inventory 或 wallet journal。
+- 將 threat model 拆成角色、adversary capability／view、仍誠實的邊界、winning event 與安全結論，
+  避免用「系統對壞人安全」概括不同性質。
+- 區分 honest、honest-but-curious、malicious、compromised／corrupted、untrusted 與 unavailable；
+  unavailable 是獨立 availability 維度，不自動代表 secret compromise。
+- 依作者確認的組織拓撲重列威脅：HNCC／HGS 屬同一 home domain、FGS 屬其他 NCC、LEO／FLEO
+  屬 satellite operator、FAC／OA 是同一最高治理組織內的功能；HGS protocol role／view 保持未定。
+- 對照 issuer unlinkability 的 honest-protocol HNCC／common metadata／no-opening-threshold 條件、
+  one-more 與 one-use 的差異、trace soundness 不涵蓋 malicious issuer framing，以及少於 `t_O`
+  opening shares 的 privacy boundary。
+- 說明 access authentication／one-use 依賴 correct FGS、holder authenticator、PQ AKE 與 atomic／
+  durable／linearizable Replay backend；完全惡意 FGS 或 backend 不由目前系統結論保護。
+- 以三個情境說明 claim boundary：任意無效 ticket 不保證可追出真人；ticket bytes 與 `k_hold` 一起
+  失竊時只能開回原綁定 `rid`；惡意 relay 重放真實請求由 freshness／transcript／state 拒絕，但仍可 DoS。
+- 將完整安全句型整理為 property＋adversary／view＋assumptions＋winning event＋claim status；
+  security game／reduction proof 與有限 unit tests 的證據責任保持分離。
+- 本堂對照現有 end-to-end security-games draft，不提升為 canonical、proof-closed 或
+  production-closed。下一堂進入階段 5，從 repository／Python package／module／test／manifest 開始。
+- 助教核對 233 個學習文件本機連結，沒有缺失目標；以本機瀏覽器檢查 threat-model 圖在 736
+  與 288 像素內容寬度下的呈現，行為模型、角色假設、安全性質與完整主張句型均無重疊或裁切。
+
+### 2026-09-16 — 第二十四堂：Repository 地圖與證據路徑
+
+- 學習者明確要求進入階段 5；第 23 課仍記為已提供總整理、理解待後續應用，不將階段切換視為
+  已能獨立撰寫 threat model。
+- 從 repository／root／path 開始，將目前 checkout 分成研究工作台、正式全專案定義、`src/`
+  實作、tests／manifests／artifacts／proof evidence，以及 modules／guides／learning 導覽五區。
+- 說明 `ARCHITECTURE_zh-TW.md`、`RESEARCH_STATUS_zh-TW.md`、`ROADMAP_zh-TW.md` 的不同責任，
+  並保留 machine evidence 約束 claim、教材不能覆蓋 canonical status 的順序。
+- 以 `src/pq_sat_auth/framing.py` 為第一條真實閱讀路徑，對照
+  `tests/system/test_pq_sat_auth_framing.py` 的 fixed vector、round trip、mutation、truncation 與
+  type／size rejection。
+- 助教執行 `PYTHONPATH=src python -m unittest tests.system.test_pq_sat_auth_framing -v`，結果為
+  6 tests passed、0 failed、0 skipped；這是助教驗證，不記為學習者已能執行測試。
+- 限定結論為目前 framing codec 的被測規則通過；不提升 ticket／NIZK／PQ AKE、匿名性、proof 或
+  production claim。下一堂閱讀 package、module、`import` 與 `__init__.py`。
+- 助教核對 236 個學習文件本機連結，沒有缺失目標；以本機瀏覽器檢查 repository map 在 736
+  與 288 像素內容寬度下的呈現，五個責任區、framing 閱讀鏈及 claim-level 邊界均無重疊或裁切。
+
+## 後續更新方式
+
+每次接續時更新日期、目前單元、實際回答、已釐清／未釐清事項與下一步。
+只有回答或操作支持理解時才標記完成；若跳回補課，保留原紀錄並寫明原因。
+學習者執行的命令與結果應和助教執行的結果分開記錄；正式研究實驗仍記錄於
+[experiments.md](../experiments.md)。

@@ -1,0 +1,142 @@
+{
+  "schema": "pqc_auth.gf_binding_abi_validation_summary.v0_1",
+  "date": "2026-09-13",
+  "branch": "codex/threshold-gf-binding-abi-v0-1",
+  "base_commit": "ddb1336ff5a32ca5b2d50bbe31f3d5d0c07a6b25",
+  "source_identities": [
+    {
+      "path": "docs/literature/threshold_backends/gf/abi_v0_1/ACCEPTANCE_zh-TW.md",
+      "bytes": 5883,
+      "sha256": "f79d7d7813bad93b21bed74acd683cd0cc77d4d5f22eea77281df9aeef713160"
+    },
+    {
+      "path": "docs/literature/threshold_backends/gf/abi_v0_1/DELIVERY_zh-TW.md",
+      "bytes": 5372,
+      "sha256": "eb2955bd85127828ba8230e1e6b9de3e37fa5c6625dc7aa6f7ab37f5fb5e3a87"
+    },
+    {
+      "path": "docs/literature/threshold_backends/gf/abi_v0_1/SPEC_zh-TW.md",
+      "bytes": 12924,
+      "sha256": "6545058672be4bbc2f1c55a2cae7511e16de31b9f170eb62da2f4ae9d77df724"
+    },
+    {
+      "path": "docs/literature/threshold_backends/gf/abi_v0_1/check_spec_v0_1.py",
+      "bytes": 7810,
+      "sha256": "de08cf847f7ffbf7d413fc806055ba25ac7ccc7a832d6bc6ce07137f7998f365"
+    },
+    {
+      "path": "docs/literature/threshold_backends/gf/abi_v0_1/contract_v0_1.json",
+      "bytes": 9376,
+      "sha256": "1f269b737a067f4647c1e6b64b4dbff3194bf24638be682c85ac2dc25c7c50a3"
+    },
+    {
+      "path": "docs/literature/threshold_backends/gf/abi_v0_1/source_index_v0_1.json",
+      "bytes": 13532,
+      "sha256": "83f1173b5f2fe11ba2a1750050d3ae0ec1957dcecf7f3de0d3d322a6e5e49017"
+    },
+    {
+      "path": "docs/literature/threshold_backends/gf/README_zh-TW.md",
+      "bytes": 2089,
+      "sha256": "0805005f36e9d5b4581d05dcd4d5b5b4db90b90371c0da7e6a9253fff5a9071a"
+    }
+  ],
+  "document_check": {
+    "command": "PYTHONDONTWRITEBYTECODE=1 python docs/literature/threshold_backends/gf/abi_v0_1/check_spec_v0_1.py",
+    "report_identity": {
+      "bytes": 1278,
+      "sha256": "46eab20e0c73baae4e82785591217f3c72967038859fc0b6155d2c92dcabd44d"
+    },
+    "result": {
+      "schema": "pqc_auth.gf_binding_abi_document_check.v0_1",
+      "abi_sha256": "97e97589fdcb293101e866a3233b38e1f48c9bdbe5ad9ddc1daabe5f2b410158",
+      "structural_round_trips": 5,
+      "structural_negative_cases_rejected": 40,
+      "failed": 0,
+      "synthetic_shape_digests": {
+        "trace_binding": {
+          "bytes": 315,
+          "sha256": "4b50da957d555f0db2fe53e5d314924925d689a6ead3086c9bc21fb81db33470"
+        },
+        "ticket_m": {
+          "bytes": 3005,
+          "sha256": "cacd341ecb3ff2b450adb5e327d544e018349f4107c70001b8920e8134aae345"
+        },
+        "common_pp": {
+          "bytes": 489,
+          "sha256": "0ce8c507c81e99ff4a6cb5c045afd44e44a32d3e3f95643f966ce8c8856d55bc"
+        },
+        "issue_statement": {
+          "bytes": 251,
+          "sha256": "ef6eb7899ef137471be0ccc43ec96040db74626ab96656631ed3f3a59003a6a2"
+        },
+        "issue_witness": {
+          "bytes": 4324,
+          "sha256": "dadbbb1e32c0c7a45a4b0b642d305fa4e5f954aa32683e19a1563f0a759dd95a"
+        }
+      },
+      "same_C_different_pp_produces_different_M_and_d_M": true,
+      "full_M_and_header_free_digest_differ": true,
+      "limitations": [
+        "Synthetic packets are not valid encryption/relation fixtures.",
+        "No trusted binding, signature, key-origin, CAP or proof validation.",
+        "Only document conformance; no runtime codec or owner acceptance."
+      ]
+    }
+  },
+  "targeted_tests": {
+    "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python -m unittest discover -s tests/threshold_candidates -v",
+    "total": 60,
+    "passed": 60,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "elapsed_seconds": 11.065,
+    "log_identity": {
+      "bytes": 8174,
+      "sha256": "9f16762e767c64baddfc1340357a7456463f3e5f0d3600871e98e1afe927c5b1"
+    }
+  },
+  "metadata_probe": {
+    "cap_profile_sha256": "2ac471f8d7c6cb4e6352bbc5a2eb7f9394b807ff132aec8cadebd696f7b1fa38",
+    "h_rbbc_profile_sha256": "4fa0eb276ebba70a9f6c2f38f3f55d197c094121a2b614cc6ef9b7e8522cac87",
+    "rho_bytes": 1036,
+    "command_note": "Local CAPRandomness.serialize(PRODUCTION_PARAMETERS); initial encode() typo corrected without source edits; no other-lane import or proof run."
+  },
+  "full_regression": {
+    "executed_this_change": false,
+    "reason": "Changes confined to GF literature specification and document conformance tooling; all src/tests unchanged. Targeted regression re-run.",
+    "prior_evidence_identity": {
+      "path": "docs/literature/threshold_backends/gf/review/review_summary_v1.json",
+      "bytes": 9055,
+      "sha256": "cfb79541afa6dc2491e0c8ef81aeb083c46fd07551d31b461d9d33d5bfaa46be"
+    },
+    "prior_commit": "ddb1336ff5a32ca5b2d50bbe31f3d5d0c07a6b25",
+    "prior_counts": {
+      "total": 748,
+      "passed": 736,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 12
+    },
+    "not_new_execution_claim": true
+  },
+  "claims": {
+    "candidate_specification_defined": true,
+    "document_conformance_passed": true,
+    "runtime_codec_implemented": false,
+    "trusted_binding_implemented": false,
+    "B_ABI_accepted_by_owner": false,
+    "opening_ABI_accepted_by_owner": false,
+    "full_relation_proof_integrated": false,
+    "TB3_started": false,
+    "independent_review_attestation": false,
+    "evidence_sealed": false,
+    "proof_closed": false,
+    "production_closed": false
+  },
+  "scope": [
+    "New project-defined encoding and identity proposal; no new paper verification claim.",
+    "No production profile registered and no src/tests or other-lane files modified.",
+    "Raw report/logs, paper PDFs, extracted text, witness bytes and key-origin attestations are not repository deliverables."
+  ]
+}

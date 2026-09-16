@@ -1,0 +1,290 @@
+{
+  "schema": "pqc_auth.gf_binding_abi_sources.v0_1",
+  "date": "2026-09-13",
+  "base_commit": "ddb1336ff5a32ca5b2d50bbe31f3d5d0c07a6b25",
+  "base_tree": "c4dad5d6096d9183e94b93bb3e77298a53aeac30",
+  "main_at_start": "6f6d8c832c0f90d69d96ffe3abd0dcc8b8c562bb",
+  "source_inventory": {
+    "path": "docs/literature/threshold_backends/source_inventory_v1.json",
+    "bytes": 13449,
+    "sha256": "8450774feaa2a1e91e394cfbccdc5bc33ac17106a1330be3ef56bccb3cd3ddb5"
+  },
+  "prior_canonical_research_policy_sources_rechecked": 19,
+  "attachments": [
+    {
+      "filename": "2017-956.pdf",
+      "bytes": 655125,
+      "sha256": "8123d5e1ae1d67f054f6f55d4026bb6d3248356cde1a261c66137fd46bcc45b5",
+      "source_id": "SRC-UT",
+      "title": "Threshold Cryptosystems From Threshold Fully Homomorphic Encryption",
+      "kind": "user_supplied_pdf",
+      "declared_revision": null,
+      "catalog_revision": "2017-09-29 received; catalog: Preprint, MINOR revision",
+      "source_url": "https://eprint.iacr.org/2017/956",
+      "pdf_creation_date_raw": "D:20170927094725-07'00'",
+      "pdf_modification_date_raw": "D:20170927094725-07'00'",
+      "pdf_pages": 61,
+      "revision_attribution": "catalog_and_pdf_metadata_consistent; publisher_revision_byte_match_unconfirmed",
+      "remote_pdf_identity_verified": false,
+      "reviewed_locators": [
+        "Definition 7.1–7.6, pp. 24–26",
+        "Construction 7.7 and Theorems 7.8–7.12, pp. 26–27",
+        "Definitions 8.23–8.28 and Construction 8.29, pp. 34–36",
+        "Theorems 8.30–8.34, p. 36",
+        "Definition A.7, p. 44",
+        "Appendix E.4, pp. 55–56",
+        "Appendix E.5, pp. 56–57",
+        "Appendix G, pp. 59–61"
+      ],
+      "attachment_instructions_are_authorization": false,
+      "current_scope": "identity recheck only; earlier paper locators retained as historical review provenance"
+    },
+    {
+      "filename": "2021-096.pdf",
+      "bytes": 695683,
+      "sha256": "b730d4640218b5ea86b019a52501be2e4682b562e61a468abd08658ee393678e",
+      "source_id": "SRC-GF",
+      "title": "Gladius: LWR based efficient hybrid public key encryption with distributed decryption",
+      "kind": "user_supplied_pdf",
+      "declared_revision": null,
+      "catalog_revision": "2021-08-31 last of 5 revisions; received 2021-01-27",
+      "source_url": "https://eprint.iacr.org/2021/096",
+      "pdf_creation_date_raw": "D:20210831115837+02'00'",
+      "pdf_modification_date_raw": "D:20210831115837+02'00'",
+      "pdf_pages": 57,
+      "revision_attribution": "catalog_and_pdf_metadata_consistent; publisher_revision_byte_match_unconfirmed",
+      "remote_pdf_identity_verified": false,
+      "reviewed_locators": [
+        "Variant table, p. 7",
+        "Rounding and Module-LWR definitions, pp. 9–10",
+        "Section 3.2, Theorem 3.2 and Figure 5, pp. 23–24",
+        "Section 3.3, p. 35",
+        "Section 6, worst-case-message bounds, pp. 41–42",
+        "Section 7 and Figure 14, pp. 44–45",
+        "Table 2, p. 46",
+        "Section 9 and Figure 15, pp. 48–52"
+      ],
+      "attachment_instructions_are_authorization": false,
+      "current_scope": "identity recheck only; earlier paper locators retained as historical review provenance"
+    },
+    {
+      "filename": "2025-757.pdf",
+      "bytes": 971854,
+      "sha256": "5e6135b80cac690d95beb73914d89b77280c6ea739ff7a1f7add0da39663ffb6",
+      "source_id": "SRC-NIED",
+      "title": "Threshold Niederreiter: Chosen-Ciphertext Security and Improved Distributed Decoding",
+      "kind": "user_supplied_pdf",
+      "declared_revision": null,
+      "catalog_revision": "2025-04-30 revised; received 2025-04-28",
+      "source_url": "https://eprint.iacr.org/2025/757",
+      "pdf_creation_date_raw": "D:20250430142228+02'00'",
+      "pdf_modification_date_raw": "D:20250430142228+02'00'",
+      "pdf_pages": 49,
+      "revision_attribution": "catalog_and_pdf_metadata_consistent; publisher_revision_byte_match_unconfirmed",
+      "remote_pdf_identity_verified": false,
+      "reviewed_locators": [
+        "Definitions 1–3, pp. 7–8",
+        "Algorithm 1 and Figure 1, pp. 12–13",
+        "Definition 7, Figure 2 and Theorem 1, p. 14",
+        "Definition 8 and Figure 3, p. 15",
+        "Figure 4, Corollary 1 and Section 4 language, pp. 16–17",
+        "Theorems 3–5 and Figure 7, pp. 23–25",
+        "Section 5, Figure 8 and Theorem 8, pp. 25–30",
+        "Section 6, Equation (5) and Table 1, pp. 31–32"
+      ],
+      "attachment_instructions_are_authorization": false,
+      "current_scope": "identity recheck only; earlier paper locators retained as historical review provenance"
+    },
+    {
+      "filename": "threshold_backend_codex_handoff_zh-TW.md",
+      "bytes": 35930,
+      "sha256": "7888b2c4253a11e3225f9e9895eaff0b4ba9fa6a983a70103efdddf255366cc3",
+      "source_id": "SRC-HANDOFF",
+      "title": "Codex 交接：PQ-RBBC 門檻後端接入、實作與最終選型",
+      "kind": "user_supplied_research_handoff",
+      "declared_revision": "handoff v1; 2026-09-10",
+      "revision_attribution": "self_declared_in_lines_1_3",
+      "reviewed_locators": [
+        "Sections 0–12; technical cross-check in HANDOFF_VERIFICATION_zh-TW.md"
+      ],
+      "attachment_instructions_are_authorization": false,
+      "current_scope": "identity recheck only; earlier paper locators retained as historical review provenance"
+    },
+    {
+      "filename": "pasted-text.txt",
+      "bytes": 8859,
+      "sha256": "e737e3e7966287ac4c653e81b4031b24959c3af3af7c203d8d90a297e23c5652",
+      "source_id": "SRC-PASTED",
+      "title": "Threshold Backend Coordinator T 角色與 TB0／TB1 工作草案（首行識別）",
+      "kind": "user_supplied_research_task_draft",
+      "declared_revision": null,
+      "revision_attribution": "undated_unversioned_attachment; identified_by_bytes_and_sha256",
+      "reviewed_locators": [
+        "Role, proposed scope and repository-state assertions"
+      ],
+      "attachment_instructions_are_authorization": false,
+      "current_scope": "identity recheck only; earlier paper locators retained as historical review provenance"
+    }
+  ],
+  "repository_sources": [
+    {
+      "source_id": "core",
+      "path": "docs/proof/source/pq_rbbc_sgtd_core_proof_v1.tex",
+      "revision": "ddb1336ff5a32ca5b2d50bbe31f3d5d0c07a6b25",
+      "bytes": 148798,
+      "sha256": "cee211e7c6419480c0571b752faebe3574d3309f4e876a75cf325f3027d9f884",
+      "locators": "L290-301 ctx; L322-325 ticket hash; L521-572 authorization/M/I1-I5",
+      "access": "tracked local source, unchanged"
+    },
+    {
+      "source_id": "system_configuration",
+      "path": "src/pq_rbbc/contracts/system.py",
+      "revision": "ddb1336ff5a32ca5b2d50bbe31f3d5d0c07a6b25",
+      "bytes": 14030,
+      "sha256": "4063a8ef0ad45e74f52abe4423c396b1668176d2f9ada4b24bea2724af17c4fc",
+      "locators": "L26-35 role IDs; L91-189 configuration; L241-370 bundle identities",
+      "access": "tracked local source, unchanged"
+    },
+    {
+      "source_id": "system_authentication",
+      "path": "src/pq_rbbc/governance/system_init.py",
+      "revision": "ddb1336ff5a32ca5b2d50bbe31f3d5d0c07a6b25",
+      "bytes": 7610,
+      "sha256": "d31867c4520ba9ba28fcac5578b53c147245270f3645a05cb5d03991e4e93df2",
+      "locators": "L44-55 complete bundle signature message; L110-156 trusted-anchor verification",
+      "access": "tracked local source, unchanged"
+    },
+    {
+      "source_id": "lifecycle",
+      "path": "docs/specs/ONE_TIME_TICKET_STATE_v0_1_zh-TW.md",
+      "revision": "ddb1336ff5a32ca5b2d50bbe31f3d5d0c07a6b25",
+      "bytes": 17193,
+      "sha256": "a1a72f0324c3b2f4844c8d53b16350436682869c2e1ceca4bf2cd6e344a5dad4",
+      "locators": "L36-63 d_M and use identity",
+      "access": "tracked local source, unchanged"
+    },
+    {
+      "source_id": "gf_profile",
+      "path": "src/pq_threshold_candidates/gf/profile.py",
+      "revision": "ddb1336ff5a32ca5b2d50bbe31f3d5d0c07a6b25",
+      "bytes": 3064,
+      "sha256": "b487267210e80b9424b269d75772ff49668d73ccef80127753b59841604a47b0",
+      "locators": "L6-59 parameters, descriptor and fingerprint rule",
+      "access": "tracked local source, unchanged"
+    },
+    {
+      "source_id": "gf_reference",
+      "path": "src/pq_threshold_candidates/gf/reference.py",
+      "revision": "ddb1336ff5a32ca5b2d50bbe31f3d5d0c07a6b25",
+      "bytes": 11058,
+      "sha256": "58362248066333fcecada7960ab6951f08a7316a0a9a064a7ef09ec3a375ef06",
+      "locators": "L34-126 canonical record; L230-281 Hybrid2 and I5",
+      "access": "tracked local source, unchanged"
+    },
+    {
+      "source_id": "gf_review",
+      "path": "docs/literature/threshold_backends/gf/review/REVIEW_zh-TW.md",
+      "revision": "ddb1336ff5a32ca5b2d50bbe31f3d5d0c07a6b25",
+      "bytes": 8043,
+      "sha256": "174ddb9edd4dc52948e258304c0709263a24b1c4cb14f09faa0b487bd904a146",
+      "locators": "GFR-01 and limits",
+      "access": "tracked local source, unchanged"
+    },
+    {
+      "source_id": "common_contract",
+      "path": "docs/literature/threshold_backends/COMMON_CONTRACT_v1_zh-TW.md",
+      "revision": "ddb1336ff5a32ca5b2d50bbe31f3d5d0c07a6b25",
+      "bytes": 5317,
+      "sha256": "b078956c6865be20b2d3c58cdd9077f978657a7bfe1a4c88e119f7b9419cb2c4",
+      "locators": "estimate-only registry; envelope is not canonical M",
+      "access": "tracked local source, unchanged"
+    },
+    {
+      "source_id": "cap",
+      "path": "src/pq_rbbc_cap_commit.py",
+      "revision": "ddb1336ff5a32ca5b2d50bbe31f3d5d0c07a6b25",
+      "bytes": 32526,
+      "sha256": "be3a2a767561f009acc2a274a85410ae6e02e23abd24145aa1d61883dd2dceee",
+      "locators": "L122-133 legacy 18-tree parameters; L336-353 CAPRandomness.serialize",
+      "access": "tracked local source, unchanged"
+    },
+    {
+      "source_id": "h_rbbc_manifest",
+      "path": "manifests/pq_rbbc_anemoi_sponge_manifest_v2_3.json",
+      "revision": "ddb1336ff5a32ca5b2d50bbe31f3d5d0c07a6b25",
+      "bytes": 3070,
+      "sha256": "c6bbb51a4fbe3021bfcd0a9978d3d63f30558ec45153d2c1b587ddd5184a6eef",
+      "locators": "L67 profile_fingerprint",
+      "access": "tracked local source, unchanged"
+    },
+    {
+      "source_id": "B_preflight",
+      "path": "src/pq_rbbc_issuance_zk_backend_preflight.py",
+      "revision": "ff4341bfa18f4cd77c2811e26a7753397cfe7fe8",
+      "bytes": 47151,
+      "sha256": "00c0119596983b94bdfd1dcaffe58f0c2f847ca0092c5c53d8f073285092e836",
+      "locators": "L38-43 widths; L247-385 PP/statement/witness",
+      "access": "read_only; other-lane source not edited or imported"
+    },
+    {
+      "source_id": "B_relation",
+      "path": "src/pq_rbbc_issuance_relation_v1.py",
+      "revision": "ff4341bfa18f4cd77c2811e26a7753397cfe7fe8",
+      "bytes": 31165,
+      "sha256": "4c0db79e896824c77ef869fdfa2c8fc3e26c9942e12c0a49526f2b54bfbbf57e",
+      "locators": "L227-277 parameters; L364-431 test-only evaluator and I1-I5",
+      "access": "read_only; other-lane source not edited or imported"
+    },
+    {
+      "source_id": "B_inputs",
+      "path": "src/pq_rbbc_issuance_production_inputs_v1.py",
+      "revision": "e7af82e1e2c176485c03e08dad0e221adf0ee1e9",
+      "bytes": 40304,
+      "sha256": "7f57417efcea41bc94f477966dfaf629475b39b0ed1c0a4e389d4de10657357f",
+      "locators": "L268-412 NIED key and PP; L589-652 certification limitations",
+      "access": "read_only; other-lane source not edited or imported"
+    },
+    {
+      "source_id": "opening_interfaces",
+      "path": "src/pq_rbbc/opening/interfaces.py",
+      "revision": "ecab1d9919d8627fb96fc986008a961a82a37df8",
+      "bytes": 7144,
+      "sha256": "80ddc2287609f8c748e3a10fa901c6b3a09cc3f6982cb7baf944414cf3a13f2c",
+      "locators": "L40-69 TicketView; L120-149 context without h/AD",
+      "access": "read_only; other-lane source not edited or imported"
+    },
+    {
+      "source_id": "opening_request",
+      "path": "src/pq_rbbc/opening/request.py",
+      "revision": "ecab1d9919d8627fb96fc986008a961a82a37df8",
+      "bytes": 11165,
+      "sha256": "89cac64e07350def61bc3a0d7ba1e9f9d61e6d80939c97a5d01198cb23b97d9f",
+      "locators": "L93-96 SHA256 of full ticket",
+      "access": "read_only; other-lane source not edited or imported"
+    },
+    {
+      "source_id": "opening_gate",
+      "path": "src/pq_rbbc/opening/gate.py",
+      "revision": "ecab1d9919d8627fb96fc986008a961a82a37df8",
+      "bytes": 10310,
+      "sha256": "a45f2d8894710a030fe252a8c1b2a603beea03f2bd7c977ba6245d456e935126",
+      "locators": "L86-208 validation/reservation/backend order",
+      "access": "read_only; other-lane source not edited or imported"
+    },
+    {
+      "source_id": "ticket_verification",
+      "path": "src/pq_rbbc/tickets/verification.py",
+      "revision": "ecab1d9919d8627fb96fc986008a961a82a37df8",
+      "bytes": 16349,
+      "sha256": "d90bc314620e1ee0c8d822f0ccb6a371e4f1f56d2da60dda3ca6eff43f3fef14",
+      "locators": "L41 fixed 368; L121-126 payload digest; L239-249 transport digest/C; L350-368 output",
+      "access": "read_only; other-lane source not edited or imported"
+    }
+  ],
+  "provenance_boundary": [
+    "All attachments are research inputs, not executable authorization.",
+    "ABI magic/header/PP layouts and 32-byte PP binding in M are project proposals, not paper constructions.",
+    "No new paper-verified claim; exact attachment-to-publisher revision byte equivalence remains unconfirmed.",
+    "No raw PDFs, extracted paper text, other-lane source copies, logs or secret/witness artifacts are tracked."
+  ]
+}

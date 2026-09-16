@@ -1,0 +1,43 @@
+{
+  "application_id": "0x50515356",
+  "claims": {
+    "activation_and_inbox_same_transaction": true,
+    "authenticated_production_writer_instantiated": false,
+    "bounded_expired_reservation_scan": true,
+    "distributed": false,
+    "distributed_revocation_store": false,
+    "expired_reservation_reconciliation_available": true,
+    "external_application_same_transaction": false,
+    "general_scope_revocation_fanout_implemented": false,
+    "monotonic_generation_and_flags": true,
+    "physical_power_loss_tested": false,
+    "persistent_monotonic_worker_fencing": true,
+    "production_plaintext_protection_instantiated": false,
+    "production_ready": false,
+    "production_record_protection_instantiated": false,
+    "query_and_exact_snapshot_commit_bound": true,
+    "revocation_fence_and_activation_same_transaction": true,
+    "revocation_publish_and_activation_linearizable": true,
+    "schema_migration_from_v1_implemented": false,
+    "single_database_connection": true,
+    "single_host_authoritative_revocation_fence": true,
+    "sqlite_attach_used": false
+  },
+  "format": "PQ-SAT-FGS-AUTHORITATIVE-ACTIVATION-INBOX-SQLITE-v0.2",
+  "journal_mode": "WAL",
+  "linearization_order": [
+    "read_exact_local_snapshot",
+    "begin_immediate_on_one_database",
+    "revalidate_exact_authoritative_fence",
+    "transition_grant_to_consumed_active",
+    "insert_protected_pending_inbox_item",
+    "commit_once"
+  ],
+  "schema_version": 2,
+  "synchronous": "FULL",
+  "tables": [
+    "fgs_replay_records",
+    "first_application_inbox",
+    "activation_revocation_fences"
+  ]
+}

@@ -1,0 +1,108 @@
+<div id="pqc-learning-replay-attack" role="img" aria-label="Replay 重放攻擊示例。第一次，小明把有效接入訊息 A 傳給 FGS，攻擊者只複製訊息，FGS 正常接受。第二次，攻擊者重新送出完全相同且簽章或證明仍有效的 A；若 FGS 只做密碼學驗證，可能再次接受。防護需要把訊息綁定 freshness、context、session 資料，並以權威狀態記錄票券已使用。">
+  <style>
+    #pqc-learning-replay-attack { width: 100%; color: var(--foreground); }
+    #pqc-learning-replay-attack .replay { display: block; width: 100%; }
+    #pqc-learning-replay-attack .replay text { fill: var(--foreground); font-family: inherit; }
+    #pqc-learning-replay-attack .replay .honest { fill: color-mix(in srgb, var(--viz-series-1) 11%, var(--background)); stroke: var(--viz-series-1); }
+    #pqc-learning-replay-attack .replay .copy { fill: color-mix(in srgb, var(--viz-series-2) 11%, var(--background)); stroke: var(--viz-series-2); }
+    #pqc-learning-replay-attack .replay .defense { fill: color-mix(in srgb, var(--viz-series-3) 11%, var(--background)); stroke: var(--viz-series-3); }
+    #pqc-learning-replay-attack .replay .flow { fill: none; stroke: var(--muted-foreground); stroke-width: 1.5; }
+    #pqc-learning-replay-attack .replay .attack { fill: none; stroke: var(--destructive); stroke-width: 1.8; }
+    #pqc-learning-replay-attack .replay .muted { fill: var(--muted-foreground); }
+    #pqc-learning-replay-attack .replay .warning { fill: var(--destructive); }
+  </style>
+  <svg class="replay" xmlns="http://www.w3.org/2000/svg" aria-labelledby="pqc-replay-title pqc-replay-desc">
+    <title id="pqc-replay-title">Replay 是把真的舊訊息再播一次</title>
+    <desc id="pqc-replay-desc">正常傳送時攻擊者複製有效訊息。稍後攻擊者不需偽造或知道秘密，直接重送同一訊息。若只驗證簽章或證明，舊訊息仍可能有效。需以新鮮性、完整綁定與一次性狀態拒絕。</desc>
+  </svg>
+  <script>
+    (() => {
+      const root = document.getElementById('pqc-learning-replay-attack');
+      const svg = root.querySelector('.replay');
+      const ns = 'http://www.w3.org/2000/svg';
+      function add(name, attributes, parent) {
+        const item = document.createElementNS(ns, name);
+        for (const [key, value] of Object.entries(attributes)) item.setAttribute(key, String(value));
+        parent.appendChild(item);
+        return item;
+      }
+      function draw() {
+        const old = svg.querySelector('[data-drawing]');
+        if (old) old.remove();
+        const width = Math.max(280, Math.round(root.getBoundingClientRect().width));
+        const narrow = width < 560;
+        const height = narrow ? 720 : 410;
+        svg.setAttribute('viewBox', '0 0 ' + width + ' ' + height);
+        svg.setAttribute('height', String(height));
+        const group = add('g', { 'data-drawing': '' }, svg);
+        function label(x, y, value, size = 12, weight = 400, className = '', anchor = 'middle') {
+          const item = add('text', { x, y, 'text-anchor': anchor, 'font-size': size, 'font-weight': weight, class: className }, group);
+          item.textContent = value;
+        }
+        function box(x, y, w, h, title, line1, line2, className) {
+          add('rect', { x, y, width: w, height: h, rx: 9, class: className }, group);
+          label(x + w / 2, y + 23, title, 13, 500);
+          label(x + w / 2, y + 46, line1, 11.5);
+          label(x + w / 2, y + 64, line2, 11.5);
+        }
+        function arrow(x1, y1, x2, y2, className = 'flow') {
+          add('line', { x1, y1, x2, y2, class: className }, group);
+          const angle = Math.atan2(y2 - y1, x2 - x1);
+          const len = 7;
+          const spread = 0.55;
+          add('path', {
+            d: 'M ' + (x2 - len * Math.cos(angle - spread)) + ' ' + (y2 - len * Math.sin(angle - spread)) +
+              ' L ' + x2 + ' ' + y2 +
+              ' L ' + (x2 - len * Math.cos(angle + spread)) + ' ' + (y2 - len * Math.sin(angle + spread)),
+            class: className
+          }, group);
+        }
+        label(width / 2, 24, 'Replay：把真的舊訊息再送一次', narrow ? 15 : 16, 500);
+        label(width / 2, 46, '攻擊者不必偽造簽章，也不必知道 holder secret', 11.5, 400, 'muted');
+        if (!narrow) {
+          const margin = 14;
+          const gap = 14;
+          const nodeW = (width - margin * 2 - gap * 3) / 4;
+          const xs = [0,1,2,3].map(i => margin + i * (nodeW + gap));
+          const h = 76;
+          label(14, 85, '第一次：合法', 12, 500, '', 'start');
+          box(xs[0], 98, nodeW, h, '小明的 UE', '產生有效接入訊息 A', 'signature／proof 正確', 'honest');
+          box(xs[1], 98, nodeW, h, '網路傳送 A', '攻擊者只做 Copy', '沒有修改任何 bytes', 'copy');
+          box(xs[2], 98, nodeW, h, 'FGS 驗證 A', '密碼學檢查通過', '建立第一個 session', 'honest');
+          box(xs[3], 98, nodeW, h, '狀態紀錄', 'Reserve → Commit', '結果為 CONSUMED', 'defense');
+          for(let i=0;i<3;i++) arrow(xs[i]+nodeW, 136, xs[i+1]-2, 136);
+          label(14, 221, '稍後：重放', 12, 500, 'warning', 'start');
+          box(xs[0], 234, nodeW, h, '攻擊者', '重送完全相同的 A', '舊 signature／proof 仍正確', 'copy');
+          box(xs[1], 234, nodeW, h, '只驗密碼學', '若只問「A 是否有效」', '可能再次得到 True', 'copy');
+          box(xs[2], 234, nodeW, h, 'Anti-replay', '查 freshness＋完整綁定', '再查 authoritative state', 'defense');
+          box(xs[3], 234, nodeW, h, '拒絕新 session', '發現票券已 CONSUMED', '合法同 attempt 只恢復原結果', 'defense');
+          arrow(xs[0]+nodeW, 272, xs[1]-2, 272, 'attack');
+          arrow(xs[1]+nodeW, 272, xs[2]-2, 272);
+          arrow(xs[2]+nodeW, 272, xs[3]-2, 272);
+          label(width / 2, 351, '有效 ≠ 新鮮　｜　簽章／NIZK 正確 ≠ 尚未使用', 12.5, 500, 'warning');
+          label(width / 2, 382, '防護＝freshness／context／session 綁定＋一次性權威狀態', 12, 500);
+        } else {
+          const x = 14;
+          const w = width - 28;
+          const h = 76;
+          label(width / 2, 80, '第一次：合法訊息', 12.5, 500);
+          box(x, 94, w, h, '小明傳送有效 A', 'signature／NIZK 正確', '攻擊者只複製，不修改', 'honest');
+          box(x, 190, w, h, 'FGS 接受', '建立第一個 session', '票券應記為 CONSUMED', 'defense');
+          arrow(width/2, 170, width/2, 188);
+          label(width / 2, 307, '稍後：攻擊者 Replay', 12.5, 500, 'warning');
+          box(x, 321, w, h, '重送完全相同的 A', '不需 holder secret', '舊 signature／proof 仍正確', 'copy');
+          box(x, 417, w, h, '只驗密碼學仍可能通過', '因為 A 原本就是真的', '但它不是新的請求', 'copy');
+          box(x, 513, w, h, 'Anti-replay 拒絕', '驗 freshness／context／session', '查到票券已 CONSUMED', 'defense');
+          arrow(width/2, 397, width/2, 415, 'attack');
+          arrow(width/2, 493, width/2, 511);
+          label(width / 2, 625, '有效 ≠ 新鮮', 13, 500, 'warning');
+          label(width / 2, 650, '簽章／NIZK 正確 ≠ 尚未使用', 11.5, 500, 'warning');
+          label(width / 2, 687, '防護還需要綁定與權威使用狀態', 11.5, 500);
+        }
+      }
+      draw();
+      if (typeof ResizeObserver !== 'undefined') new ResizeObserver(draw).observe(root);
+      else window.addEventListener('resize', draw);
+    })();
+  </script>
+</div>

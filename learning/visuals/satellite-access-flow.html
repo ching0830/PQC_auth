@@ -1,0 +1,80 @@
+<div id="pqc-learning-access" role="img" aria-label="四訊息接入草稿：小明的 UE 透過衛星向 FGS 傳送 AccessInit，FGS 回傳 AccessChallenge，UE 回傳 AccessFinish。FGS 完成必要驗證並共同提交連線與票券使用狀態後回傳 AccessAccept，UE 核驗回應後接受連線。">
+  <style>
+    #pqc-learning-access { width: 100%; color: var(--foreground); }
+    #pqc-learning-access .access-diagram { display: block; width: 100%; }
+    #pqc-learning-access .access-diagram text { fill: var(--foreground); font-family: inherit; }
+    #pqc-learning-access .access-diagram .node { fill: color-mix(in srgb, var(--viz-series-1) 9%, var(--background)); stroke: var(--border); }
+    #pqc-learning-access .access-diagram .lane { stroke: var(--border); stroke-width: 1; }
+    #pqc-learning-access .access-diagram .arrow { fill: none; stroke: var(--muted-foreground); stroke-width: 1.5; }
+    #pqc-learning-access .access-diagram .relay { fill: var(--muted-foreground); }
+    #pqc-learning-access .access-diagram .label-background { fill: var(--background); }
+  </style>
+  <svg class="access-diagram" xmlns="http://www.w3.org/2000/svg" aria-labelledby="pqc-access-title pqc-access-desc">
+    <title id="pqc-access-title">小明持票接入：四訊息草稿</title>
+    <desc id="pqc-access-desc">由上向下閱讀。衛星中繼四種訊息，沒有在此圖擔任認證端。Init 提供票券、新鮮值與金鑰協議資料；Challenge 提供地面站新鮮值與金鑰協議資料；Finish 提供持票者認證和使用者金鑰確認；FGS 驗證通過並共同提交連線、回應與票券消耗，再傳回包含地面站金鑰確認的 Accept。這是草稿流程，具體認證、AKE 與耐故障整合尚未完成。</desc>
+  </svg>
+  <script>
+    (() => {
+      const root = document.getElementById('pqc-learning-access');
+      const svg = root.querySelector('.access-diagram');
+      const ns = 'http://www.w3.org/2000/svg';
+      function element(name, attributes, parent) {
+        const item = document.createElementNS(ns, name);
+        for (const [key, value] of Object.entries(attributes)) item.setAttribute(key, String(value));
+        parent.appendChild(item);
+        return item;
+      }
+      function draw() {
+        const old = svg.querySelector('[data-drawing]');
+        if (old) old.remove();
+        const width = Math.max(280, Math.round(root.getBoundingClientRect().width));
+        const height = 612;
+        svg.setAttribute('viewBox', '0 0 ' + width + ' ' + height);
+        svg.setAttribute('height', String(height));
+        const group = element('g', { 'data-drawing': '' }, svg);
+        const left = width / 6;
+        const middle = width / 2;
+        const right = width * 5 / 6;
+        function label(x, y, value, small = false, weight = 400, mask = false) {
+          const text = element('text', { x, y, 'text-anchor': 'middle', 'font-weight': weight, class: small ? 'text-small' : '' }, group);
+          text.textContent = value;
+          if (mask) {
+            const box = text.getBBox();
+            const background = element('rect', { x: box.x - 5, y: box.y - 2, width: box.width + 10, height: box.height + 4, class: 'label-background' }, group);
+            group.insertBefore(background, text);
+          }
+        }
+        function message(start, end, y, title, contents) {
+          element('line', { x1: start, y1: y, x2: end, y2: y, class: 'arrow' }, group);
+          const back = end + (end > start ? -7 : 7);
+          element('path', { d: 'M ' + back + ' ' + (y - 4) + ' L ' + end + ' ' + y + ' L ' + back + ' ' + (y + 4), class: 'arrow' }, group);
+          element('circle', { cx: middle, cy: y, r: 3, class: 'relay' }, group);
+          label(middle, y - 42, title, false, 500, true);
+          label(middle, y - 20, contents, true, 400, true);
+        }
+        function node(x, y, w, title, lines) {
+          const h = 34 + lines.length * 21;
+          element('rect', { x, y, width: w, height: h, rx: 8, class: 'node' }, group);
+          label(x + w / 2, y + 25, title, false, 500);
+          lines.forEach((line, index) => label(x + w / 2, y + 47 + index * 21, line, true));
+        }
+        [left, middle, right].forEach(x => element('line', { x1: x, y1: 66, x2: x, y2: 598, class: 'lane' }, group));
+        label(left, 24, '小明 UE', false, 500);
+        label(middle, 24, 'LEO 衛星', false, 500);
+        label(right, 24, 'FGS 地面站', false, 500);
+        label(left, 46, '使用者端', true);
+        label(middle, 46, '中繼', true);
+        label(right, 46, '驗證與連線端', true);
+        message(left, right, 145, '① AccessInit', '票券・新鮮值・金鑰協議資料');
+        message(right, left, 230, '② AccessChallenge', '地面站新鮮值・金鑰協議資料');
+        message(left, right, 315, '③ AccessFinish', '持票者認證・使用者金鑰確認');
+        const checkWidth = Math.min(312, width - 32);
+        node(width - 16 - checkWidth, 340, checkWidth, 'FGS 完成必要驗證後', ['共同提交連線、回應與票券使用狀態']);
+        message(right, left, 485, '④ AccessAccept', '連線資訊・地面站金鑰確認');
+        node(16, 520, Math.min(270, width - 32), 'UE 核驗受保護回應', ['通過後接受連線']);
+      }
+      new ResizeObserver(draw).observe(root);
+      draw();
+    })();
+  </script>
+</div>

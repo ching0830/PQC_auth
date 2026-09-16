@@ -1,0 +1,107 @@
+<div id="pqc-learning-expiry-revocation" role="img" aria-label="票券過期、撤銷與已消耗的差異，以及換手邊界。過期由時間與 epoch 判斷，撤銷由受認證 registry 判斷，已消耗由成功 initial session 的權威紀錄判斷。三者都阻止新的初始接入；只有既有 session 可透過 session-derived authorization 延續到新的 serving context，不能重用已消耗票券。">
+  <style>
+    #pqc-learning-expiry-revocation { width: 100%; color: var(--foreground); }
+    #pqc-learning-expiry-revocation .lifecycle-diagram { display: block; width: 100%; }
+    #pqc-learning-expiry-revocation .lifecycle-diagram text { fill: var(--foreground); font-family: inherit; }
+    #pqc-learning-expiry-revocation .lifecycle-diagram .condition { fill: color-mix(in srgb, var(--viz-series-1) 9%, var(--background)); stroke: var(--border); }
+    #pqc-learning-expiry-revocation .lifecycle-diagram .state { fill: color-mix(in srgb, var(--viz-series-2) 11%, var(--background)); stroke: var(--border); }
+    #pqc-learning-expiry-revocation .lifecycle-diagram .session { fill: color-mix(in srgb, var(--viz-series-3) 11%, var(--background)); stroke: var(--border); }
+    #pqc-learning-expiry-revocation .lifecycle-diagram .handover { fill: color-mix(in srgb, var(--viz-series-4) 11%, var(--background)); stroke: var(--border); }
+    #pqc-learning-expiry-revocation .lifecycle-diagram .flow { fill: none; stroke: var(--muted-foreground); stroke-width: 1.5; }
+    #pqc-learning-expiry-revocation .lifecycle-diagram .blocked { fill: none; stroke: var(--destructive); stroke-width: 1.5; }
+    #pqc-learning-expiry-revocation .lifecycle-diagram .mask { fill: var(--background); }
+  </style>
+  <svg class="lifecycle-diagram" xmlns="http://www.w3.org/2000/svg" aria-labelledby="pqc-lifecycle-title pqc-lifecycle-desc">
+    <title id="pqc-lifecycle-title">過期、撤銷、已消耗與換手</title>
+    <desc id="pqc-lifecycle-desc">過期是時間與 epoch 接受條件，撤銷是受認證 registry 的政策條件，已消耗是成功建立 initial session 後的權威狀態。三者都阻止新的初始接入。已存在的 session 若要換手，必須用 session-derived authorization 綁定目標環境、新鮮值與序號；已消耗票券維持不變。</desc>
+  </svg>
+  <script>
+    (() => {
+      const root = document.getElementById('pqc-learning-expiry-revocation');
+      const svg = root.querySelector('.lifecycle-diagram');
+      const ns = 'http://www.w3.org/2000/svg';
+      function add(name, attributes, parent) {
+        const item = document.createElementNS(ns, name);
+        for (const [key, value] of Object.entries(attributes)) item.setAttribute(key, String(value));
+        parent.appendChild(item);
+        return item;
+      }
+      function draw() {
+        const previous = svg.querySelector('[data-drawing]');
+        if (previous) previous.remove();
+        const width = Math.max(280, Math.round(root.getBoundingClientRect().width));
+        const narrow = width < 520;
+        const height = narrow ? 750 : 475;
+        svg.setAttribute('viewBox', '0 0 ' + width + ' ' + height);
+        svg.setAttribute('height', String(height));
+        const group = add('g', { 'data-drawing': '' }, svg);
+        function label(x, y, value, small = false, weight = 400, anchor = 'middle', mask = false) {
+          const item = add('text', { x, y, 'text-anchor': anchor, 'font-weight': weight, class: small ? 'text-small' : '' }, group);
+          item.textContent = value;
+          if (mask) {
+            const box = item.getBBox();
+            const background = add('rect', { x: box.x - 4, y: box.y - 2, width: box.width + 8, height: box.height + 4, class: 'mask' }, group);
+            group.insertBefore(background, item);
+          }
+        }
+        function box(x, y, w, h, title, line1, line2, className) {
+          add('rect', { x, y, width: w, height: h, rx: 9, class: className }, group);
+          label(x + w / 2, y + 25, title, false, 500);
+          label(x + w / 2, y + 49, line1, true);
+          label(x + w / 2, y + 68, line2, true);
+        }
+        function arrow(x1, y1, x2, y2, className = 'flow') {
+          add('line', { x1, y1, x2, y2, class: className }, group);
+          const angle = Math.atan2(y2 - y1, x2 - x1);
+          const length = 7;
+          const spread = 0.55;
+          const ax = x2 - length * Math.cos(angle - spread);
+          const ay = y2 - length * Math.sin(angle - spread);
+          const bx = x2 - length * Math.cos(angle + spread);
+          const by = y2 - length * Math.sin(angle + spread);
+          add('path', { d: 'M ' + ax + ' ' + ay + ' L ' + x2 + ' ' + y2 + ' L ' + bx + ' ' + by, class: className }, group);
+        }
+        label(width / 2, 24, narrow ? '三種拒絕原因與換手' : '過期、撤銷、已消耗不是同一件事', false, 500);
+        label(width / 2, 45, '三者都阻止新的 initial session', true);
+        if (!narrow) {
+          const margin = 14;
+          const gap = 16;
+          const itemWidth = (width - margin * 2 - gap * 2) / 3;
+          const y = 70;
+          box(margin, y, itemWidth, 82, 'EXPIRED', '時間／epoch 不接受', '不改寫 consumption state', 'condition');
+          box(margin + itemWidth + gap, y, itemWidth, 82, 'REVOKED', '受認證 registry 命中', '後來的政策決定', 'condition');
+          box(margin + (itemWidth + gap) * 2, y, itemWidth, 82, 'CONSUMED', 'initial session 已建立', '權威 store 紀錄', 'state');
+          const rejectY = 202;
+          [margin + itemWidth / 2, margin + itemWidth + gap + itemWidth / 2, margin + (itemWidth + gap) * 2 + itemWidth / 2].forEach(x => arrow(x, y + 82, x, rejectY, 'blocked'));
+          label(width / 2, rejectY + 24, '新的初始接入：generic reject', false, 500, 'middle', true);
+          const sessionWidth = Math.min(300, width - 60);
+          const sessionX = (width - sessionWidth) / 2;
+          label(width / 2, 252, '若原 session 依政策仍可延續', true, 500);
+          box(sessionX, 265, sessionWidth, 82, '既有 ACTIVE SESSION', '票券仍維持 CONSUMED', 'serving context 將改變', 'session');
+          arrow(width / 2, 347, width / 2, 392);
+          label(width / 2, 375, 'session-derived authorization', true, 500, 'middle', true);
+          const targetWidth = Math.min(340, width - 40);
+          box((width - targetWidth) / 2, 392, targetWidth, 70, 'HANDOVER 到目標 FGS', '綁定原 session、目標與新鮮值', '不再次消耗原票券', 'handover');
+        } else {
+          const x = 24;
+          const w = width - 48;
+          box(x, 66, w, 96, 'EXPIRED', '時間／epoch 不接受', '不改寫使用狀態', 'condition');
+          label(width / 2, 153, '新 initial session：拒絕', true, 500);
+          box(x, 178, w, 96, 'REVOKED', '撤銷清單命中', '後來的政策決定', 'condition');
+          label(width / 2, 265, '新 initial session：拒絕', true, 500);
+          box(x, 290, w, 96, 'CONSUMED', 'initial session 已建立', '權威使用紀錄', 'state');
+          label(width / 2, 377, '新 initial session：拒絕', true, 500);
+          label(width / 2, 410, '對外：generic reject', true, 500);
+          label(width / 2, 435, '原 session 仍可延續時', true, 500);
+          box(x, 448, w, 82, '既有 ACTIVE SESSION', '票券維持 CONSUMED', '服務環境將改變', 'session');
+          arrow(width / 2, 530, width / 2, 610);
+          label(width / 2, 575, 'session 授權', true, 500, 'middle', true);
+          box(x, 610, w, 82, 'HANDOVER 到新 FGS', '綁定原 session 與新環境', '不再次消耗票券', 'handover');
+          label(width / 2, 733, '核驗失敗：改用另一張新票券', true, 500);
+        }
+      }
+      new ResizeObserver(draw).observe(root);
+      draw();
+    })();
+  </script>
+</div>

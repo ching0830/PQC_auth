@@ -1,0 +1,588 @@
+{
+  "schema": "pqc_auth.gf_cap_provider_handoff_sources.v0_1",
+  "date": "2026-09-14",
+  "t_base_commit": "417ee834ffb7fa26740b22cb43716099b0fed635",
+  "b_commit": "c1c2b5d2690643fc136e4c39a867e4376cdb9a97",
+  "b_tree": "c4e69b08622d52701a2c7ea4b7d083028c9928da",
+  "original_inventory_scope": "Full attachment names, revisions, byte lengths, digests and paper locators remain in the pinned original inventory; no new paper verification.",
+  "attachment_identity_rechecks": [
+    {
+      "filename": "2017-956.pdf",
+      "bytes": 655125,
+      "sha256": "8123d5e1ae1d67f054f6f55d4026bb6d3248356cde1a261c66137fd46bcc45b5",
+      "source_id": "SRC-UT",
+      "title": "Threshold Cryptosystems From Threshold Fully Homomorphic Encryption",
+      "kind": "user_supplied_pdf",
+      "declared_revision": null,
+      "catalog_revision": "2017-09-29 received; catalog: Preprint, MINOR revision",
+      "source_url": "https://eprint.iacr.org/2017/956",
+      "pdf_creation_date_raw": "D:20170927094725-07'00'",
+      "pdf_modification_date_raw": "D:20170927094725-07'00'",
+      "pdf_pages": 61,
+      "revision_attribution": "catalog_and_pdf_metadata_consistent; publisher_revision_byte_match_unconfirmed",
+      "remote_pdf_identity_verified": false,
+      "reviewed_locators": [
+        "Definition 7.1–7.6, pp. 24–26",
+        "Construction 7.7 and Theorems 7.8–7.12, pp. 26–27",
+        "Definitions 8.23–8.28 and Construction 8.29, pp. 34–36",
+        "Theorems 8.30–8.34, p. 36",
+        "Definition A.7, p. 44",
+        "Appendix E.4, pp. 55–56",
+        "Appendix E.5, pp. 56–57",
+        "Appendix G, pp. 59–61"
+      ],
+      "attachment_instructions_are_authorization": false
+    },
+    {
+      "filename": "2021-096.pdf",
+      "bytes": 695683,
+      "sha256": "b730d4640218b5ea86b019a52501be2e4682b562e61a468abd08658ee393678e",
+      "source_id": "SRC-GF",
+      "title": "Gladius: LWR based efficient hybrid public key encryption with distributed decryption",
+      "kind": "user_supplied_pdf",
+      "declared_revision": null,
+      "catalog_revision": "2021-08-31 last of 5 revisions; received 2021-01-27",
+      "source_url": "https://eprint.iacr.org/2021/096",
+      "pdf_creation_date_raw": "D:20210831115837+02'00'",
+      "pdf_modification_date_raw": "D:20210831115837+02'00'",
+      "pdf_pages": 57,
+      "revision_attribution": "catalog_and_pdf_metadata_consistent; publisher_revision_byte_match_unconfirmed",
+      "remote_pdf_identity_verified": false,
+      "reviewed_locators": [
+        "Variant table, p. 7",
+        "Rounding and Module-LWR definitions, pp. 9–10",
+        "Section 3.2, Theorem 3.2 and Figure 5, pp. 23–24",
+        "Section 3.3, p. 35",
+        "Section 6, worst-case-message bounds, pp. 41–42",
+        "Section 7 and Figure 14, pp. 44–45",
+        "Table 2, p. 46",
+        "Section 9 and Figure 15, pp. 48–52"
+      ],
+      "attachment_instructions_are_authorization": false
+    },
+    {
+      "filename": "2025-757.pdf",
+      "bytes": 971854,
+      "sha256": "5e6135b80cac690d95beb73914d89b77280c6ea739ff7a1f7add0da39663ffb6",
+      "source_id": "SRC-NIED",
+      "title": "Threshold Niederreiter: Chosen-Ciphertext Security and Improved Distributed Decoding",
+      "kind": "user_supplied_pdf",
+      "declared_revision": null,
+      "catalog_revision": "2025-04-30 revised; received 2025-04-28",
+      "source_url": "https://eprint.iacr.org/2025/757",
+      "pdf_creation_date_raw": "D:20250430142228+02'00'",
+      "pdf_modification_date_raw": "D:20250430142228+02'00'",
+      "pdf_pages": 49,
+      "revision_attribution": "catalog_and_pdf_metadata_consistent; publisher_revision_byte_match_unconfirmed",
+      "remote_pdf_identity_verified": false,
+      "reviewed_locators": [
+        "Definitions 1–3, pp. 7–8",
+        "Algorithm 1 and Figure 1, pp. 12–13",
+        "Definition 7, Figure 2 and Theorem 1, p. 14",
+        "Definition 8 and Figure 3, p. 15",
+        "Figure 4, Corollary 1 and Section 4 language, pp. 16–17",
+        "Theorems 3–5 and Figure 7, pp. 23–25",
+        "Section 5, Figure 8 and Theorem 8, pp. 25–30",
+        "Section 6, Equation (5) and Table 1, pp. 31–32"
+      ],
+      "attachment_instructions_are_authorization": false
+    },
+    {
+      "filename": "threshold_backend_codex_handoff_zh-TW.md",
+      "bytes": 35930,
+      "sha256": "7888b2c4253a11e3225f9e9895eaff0b4ba9fa6a983a70103efdddf255366cc3",
+      "source_id": "SRC-HANDOFF",
+      "title": "Codex 交接：PQ-RBBC 門檻後端接入、實作與最終選型",
+      "kind": "user_supplied_research_handoff",
+      "declared_revision": "handoff v1; 2026-09-10",
+      "revision_attribution": "self_declared_in_lines_1_3",
+      "reviewed_locators": [
+        "Sections 0–12; technical cross-check in HANDOFF_VERIFICATION_zh-TW.md"
+      ],
+      "attachment_instructions_are_authorization": false
+    },
+    {
+      "filename": "pasted-text.txt",
+      "bytes": 8859,
+      "sha256": "e737e3e7966287ac4c653e81b4031b24959c3af3af7c203d8d90a297e23c5652",
+      "source_id": "SRC-PASTED",
+      "title": "Threshold Backend Coordinator T 角色與 TB0／TB1 工作草案（首行識別）",
+      "kind": "user_supplied_research_task_draft",
+      "declared_revision": null,
+      "revision_attribution": "undated_unversioned_attachment; identified_by_bytes_and_sha256",
+      "reviewed_locators": [
+        "Role, proposed scope and repository-state assertions"
+      ],
+      "attachment_instructions_are_authorization": false
+    }
+  ],
+  "local_sources": [
+    {
+      "path": "docs/literature/threshold_backends/source_inventory_v1.json",
+      "filename": "source_inventory_v1.json",
+      "revision": "417ee834ffb7fa26740b22cb43716099b0fed635",
+      "bytes": 13449,
+      "sha256": "8450774feaa2a1e91e394cfbccdc5bc33ac17106a1330be3ef56bccb3cd3ddb5"
+    },
+    {
+      "path": "docs/literature/threshold_backends/gf/abi_v0_1/contract_v0_1.json",
+      "filename": "contract_v0_1.json",
+      "revision": "417ee834ffb7fa26740b22cb43716099b0fed635",
+      "bytes": 9376,
+      "sha256": "1f269b737a067f4647c1e6b64b4dbff3194bf24638be682c85ac2dc25c7c50a3"
+    },
+    {
+      "path": "docs/literature/threshold_backends/gf/trusted_adapter_contract_v0_1/CONTRACT_zh-TW.md",
+      "filename": "CONTRACT_zh-TW.md",
+      "revision": "417ee834ffb7fa26740b22cb43716099b0fed635",
+      "bytes": 16163,
+      "sha256": "571b855889d3354ea3810f417f90f10e002bce27fffe11cb3180ee302eb9ad1d",
+      "locators": [
+        {
+          "heading": "## 1. 核對到的具體相依項目",
+          "line": 13
+        },
+        {
+          "heading": "## 2. 用途與信任起點",
+          "line": 35
+        },
+        {
+          "heading": "## 3. Adapter 邊界",
+          "line": 51
+        },
+        {
+          "heading": "## 4. 生成相依圖與接受順序",
+          "line": 122
+        },
+        {
+          "heading": "## 5. 待 owner 實作的驗收案例",
+          "line": 165
+        },
+        {
+          "heading": "## 6. 交付與下一個可實作範圍",
+          "line": 189
+        },
+        {
+          "heading": "## 7. 本輪執行的檢查",
+          "line": 204
+        }
+      ]
+    },
+    {
+      "path": "docs/literature/threshold_backends/gf/i3_hash_join_v0_1/validation_summary_v0_1.json",
+      "filename": "validation_summary_v0_1.json",
+      "revision": "417ee834ffb7fa26740b22cb43716099b0fed635",
+      "bytes": 8218,
+      "sha256": "fe5b67ad06a418153512eefe01f8b72a4b3da9514336f7257fff295d9b7e5a9a"
+    },
+    {
+      "path": "src/pq_rbbc_cap_commit.py",
+      "filename": "pq_rbbc_cap_commit.py",
+      "revision": "417ee834ffb7fa26740b22cb43716099b0fed635",
+      "bytes": 32526,
+      "sha256": "be3a2a767561f009acc2a274a85410ae6e02e23abd24145aa1d61883dd2dceee",
+      "locators": [
+        {
+          "symbol": "serialize_commitment",
+          "start_line": 503,
+          "end_line": 523
+        },
+        {
+          "symbol": "execute_cap_commit",
+          "start_line": 526,
+          "end_line": 685
+        },
+        {
+          "symbol": "profile_fingerprint",
+          "start_line": 735,
+          "end_line": 739
+        },
+        {
+          "symbol": "commitment_bytes",
+          "start_line": 742,
+          "end_line": 762
+        }
+      ]
+    },
+    {
+      "path": "src/pq_rbbc_cap_straightline_extractor.py",
+      "filename": "pq_rbbc_cap_straightline_extractor.py",
+      "revision": "417ee834ffb7fa26740b22cb43716099b0fed635",
+      "bytes": 22275,
+      "sha256": "67d4fb74d1e5ec3d8600ac9da89fa9b04b6ef2bceba104fb75b3b4d8a9de47f6",
+      "locators": [
+        {
+          "symbol": "parse_commitment",
+          "start_line": 189,
+          "end_line": 260
+        }
+      ]
+    },
+    {
+      "path": "src/pq_rbbc_anemoi_f193.py",
+      "filename": "pq_rbbc_anemoi_f193.py",
+      "revision": "417ee834ffb7fa26740b22cb43716099b0fed635",
+      "bytes": 30852,
+      "sha256": "3e402afd4ce5544e141146593603ffc0edb39363a5593c0c627325c12bcdc54f",
+      "locators": [
+        {
+          "symbol": "derive_parameters",
+          "start_line": 411,
+          "end_line": 446
+        },
+        {
+          "symbol": "evaluate_permutation",
+          "start_line": 468,
+          "end_line": 492
+        }
+      ]
+    },
+    {
+      "path": "src/pq_rbbc_anemoi_sponge.py",
+      "filename": "pq_rbbc_anemoi_sponge.py",
+      "revision": "417ee834ffb7fa26740b22cb43716099b0fed635",
+      "bytes": 25336,
+      "sha256": "6d4e604cd937357cd76f9c127fa9fe94392bbc89b1a0b7972196545ab36424ec",
+      "locators": [
+        {
+          "symbol": "encode_transcript",
+          "start_line": 77,
+          "end_line": 89
+        },
+        {
+          "symbol": "hash_request_binding",
+          "start_line": 184,
+          "end_line": 191
+        }
+      ]
+    },
+    {
+      "path": "src/pq_threshold_candidates/contracts.py",
+      "filename": "contracts.py",
+      "revision": "417ee834ffb7fa26740b22cb43716099b0fed635",
+      "bytes": 9123,
+      "sha256": "8cca77c341bce8bca3a78824ad1ecf59c1a87ecfc135992721582c759200596c",
+      "locators": [
+        {
+          "symbol": "fixed_bytes",
+          "start_line": 68,
+          "end_line": 71
+        }
+      ]
+    },
+    {
+      "path": "src/pq_threshold_candidates/gf/i3_hash_join_v0_1/evaluator.py",
+      "filename": "evaluator.py",
+      "revision": "417ee834ffb7fa26740b22cb43716099b0fed635",
+      "bytes": 7775,
+      "sha256": "a7c903e701e0db493dc25a6548a7601dc2c1e9624b696a3043349afdca6fa447",
+      "locators": [
+        {
+          "symbol": "_parse_candidate",
+          "start_line": 110,
+          "end_line": 122
+        },
+        {
+          "symbol": "evaluate_i3_hash_candidate_research",
+          "start_line": 125,
+          "end_line": 179
+        }
+      ]
+    },
+    {
+      "path": "src/pq_threshold_candidates/gf/research_abi_v0_1/codecs.py",
+      "filename": "codecs.py",
+      "revision": "417ee834ffb7fa26740b22cb43716099b0fed635",
+      "bytes": 8822,
+      "sha256": "6c7d58803181291fb579cbbfe03f9603bf4d8fcb71aa76ca17648dbbc2f867be"
+    },
+    {
+      "path": "docs/literature/threshold_backends/gf/cap_provider_handoff_v0_1/HANDOFF_zh-TW.md",
+      "filename": "HANDOFF_zh-TW.md",
+      "revision": "New file in enclosing T handoff commit; exact bytes pinned here",
+      "bytes": 9318,
+      "sha256": "3d0e4df322fb188227c6641530b4085817d1099f355300301ed3e58db0328f72",
+      "locators": [
+        {
+          "heading": "## 1. B 新 checkpoint 的適用範圍",
+          "line": 12
+        },
+        {
+          "heading": "## 2. B 必須交付的最小能力",
+          "line": 42
+        },
+        {
+          "heading": "## 3. Provider 到位後的 T 接線順序",
+          "line": 70
+        },
+        {
+          "heading": "## 4. Native join 與 private partition 的獨立交付",
+          "line": 98
+        },
+        {
+          "heading": "## 5. 驗收與下一步",
+          "line": 114
+        }
+      ]
+    },
+    {
+      "path": "docs/literature/threshold_backends/gf/cap_provider_handoff_v0_1/requirements_v0_1.json",
+      "filename": "requirements_v0_1.json",
+      "revision": "New file in enclosing T handoff commit; exact bytes pinned here",
+      "bytes": 8964,
+      "sha256": "4dd9173fc260eee0928fc130b2792f8d6009badf2d7222054964e96b281d096a"
+    },
+    {
+      "path": "docs/literature/threshold_backends/gf/cap_provider_handoff_v0_1/check_handoff_v0_1.py",
+      "filename": "check_handoff_v0_1.py",
+      "revision": "New file in enclosing T handoff commit; exact bytes pinned here",
+      "bytes": 11251,
+      "sha256": "3697d55a5b43d3d3fa23b1d82a29f0fbcc5624b75ba723e1bc193ff6dbe4d5ed"
+    }
+  ],
+  "b_sources": [
+    {
+      "path": "src/pq_rbbc_issuance_bounded_multitree_adapter_v1.py",
+      "filename": "pq_rbbc_issuance_bounded_multitree_adapter_v1.py",
+      "revision": "c1c2b5d2690643fc136e4c39a867e4376cdb9a97",
+      "bytes": 29064,
+      "sha256": "a9aae19c0a03ecf620a6196d3be9b3f848c82dba88262ae0872cfcd7be0ed4d7",
+      "locators": [
+        {
+          "symbol": "build_reference_insecure_test_only",
+          "start_line": 113,
+          "end_line": 165
+        },
+        {
+          "symbol": "execute_production",
+          "start_line": 509,
+          "end_line": 510
+        }
+      ]
+    },
+    {
+      "path": "src/pq_rbbc_issuance_bounded_multitree_native_v1.py",
+      "filename": "pq_rbbc_issuance_bounded_multitree_native_v1.py",
+      "revision": "c1c2b5d2690643fc136e4c39a867e4376cdb9a97",
+      "bytes": 43914,
+      "sha256": "91cc8729d4d1acb229404a39a25cd739c8aba9fa5ee007c00bbdc6864aba9a7e",
+      "locators": [
+        {
+          "symbol": "_require_bounded",
+          "start_line": 22,
+          "end_line": 26
+        },
+        {
+          "symbol": "_require_bounded_execution",
+          "start_line": 29,
+          "end_line": 35
+        }
+      ]
+    },
+    {
+      "path": "src/pq_rbbc_issuance_cap_child_executor_v1.py",
+      "filename": "pq_rbbc_issuance_cap_child_executor_v1.py",
+      "revision": "c1c2b5d2690643fc136e4c39a867e4376cdb9a97",
+      "bytes": 51223,
+      "sha256": "930e98f647a7539f9124515931df979cbfe8fb10c4ecda731e6987fcbd15033c",
+      "locators": [
+        {
+          "symbol": "execute_production_child",
+          "start_line": 477,
+          "end_line": 480
+        }
+      ]
+    },
+    {
+      "path": "tests/test_pq_rbbc_issuance_bounded_multitree_adapter_v1.py",
+      "filename": "test_pq_rbbc_issuance_bounded_multitree_adapter_v1.py",
+      "revision": "c1c2b5d2690643fc136e4c39a867e4376cdb9a97",
+      "bytes": 13143,
+      "sha256": "60d47c05cc1534eface6f2a5ec2d4d6287dd1ea258cb43966c65ef1902e09457"
+    },
+    {
+      "path": "manifests/pq_rbbc_issuance_bounded_multitree_adapter_manifest_v1.json",
+      "filename": "pq_rbbc_issuance_bounded_multitree_adapter_manifest_v1.json",
+      "revision": "c1c2b5d2690643fc136e4c39a867e4376cdb9a97",
+      "bytes": 6290,
+      "sha256": "aac661c6d32fee9991b8ceb1e28384b9f68df85bfcbdf79e6fa1997feec9db3e"
+    },
+    {
+      "path": "artifacts/metadata/issuance_bounded_multitree_adapter_v1/pq_rbbc_issuance_bounded_multitree_adapter_portable_evidence_v1.json",
+      "filename": "pq_rbbc_issuance_bounded_multitree_adapter_portable_evidence_v1.json",
+      "revision": "c1c2b5d2690643fc136e4c39a867e4376cdb9a97",
+      "bytes": 2511,
+      "sha256": "0c795cc9ae502acb9dfc3ebe5048672882f3771e4dec78c41662f55ab938e50b"
+    },
+    {
+      "path": "docs/artifacts/PQ_RBBC_ISSUANCE_BOUNDED_MULTITREE_ADAPTER_V1_zh-TW.md",
+      "filename": "PQ_RBBC_ISSUANCE_BOUNDED_MULTITREE_ADAPTER_V1_zh-TW.md",
+      "revision": "c1c2b5d2690643fc136e4c39a867e4376cdb9a97",
+      "bytes": 10911,
+      "sha256": "9d2083979107e4a07256b16787450ae5fcc8690749e8e1632b9db367759c0cd2",
+      "locators": [
+        {
+          "heading": "## Protocol 意義",
+          "line": 7
+        },
+        {
+          "heading": "## 真正暫停與恢復各 owner 的 emitter",
+          "line": 25
+        },
+        {
+          "heading": "## Native binding 與 reference equivalence",
+          "line": 54
+        },
+        {
+          "heading": "## Receipt、snapshot 與暫停邊界",
+          "line": 88
+        },
+        {
+          "heading": "## Resources、tests 與 identities",
+          "line": 114
+        },
+        {
+          "heading": "## Claims 與下一 gate",
+          "line": 151
+        }
+      ]
+    },
+    {
+      "path": "docs/roadmaps/PQ_RBBC_CURRENT_HANDOFF_zh-TW.md",
+      "filename": "PQ_RBBC_CURRENT_HANDOFF_zh-TW.md",
+      "revision": "c1c2b5d2690643fc136e4c39a867e4376cdb9a97",
+      "bytes": 64161,
+      "sha256": "63f235b8e20171568dc3d46e34d81501d3be04b88747b5dc2eadc7fb92938135",
+      "locators": [
+        {
+          "heading": "## Issuance bounded multi-tree adapter／per-owner allocator v1（獨立 branch）",
+          "line": 9
+        },
+        {
+          "heading": "## Issuance production producer ABI read-only pre-freeze v1（獨立 branch）",
+          "line": 43
+        },
+        {
+          "heading": "## Issuance independent fragment producers checkpoint v1（獨立 branch）",
+          "line": 76
+        },
+        {
+          "heading": "## Issuance native split lowerer checkpoint v1（獨立 branch）",
+          "line": 112
+        },
+        {
+          "heading": "## Issuance split runner／atomic publisher checkpoint v1（獨立 branch）",
+          "line": 147
+        },
+        {
+          "heading": "## Issuance CAP child staged-executor checkpoint v1（獨立 branch）",
+          "line": 190
+        },
+        {
+          "heading": "## Issuance CAP576／1472 native-lowering preflight v1（獨立 branch）",
+          "line": 238
+        },
+        {
+          "heading": "## Issuance I1--I5 reduced constraint prototype v1（獨立 branch）",
+          "line": 294
+        },
+        {
+          "heading": "## Issuance production-input qualification v1（獨立 branch）",
+          "line": 340
+        },
+        {
+          "heading": "## Formal issuance relation v1 bounded checkpoint（獨立 branch）",
+          "line": 392
+        },
+        {
+          "heading": "## Issuance ZK backend interface-only preflight（獨立 branch checkpoint）",
+          "line": 434
+        },
+        {
+          "heading": "## V2.42 recovery／provenance successor（已整合）",
+          "line": 486
+        },
+        {
+          "heading": "## V2.41 branch checkpoint",
+          "line": 547
+        },
+        {
+          "heading": "## 已封閉邊界",
+          "line": 602
+        },
+        {
+          "heading": "## Portable evidence identities",
+          "line": 622
+        },
+        {
+          "heading": "## External artifacts",
+          "line": 641
+        },
+        {
+          "heading": "## V2.30 proof audit",
+          "line": 656
+        },
+        {
+          "heading": "## V2.31 CAP-security qualification",
+          "line": 683
+        },
+        {
+          "heading": "## V2.32 CAP Prove/Verify preflight",
+          "line": 714
+        },
+        {
+          "heading": "## V2.33 unified-tree CAP migration preflight",
+          "line": 753
+        },
+        {
+          "heading": "## V2.34 unified-tree production pre-freeze checkpoint",
+          "line": 803
+        },
+        {
+          "heading": "## V2.35 unified-tree production runner authoring checkpoint",
+          "line": 832
+        },
+        {
+          "heading": "## V2.36 unified-tree bounded checkpoint payload與relation generator",
+          "line": 854
+        },
+        {
+          "heading": "## V2.37 unified statement serialization與parent-input ABI",
+          "line": 876
+        },
+        {
+          "heading": "## V2.38 unified-tree streaming checkpoint與launch preflight",
+          "line": 904
+        },
+        {
+          "heading": "## V2.39 unified-tree launch identity-set preflight",
+          "line": 932
+        },
+        {
+          "heading": "## Git 與發布規範",
+          "line": 954
+        }
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "id": "CP-F01",
+      "classification": "compatibility_gap",
+      "status": "open",
+      "summary": "Bounded 4+4 profile, rho236 and commitment511 do not match frozen legacy18 rho1036/commitment5391."
+    },
+    {
+      "id": "CP-F02",
+      "classification": "provider_dependency",
+      "status": "open",
+      "summary": "Both pinned B production entrypoints immediately raise; no compatible provider delivered by this checkpoint."
+    }
+  ],
+  "limitations": [
+    "B sources read as exact Git objects; no B import/execution or worktree mutation.",
+    "Metadata consistency and static refusal checks are not runtime/provider/native qualification.",
+    "Future acceptance cases remain not_run; owner acceptance false.",
+    "Attachment rechecks do not authorize embedded instructions or establish publisher byte equivalence."
+  ]
+}

@@ -1,0 +1,63 @@
+{
+  "schema": "pq-th-gf-reference-profile-v1",
+  "profile_id": "gf-hybrid2-pompeii-d4-shake256-otp-ref-v1",
+  "candidate": "TH-GF",
+  "purpose": "non_threshold_research_only",
+  "parameters": {
+    "n": 256,
+    "d": 4,
+    "t": 2,
+    "q": 4188161,
+    "p": 1024,
+    "ell": 1048576,
+    "mu_scale": 256,
+    "noise": "CBD1",
+    "noise_variance": "1/2"
+  },
+  "paper": {
+    "filename": "2021-096.pdf",
+    "sha256": "b730d4640218b5ea86b019a52501be2e4682b562e61a468abd08658ee393678e",
+    "locators": [
+      "pp. 8-9 centered representatives, CBD sampling, rounding",
+      "Fig. 5 p. 24 Hybrid2",
+      "Fig. 14 p. 45 Pompeii",
+      "Table 2 p. 46 prime-q d4 without LVP row"
+    ]
+  },
+  "project_choices": {
+    "hash": "SHAKE256; independent H, H_prime, H_double_prime, G domains",
+    "H_output_bytes": 128,
+    "H_prime_output_bytes": 128,
+    "H_double_prime_output_bytes": 128,
+    "G_output_bytes": 32,
+    "DEM": "one-use 128-byte XOR pad H(u); message ad||rid||sn; no DEM coins",
+    "hash_framing": "MAGIC||uint16le(1)||u8(len(profile))||profile||u8(len(label))||label||each(u32le(len(arg))||arg)",
+    "packing": "row-major matrices; ascending polynomial coefficients; little-endian contiguous bits; nonnegative residues",
+    "rounding": "center input mod q, nearest rational p*x/q, ties toward zero, center result mod p",
+    "keygen_sampler": "domain-separated SHAKE256(seed32); A1 masked 22-bit rejection; R1/R2 CBD1 from two low bits per byte"
+  },
+  "witness_descriptor": {
+    "name": "u",
+    "payload_bytes": 128,
+    "encoding": "d polynomials, n bits each; coefficients in {0,1}",
+    "secret": true,
+    "deterministic_encryption_given_witness": true
+  },
+  "payload_bytes": {
+    "public_key": 22528,
+    "ciphertext": 2848,
+    "c1": 2560,
+    "c2": 128,
+    "c3": 32,
+    "c4": 128
+  },
+  "claims": {
+    "paper_verified_full_instantiation": false,
+    "security_assessment": "OPEN",
+    "threshold_execution": "not_implemented",
+    "constant_time": false,
+    "production_qualified": false,
+    "B_issuance_ABI_integrated": false,
+    "opening_ABI_integrated": false
+  }
+}

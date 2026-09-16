@@ -1,0 +1,189 @@
+{
+  "schema": "pqc_auth.gf_i3_hash_join_validation.v0_1",
+  "date": "2026-09-14",
+  "branch": "codex/threshold-gf-i3-hash-join-v0-1",
+  "base_commit": "bcefd1b2cb92673bb278e0d9099a38f3816d1a87",
+  "base_tree": "b46b15cd2432c71306764edf2c7d634408e88374",
+  "environment": {
+    "python": "3.12.9",
+    "platform": "Linux",
+    "machine": "x86_64"
+  },
+  "source_identities": [
+    {
+      "path": "src/pq_threshold_candidates/gf/i3_hash_join_v0_1/__init__.py",
+      "bytes": 316,
+      "sha256": "b94b1c79b6e9b6f5761879b93d1190e4d5466a7dbb2da97bd9cc8a139ec45282"
+    },
+    {
+      "path": "src/pq_threshold_candidates/gf/i3_hash_join_v0_1/evaluator.py",
+      "bytes": 7775,
+      "sha256": "a7c903e701e0db493dc25a6548a7601dc2c1e9624b696a3043349afdca6fa447"
+    },
+    {
+      "path": "tests/threshold_candidates/gf/i3_hash_join_v0_1/__init__.py",
+      "bytes": 77,
+      "sha256": "2adca385e3beccaf4ed6f1229f3e02f3c2064111d48938a312fc857469b24832"
+    },
+    {
+      "path": "tests/threshold_candidates/gf/i3_hash_join_v0_1/test_evaluator.py",
+      "bytes": 19307,
+      "sha256": "69aee682722b093705b88f3fefc495ccf8d76d72eca2554216f6b94aa57b2f32"
+    },
+    {
+      "path": "docs/literature/threshold_backends/gf/i3_hash_join_v0_1/IMPLEMENTATION_zh-TW.md",
+      "bytes": 11128,
+      "sha256": "132ea3499dd2a852688e4d8383db5f4bd958dac22c5a081fbde66fa19f0dba44"
+    },
+    {
+      "path": "docs/literature/threshold_backends/gf/i3_hash_join_v0_1/source_index_v0_1.json",
+      "bytes": 12221,
+      "sha256": "6456443ef4be06798d598d2b2f9b9176568d3d461693a1933a65d92d3e8e9ca1"
+    },
+    {
+      "path": "docs/literature/threshold_backends/gf/README_zh-TW.md",
+      "bytes": 3599,
+      "sha256": "43acbcad775231b7b15bda780abf10caa90b2bdd730d811df834b8bd34d1f253"
+    }
+  ],
+  "new_tests": {
+    "total": 25,
+    "passed": 25,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "execution": "included in the final targeted and full runs; not a separate final 25-test invocation"
+  },
+  "targeted_tests": {
+    "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python -m unittest discover -s tests/threshold_candidates -v",
+    "total": 142,
+    "passed": 142,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "elapsed_seconds": 47.978,
+    "log_identity": {
+      "path": "/tmp/pqc-gf-i3-hash-targeted.log",
+      "bytes": 22550,
+      "sha256": "1c6d7f7ce954c61f53bcc8f64997dbe3155a6d34fdfab089b8b8caf47717d334"
+    },
+    "skip_reasons": {}
+  },
+  "full_regression": {
+    "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python -m unittest discover -s tests -v",
+    "total": 830,
+    "passed": 818,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 12,
+    "elapsed_seconds": 791.507,
+    "log_identity": {
+      "path": "/tmp/pqc-gf-i3-hash-full.log",
+      "bytes": 142624,
+      "sha256": "3d9340ba45f37bf3493765a102e9ab87fb463267d438c1bc778468ee6c195580"
+    },
+    "skip_reasons": {
+      "trusted external v2.19 recovery artifacts are not installed": 1,
+      "external v2.20 global-tail archive is not installed": 1,
+      "external v2.15 relocation assignment is not installed": 1,
+      "external v2.13 tree-0 assignment is not installed": 1,
+      "external v2.13 tree-0 execution cache is not installed": 1,
+      "external v2.14 replay artifacts are not installed": 1,
+      "external v2.14 tree-2 assignment is not installed": 1,
+      "external v2.22 tree-1 artifacts are not installed": 1,
+      "external v2.21 tree-2 artifacts are not installed": 1,
+      "external v2.23 tree-3 artifacts are not installed": 1,
+      "external v2.24 tree-4 artifacts are not installed": 1,
+      "external v2.25 batch artifacts are not installed": 1
+    }
+  },
+  "development_fixture_correction": {
+    "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python -m unittest discover -s tests/threshold_candidates/gf/i3_hash_join_v0_1 -t tests -v",
+    "total": 23,
+    "passed": 22,
+    "failed": 1,
+    "errors": 0,
+    "skipped": 0,
+    "elapsed_seconds": 26.429,
+    "log_identity": {
+      "path": "/tmp/pqc-gf-i3-hash-new-tests.log",
+      "bytes": 5352,
+      "sha256": "088c042f67da205aa9ee026af5c65637df31757b8381a17c9077f241e51ebfeb"
+    },
+    "failure": "Manual test transcript initially used u32 lengths; canonical H_RBBC transcript uses u64 lengths.",
+    "resolution": "Corrected manual fixture to u64; added two boundary tests; all final 25 tests pass in both final runs.",
+    "runtime_bug": false,
+    "complete_pre_correction_source_snapshot_captured": false
+  },
+  "source_test_snapshot": {
+    "files": 4,
+    "pre_and_post_full_run_identities_match": true,
+    "snapshot_identity": {
+      "path": "/tmp/pqc-gf-i3-hash-full-inputs.json",
+      "bytes": 746,
+      "sha256": "390612f8794aa2f9f36ace38a5cbadcb5b417ecc05841870cfc34f4b8c2b7545"
+    }
+  },
+  "runtime_profile_check": {
+    "CAP_sha256": "2ac471f8d7c6cb4e6352bbc5a2eb7f9394b807ff132aec8cadebd696f7b1fa38",
+    "H_RBBC_sha256": "4fa0eb276ebba70a9f6c2f38f3f55d197c094121a2b614cc6ef9b7e8522cac87",
+    "commitment_candidate_bytes": 5391,
+    "H_RBBC_image_bytes": 72,
+    "matches_frozen_ABI": true
+  },
+  "semantics": {
+    "input_extension": "extra PRIVATE unverified CAP commitment candidate; frozen formal X/W unchanged",
+    "CAP_parser": "existing strict legacy18 parse_commitment, with exact bytes/length and re-encoding check; no extraction",
+    "CAP_salt_binding": "same two canonical rho salts; necessary equality only",
+    "digest_consumer": "actual H_RBBC over full-M d_M and exact candidate, including canonical 64-bit transcript field lengths",
+    "I2_recomputation": "twice from the same immutable M; not native same-wire evidence",
+    "I3_beta_match": "matched_unverified_cap; arbitrary r/beta repair and changed rho roots can still match",
+    "CAP_rho_and_derived_mask": "both OPEN; no general legacy18 CAP execution provider enabled",
+    "failure_order": "candidate grammar precedes partial crypto; partial binding/errors and salt mismatches skip H_RBBC",
+    "ordinary_I4_I5_mismatch": "permits independent candidate hash diagnostic; computation ERROR skips it",
+    "diagnostic_payload": "only safe predecessor diagnostic and fixed check/status labels"
+  },
+  "test_limitations": [
+    "Synthetic canonical CAP commitment, real GF reference I4/I5 and canonical rho; no complete I3 honest positive fixture.",
+    "Real H_RBBC positive and M-header/C/candidate mutation cases execute Anemoi. Pure flow/mask/root tests reuse a real baseline image only after asserting identical hash arguments.",
+    "Manual transcript construction shares the existing Anemoi primitive; not an independent Anemoi implementation or upstream KAT.",
+    "No concurrency, crash recovery, one-time state, CAP extraction, native replay, proving or opening is exercised by this new module."
+  ],
+  "claims": {
+    "candidate_hash_consumer_implemented_and_tested": true,
+    "strict_legacy18_candidate_grammar_checked": true,
+    "same_rho_candidate_salts_compared": true,
+    "full_M_digest_consumed_by_actual_H_RBBC": true,
+    "candidate_beta_equation_checked": true,
+    "CAP_candidate_admissibility_verified": false,
+    "CAP_rho_execution_verified": false,
+    "CAP_derived_mask_verified": false,
+    "I2_to_full_I3_join_verified": false,
+    "full_I3_verified": false,
+    "configuration_authentication_verified": false,
+    "key_origin_certification_verified": false,
+    "backend_qualification_verified": false,
+    "B_owner_acceptance_verified": false,
+    "issuer_identity_session_authorization_verified": false,
+    "witness_freshness_verified": false,
+    "native_constraints_integrated": false,
+    "full_relation_verified": false,
+    "witness_free_proof_verifier_implemented": false,
+    "threshold_implemented": false,
+    "paper_verified_full_instantiation": false,
+    "external_independent_review": false,
+    "evidence_sealed": false,
+    "proof_closed": false,
+    "production_closed": false
+  },
+  "preserved_scope": [
+    "all predecessor src/tests",
+    "frozen GF wire ABI and domains",
+    "common registry",
+    "root canonical documents",
+    "other-owner worktrees",
+    "opening/ticket/M6 semantics"
+  ],
+  "prohibited_artifacts_added": false,
+  "merge_or_push_performed": false
+}

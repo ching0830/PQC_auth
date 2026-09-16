@@ -1,0 +1,191 @@
+{
+  "schema": "pqc_auth.gf_research_codecs_validation_summary.v0_1",
+  "date": "2026-09-14",
+  "branch": "codex/threshold-gf-research-codecs-v0-1",
+  "base_commit": "1eb44e912cee6f69c77b859cebae748fd12131c1",
+  "base_tree": "779f2ea70398c4c9fcac97784753dc0c7bbad4c9",
+  "environment": {
+    "python": "3.12.9",
+    "platform": "Linux",
+    "machine": "x86_64"
+  },
+  "abi": {
+    "sha256": "97e97589fdcb293101e866a3233b38e1f48c9bdbe5ad9ddc1daabe5f2b410158",
+    "frozen_contract_identity": {
+      "path": "docs/literature/threshold_backends/gf/abi_v0_1/contract_v0_1.json",
+      "bytes": 9376,
+      "sha256": "1f269b737a067f4647c1e6b64b4dbff3194bf24638be682c85ac2dc25c7c50a3"
+    },
+    "schema_changed": false,
+    "raw_packet_bytes": {
+      "trace_binding": 315,
+      "common_pp": 489,
+      "ticket_m": 3005,
+      "issue_statement": 251,
+      "issue_witness": 4324
+    },
+    "trace_u_bytes": 128,
+    "cap_randomness_bytes": 1036
+  },
+  "source_identities": [
+    {
+      "path": "src/pq_threshold_candidates/gf/research_abi_v0_1/__init__.py",
+      "bytes": 874,
+      "sha256": "fd29a3e7ad3e8dee265fd8055a764f2efff2f395b13444a151093021676d33f5"
+    },
+    {
+      "path": "src/pq_threshold_candidates/gf/research_abi_v0_1/bindings.py",
+      "bytes": 5509,
+      "sha256": "57514f6d22f8f9bce6b5d11208687b7834156ccdbb5b087dc4a5a6a1ed13de89"
+    },
+    {
+      "path": "src/pq_threshold_candidates/gf/research_abi_v0_1/codecs.py",
+      "bytes": 8822,
+      "sha256": "6c7d58803181291fb579cbbfe03f9603bf4d8fcb71aa76ca17648dbbc2f867be"
+    },
+    {
+      "path": "tests/threshold_candidates/gf/research_abi_v0_1/__init__.py",
+      "bytes": 74,
+      "sha256": "109f89748d7add9b29b45902b9f2d857a0c77fd1e3495fa195531f4dc4b5ab61"
+    },
+    {
+      "path": "tests/threshold_candidates/gf/research_abi_v0_1/_fixtures.py",
+      "bytes": 3557,
+      "sha256": "27e0325afa82afc7fe4f72e1a5fd95e5ca900b8aea6dfda5eb535612d538bff1"
+    },
+    {
+      "path": "tests/threshold_candidates/gf/research_abi_v0_1/test_bindings.py",
+      "bytes": 9834,
+      "sha256": "476ec6271d53f7b1884f313cb7f28fbd3c30b5c69c3c8801c5dc896ae5d96c98"
+    },
+    {
+      "path": "tests/threshold_candidates/gf/research_abi_v0_1/test_codecs.py",
+      "bytes": 11343,
+      "sha256": "36c5beb39c3afefd73ac803ae72aa27d21d546046dc3e31766ce2890fc43f9f0"
+    },
+    {
+      "path": "docs/literature/threshold_backends/gf/README_zh-TW.md",
+      "bytes": 2331,
+      "sha256": "e5c36d905264952cde9b66c63bf626dd689132938200542793f9fe4f4206fb59"
+    },
+    {
+      "path": "docs/literature/threshold_backends/gf/research_codecs_v0_1/IMPLEMENTATION_zh-TW.md",
+      "bytes": 10838,
+      "sha256": "6ec00f18967a843e05aa8b9e723624c58b2014674b033a6b8bbb374a5a0e91a2"
+    },
+    {
+      "path": "docs/literature/threshold_backends/gf/research_codecs_v0_1/source_index_v0_1.json",
+      "bytes": 6059,
+      "sha256": "fe89847e37873f21dbb9cc1cf3e64405f282ac4e23bd9dd7e45df486f1f0d166"
+    }
+  ],
+  "new_tests": {
+    "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python -m unittest discover -s tests/threshold_candidates/gf/research_abi_v0_1 -t tests -v",
+    "total": 30,
+    "passed": 30,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "elapsed_seconds": 1.494,
+    "log_identity": {
+      "bytes": 5999,
+      "sha256": "4af1594e6d172dddd2e4dc781951542ec1deb3e2731e3e9dde8c869016c39cef"
+    },
+    "skip_reasons": {}
+  },
+  "targeted_tests": {
+    "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python -m unittest discover -s tests/threshold_candidates -v",
+    "total": 90,
+    "passed": 90,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "elapsed_seconds": 12.839,
+    "log_identity": {
+      "bytes": 13444,
+      "sha256": "4491068b3be22ced505450647057fafcb06b717b4661cd8d1d9024dfe39682b1"
+    },
+    "skip_reasons": {}
+  },
+  "full_regression": {
+    "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python -m unittest discover -s tests -v",
+    "total": 778,
+    "passed": 766,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 12,
+    "elapsed_seconds": 759.285,
+    "log_identity": {
+      "bytes": 132427,
+      "sha256": "7d2fec111677697dd363ebe4cc761de44e10bdd428523f3110046b5d4d4cc3a4"
+    },
+    "skip_reasons": {
+      "trusted external v2.19 recovery artifacts are not installed": 1,
+      "external v2.20 global-tail archive is not installed": 1,
+      "external v2.15 relocation assignment is not installed": 1,
+      "external v2.13 tree-0 assignment is not installed": 1,
+      "external v2.13 tree-0 execution cache is not installed": 1,
+      "external v2.14 replay artifacts are not installed": 1,
+      "external v2.14 tree-2 assignment is not installed": 1,
+      "external v2.22 tree-1 artifacts are not installed": 1,
+      "external v2.21 tree-2 artifacts are not installed": 1,
+      "external v2.23 tree-3 artifacts are not installed": 1,
+      "external v2.24 tree-4 artifacts are not installed": 1,
+      "external v2.25 batch artifacts are not installed": 1
+    }
+  },
+  "frozen_document_conformance": {
+    "command": "PYTHONDONTWRITEBYTECODE=1 python docs/literature/threshold_backends/gf/abi_v0_1/check_spec_v0_1.py",
+    "report_identity": {
+      "bytes": 1278,
+      "sha256": "46eab20e0c73baae4e82785591217f3c72967038859fc0b6155d2c92dcabd44d"
+    },
+    "report_matches_prior_exactly": true,
+    "structural_positives": 5,
+    "structural_negatives_rejected": 40,
+    "runtime_witness_rejects_historical_synthetic_rho": true,
+    "qualification_boundary": "Historical rho bytes were explicitly opaque synthetic input; runtime validates CAP magic/profile/count/padding and rejects them. Other four structural vectors round-trip."
+  },
+  "same_inputs_during_full_regression": {
+    "new_source_test_files": 7,
+    "identities_match": true,
+    "existing_crypto_common_and_frozen_ABI_unchanged": true
+  },
+  "GFR_01_regression": {
+    "two_correctly_generated_reference_keys": true,
+    "legal_zero_u": true,
+    "same_raw_ciphertext_across_keys": true,
+    "other_key_I5_and_decryption_succeed": true,
+    "research_key_mismatch_rejected": true,
+    "simultaneous_key_and_self_reported_digest_replacement_rejected_against_bundle": true,
+    "different_pp_M_headers_and_d_M_differ": true,
+    "trusted_configuration_authentication_tested": false,
+    "signature_rejection_tested": false
+  },
+  "claims": {
+    "research_codecs_implemented_and_tested": true,
+    "research_pinned_byte_identity_checks_implemented_and_tested": true,
+    "legacy_CAP_canonical_rho_encoding_checked": true,
+    "bundle_authentication_verified": false,
+    "key_origin_certification_verified": false,
+    "B_backend_or_relation_qualification_verified": false,
+    "full_I1_I5_constraints_integrated": false,
+    "common_production_registry_changed": false,
+    "B_ABI_integrated": false,
+    "trusted_ticket_opening_integrated": false,
+    "TB3_started": false,
+    "threshold_implemented": false,
+    "external_independent_review_attestation": false,
+    "evidence_sealed": false,
+    "proof_closed": false,
+    "production_closed": false
+  },
+  "limitations": [
+    "A caller-selected bundle pin is a research assumption, not authenticated configuration.",
+    "Opaque artifact inputs are hashed only: self-consistent fake inputs can yield an identity-only diagnostic.",
+    "ResearchBindingMatch cannot be used as a boolean; default and explicit production purpose always reject.",
+    "The local checker reads private M and is not witness-free VerifyIssue or I5; a corrupt C can still have matching key/pp identities.",
+    "Finite codec and reference tests are not a cryptographic proof, upstream KAT, or rare-failure bound.",
+    "Original PDFs, raw reports/logs, keys, witness bytes, serialized artifacts and attestations remain outside Git."
+  ]
+}

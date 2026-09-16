@@ -1,0 +1,121 @@
+{
+  "authentication": {
+    "application_context_ascii": "PQ-RBBC/SYSTEM-GOVERNANCE/STAGING/V1",
+    "configuration_message": "PQ-RBBC/SYSTEM-INIT-AUTH/V1 || SystemInitializationBundle.encode()",
+    "grant_message": "PQ-RBBC/ISSUER-AUTHORIZATION/V1 || u16le(ISSUER_AUTHORIZATION) || IssuerGrant.encode()",
+    "profile": "PQRBBC-OPENSSL-ML-DSA-65-NON-THRESHOLD-STAGING-V1",
+    "public_key_format": "DER SubjectPublicKeyInfo",
+    "public_key_size_bytes": 1974,
+    "signature_size_bytes": 3309
+  },
+  "base_commit": "35316ac953846a8bc970e4060c576639589f245e",
+  "claim_boundary": {
+    "blind_signing_response_implemented": false,
+    "caller_supplied_trust_anchor_allowed_by_request_service": false,
+    "caller_supplied_verified_flag_allowed_by_request_service": false,
+    "fac_dkg_implemented": false,
+    "fac_threshold_signature_implemented": false,
+    "fips_140_validated_module_claimed": false,
+    "full_bundle_authentication_implemented": true,
+    "issuer_grant_authentication_implemented": true,
+    "ordinary_mldsa65_real_positive_tested": true,
+    "production_closed": false,
+    "production_organization_authorization_created": false,
+    "proof_closed": false,
+    "real_b_t_key_material_provisioned": false,
+    "s1_sqlite_authorization_integration_tested": true,
+    "trust_registry_bytes_digest_role_binding_implemented": true
+  },
+  "code_commit": "1624e2b049df0cee866607464df3078be30b2475",
+  "dependencies": {
+    "b_committed_handoff": "47cfd584b4fa1ace9db79a84ccd1be33a3775fd3",
+    "b_profile_changed_by_s2": false,
+    "t_committed_adapter_contract": "d682b8b08892f663a81c4ef9d295b0c385354d0b",
+    "t_committed_partial_issuance_review": "bcefd1b2cb92673bb278e0d9099a38f3816d1a87",
+    "t_profile_changed_by_s2": false
+  },
+  "format": "PQRBBC-SYSTEM-GOVERNANCE-MLDSA65-STAGING-MANIFEST-V1",
+  "openssl": {
+    "build_configuration": "no-shared",
+    "executed_binary_sha256": "e32ed95a3c645aa706256fb2cf94d697e6d600c8e150b023a6f687c39cd921d0",
+    "exact_version_line": "OpenSSL 3.5.8 25 Aug 2026 (Library: OpenSSL 3.5.8 25 Aug 2026)",
+    "license": "Apache-2.0",
+    "release": "3.5.8",
+    "source_sha256": "a8f84a39918ec6415ce765d9b429d313ba97b8143169c172e734b9514464f5b2",
+    "source_size_bytes": 53213818,
+    "source_url": "https://github.com/openssl/openssl/releases/download/openssl-3.5.8/openssl-3.5.8.tar.gz"
+  },
+  "schema_version": 1,
+  "test_vectors": {
+    "expected_results_sha256": "e1d84ef1b2f35196278ab0b0ed6a46ec62cc03d2dfa92c564199e1999bfb8ea6",
+    "expected_results_size_bytes": 13956,
+    "nist_acvp_server_commit": "975de31eb83d87039ec88934fdc47d8c312b892d",
+    "prompt_sha256": "e2cba4589389756fa0bea1a7e6837138bf0a81f9d14234c9ee8f6d33caa1654e",
+    "prompt_size_bytes": 3125947,
+    "selected_cases": [
+      {
+        "expected": false,
+        "parameter_set": "ML-DSA-65",
+        "signature_interface": "external",
+        "tc_id": 31,
+        "test_group_id": 3
+      },
+      {
+        "expected": true,
+        "parameter_set": "ML-DSA-65",
+        "signature_interface": "external",
+        "tc_id": 33,
+        "test_group_id": 3
+      }
+    ],
+    "source": "NIST ACVP-Server public sample vectors"
+  },
+  "tests": {
+    "full_regression": {
+      "errors": 0,
+      "failed": 0,
+      "passed": 731,
+      "ran": 743,
+      "seconds": 755.773,
+      "skipped": 12,
+      "s2_crypto_tests_skipped": 0
+    },
+    "openssl_upstream": {
+      "failed": 0,
+      "passed": 288,
+      "status": "PASS"
+    },
+    "repository_authentication_targeted": {
+      "errors": 0,
+      "failed": 0,
+      "passed": 22,
+      "skipped": 0
+    },
+    "repository_governance_targeted": {
+      "errors": 0,
+      "failed": 0,
+      "passed": 33,
+      "skipped": 0
+    },
+    "repository_s1_storage_targeted": {
+      "errors": 0,
+      "failed": 0,
+      "passed": 33,
+      "skipped": 0
+    }
+  },
+  "trust_registry": {
+    "canonical_json_required": true,
+    "captured_once_at_service_startup": true,
+    "digest_algorithm": "SHA-256 over exact DER bytes",
+    "exact_roles": [
+      "FEDERATION_CONFIGURATION",
+      "ISSUER_AUTHORIZATION"
+    ],
+    "filename": "trust-registry-v1.json",
+    "no_follow_required": true,
+    "operator_owned_external_directory_required": true,
+    "profile": "PQRBBC-OPENSSL-ML-DSA-65-NON-THRESHOLD-STAGING-V1",
+    "secret_key_bytes_allowed": false
+  }
+}

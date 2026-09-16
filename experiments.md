@@ -1,6 +1,6 @@
 # 實驗紀錄（Experiments）
 
-> 最後更新：2026-09-10
+> 最後更新：2026-09-16
 > 用途：保存可重現的實驗環境、命令、結果、artifact identity 與結論。不得只寫「測試通過」。文件權責見 `docs/DOCUMENTATION_POLICY_zh-TW.md`。
 
 ## 記錄規範
@@ -196,6 +196,114 @@ PYTHONPATH=src python -m unittest discover -s tests -v
 - 下一步：建立綁定v2.42 effective implementation、source identities、exact command、
   batch、output與資源窗口的新operator reservation，再取得具名human independent
   review；通過後才建立launch manifest candidate並執行唯讀preflight。
+
+### EXP-20260915-01 — Multitree scheduler＋SRR-01 integration regression
+
+- 研究問題／假設：finding-free multitree scheduler `13a75945...`能否整合SRR-01
+  `64d0947d...`的verified ordinal 2→3 receipt suffix，同時維持scheduler durability、
+  closed-world inventory、sequential／parallel identity與保守claim boundary。
+- 日期與時區：2026-09-15，Asia/Taipei。
+- Git branch／基線／dirty state：`codex/pq-rbbc-multitree-srr01-integration`，直接基線
+  `13a75945a075630c1dc366615856239972efa6c6`；測試時含尚未commit的SRR-01移植、scheduler
+  1.2、successor evidence及文件。
+- 環境：Linux 6.8.0-138-generic x86_64；AMD Ryzen 5 7600X（6 cores／12 logical CPUs）；
+  30 GiB RAM；Python 3.12.9。
+- 輸入與artifact identities：SRR-01 source commit
+  `64d0947dada2dafb5eb8636f09ea868366e8ef49`；scheduler successor manifest
+  17,155 bytes／SHA-256
+  `98de9e5ecfe99cd9592d870504c2e4d05cf3f4648b856a873c4b5e2c0c7b8045`；portable evidence
+  4,529 bytes／SHA-256
+  `67235d27db2f0b19fac60f89ecb7d0b406613737344a01cf7a32e0750d5f5dd6`。
+- Scheduler targeted command：
+  `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python -m unittest tests.test_pq_rbbc_issuance_multitree_restart_scheduler_v1 -v`
+- Scheduler targeted結果：22 passed、0 failures／errors／skips，42.356秒。
+- Combined targeted command：
+  `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python -m unittest tests.test_pq_rbbc_issuance_tree_post_continuation_v1 tests.test_pq_rbbc_issuance_tree_post_restart_v1 tests.test_pq_rbbc_issuance_multitree_restart_scheduler_v1 -v`
+- Combined targeted結果：60 passed、0 failures／errors／skips，156.497秒。
+- Full command：
+  `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python -m unittest discover -s tests -q`
+- Full結果：962 tests，950 passed、12個既有optional-artifact skips、0 failures／errors；
+  unittest 1501.625秒，wall 1505.34秒，exit 0。
+- Controlled probe：`/tmp/pq-rbbc-multitree-srr01-integration-probe.py`；確認非法suffix在
+  scheduler publication／compute前拒絕且output不存在、兩個7-file child inputs、
+  sequential／parallel逐檔一致、completed capture與repeated resume不重算。Raw results留在
+  `/tmp`，不提交log或private artifacts。
+- 結論：支持combined bounded scheduler為Defined／Instantiated／Implemented／Tested，並可
+  重建metadata-only evidence；不支持將先前`13a75945...`的finding-free review直接套用到
+  combined tree，也不支持完整receipt chain、global-tail、legacy18 production provider、
+  production durable resume、formal proof、large-run或Production-closed宣稱。
+- 下一步：建立bounded commit後，以exact commit及tracked prompt交付新的獨立唯讀
+  technical/security re-review。
+
+### EXP-20260914-01 — Satellite access v0.2 bounded reference
+
+- 研究問題／假設：保留V1 bytes不動時，能否把兩訊息access candidate的canonical
+  messages、`R_access` holder binding、backend fail-closed boundary及pending-confirm
+  one-time state降成可執行reference，並拒絕truncation、binding mutation、competing
+  attempts／grants與錯誤activation。
+- 日期與時區：2026-09-14，Asia/Taipei。
+- Git commit／branch／dirty state：branch `codex/satellite-access-v0-2`；formal spec
+  checkpoint `1f872d10e5e776d947c05f25fd40c252b261e85c`；測試時含尚未commit的
+  `src/pq_sat_auth/v2/`、五份V2 tests及本次status／experiment更新。
+- 環境：Linux 6.8.0-138-generic x86_64；AMD Ryzen 5 7600X（6 cores／12 logical
+  CPUs）；30 GiB RAM；Python 3.12.9。
+- 外部輸入：無；未啟動production、large replay或proving，未建立大型artifact。
+- 實作：V2 frame／opaque、`AccessRequestV2`／`AccessAcceptV2`／
+  `SessionActivateV2` codecs與frozen digests；verifier-owned `x_access` codec、canonical
+  `H_hold`與holder-binding direct evaluator；NIZK／PQ KEM／FGS authentication／key
+  schedule abstract contracts及reference-suite production rejection；process-local
+  reservation／grant／activation／expiry state model。
+- focused command：
+  `PYTHONPATH=src python -m unittest -q tests.system.test_pq_sat_auth_backends_v2 tests.system.test_pq_sat_auth_framing_v2 tests.system.test_pq_sat_auth_access_v2 tests.system.test_pq_sat_auth_access_proof_v2 tests.system.test_pq_sat_auth_replay_v2`
+- focused結果：`Ran 39 tests in 0.014s`；39 passed、0 failures／errors／skips，exit 0。
+- full command：
+  `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python -m unittest discover -s tests -v`
+- full結果：`Ran 727 tests in 744.079s`；715 passed、12 skipped、0 failures／errors，
+  exit 0。12 skips均為既有optional v2.13–v2.25 external artifacts未安裝。
+- coverage：三個objects round-trip與frozen vectors；所有三個body的每一個strict prefix
+  truncation；unknown version／type／suite／channel mode、trailing fields與suite bounds；
+  request／response／activation substitution；holder hash／secret／request-core mutations；
+  24-way distinct/same-attempt reservation、24-way competing-grant commit與24-way
+  idempotent activation races；wrong／late／expired／terminated／abort paths；V1／V2共用
+  `PQ-SAT/USE-KEY/v1` namespace。
+- 結論：支持V2 bounded canonical byte boundary、direct relation及process-local state
+  wiring已Implemented／Tested，且V1 regression維持；不支持真實NIZK soundness、PQ AKE
+  authentication、完整FGS acceptance pipeline、durability、distributed linearizability、
+  wallet recovery、Proof-closed或Production-closed宣稱。
+- 下一步：先把stable `VerifyTicket` adapter、authenticated configuration／time／
+  revocation pure checks接成fail-closed FGS processor；平行研究D-002 concrete PQ suite。
+  Durable store與wallet crash model須使用獨立checkpoint及fault-injection evidence。
+
+### EXP-20260916-01 — Project reorganization integration regression
+
+- 研究問題／假設：把已完成的 CAP v2.43、bounded issuance、system governance S0–S2、
+  satellite access V1／V2、opening integration、one-time admission、threshold research
+  candidates 與 D4／D4b access prototypes 整合至單一整理分支後，是否仍能保持所有既有
+  regression 與 fail-closed claim boundary。
+- 日期與時區：2026-09-16，Asia/Taipei。
+- Git commit／branch／dirty state：`codex/project-reorganization-v0-1`，exact tested
+  commit `1f251e1153de72461b9a35a9f6be686bac4aa95e`；執行前工作樹乾淨。
+- 環境：Linux x86_64；Python 3.12.9；未 provision repository 外的 optional
+  assignments、recovery artifacts 或 external FAEST reference library。
+- 輸入與 artifact：只使用 tracked repository inputs；沒有啟動 production、large replay、
+  proving 或建立新的大型 binary artifact。
+- targeted command：
+  `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python -m unittest -v tests.test_project_module_registry`
+- targeted 結果：5 passed、0 skipped、0 failures／errors。
+- full command：
+  `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python -m unittest discover -s tests -v`
+- full 結果：`Ran 1682 tests in 1774.017s`；1659 passed、23 skipped、0 failures／errors，
+  exit code 0。23 skips皆由測試明確標示為未安裝的 optional external artifacts／libraries，
+  不被記為通過或用來擴張 claim。
+- 整理驗證：新增的 `project_module_registry_v0_1.json` 以 closed schema 記錄七個論文機制、
+  source checkpoint 與保守狀態；測試會拒絕遺失路徑、非完整 commit identity、重複／缺少
+  模組或 production claim 擴張。
+- 結論：支持此 commit 作為「目前成果的整合與導覽 baseline」；不代表 attachment 中的
+  candidate `ctx` access 機制已採用，也不提升任何 Proof-closed、Production-closed、
+  distributed deployment 或具名獨立人員核准宣稱。
+- 限制與下一步：先以 D5 量測 `R_key` 成本並選定下一版 access 機制；新機制應進入新的
+  versioned package，現有 V1／V2 與 D4／D4b 保留為可比較 baseline，待決策後再逐項標示
+  reuse／superseded／historical，而不是立即刪除或搬移。
 
 ## 實驗模板
 

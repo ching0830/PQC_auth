@@ -2,20 +2,21 @@
 
 # 後量子可追責衛星認證
 
+> **第一次進來請讀 [`START_HERE_zh-TW.md`](START_HERE_zh-TW.md)。**它把程式按
+> System、Issuance、Access、Lifecycle、Opening、Threshold research 與 Evaluation
+> 分成七個短入口；一般閱讀不需要先打開歷史 artifact 長檔名。
+
 本 repository 是完整後量子、隱私保護且可追責之衛星認證機制的研究與實作工作區。
 
 PQ-RBBC 是目前最成熟的密碼學模組，但不是整篇論文的全部。完整專案亦包含 federation authorization、opening governance、衛星接入與後量子認證金鑰建立、anti-replay、revocation、handover、端到端安全組合，以及衛星路徑效能評估。
 
 ## 建議閱讀順序
 
-1. [research-notes.md](research-notes.md)、[methodology.md](methodology.md)、[experiments.md](experiments.md)、[thesis-outline.md](thesis-outline.md)：跨任務恢復研究脈絡、方法、實驗與寫作進度。
-2. [docs/DOCUMENTATION_POLICY_zh-TW.md](docs/DOCUMENTATION_POLICY_zh-TW.md)：各文件的 canonical responsibility、更新與歷史保存規則。
-3. [ARCHITECTURE_zh-TW.md](ARCHITECTURE_zh-TW.md)：系統分層、角色、模組、階段、信任假設及安全邊界。
-4. [docs/guides/PROTOCOL_TO_IMPLEMENTATION_GUIDE_zh-TW.md](docs/guides/PROTOCOL_TO_IMPLEMENTATION_GUIDE_zh-TW.md)：把 protocol 公式連到 bytes、relation、circuit、assignment、tests 與 evidence。
-5. [RESEARCH_STATUS_zh-TW.md](RESEARCH_STATUS_zh-TW.md)：哪些內容已定義、實作、測試或證明，以及仍未完成的項目。
-6. [ROADMAP_zh-TW.md](ROADMAP_zh-TW.md)：整篇論文的工作線、可平行工作及整合 gates。
-7. [modules/README_zh-TW.md](modules/README_zh-TW.md)：模組 registry 與目前路徑歸屬。
-8. [docs/roadmaps/PQ_RBBC_CURRENT_HANDOFF_zh-TW.md](docs/roadmaps/PQ_RBBC_CURRENT_HANDOFF_zh-TW.md)：目前 RBBC tree 工作的操作交接文件。
+1. [START_HERE_zh-TW.md](START_HERE_zh-TW.md)：人類入口與七個機制。
+2. [modules/README_zh-TW.md](modules/README_zh-TW.md)：每個機制的程式、測試與邊界。
+3. [RESEARCH_STATUS_zh-TW.md](RESEARCH_STATUS_zh-TW.md)：全專案 canonical claim status。
+4. [ARCHITECTURE_zh-TW.md](ARCHITECTURE_zh-TW.md) 與 [ROADMAP_zh-TW.md](ROADMAP_zh-TW.md)：正式語意與下一步。
+5. [research-notes.md](research-notes.md)、[methodology.md](methodology.md)、[experiments.md](experiments.md)、[thesis-outline.md](thesis-outline.md)：跨任務研究工作台。
 
 ## 架構概覽
 
@@ -41,9 +42,10 @@ flowchart TD
 | `ARCHITECTURE.md`／`ARCHITECTURE_zh-TW.md` | 完整系統的 canonical definition |
 | `ROADMAP.md`／`ROADMAP_zh-TW.md` | 專案級實作與證明 roadmap |
 | `RESEARCH_STATUS.md`／`RESEARCH_STATUS_zh-TW.md` | 保守的全專案 claim boundary |
+| `START_HERE_zh-TW.md` | 短入口；按 protocol 機制導覽 |
 | `modules/` | 模組 registry 與 migration-safe 入口 |
-| `src/` | RBBC Python reference／circuit implementation，以及 satellite access test-only primitives |
-| `tests/` | RBBC regression／mutation／replay tests 與 system reference tests |
+| `src/` | 系統 package、PQ-RBBC evidence-coupled modules 與隔離 prototypes |
+| `tests/` | 依 system／access／issuance／opening／threshold 分類的 regression evidence |
 | `manifests/` | 凍結的 RBBC machine-readable evidence 與 claims |
 | `artifacts/metadata/` | 外部 RBBC artifacts 的 portable metadata |
 | `docs/proof/` | RBBC 形式化證明原始檔與 release PDF |
@@ -55,9 +57,16 @@ flowchart TD
 
 架構遷移期間刻意保留目前路徑，以免干擾正在進行的 RBBC tree producer 工作或改變 sealed artifact identities。
 
-## 目前實作 checkpoint
+## 目前整合快照
 
-已整合的 RBBC v2.26 已 materialize 並獨立 replay 規劃中的 tree 0–10（共 11／18）。Tree 11–17、全部 72 個 relocations、完整 18-tree replay、cross-segment identity、parent join、fork-specific reductions、合格的 PQ proof backend、robust threshold opening、satellite AKE、production replay／revocation 及 handover 仍未完成；`production_closed = false`。
+- PQ-RBBC CAP 線已至 v2.43 reservation-binding；real owner-controlled reservation 已有，
+  但具名獨立 human review、launch manifest 與 production execution 仍未完成。
+- Issuance 線已至 bounded fresh-parent I1–I5 CandidateSet preflight，尚未產生正式
+  `pi_issue`。
+- Satellite access v0.2 已有完整 reference processors、單主機 SQLite lifecycle 與
+  reconciliation；真實 production PQ backend 與 distributed deployment仍未完成。
+- ML-DSA／FAEST holder-signature candidates與threshold backends仍是隔離 research
+  prototypes。整個 repository 的 `production_closed = false`。
 
 ## 執行目前 RBBC 測試
 

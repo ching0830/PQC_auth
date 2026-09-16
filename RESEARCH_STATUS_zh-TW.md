@@ -2,23 +2,33 @@
 
 # 研究狀態
 
-依 2026 年 9 月 10 日整合 checkpoint 更新，包含 system vertical slice、system
-initialization／issuer authorization／conditional opening control plane，以及 PQ-RBBC
-v2.27–v2.42。精確發布位置仍以 Git commit 與 branch 為準。
+依 2026 年 9 月 16 日 project-reorganization integration candidate 更新。此 tree 集中
+PQ-RBBC v2.43、bounded issuance chain、system governance S0–S2、satellite access v0.2、
+D1–D4b access prototypes、opening integration及threshold research checkpoints；不表示這些
+研究線已成為同一個 production protocol。精確 identity 由 Git commits、manifests 與 tests
+約束。
 
 ## 整篇論文狀態
 
 | 項目 | Specification | Implementation | Evidence／proof |
 | --- | --- | --- | --- |
-| 整體架構 | 初版頂層定義與 system profile v0.1 contracts | canonical configuration／public initialization bundle codecs | deterministic vectors與negative tests；production key ceremony未完成 |
-| FAC issuer authorization | v0.1 epoch／policy／quota-bound grant contract | bounded control-plane與單程序atomic quota reference store | canonical vectors與quota／replay tests；FAC PQ signature及distributed store未完成 |
-| PQ-RBBC issuance 與 ticket | formal core 已定義 | research relation、大量 circuit implementation與v2.42 bounded recovery／provenance successor | bounded corrective AI technical re-review通過；formal human review與production closure仍為false |
-| Opening authorization | v0.1 canonical request、authorization statement、replay與share gate | bounded fail-closed `OpenShareService` control flow | deterministic codecs與gate tests；production signature／share proof未完成 |
-| Threshold trace opening | abstract construction與v0.1 share／combiner boundary已定義 | test-only backend下的share consistency、threshold combine及serial check | robust threshold decoder、OA DKG、real keys與production transcript未完成 |
-| Satellite access 與 PQ AKE | v0.1 access object layouts、transcript／attempt identities與test-only suite profile；PQ AKE尚未選定 | ServingContext與AccessInit／Challenge／Finish／Accept codecs已實作；無holder authenticator或AKE | object／binding tests；未宣稱authentication security或production closure |
-| Anti-replay 與 revocation | v0.1 one-time state、原子消耗、retry／crash semantics與framing已有draft；G1尚未freeze | canonical frame／opaque parser、use identity與test-only process-local linearizable replay model已實作 | replay／framing tests；尚非durable／distributed store，未宣稱production closure |
-| Handover | 只有 requirements | 未開始 | 未宣稱 |
-| End-to-end evaluation | 已辨識 metrics | 未開始 | 無 system benchmark |
+| 整體架構 | 頂層角色、階段、claim vocabulary與module ownership已定義 | canonical configuration／public initialization codecs；新增可測模組registry | 導覽與registry不取代security proof；production key ceremony未完成 |
+| FAC issuer authorization | v0.1 epoch／policy／quota-bound grant；S2 ML-DSA staging boundary | bounded control plane、單主機多程序SQLite quota、non-threshold ML-DSA staging adapter | schema／auth／quota／restart tests；FAC threshold signature、DKG及跨主機store未完成 |
+| PQ-RBBC CAP／ticket core | legacy relation evidence與unified-tree candidate contracts已定義 | v2.43 reservation-binding validator；owner-controlled reservation已建立 | corrective AI review通過；具名獨立human review、launch manifest、scale execution與production closure未完成 |
+| Offline issuance `R_issue` | I1–I5、production inputs、split／multi-tree／global phases與parent CandidateSet contracts | bounded two-tree／four-leaf execution chain至fresh-parent read-only preflight | portable bounded evidence；parent constraint consumer、qualified PQ-SE backend與正式`pi_issue`未完成 |
+| Opening authorization | v0.1 request、authorization statement、replay與share gate | bounded fail-closed `OpenShareService`及stable `VerifyTicket` integration | deterministic／negative integration tests；production signature／share proof未完成 |
+| Threshold trace opening | abstract share／combiner boundary；GF candidate ABI為研究線 | test-only combine及`pq_threshold_candidates` bounded evaluators | 非threshold reference／research tests不構成OA production backend、DKG或privacy proof |
+| Satellite access 與 PQ AKE | V1四訊息保留；V2 exact `R_access` NIZK profile已定義；V3 holder-signature仍是候選 | V2 codecs、pure-check、grant、activation、UE accept與application pipeline；D4 ML-DSA／D4b FAEST隔離prototypes | 真實wire／timing prototype evidence；shared production ticket fork、PQ suite與composition proof未完成 |
+| Anti-replay／revocation | V2 pending-confirm／active、exact retry、early-burn、wallet及reconciliation semantics | 單主機SQLite replay／wallet／delivery／inbox／revocation／reconciliation／audit／resume／lease | restart、race、mutation tests；跨主機linearizability、實體斷電與production deployment未完成 |
+| Handover | requirements與ticket不重用邊界 | 未完成正式protocol | 未宣稱 |
+| End-to-end evaluation | metrics與50,000-byte research gate已定義 | exact `R_access`、ML-DSA與FAEST prototype benchmarks | ticket仍含provisional fixture；不是production system benchmark |
+
+## 本次整合來源
+
+整合來源 identities 固定在
+[`manifests/project_module_registry_v0_1.json`](manifests/project_module_registry_v0_1.json)。
+這只說明哪些完成的 branch checkpoint 被集中；沒有把不同 profile 的 evidence 混成共同
+proof，也沒有改寫任何 historical artifact identity。
 
 ## RBBC checkpoint
 
@@ -139,23 +149,44 @@ v2.27–v2.42。精確發布位置仍以 Git commit 與 branch 為準。
   均無新blocking findings；targeted 128 passed，完整suite 676 passed、12既有optional
   skips、0 failures/errors。這只封閉bounded recovery／provenance technical-review範圍；
   未做實體斷電或production-scale qualification，也不是具名human review。
+- v2.43已建立綁定v2.42 effective implementation、source identities、exact command、
+  trusted roots、batch、window與resource的closed-world reservation contract；三項P2
+  technical-review findings經corrective後關閉，passed status已整合，owner-controlled
+  approval／reservation已建立。它只允許提交具名獨立human review；目前沒有human review、
+  launch manifest、production execution authorization或production observation。
+
+## Issuance checkpoint
+
+獨立 issuance chain 已從 formal I1–I5 relation 推進至 bounded CAP child、split／lowering、
+fragment producers、multi-tree adapter、private spool、tree-post、restart scheduler、
+Global-A／Global-B／Global-tail completion與fresh-parent CandidateSet preflight。Latest
+`b877189` 仍只做同一captured-byte set上的identity／parse／binding與direct host checks；
+parent constraints及native join rows為0，3,100,000 rows只是不具 observation 身分的planning
+upper bound。Current handoff 見
+[`docs/roadmaps/PQ_RBBC_ISSUANCE_CURRENT_HANDOFF_zh-TW.md`](docs/roadmaps/PQ_RBBC_ISSUANCE_CURRENT_HANDOFF_zh-TW.md)。
 
 仍未完成：
 
 - 完整CAP Prove／Verify、production `c_x` serialization、PoW／192-bit profile
   disposition、concrete Anemoi ROM／QROM justification及CAP獨立review；
 - unified-tree production-scale checkpoint payload materialization／relation
-  qualification、production streaming materialization、新的v2.42 operator resource reservation、external
-  human design/cryptographic review、production runner scale qualification、可信producer
+  qualification、production streaming materialization、v2.43 named external human
+  design／cryptographic review、production runner scale qualification、可信producer
   handoff／writer quiescence、外部identity freeze與launch manifest，
   以及全新profile pre-freeze與兩次完整replay；
 - fork-specific QROM、blindness與one-more proof及其獨立review；
 - 合格 PQ zero-knowledge／simulation-extractable backend；
 - real trace-encryption key 與 robust threshold transcript；
 - 新的 size、time、memory benchmarks；
+- 新access版本的shared ticket／`VerifyTicket` fork、`R_key`與`R_issue,new` circuit、
+  concrete production PQ AKE／holder-authentication backend、安全composition及真實ticket
+  satellite-path benchmark；
+- distributed replay／revocation store、跨主機linearizability、實體斷電qualification與
+  handover；
 - production closure。
 
-RBBC 操作上的 authoritative handoff 仍為 [docs/roadmaps/PQ_RBBC_CURRENT_HANDOFF_zh-TW.md](docs/roadmaps/PQ_RBBC_CURRENT_HANDOFF_zh-TW.md)。
+CAP／unified-tree與issuance各自使用兩份current handoff；入口見
+[`docs/README_zh-TW.md`](docs/README_zh-TW.md)。
 
 ## 狀態詞彙
 

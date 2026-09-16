@@ -1,0 +1,298 @@
+{
+  "checkpoint": {
+    "access_protocol_version": 2,
+    "aad_domain": "PQ-SAT/FIRST-APPLICATION-AAD/v2",
+    "claim_boundary": {
+      "activation_and_delivery_same_transaction": false,
+      "activation_in_authenticated_header_implemented": true,
+      "atomic_grant_query_registration_available": true,
+      "automatic_reservation_reconciliation_scheduler": false,
+      "authenticated_revocation_ingestion_boundary_available": true,
+      "application_apply_once_contract_implemented": true,
+      "bounded_expired_reservation_reconciliation_available": true,
+      "canonical_first_application_record_implemented": true,
+      "durable_ue_exact_record_outbox_reference_implemented": true,
+      "external_side_effect_exactly_once": false,
+      "fgs_delivery_store_distributed": false,
+      "fgs_delivery_store_durable_or_distributed": true,
+      "fgs_delivery_store_single_host_durable_reference_implemented": true,
+      "fgs_one_time_delivery_capability_implemented": true,
+      "fgs_pending_inbox_restart_recovery_implemented": true,
+      "fgs_protected_plaintext_inbox_reference_implemented": true,
+      "general_scope_revocation_fanout_available": true,
+      "outbox_restart_and_race_tested": true,
+      "physical_power_loss_tested": false,
+      "production_aead_instantiated": false,
+      "production_ready": false,
+      "proof_closed": false,
+      "production_authenticated_revocation_writer_instantiated": false,
+      "separate_inbox_mode_atomic_with_activation": false,
+      "sequence_zero_enforced": true,
+      "single_host_atomic_activation_and_inbox_implemented": true,
+      "single_host_authoritative_revocation_fence_available": true
+    },
+    "fgs_order": [
+      "canonical_record_and_embedded_activation",
+      "suite_bound_application_authentication",
+      "client_finished_and_application_authentication",
+      "atomic_session_activation_or_composed_activation_inbox_commit",
+      "durable_single_host_protected_inbox",
+      "idempotent_application_dispatch"
+    ],
+    "format": "PQ-SAT-FIRST-APPLICATION-CHECKPOINT-v0.2",
+    "frame_type": "0x0104",
+    "nonce_context_domain": "PQ-SAT/FIRST-APPLICATION-NONCE/v2",
+    "record_digest_domain": "PQ-SAT/FIRST-APPLICATION-RECORD/v2",
+    "sequence_number": 0,
+    "ue_order": [
+      "accepted_session_validation",
+      "plaintext_identity_reservation",
+      "suite_bound_protection",
+      "exact_record_finalize",
+      "read_back_validation",
+      "release_wire_bytes_after_commit"
+    ]
+  },
+  "dispatch": {
+    "claims": {
+      "application_apply_once_contract_defined": true,
+      "apply_ack_loss_recovery_supported": true,
+      "completion_ack_loss_recovery_supported": true,
+      "distributed": false,
+      "external_application_exactly_once_proven": false,
+      "production_application_adapter_instantiated": false,
+      "production_ready": false,
+      "reference_dispatch_implemented": true,
+      "restart_pending_recovery_implemented": true
+    },
+    "format": "PQ-SAT-FGS-APPLICATION-DISPATCH-v0.2",
+    "idempotency_key": "first_application_record_digest",
+    "ordering": [
+      "load_and_authenticate_pending_inbox_item",
+      "application_apply_once_by_record_digest",
+      "validate_stable_receipt",
+      "mark_inbox_completed"
+    ],
+    "states": [
+      "PENDING",
+      "COMPLETED"
+    ]
+  },
+  "sqlite_authoritative": {
+    "application_id": "0x50515356",
+    "claims": {
+      "activation_and_inbox_same_transaction": true,
+      "authenticated_production_writer_instantiated": false,
+      "bounded_expired_reservation_scan": true,
+      "distributed": false,
+      "distributed_revocation_store": false,
+      "expired_reservation_reconciliation_available": true,
+      "external_application_same_transaction": false,
+      "general_scope_revocation_fanout_implemented": false,
+      "monotonic_generation_and_flags": true,
+      "physical_power_loss_tested": false,
+      "persistent_monotonic_worker_fencing": true,
+      "production_plaintext_protection_instantiated": false,
+      "production_ready": false,
+      "production_record_protection_instantiated": false,
+      "query_and_exact_snapshot_commit_bound": true,
+      "revocation_fence_and_activation_same_transaction": true,
+      "revocation_publish_and_activation_linearizable": true,
+      "schema_migration_from_v1_implemented": false,
+      "single_database_connection": true,
+      "single_host_authoritative_revocation_fence": true,
+      "sqlite_attach_used": false
+    },
+    "format": "PQ-SAT-FGS-AUTHORITATIVE-ACTIVATION-INBOX-SQLITE-v0.2",
+    "journal_mode": "WAL",
+    "linearization_order": [
+      "read_exact_local_snapshot",
+      "begin_immediate_on_one_database",
+      "revalidate_exact_authoritative_fence",
+      "transition_grant_to_consumed_active",
+      "insert_protected_pending_inbox_item",
+      "commit_once"
+    ],
+    "schema_version": 2,
+    "synchronous": "FULL",
+    "tables": [
+      "fgs_replay_records",
+      "first_application_inbox",
+      "activation_revocation_fences"
+    ]
+  },
+  "sqlite_delivery": {
+    "application_id": "0x50515344",
+    "claim_checksum_domain": "PQ-SAT/FGS-FIRST-DELIVERY-CLAIM/v0.2",
+    "claims": {
+      "activation_and_claim_same_transaction": false,
+      "claim_ack_loss_can_drop_work": true,
+      "claim_committed_before_new_capability_release": true,
+      "competing_record_digest_rejected": true,
+      "distributed": false,
+      "exact_retry_returns_existing_without_plaintext": true,
+      "external_side_effect_exactly_once": false,
+      "hostile_filesystem_protection": false,
+      "physical_power_loss_tested": false,
+      "process_exit_recovery_tested": true,
+      "production_ready": false,
+      "rollback_resistance": false,
+      "single_host_cross_process_durable_reference": true
+    },
+    "format": "PQ-SAT-FGS-FIRST-DELIVERY-SQLITE-v0.2",
+    "journal_mode": "WAL",
+    "schema_version": 1,
+    "synchronous": "FULL"
+  },
+  "sqlite_inbox": {
+    "application_id": "0x50515349",
+    "claims": {
+      "application_apply_once_required": true,
+      "competing_record_or_receipt_rejected": true,
+      "distributed": false,
+      "exact_enqueue_and_completion_idempotent": true,
+      "external_application_exactly_once_proven": false,
+      "hostile_filesystem_protection": false,
+      "pending_scan_for_restart_recovery": true,
+      "physical_power_loss_tested": false,
+      "plaintext_protection_backend_boundary": true,
+      "production_plaintext_protection_instantiated": false,
+      "production_ready": false,
+      "rollback_resistance": false,
+      "single_host_cross_process_durable_reference": true
+    },
+    "format": "PQ-SAT-FGS-APPLICATION-INBOX-SQLITE-v0.2",
+    "journal_mode": "WAL",
+    "record_aad_domain": "PQ-SAT/FGS-APPLICATION-INBOX-AAD/v0.2",
+    "record_format": "PQ-SAT-FGS-APPLICATION-INBOX-RECORD-v0.2",
+    "schema_version": 1,
+    "states": [
+      "PENDING",
+      "COMPLETED"
+    ],
+    "synchronous": "FULL"
+  },
+  "sqlite_outbox": {
+    "application_id": "0x5051534f",
+    "claims": {
+      "competing_sequence_zero_plaintext_rejected": true,
+      "distributed": false,
+      "exact_record_committed_before_release": true,
+      "physical_power_loss_tested": false,
+      "production_ready": false,
+      "record_contains_secrets_at_rest": false,
+      "rollback_resistance": false,
+      "single_host_reference_durability": true
+    },
+    "format": "PQ-SAT-FIRST-RECORD-OUTBOX-SQLITE-v0.2",
+    "journal_mode": "WAL",
+    "schema_version": 1,
+    "states": [
+      "RESERVED",
+      "READY"
+    ],
+    "synchronous": "FULL"
+  },
+  "sqlite_scoped_revocation": {
+    "application_id": "0x50515357",
+    "authority_key_role": "FEDERATION_CONFIGURATION",
+    "authority_key_selection": "provisional_existing_system_bundle_role",
+    "claims": {
+      "activation_inbox_and_fence_same_transaction": true,
+      "append_only_command_replay_and_generation_control": true,
+      "authority_key_rotation_implemented": false,
+      "bounded_expired_reservation_scan": true,
+      "canonical_authenticated_command_implemented": true,
+      "command_ingest_and_activation_linearizable": true,
+      "command_ingest_and_fanout_same_transaction": true,
+      "command_ingest_and_grant_commit_linearizable": true,
+      "configuration_scope_implemented": true,
+      "distributed": false,
+      "distributed_replication_implemented": false,
+      "direct_grant_commit_without_query_disabled": true,
+      "existing_grant_query_validation_before_retry_release": true,
+      "expired_reservation_reconciliation_available": true,
+      "explicit_configuration_trust_anchor_required": true,
+      "external_application_same_transaction": false,
+      "fgs_authentication_key_scope_implemented": true,
+      "future_query_rule_application_implemented": true,
+      "grant_and_query_registration_same_transaction": true,
+      "matching_preexisting_revocation_rejects_grant_commit": true,
+      "physical_power_loss_tested": false,
+      "persistent_monotonic_worker_fencing": true,
+      "production_plaintext_protection_instantiated": false,
+      "production_pq_authentication_instantiated": false,
+      "production_ready": false,
+      "production_record_protection_instantiated": false,
+      "registered_current_query_fanout_implemented": true,
+      "reservation_query_dependency_guard": true,
+      "scope_fanout_scale_benchmarked": false,
+      "schema_migration_from_v1_implemented": false,
+      "session_scope_implemented": true,
+      "source_access_revocation_query_bound_at_commit": true,
+      "system_bundle_epoch_policy_and_key_bound": true,
+      "ticket_use_scope_implemented": true,
+      "unauthenticated_direct_publication_disabled": true,
+      "unrevocation_implemented": false
+    },
+    "format": "PQ-SAT-FGS-SCOPED-REVOCATION-SQLITE-v0.2",
+    "journal_mode": "WAL",
+    "schema_version": 2,
+    "scopes": [
+      "ACCESS_CONFIGURATION",
+      "FGS_AUTHENTICATION_KEY",
+      "TICKET_USE",
+      "SESSION"
+    ],
+    "synchronous": "FULL",
+    "tables": [
+      "fgs_replay_records",
+      "first_application_inbox",
+      "activation_revocation_fences",
+      "activation_revocation_queries",
+      "authenticated_revocation_commands"
+    ]
+  },
+  "sqlite_unified": {
+    "application_id": "0x50515355",
+    "claims": {
+      "application_apply_once_required": true,
+      "atomic_revocation_and_activation": false,
+      "bounded_expired_reservation_scan": true,
+      "competing_first_record_rejected": true,
+      "direct_activation_disabled": true,
+      "distributed": false,
+      "exact_retry_idempotent": true,
+      "external_application_exactly_once_proven": false,
+      "expired_reservation_reconciliation_available": true,
+      "hostile_filesystem_protection": false,
+      "pending_scan_for_restart_recovery": true,
+      "persistent_monotonic_worker_fencing": true,
+      "physical_power_loss_tested": false,
+      "production_plaintext_protection_instantiated": false,
+      "production_ready": false,
+      "production_record_protection_instantiated": false,
+      "rollback_resistance": false,
+      "schema_migration_from_v1_implemented": false,
+      "single_database_connection": true,
+      "single_host_atomic_activation_and_inbox": true,
+      "sqlite_attach_used": false
+    },
+    "format": "PQ-SAT-FGS-UNIFIED-ACTIVATION-INBOX-SQLITE-v0.2",
+    "journal_mode": "WAL",
+    "schema_version": 2,
+    "synchronous": "FULL",
+    "tables": [
+      "fgs_replay_records",
+      "first_application_inbox"
+    ],
+    "transaction_order": [
+      "begin_immediate_on_one_database",
+      "validate_exact_pending_grant",
+      "transition_grant_to_consumed_active",
+      "insert_protected_pending_inbox_item",
+      "validate_composed_result",
+      "commit_once"
+    ]
+  }
+}

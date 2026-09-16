@@ -1,17 +1,17 @@
-[English](README.md)
+# Protocol 模組 Registry
 
-# 模組 Registry
+這個目錄是人類可讀的模組入口，不複製程式或歷史 evidence。正式狀態仍由
+[`../RESEARCH_STATUS_zh-TW.md`](../RESEARCH_STATUS_zh-TW.md) 與 machine evidence 約束。
 
-此目錄記錄論文級 module ownership。遷移第一階段會保留既有 RBBC source 與 evidence 路徑，以免干擾 active work 或 artifact identities。
-
-| ID | 模組 | 目前歸屬路徑 | 狀態 |
+| 模組 | Architecture | 主要程式 | 短入口 |
 | --- | --- | --- | --- |
-| M1 | Federation configuration 與 issuer authorization | 僅架構 | 未完成 |
-| M2 | PQ-RBBC relation-bound blind ticket | `src/pq_rbbc_*.py`、`tests/test_pq_rbbc_*.py`、`manifests/`、`docs/proof/` | 進行中；planned trees 0–10 evidence-sealed，production closure false |
-| M3 | Opening authorization | core proof abstract interface | 未完成 |
-| M4 | Signature-gated threshold opening | core proof 與 reference relation boundaries | 部分定義 |
-| M5 | Satellite authentication 與 PQ AKE | `docs/specs/ONE_TIME_TICKET_STATE_v0_1_zh-TW.md`、`src/pq_sat_auth/access.py`、`tests/system/` | Defined；test-only codecs／transcript identities 已實作／測試，holder auth 與 AKE 未實作 |
-| M6 | Anti-replay、revocation 與 handover | `docs/specs/ONE_TIME_TICKET_STATE_v0_1_zh-TW.md`、`src/pq_sat_auth/`、`tests/system/` | Defined；test-only reference 部分實作／測試，模組未封閉 |
-| M7 | Evaluation 與 evidence | 目前 RBBC artifacts 加未來 system benchmarks | 部分完成 |
+| System | M1 | `src/pq_rbbc/contracts/`、`governance/` | [`system/`](system/README_zh-TW.md) |
+| Issuance | M2 | `src/pq_rbbc_issuance_*`、PQ-RBBC core | [`issuance/`](issuance/README_zh-TW.md) |
+| Opening | M3–M4 | `src/pq_rbbc/opening/` | [`opening/`](opening/README_zh-TW.md) |
+| Access | M5 | `src/pq_sat_auth/v2/`、prototypes | [`access/`](access/README_zh-TW.md) |
+| Lifecycle | M6 | replay／wallet／revocation／reconciliation | [`lifecycle/`](lifecycle/README_zh-TW.md) |
+| Threshold research | supporting | `src/pq_threshold_candidates/` | [`threshold/`](threshold/README_zh-TW.md) |
+| Evaluation | M7 | `benchmarks/`、`experiments.md` | [`evaluation/`](evaluation/README_zh-TW.md) |
 
-新模組在被宣稱為 implemented 前，應具有 module README、interface document、implementation directory、tests 與保守的 machine-readable claim boundary。
+機器可檢查版本：
+[`../manifests/project_module_registry_v0_1.json`](../manifests/project_module_registry_v0_1.json)。

@@ -1,0 +1,130 @@
+{
+  "schema": "pqc_auth.gf_cap_provider_handoff_validation.v0_1",
+  "date": "2026-09-14",
+  "scope": "T-owned provider proposal, exact-source dependency check and existing threshold regression; no CAP integration",
+  "source_index_identity": {
+    "filename": "source_index_v0_1.json",
+    "bytes": 20886,
+    "sha256": "90dd469dfbc03fa7b5e9457e7cc33827420dda5452696c6a42e4ef6ab4103ebf"
+  },
+  "checkpoint_check": {
+    "command": "PYTHONDONTWRITEBYTECODE=1 python docs/literature/threshold_backends/gf/cap_provider_handoff_v0_1/check_handoff_v0_1.py",
+    "exit_code": 0,
+    "result": {
+      "CAP_executions": 0,
+      "b_commit": "c1c2b5d2690643fc136e4c39a867e4376cdb9a97",
+      "b_source_identities_checked": 8,
+      "bounded_grammar_candidates_rejected_by_GF_parser": 2,
+      "canonical_source_identities_checked": 19,
+      "checkpoint_consistency_checks_passed": true,
+      "full_I3_verified": false,
+      "grammar_candidates_are_CAP_execution_outputs": false,
+      "local_source_identities_checked": 14,
+      "native_rows_replayed": 0,
+      "new_paper_verified_claims": 0,
+      "owner_acceptance": false,
+      "production_qualified": false,
+      "provider_acceptance_cases_executed": 0,
+      "provider_acceptance_cases_not_run": 20,
+      "provider_available": false,
+      "public_refusal_bodies_statically_checked": 2,
+      "schema": "pqc_auth.gf_cap_provider_handoff_check.v0_1",
+      "status": "dependency_open"
+    },
+    "output_identity": {
+      "filename": "pqc-gf-cap-handoff-check.json",
+      "bytes": 778,
+      "sha256": "fc8000cc856d72a1ce304980278393150a965db28b29ee82bcd2700164785f3e"
+    }
+  },
+  "optimized_checkpoint_check": {
+    "command": "PYTHONOPTIMIZE=1 PYTHONDONTWRITEBYTECODE=1 python docs/literature/threshold_backends/gf/cap_provider_handoff_v0_1/check_handoff_v0_1.py",
+    "exit_code": 0,
+    "same_output_as_normal": true,
+    "checks_do_not_depend_on_assert": true,
+    "output_identity": {
+      "filename": "pqc-gf-cap-handoff-check-optimized.json",
+      "bytes": 778,
+      "sha256": "fc8000cc856d72a1ce304980278393150a965db28b29ee82bcd2700164785f3e"
+    }
+  },
+  "targeted_regression": {
+    "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python -m unittest discover -s tests/threshold_candidates -v",
+    "total": 142,
+    "passed": 142,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "elapsed_seconds": 50.455,
+    "log_identity": {
+      "filename": "pqc-gf-cap-handoff-targeted.log",
+      "bytes": 22550,
+      "sha256": "49818f23a9e581ebbcc3c14151059f2a20fb33d41dd5098250937d90e55c101f"
+    }
+  },
+  "historical_full_regression": {
+    "executed_this_checkpoint": false,
+    "reason": "Only literature proposal/checker files and GF README changed; src/tests exact diff against 2289fb2 is empty.",
+    "recorded_for_target_commit": "2289fb2e5eee25ed12574f70b7f1831b3fa682a0",
+    "historical_log_identity_rechecked": true,
+    "result": {
+      "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python -m unittest discover -s tests -v",
+      "total": 830,
+      "passed": 818,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 12,
+      "elapsed_seconds": 791.507,
+      "log_identity": {
+        "filename": "pqc-gf-i3-hash-full.log",
+        "bytes": 142624,
+        "sha256": "3d9340ba45f37bf3493765a102e9ab87fb463267d438c1bc778468ee6c195580"
+      },
+      "skip_reasons": {
+        "trusted external v2.19 recovery artifacts are not installed": 1,
+        "external v2.20 global-tail archive is not installed": 1,
+        "external v2.15 relocation assignment is not installed": 1,
+        "external v2.13 tree-0 assignment is not installed": 1,
+        "external v2.13 tree-0 execution cache is not installed": 1,
+        "external v2.14 replay artifacts are not installed": 1,
+        "external v2.14 tree-2 assignment is not installed": 1,
+        "external v2.22 tree-1 artifacts are not installed": 1,
+        "external v2.21 tree-2 artifacts are not installed": 1,
+        "external v2.23 tree-3 artifacts are not installed": 1,
+        "external v2.24 tree-4 artifacts are not installed": 1,
+        "external v2.25 batch artifacts are not installed": 1
+      }
+    }
+  },
+  "attachment_recheck": {
+    "files": 5,
+    "matched": 5,
+    "source": "source_index_v0_1.json:attachment_identity_rechecks",
+    "embedded_instructions_are_authorization": false,
+    "new_paper_verified_claims": 0
+  },
+  "provider_acceptance": {
+    "defined_cases": 20,
+    "executed": 0,
+    "passed": 0,
+    "failed": 0,
+    "not_run": 20,
+    "counted_as_unittest_skips": false
+  },
+  "claims": {
+    "Defined": "T proposal and unexecuted acceptance requirements",
+    "Implemented": "read-only exact-source dependency checker only",
+    "Tested": "checkpoint consistency plus existing threshold regression",
+    "Evidence_sealed": "source identities and compact local-check summary only",
+    "CAP_provider_integrated": false,
+    "derived_mask_equality_implemented": false,
+    "full_I3_verified": false,
+    "native_relation_replayed": false,
+    "B_owner_acceptance": false,
+    "system_owner_acceptance": false,
+    "Proof_closed": false,
+    "Production_closed": false
+  },
+  "integration_handoff": "Design reasons and experiment results are in HANDOFF_zh-TW.md; canonical root documents remain integration-owned.",
+  "artifacts": "No PDF, raw log, private vector, assignment, cache, checkpoint, downloaded source or B implementation copy added."
+}

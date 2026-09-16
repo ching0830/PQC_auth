@@ -85,8 +85,8 @@ zero-knowledge verifier 只能取得 public statement 與 proof bytes。
 | System initialization | FAC、issuer、OA keys、public configuration／parameters | `src/pq_rbbc/contracts/system.py`、`governance/system_init.py`；production primitive adapters仍缺 | system-initialization artifact、project status |
 | Issuer authorization | epoch／policy／quota-bound authorization | `src/pq_rbbc/governance/issuer_authorization.py`；production FAC signature／distributed quota仍缺 | issuer-authorization artifact、project status |
 | Enrollment／offline issuance | authenticated `rid` → blind response → ticket `T` | `src/pq_rbbc_*.py`、`tests/test_pq_rbbc_*.py`、manifests、proof | RBBC current handoff |
-| Satellite access | ticket＋freshness／key shares → session | `src/pq_sat_auth/access.py`、`framing.py` | one-time ticket spec、system tests |
-| One-time consumption | `UNSEEN → RESERVED → CONSUMED` | `src/pq_sat_auth/identities.py`、`replay.py` | one-time ticket spec、system tests |
+| Satellite access | V1 challenge flow；V2 ticket＋`pi_access`＋UE ephemeral KEM key → authenticated grant | V1 `access.py`／`framing.py`；V2 `access_v2.py`／`framing_v2.py`（待實作） | satellite-access／one-time ticket specs、system tests |
+| One-time consumption | V1 `UNSEEN → RESERVED → CONSUMED`；V2另分pending-confirm／active | `src/pq_sat_auth/identities.py`、V1 `replay.py`、V2 state model（待實作） | versioned one-time ticket specs、system tests |
 | Handover | existing session → new serving context | 尚待 specification／implementation | `ROADMAP_zh-TW.md` T6 |
 | Conditional opening | authorized case＋ticket → threshold shares → identity | `src/pq_rbbc/opening/` bounded gate／combiner；production threshold primitive仍缺 | conditional-opening artifact、project status |
 | Evaluation | communication、time、memory、storage、latency | instrumentation 與 experiment records | `experiments.md` |
@@ -201,12 +201,20 @@ T     <- (M, sigma)
 
 ## 6. Satellite access：逐行對應
 
-Protocol 概念：
+### 6.1 V1 已實作的四訊息 reference
+
+實際 V1 wire flow：
 
 ```text
-UE  -> FGS: ticket, UE freshness, serving context, UE key share, holder authenticator
-FGS -> UE : FGS freshness, FGS key share, key confirmation, access result
+UE  -> FGS: AccessInitV1(ticket, UE nonce, UE key share)
+FGS -> UE : AccessChallengeV1(FGS nonce, FGS key share, cookie)
+UE  -> FGS: AccessFinishV1(holder authenticator, UE key confirmation)
+FGS -> UE : AccessAcceptV1(FGS key confirmation, access result)
 ```
+
+這是四個wire messages／約兩趟UE–FGS往返。過去版本在本節畫的兩個方向只是把同一
+方向的payload概念聚合，卻同時列出四個objects，容易被誤讀成兩訊息實作；上圖才是
+V1 objects的一對一對應。
 
 工程對應：
 
@@ -227,6 +235,122 @@ FGS -> UE : FGS freshness, FGS key share, key confirmation, access result
 目前 reference access code 使用 test-only suite boundary。Codec／state tests 成功只
 表示資料與狀態語意可執行；不表示 holder authenticator、PQ AKE 或 distributed
 durable replay store 已 production-closed。
+
+### 6.2 V2 一趟往返 candidate
+
+V2 protocol concept：
+
+```text
+UE  -> FGS: AccessRequestV2(
+               ticket, time/epoch freshness, target FGS,
+               serving/service/channel context,
+               UE ephemeral KEM public key, pi_access)
+
+FGS -> UE : AccessAcceptV2(
+               KEM ciphertext to UE, FGS authentication,
+               server key confirmation, session/grant result)
+
+UE  -> FGS: first protected application packet + client Finished
+           # session activation；不是另一輪access authorization
+```
+
+`pi_access`是新relation：證明UE知道ticket中`h=H_hold(k_hold)`對應的holder secret，
+並綁定第一則request core。它不是`pi_issue`，不攜帶registered identity、blind mask、
+CAP randomness或trace witness。
+
+V2的責任分工：
+
+| 元素 | 責任 | 不能推論 |
+| --- | --- | --- |
+| time／epoch／UE nonces | 限制stale request window、區分holder的新attempt | 不阻止完整M1 bitwise replay |
+| `pi_access` | holder possession與request authorization | 不提供atomic one-use或FGS identity authentication |
+| FGS KEM ciphertext | fresh per-session shared secret | MAC本身不證明發送者是authorized FGS |
+| FGS authentication | 把合法FGS identity／key綁入transcript | 不證明UE已收到M2 |
+| server Finished | UE取得FGS對final key的confirmation | 不提供FGS所需的client final-key confirmation |
+| authoritative store | 同一ticket跨FGS／V1／V2最多一個grant | 不能保證partition／jamming下availability |
+| first protected packet | client Finished與session activation | 若M2是final grant，不能倒轉先前ticket consumption |
+
+Exact V2 bytes與acceptance events見
+`docs/specs/SATELLITE_ACCESS_v0_2_zh-TW.md`；state／retry／early-burn見
+`docs/specs/ONE_TIME_TICKET_STATE_v0_2_zh-TW.md`。
+
+目前工程對應：
+
+- `src/pq_sat_auth/v2/framing.py`：`FrameV2`與strict frame／opaque parsing；
+- `src/pq_sat_auth/v2/access.py`：`AccessRequestV2`、`AccessAcceptV2`、
+  `SessionActivateV2`、core／full digests與flow binding；
+- `src/pq_sat_auth/v2/proof.py`：`x_access` codec、holder-binding derivation與direct
+  relation evaluator；
+- `src/pq_sat_auth/v2/backends.py`：NIZK／KEM／FGS authentication／key schedule的
+  abstract interfaces及production fail-closed guard；
+- `src/pq_sat_auth/v2/replay.py`：process-local `RESERVED ->
+  CONSUMED_PENDING_CONFIRM -> CONSUMED_ACTIVE／EXPIRED` reference model，以及expired
+  reservation evidence、internal fence與stale-worker rejection；
+- `src/pq_sat_auth/v2/storage/sqlite_replay.py`：相同FGS state contract的單機SQLite
+  durable reference，保存exact sealed M2／session state、protected recovery tombstone與
+  單調fencing generation，並提供bounded expired scan及跨程序serialization；
+- `src/pq_sat_auth/v2/reconciliation.py`：把clock單次取樣、minimum-stale policy、bounded
+  scan、exact evidence、atomic fence及read-back組成顯式一次性reconciliation run；
+- `src/pq_sat_auth/v2/reconciliation_audit.py`與
+  `src/pq_sat_auth/v2/storage/sqlite_reconciliation_audit.py`：在coordinator前append
+  immutable intent、完成回傳前append exact receipt；incomplete intent阻止相同
+  invocation自動重跑；
+- `src/pq_sat_auth/v2/reconciliation_resume.py`與
+  `src/pq_sat_auth/v2/storage/sqlite_reconciliation_resume.py`：使用獨立profile，在第一筆
+  replay mutation前保存exact clock／candidate plan，逐筆append contiguous progress，讓
+  incomplete invocation可沿用原plan續跑；
+- `src/pq_sat_auth/v2/reconciliation_lease.py`：在resumable profile外加入distinct-owner
+  single-host cross-process execution lease；generation takeover會fence舊owner，progress／
+  receipt在同一SQLite transaction中驗證current unexpired lease後才能append；
+- `src/pq_sat_auth/v2/reconciliation_context.py`：把raw `owner_id`隔離在低階reference
+  runner，production-gated入口只接受canonical executor credential；credential綁定
+  invocation、execution scope、clock domain與有效期，owner ID由已驗證authorization導出，
+  並在每次lease clock sample重查單調性與authorization validity；
+- `src/pq_sat_auth/v2/application.py`：第一個受保護UE→FGS record的canonical
+  bytes／AAD／sequence-zero identity、UE outbox coordinator與FGS一次性delivery
+  capability；
+- `src/pq_sat_auth/v2/storage/sqlite_first_record.py`：先固定plaintext identity、再保存
+  exact ciphertext bytes的單機SQLite outbox；
+- `src/pq_sat_auth/v2/storage/sqlite_delivery.py`：以session／record identity提供單機
+  cross-process、restart-durable的FGS at-most-once delivery claim；
+- `src/pq_sat_auth/v2/storage/sqlite_inbox.py`：原子保存claim identity與受保護plaintext
+  work item，並提供`PENDING -> COMPLETED`及restart pending scan；
+- `src/pq_sat_auth/v2/storage/sqlite_unified.py`：在單一SQLite database／transaction中
+  同時完成session activation與protected inbox `PENDING` insert；
+- `src/pq_sat_auth/v2/storage/sqlite_authoritative.py`：在同一單機transaction重讀exact
+  per-query revocation fence，再完成activation與inbox insert；
+- `src/pq_sat_auth/v2/storage/sqlite_scoped_revocation.py`：驗證綁定system initialization的
+  canonical revocation command，將configuration／FGS key／ticket／session scope事件fan out
+  至目前及之後登錄的activation queries；它也把grant commit、query registration及歷史
+  revocation replay放入同一transaction，並與activation共用單機write order；
+- `src/pq_sat_auth/v2/dispatch.py`：以`record_digest`作idempotency key的application
+  `apply_once`／stable receipt dispatch contract；
+- `tests/system/test_pq_sat_auth_*_v2.py`：canonical vectors、truncation、mutation、
+  binding、retry、race、activation與test-only production rejection。
+
+這使V2的bounded byte／relation／M1-M2／activation／first-record state boundary達
+Implemented／Tested。UE wallet／first-record outbox與FGS replay／delivery／protected inbox
+已有單機SQLite reference；scoped successor已把grant-query registration、authenticated
+command ingestion、四種scope fanout、exact per-query fence、activation與inbox放進同一
+database ordering，idempotent dispatch composition以test-only application ledger驗證。
+Expired reservation另可在canonical evidence與fence rotation後安全重新進入public
+`UNSEEN` view，舊worker不能跨generation commit；background scheduler與schema migration
+仍未完成。顯式coordinator可用bounded batch執行這條路徑，並在lost acknowledgement後
+以exact fence read-back恢復；invocation ID只作correlation，並非operator authorization。
+獨立SQLite audit journal可保存intent／receipt並讓exact completed retry不重跑coordinator；
+它與replay database不是同一transaction。另有隔離的resumable journal保存
+`intent -> plan -> progress* -> receipt`，可重建已保存prefix；若fence已commit但progress
+未commit，會以原plan observation重做該candidate並靠exact fence read-back恢復。這仍不提供
+兩個database間的atomic transaction。可選的lease-fenced runner會在每筆mutation前assert／
+renew single-host lease，並原子綁定journal write；它不等於跨主機consensus lease，也無法阻止
+已通過lease check的舊process在lease被takeover後仍發出一次idempotent replay call。
+Credentialed successor另要求clock／credential-verifier identities符合signed execution scope，
+且兩個backend明確通過readiness gate後才可進入lease runner；目前沒有具體operator credential
+scheme、可信clock實作、credential replay／revocation registry或獨立backend qualification，
+因此這是fail-closed composition boundary，不是production認證已完成。
+Concrete suite、真實proof／AKE、
+獨立production revocation key／PQ verifier、authority rotation、production record／plaintext
+protection、distributed FGS store及production external application `apply_once`仍未完成。
 
 ## 7. Conditional opening：逐行對應
 
