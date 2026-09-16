@@ -9,39 +9,48 @@
 | Track | 目標 | 相依項目 | 現在可進行？ |
 | --- | --- | --- | --- |
 | T0 — 架構與 claims | 固定角色、階段、介面、threat model 與 claim vocabulary | 無 | 進行中 |
-| T1 — PQ-RBBC core | legacy 18-tree relation／parent join 已有 executable evidence；完成 unified-tree 真實 launch artifacts、production qualification、fork proof、backend 與 benchmarks | v2.42 bounded recovery／provenance、可信 artifact root、外部 operator／reviewer | 可以；下一個 bounded gate 是新的 v2.42 reservation 與 human independent review |
-| T2 — Federation authorization | 定義 FAC threshold issuer／configuration authorization 與 evidence format | T0 | 可以 |
-| T3 — Opening governance | 定義 case authorization、OA gate、robust shares、combine 與 public audit evidence | T0；穩定 RBBC ticket digest | 可以 |
-| T4 — Satellite access 與 PQ AKE | V1四訊息reference保留；V2 codecs／`pi_access` direct relation／abstract backend contracts已建立，下一步接VerifyTicket boundary並選定concrete suite | T0；穩定 VerifyTicket interface；D-002 | 可以；先做完整FGS pure-check processor與PQ suite研究 |
-| T5 — Replay 與 lifecycle | V1 reference保留；V2 process-local pending-confirm／active state與race tests已建立，下一步做crash／wallet model及durable distributed store design | T0；T4 V2 interface | 可以；先做fault model與authoritative store contract |
+| T1 — PQ-RBBC core／issuance | CAP線至v2.43 reservation binding；issuance線至bounded fresh-parent CandidateSet preflight | human review；fresh-parent consumer；qualified PQ-SE | CAP human-review gate暫停；issuance可進exact review與下一個bounded consumer |
+| T2 — Federation authorization | S0/S1 persistent quota與S2 ML-DSA staging已有bounded implementation | production FAC threshold primitive／DKG／distributed quota | 可以；先凍結FAC threshold contract |
+| T3 — Opening governance | canonical gate／share／combine及stable `VerifyTicket` integration已測試 | production OA threshold backend／DKG／share proof | 可以；先完成backend selection與robust transcript |
+| T4 — Satellite access 與 PQ AKE | V2完整reference pipeline存在；exact NIZK、D4 ML-DSA與D4b FAEST為三條可比較線 | D5 `R_key`、new ticket／`R_issue`、production PQ suite | 可以；整理後先做D5，再決定新version |
+| T5 — Replay 與 lifecycle | V2單主機SQLite wallet／replay／revocation／reconciliation已測試 | T4新version adapter、跨主機linearizability、power-loss qualification | 可以；先保持state core與crypto profile解耦 |
 | T6 — Handover | 定義 serving-context transition 與 continuous authentication | T4；T5 | 可先做 specification |
 | T7 — Security proof composition | 將各模組 games 組合成 end-to-end theorems | 穩定 T1–T6 semantics | 稍後 |
-| T8 — Evaluation | communication、computation、storage、latency、throughput、jitter 與 baselines | executable modules | 可先做 instrumentation |
+| T8 — Evaluation | communication、computation、storage、latency、throughput、jitter 與 baselines | executable modules | access三線已有prototype數據；production ticket仍待完成 |
 | T9 — Paper integration | system model、proposed scheme、proofs、evaluation 與 limitations | 全部 tracks | 可逐步進行 |
 
 ## 近期平行計畫
 
 ### Lane A — 既有 RBBC 工作
 
-依 [docs/roadmaps/PQ_RBBC_CURRENT_HANDOFF_zh-TW.md](docs/roadmaps/PQ_RBBC_CURRENT_HANDOFF_zh-TW.md) 繼續。V2.42 bounded corrective technical re-review 已通過；下一步建立綁定 v2.42 effective implementation、source identities、exact command、batch、output 與資源窗口的新 operator reservation，再取得具名 external human independent review。兩者成立後才建立 launch manifest candidate 及執行唯讀 preflight；未取得另行授權前不得啟動 production。V2.41 reservation 只作為被拒流程的歷史，不能沿用。架構重整期間不得變更 legacy tree-producer paths 或 historical artifact identities。
+CAP線依 [docs/roadmaps/PQ_RBBC_CURRENT_HANDOFF_zh-TW.md](docs/roadmaps/PQ_RBBC_CURRENT_HANDOFF_zh-TW.md)
+繼續。V2.43已建立owner-controlled reservation，但使用者目前找不到合格且identifier不同的
+具名獨立human reviewer，因此停在review gate；不得建立launch manifest或啟動production。
 
-### Lane B — System specification
+Issuance線另依
+[docs/roadmaps/PQ_RBBC_ISSUANCE_CURRENT_HANDOFF_zh-TW.md](docs/roadmaps/PQ_RBBC_ISSUANCE_CURRENT_HANDOFF_zh-TW.md)
+繼續；先重審`b877189`，再實作bounded fresh-parent relation consumer。兩條線不得再共同
+覆寫同一份current handoff。
 
-1. 將已選定的 short-lived、strictly one-use ticket policy 固定為 exact state-transition specification；unlinkable presentation 保留為未來擴充。
-2. 固定 UE、HNCC、FAC、OA、FGS、FLEO／LEO 與 Operator API。
-3. Review並凍結V2 access與opening transcripts；V1 access bytes維持歷史相容。
-4. 撰寫 end-to-end threat model 與 security games。
-5. 加入 machine-readable protocol schemas 與 cross-module conformance tests。
+### Lane B — Access mechanism migration
 
-### Lane C — RBBC 以外的實作
+1. 保留V1、V2與exact `R_access` prototype作baseline，不就地改義。
+2. 先做D5 `R_key` circuit cost，選擇ML-DSA或FAEST holder profile。
+3. 將使用者提供的`ctx`統一公式候選做construction review，凍結`R_issue,new`、ticket、
+   holder signing input、AKE transcript與retry identities。
+4. 以新version package實作，不修改V2 production registry。
+5. 完成cross-version consumption、migration與security-composition tests後才討論deprecation。
 
-低衝突起點包括：
+### Lane C — System／opening／lifecycle
+
+可平行進行：
 
 - canonical system／context encodings；
 - FAC authorization objects 與 verification interface；
 - opening-request 與 opening-evidence schemas；
-- replay-state reference implementation；
-- UE–FGS transcript state machine；
+- FAC threshold primitive contract與OA backend research；
+- distributed replay-state contract；
+- handover transcript state machine；
 - communication-size accounting；
 - 使用 stubbed RBBC adapter 的 end-to-end test vectors。
 
@@ -59,4 +68,10 @@
 
 ## Repository 遷移
 
-第一階段保留 RBBC 既有路徑，同時加入 project-level docs 與 module ownership。第二階段只有在 active long-running RBBC branches 已 merge 或 rebase 後，才考慮將 RBBC source、tests、manifests、artifacts 與 proof history 搬入專屬 module layout。任何搬移都必須保留歷史及精確 artifact identities。
+第一階段已建立`START_HERE_zh-TW.md`、七個mechanism entry pages、source／test maps與
+machine-testable module registry，並在整合候選中集中主要完成成果。Evidence-coupled
+`pq_rbbc_*.py`、historical docs、tests與manifests暫不搬動。
+
+第二階段要等新access機制定案，再把新程式放進versioned package；舊V1／V2與RBBC歷史
+路徑只透過compatibility imports或明確archive index逐步收起。任何實體搬移都必須是獨立
+checkpoint，並驗證imports、tests、links、checksums與external review references。

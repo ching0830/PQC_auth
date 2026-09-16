@@ -1,21 +1,21 @@
-[繁體中文版](README_zh-TW.md)
+[繁體中文現行模組索引](README_zh-TW.md)
 
-# Module registry
+# Project module map
 
-This directory records thesis-level module ownership. During migration phase 1,
-existing RBBC source and evidence remain in their historical locations so active
-work and artifact identities are not disturbed.
+The maintained project map is written in Traditional Chinese because it is also
+the thesis implementation index. Start at [`../START_HERE_zh-TW.md`](../START_HERE_zh-TW.md),
+then open the module page for:
 
-| ID | Module | Owner paths today | Status |
-| --- | --- | --- | --- |
-| M1 | Federation configuration and issuer authorization | architecture only | open |
-| M2 | PQ-RBBC relation-bound blind ticket | `src/pq_rbbc_*.py`, `tests/test_pq_rbbc_*.py`, `manifests/`, `docs/proof/` | active; planned trees 0–10 evidence-sealed, production closure false |
-| M3 | Opening authorization | core proof abstract interface | open |
-| M4 | Signature-gated threshold opening | core proof and reference relation boundaries | partially defined |
-| M5 | Satellite authentication and PQ AKE | `docs/specs/ONE_TIME_TICKET_STATE_v0_1_zh-TW.md`, `src/pq_sat_auth/access.py`, `tests/system/` | defined; test-only codecs/transcript identities implemented/tested, holder auth and AKE open |
-| M6 | Anti-replay, revocation, and handover | `docs/specs/ONE_TIME_TICKET_STATE_v0_1_zh-TW.md`, `src/pq_sat_auth/`, `tests/system/` | defined; test-only reference partially implemented/tested, module open |
-| M7 | Evaluation and evidence | current RBBC artifacts plus future system benchmarks | partial |
+- system initialization and issuer authorization;
+- issuance;
+- satellite access;
+- ticket lifecycle;
+- conditional opening;
+- threshold cryptography; or
+- evaluation and evidence.
 
-New modules should receive a module README, interface document, implementation
-directory, tests, and conservative machine-readable claim boundary before being
-reported as implemented.
+The machine-readable status boundary is
+[`../manifests/project_module_registry_v0_1.json`](../manifests/project_module_registry_v0_1.json).
+Historical source, test, manifest, and evidence paths deliberately remain in
+place while exact identities and active work depend on them. New mechanisms
+should use versioned packages; do not cosmetically rename evidence-coupled files.

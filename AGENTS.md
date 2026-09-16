@@ -4,12 +4,13 @@
 
 Before changing this repository, read the files relevant to the task:
 
-1. `research-notes.md`, `methodology.md`, `experiments.md`, and `thesis-outline.md` for cross-task research context.
-2. `docs/DOCUMENTATION_POLICY_zh-TW.md` for document ownership and update rules.
-3. `ARCHITECTURE_zh-TW.md`, `RESEARCH_STATUS_zh-TW.md`, and `ROADMAP_zh-TW.md` for the canonical system definition, claim boundary, and project plan.
-4. `docs/guides/PROTOCOL_TO_IMPLEMENTATION_GUIDE_zh-TW.md` when translating protocol steps into code, circuits, artifacts, or checkpoints.
-5. `docs/roadmaps/PQ_RBBC_CURRENT_HANDOFF_zh-TW.md` before any PQ-RBBC production work.
-6. `docs/specs/ONE_TIME_TICKET_STATE_v0_1_zh-TW.md` before system access, replay, revocation, or handover work.
+1. `START_HERE_zh-TW.md` and the relevant `modules/<mechanism>/README_zh-TW.md` to locate the active code without traversing historical artifacts.
+2. `research-notes.md`, `methodology.md`, `experiments.md`, and `thesis-outline.md` for cross-task research context.
+3. `docs/DOCUMENTATION_POLICY_zh-TW.md` for document ownership and update rules.
+4. `ARCHITECTURE_zh-TW.md`, `RESEARCH_STATUS_zh-TW.md`, and `ROADMAP_zh-TW.md` for the canonical system definition, claim boundary, and project plan.
+5. `docs/guides/PROTOCOL_TO_IMPLEMENTATION_GUIDE_zh-TW.md` when translating protocol steps into code, circuits, artifacts, or checkpoints.
+6. `docs/roadmaps/PQ_RBBC_CURRENT_HANDOFF_zh-TW.md` for CAP／unified-tree production work, or `docs/roadmaps/PQ_RBBC_ISSUANCE_CURRENT_HANDOFF_zh-TW.md` for issuance work.
+7. `docs/specs/ONE_TIME_TICKET_STATE_v0_1_zh-TW.md` and the applicable satellite-access specification before access, replay, revocation, or handover work.
 
 Use Traditional Chinese for research and thesis documentation unless the task explicitly requests English. Keep code identifiers, manifest fields, protocol labels, and cryptographic terminology stable in English.
 
@@ -42,6 +43,8 @@ Use Traditional Chinese for research and thesis documentation unless the task ex
 
 - Use canonical, versioned, domain-separated encodings. Reject unknown versions, alternate encodings, length mismatches, and trailing bytes.
 - Production code must fail closed at unresolved cryptographic or evidence boundaries. Test-only adapters must be visibly named and unable to cross a production boundary.
+- Put newly adopted mechanisms in a versioned package/subdirectory. Do not add another unclassified root-level `pq_rbbc_*.py` module unless an evidence-bound compatibility path requires it.
+- Do not rename or move evidence-coupled historical source, tests, manifests, or documents merely to shorten paths. Use the module entry pages first; perform path migration only as a separately reviewed checkpoint.
 - Add positive, negative, mutation, concurrency, replay, and crash-recovery tests as applicable.
 - For one-time access, failed validation must not consume a ticket; a committed successful access must never allow a second initial session; same-attempt retry must be idempotent.
 - Keep satellite online-path messages and computations separately measurable from offline issuance and opening.

@@ -1,6 +1,6 @@
 # 研究方法（Methodology）
 
-> 最後更新：2026-09-14
+> 最後更新：2026-09-16
 > 用途：記錄研究設計、威脅模型、決策理由、評估方法及尚未決定事項。文件權責見 `docs/DOCUMENTATION_POLICY_zh-TW.md`。
 
 ## 研究方法概覽
@@ -47,13 +47,14 @@
 | ID | 問題 | 選項 | 狀態 | 阻擋項目 |
 | --- | --- | --- | --- | --- |
 | D-001 | ticket-use semantics | **short-lived、strictly one-use**；unlinkable Show 為未來擴充 | 已決定（2026-08-30） | v0.1 draft 待 cross-lane review 與 G1 freeze |
-| D-002 | PQ AKE composition | 待比較候選 KEM／signature／transcript | 待研究 | access 與 handover |
+| D-002 | Access holder authentication／PQ AKE | exact `R_access` NIZK、ML-DSA holder signature、FAEST holder signature；AKE以ML-KEM候選為基準 | D5後決定 | `R_key`成本、new ticket／issuance relation與組合安全 |
 | D-003 | FAC threshold primitive | 待比較 PQ threshold signature 與 DKG | 待研究 | issuer authorization |
 | D-004 | OA threshold encryption | robust、auditable PQ construction | 待研究 | production opening |
 | D-005 | SE-NIZK backend | 合格 PQ backend 候選 | 待研究 | RBBC proof closure |
 | D-006 | Launch artifact snapshot boundary | 同一 immutable captured bytes；filesystem 強不可變性列為部署前提 | 已決定（2026-09-09） | unified-tree launch／execution handoff |
 | D-007 | Append-only recovery durability ordering | external digest先驗；same capture驗證；既存entries依相依順序補directory fsync | 已決定（2026-09-10） | unified-tree production-scale qualification |
 | D-008 | Satellite access message topology | V2採兩個access messages；client Finished併入第一個受保護packet | 已決定（2026-09-14） | access V2 reference、PQ suite、state review |
+| D-009 | Repository organization | 保留evidence-coupled歷史路徑；新增mechanism entry pages、split handoffs與machine registry | 已決定（2026-09-16） | 新機制版本化實作與後續archive decision |
 
 ### D-001 — System profile v0.1 採 strictly one-use ticket
 
@@ -116,11 +117,27 @@
   必須使用另一個provisional-grant profile並延後正式acceptance。
 - **共用identity：**V1／V2沿用`PQ-SAT/USE-KEY/v1`，避免同票跨版本各用一次。
 - **bounded implementation：**V2 canonical codecs、direct `R_access` evaluator、abstract
-  cryptographic contracts與process-local replay／activation model已於2026-09-14實作並
-  通過定向與repository-wide tests；V1 bytes未修改。
+  cryptographic contracts、完整FGS／UE processors、單主機SQLite wallet／replay／revocation／
+  reconciliation pipeline已逐checkpoint實作並測試；V1 bytes未修改。
 - **claim boundary：**D-002的concrete PQ KEM／FGS signature／KDF／MAC與access-NIZK
-  backend仍待選定；完整FGS processor、distributed store、wallet、proof、benchmark及
-  production closure均未完成。
+  backend仍待選定；跨主機distributed store、power-loss qualification、proof、production
+  benchmark及production closure均未完成。
+
+### D-009 — 先建立mechanism-oriented入口，不批次搬動歷史路徑
+
+- **決定日期：**2026-09-16。
+- **問題：**完成成果分散在多條branch，且長版checkpoint檔名、active specifications與
+  歷史evidence混在同一視野，造成一般閱讀者難以把protocol與工程模組連起來。
+- **選擇：**先在獨立integration branch集中已完成checkpoint，建立`START_HERE`、七個
+  mechanism entry pages、source／test maps、兩份分工明確的PQ-RBBC current handoffs及
+  machine-testable module registry。Evidence-coupled source、tests、manifests、checksums及
+  historical docs保留原path／bytes。
+- **理由：**大規模改名會破壞imports、未整合branches、external review引用與sealed
+  artifact identities；短入口已能先解決可讀性問題，而且保留未來versioned migration空間。
+- **下一階段：**新access機制確定後放入新version package；舊V1／V2再依dependency audit
+  分成compatibility baseline或historical archive，不在機制未定案前刪除。
+- **claim boundary：**repository整合與navigation tests只證明路徑可定位、主要checkpoints
+  可共存，不提升任何cryptographic、proof或production claim。
 
 ## 驗證與評估方法
 

@@ -1,6 +1,6 @@
 # 研究筆記（Research Notes）
 
-> 最後更新：2026-09-14
+> 最後更新：2026-09-16
 > 用途：保存文獻脈絡、理論基礎、研究問題與概念上的研究缺口。新任務開始時應優先閱讀本文件及 `methodology.md`。文件權責見 `docs/DOCUMENTATION_POLICY_zh-TW.md`。
 
 ## 研究主題
@@ -54,6 +54,21 @@ PQ-RBBC 是目前最成熟的密碼學核心，但不是整篇論文。完整系
 - one-time ticket 的預發行、原子消耗與 crash recovery 如何影響 unlinkability、availability、revocation 與 handover？
 - UE–FGS PQ AKE 如何在 satellite-path 成本、freshness 與 channel binding 之間取捨？
 - 如何建立可比較、可重現的端到端 benchmark 與 security-composition proof？
+
+### Access mechanism migration
+
+- 現行 exact `R_access` proof prototype 是保留舊安全敘述的重要 baseline，但 proof 約為 MiB 級，不能滿足一次完整 access handshake 小於 50,000 bytes 的目標。
+- D4 的 per-ticket ML-DSA holder authentication 與 D4b 的 native FAEST holder authentication，已分別得到 23,850 bytes 與 28,047 bytes 的 provisional full-handshake 帳目；兩者都依賴 12,126-byte 的 provisional ticket fixture，因此只能證明候選線路可進一步研究，不能宣稱 production 50 kB closure。
+- 從 exact `R_access` 改為 holder signature 不是單純替換 primitive：必須把 `pk_H` 透過新的 `R_key`／`R_issue` 可信地綁入 ticket，並把原本由 access SE-NIZK 承擔的知識抽取責任，重新分配至 issuance proof 與 holder-authentication unforgeability。
+- 下一個決策點是 D5：先量測 `R_key` 的實際 relation／constraint 成本，再選擇 ML-DSA、FAEST 或保留 exact proof 的最終 access 路線。
+- `r_access_ctx_formulas_and_parameters_v0_2_zh-TW` 是候選輸入，不是現行規格。其 `ctx`、normalized core transcript、attempt identity、AKE key confirmation 與 one-time CAS 語意仍需 encoding review、安全責任表與負面測試後，才可進入新的 versioned access package。
+
+待回答的研究問題包括：
+
+1. `pk_H` 的可信綁定是否足以把 access knowledge-soundness 要求縮減為 holder-authentication unforgeability，還需要哪些 issuance extraction 假設？
+2. normalized transcript 是否會漏綁 wire-level 欄位、版本或 extension，並造成 cross-encoding／downgrade 攻擊？
+3. `attempt_id`、ticket one-time key、server grant、client Finished 與 retry window 應如何共同定義，才能同時處理 replay、搶先轉送、DoS 與 crash recovery？
+4. 50 kB gate 應如何區分規格常數、實測 bytes、provisional fixture 與尚未知的 production ticket／certificate 成本？
 
 ## 文獻追蹤表
 

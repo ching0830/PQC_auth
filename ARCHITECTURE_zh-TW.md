@@ -109,9 +109,16 @@ request replay仍由atomic one-time state處理。
 side effect。Exact bytes、relation與state semantics見
 [docs/specs/SATELLITE_ACCESS_v0_2_zh-TW.md](docs/specs/SATELLITE_ACCESS_v0_2_zh-TW.md)及
 [docs/specs/ONE_TIME_TICKET_STATE_v0_2_zh-TW.md](docs/specs/ONE_TIME_TICKET_STATE_v0_2_zh-TW.md)。
-V2 frame／request／accept／activation codecs、direct relation evaluator、abstract crypto
-contracts及process-local state model已建立並通過bounded tests；尚未建立完整FGS processor
-或接入真實ticket／NIZK／AKE backends。
+V2 frame／request／accept／activation codecs、direct relation evaluator、stable
+`VerifyTicket` adapter、FGS pure-check／grant／activation、UE accept、first protected record、
+wallet、單主機SQLite stores及reconciliation pipeline均已有bounded implementation／tests；
+尚未接入qualified production NIZK／AKE／FGS authentication backends，也未完成distributed
+deployment。
+
+另有隔離的V3 holder-signature研究fork：發行時由ticket綁定每票holder public key，access
+時用ML-DSA或FAEST signature取代舊exact `R_access` proof。D4／D4b只建立真實signature／
+ML-KEM wire prototypes，沒有修改shared ticket parser、`VerifyTicket`或production registry。
+在`R_key`／`R_issue,new` circuit與組合安全責任完成前，它不是canonical access mechanism。
 具體NIZK／KEM／FGS-auth／KDF／MAC composition、channel exporter、forward-secrecy games
 與成本仍未Instantiated／Proof-closed；本模組必須維持FLEO／LEO低運算與低通訊負擔。
 
@@ -125,8 +132,10 @@ System profile 使用 short-lived、strictly one-use ticket。FGS 維護具 epoc
 V2一趟往返candidate延用同一`use_key`，並區分`CONSUMED_PENDING_CONFIRM`與
 `CONSUMED_ACTIVE`。此模組亦負責revocation distribution、wallet／server failure
 recovery、handover authorization與availability；這些功能不屬於RBBC core。
-目前V2只有加鎖的process-local reference model；它不具durability、跨程序或跨FGS
-linearizability，不能作為production authoritative store。
+目前V2已包含單主機、多程序SQLite replay／delivery／activation inbox、wallet、revocation
+fence、expired-reservation reconciliation、audit／resume／lease及authenticated execution
+context。這些結果支持single-host bounded durability semantics，不支持跨主機linearizability、
+實體斷電qualification或production authoritative deployment。
 
 ## 協定階段
 
@@ -162,16 +171,16 @@ linearizability，不能作為production authoritative store。
 
 ## 目前 claim boundary
 
-最新合併 checkpoint 為 RBBC v2.42。Legacy 18-tree profile 已完成全部 tree、72 個
+最新集中 checkpoint 為 RBBC v2.43 reservation binding。Legacy 18-tree profile 已完成全部 tree、72 個
 relocations、完整 replay 與 parent CAP-to-$H_{RBBC}$ join 的 executable evidence；新的
 unified-tree candidate profile 已推進至 bounded specification、runner/checkpoint/statement/
 streaming primitives、fail-closed launch validation，以及具append-only journal、idempotent
 finalization與dependency-ordered directory durability barriers的bounded recovery successor。
-V2.42亦以provenance erratum修正Blind-UOV參數來源，且bounded corrective AI technical
-re-review未發現blocking finding；這不等於具名獨立人員核准或實體斷電／production-scale
-qualification。V2.41 reservation只屬歷史，新的v2.42 operator reservation、external human
-independent review、launch identity freeze及execution authorization仍未建立。Filesystem
-強不可變性仍是部署前提。Fork-specific reductions、合格 PQ SE-NIZK backend、real trace key、robust
-opening transcript、v0.2 access NIZK／satellite AKE、durable/distributed anti-replay 與
-handover 仍未封閉；
+V2.42亦以provenance erratum修正Blind-UOV參數來源；v2.43 corrective technical review已
+關閉三項reservation-binding findings，並建立owner-controlled reservation，但尚無具名獨立
+human review、launch manifest、scale execution或production observation。Filesystem強不可變性
+仍是部署前提。獨立issuance線只到bounded fresh-parent CandidateSet preflight；parent
+constraints、qualified PQ-SE backend及正式`pi_issue`未完成。Fork-specific reductions、real
+trace key、robust opening transcript、新access mechanism的shared ticket／`R_key`／AKE
+composition、distributed anti-replay與handover仍未封閉；
 production closure 為 false。

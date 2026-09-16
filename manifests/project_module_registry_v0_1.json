@@ -1,0 +1,72 @@
+{
+  "schema": "pqc-auth/project-module-registry/v1",
+  "version": 1,
+  "source_checkpoints": {
+    "pq_rbbc_cap": "baa4304a725447ae242f83e43967300ec91cfa5b",
+    "issuance": "b877189dcb6d129a5001fbc586af8c2550add385",
+    "system_governance": "56733d080344e1ce9315675dcf4217b42ea63f8f",
+    "satellite_access": "bad1823b62d1b41a820ff0be0714cb08bea9447c",
+    "access_prototypes": "0a69f5dc8731e67a6a3511b45e593cc08c9decf1",
+    "threshold_research": "737b4ec8d93ed2eb8090b3cda623f3c5a0931f6d"
+  },
+  "status_fields": ["defined", "implemented", "tested", "evidence_sealed", "proof_closed", "production_closed"],
+  "modules": [
+    {
+      "slug": "system",
+      "architecture_ids": ["M1"],
+      "entry_document": "modules/system/README_zh-TW.md",
+      "source_paths": ["src/pq_rbbc/contracts", "src/pq_rbbc/governance"],
+      "test_paths": ["tests/system_modules/governance"],
+      "status": {"defined": true, "implemented": true, "tested": true, "evidence_sealed": false, "proof_closed": false, "production_closed": false}
+    },
+    {
+      "slug": "issuance",
+      "architecture_ids": ["M2"],
+      "entry_document": "modules/issuance/README_zh-TW.md",
+      "source_paths": ["src/pq_rbbc_reference.py", "src/pq_rbbc_issuance_relation_v1.py"],
+      "test_paths": ["tests/test_pq_rbbc_issuance_relation_v1.py"],
+      "status": {"defined": true, "implemented": true, "tested": true, "evidence_sealed": true, "proof_closed": false, "production_closed": false}
+    },
+    {
+      "slug": "opening",
+      "architecture_ids": ["M3", "M4"],
+      "entry_document": "modules/opening/README_zh-TW.md",
+      "source_paths": ["src/pq_rbbc/opening"],
+      "test_paths": ["tests/system_modules/opening", "tests/system_modules/integration"],
+      "status": {"defined": true, "implemented": true, "tested": true, "evidence_sealed": false, "proof_closed": false, "production_closed": false}
+    },
+    {
+      "slug": "access",
+      "architecture_ids": ["M5"],
+      "entry_document": "modules/access/README_zh-TW.md",
+      "source_paths": ["src/pq_sat_auth/v2", "src/pq_sat_auth/v2/prototypes"],
+      "test_paths": ["tests/system", "tests/prototypes"],
+      "status": {"defined": true, "implemented": true, "tested": true, "evidence_sealed": false, "proof_closed": false, "production_closed": false}
+    },
+    {
+      "slug": "lifecycle",
+      "architecture_ids": ["M6"],
+      "entry_document": "modules/lifecycle/README_zh-TW.md",
+      "source_paths": ["src/pq_sat_auth/v2/replay.py", "src/pq_sat_auth/v2/storage", "src/pq_sat_auth/v2/reconciliation.py"],
+      "test_paths": ["tests/system/test_pq_sat_auth_sqlite_replay_v2.py", "tests/system/test_pq_sat_auth_reconciliation_v2.py"],
+      "status": {"defined": true, "implemented": true, "tested": true, "evidence_sealed": false, "proof_closed": false, "production_closed": false}
+    },
+    {
+      "slug": "threshold",
+      "architecture_ids": [],
+      "entry_document": "modules/threshold/README_zh-TW.md",
+      "source_paths": ["src/pq_threshold_candidates"],
+      "test_paths": ["tests/threshold_candidates"],
+      "status": {"defined": true, "implemented": true, "tested": true, "evidence_sealed": false, "proof_closed": false, "production_closed": false}
+    },
+    {
+      "slug": "evaluation",
+      "architecture_ids": ["M7"],
+      "entry_document": "modules/evaluation/README_zh-TW.md",
+      "source_paths": ["benchmarks/access_nizk", "benchmarks/access_holder_auth"],
+      "test_paths": ["tests/prototypes"],
+      "status": {"defined": true, "implemented": true, "tested": true, "evidence_sealed": false, "proof_closed": false, "production_closed": false}
+    }
+  ]
+}
+
