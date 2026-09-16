@@ -1,0 +1,170 @@
+{
+  "base": {
+    "branch": "codex/satellite-access-v0-2",
+    "commit": "95ed75d9676035c2f21c14ddcb50199c047bda21",
+    "prototype_branch": "codex/r-access-mpcith-prototype-v0-1"
+  },
+  "benchmark": {
+    "artifact": {
+      "bytes": 7974,
+      "path": "benchmarks/access_nizk/results_r_access_mpcith_l1_219_20260916.json",
+      "sha256": "4b12fb9f9eeddf71be48fc75543d3787be789d93e29636419412fec611e73cfa"
+    },
+    "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python benchmarks/access_nizk/benchmark_r_access.py --warmups 1 --iterations 5 --timeout-seconds 120",
+    "exact_measured": {
+      "canonical_proof_bytes": 2151727,
+      "circuit_construction_ms": {
+        "max": 325.777077,
+        "median": 315.837475,
+        "min": 312.81768999999997,
+        "p95_nearest_rank": 325.777077
+      },
+      "fgs_verification_workload_proxy_ms": {
+        "max": 343.333829,
+        "median": 337.856612,
+        "min": 336.185788,
+        "p95_nearest_rank": 343.333829
+      },
+      "fresh_worker_peak_rss_kib": {
+        "max": 40068.0,
+        "median": 39960.0,
+        "min": 39880.0,
+        "p95_nearest_rank": 40068.0
+      },
+      "proof_serialization_ms": {
+        "max": 2.348312,
+        "median": 2.295191,
+        "min": 2.200532,
+        "p95_nearest_rank": 2.348312
+      },
+      "ue_side_prover_workload_proxy_ms": {
+        "max": 616.392065,
+        "median": 605.93795,
+        "min": 599.647701,
+        "p95_nearest_rank": 616.392065
+      }
+    },
+    "host": {
+      "cpu": "AMD Ryzen 5 7600X 6-Core Processor",
+      "logical_cpus": 12,
+      "os": "Linux-6.8.0-138-generic-x86_64-with-glibc2.35",
+      "python": "CPython 3.12.9",
+      "total_memory_kib": 31980844
+    },
+    "iterations": 5,
+    "peak_rss_scope": "fresh whole worker via Linux ru_maxrss; includes interpreter, setup, circuit, prove, proof bytes, and verify",
+    "successes": 5,
+    "warmups": 1
+  },
+  "circuit": {
+    "boolean_and_gates": 76800,
+    "boolean_xor_not_operations": 263724,
+    "canonical_statement_bytes": 170,
+    "external_assertions": 0,
+    "failed_assertions": 0,
+    "keccak_f1600_permutations": 2,
+    "nonlinear_constraints_with_secret_bitness": 77056,
+    "public_output_equality_assertions": 512,
+    "public_tuple_input_bits": 1280,
+    "secret_input_bits": 256,
+    "secret_input_bitness_constraints": 256,
+    "wire_count": 342318
+  },
+  "claim_boundary": {
+    "exact_r_access_circuit_constructed": true,
+    "exact_r_access_proof_generated_and_verified": true,
+    "experimental_reference_only": true,
+    "independent_cryptographic_review": false,
+    "mobile_or_satellite_ue_benchmarked": false,
+    "production_closed": false,
+    "production_ready": false,
+    "proof_closed": false,
+    "qrom_fiat_shamir_proof_closed": false,
+    "simulation_extractable": false
+  },
+  "construction": {
+    "challenge": "Fiat-Shamir ternary challenge derived with domain-separated SHAKE256",
+    "commitment": "domain-separated 32-byte SHAKE256 view commitment",
+    "id": "3-party-ZKBoo-family-XOR-sharing-FS-SHAKE256",
+    "mpc_and": "z_i=(x_i&y_i) xor (x_i&y_(i+1)) xor (x_(i+1)&y_i) xor r_i xor r_(i+1)",
+    "public_constants_share": "party 0",
+    "secret_sharing": "3-party XOR sharing"
+  },
+  "dependencies": {
+    "compiler_flags": "not applicable; pure Python prototype",
+    "external_runtime_dependencies": [],
+    "python": "3.12.9",
+    "repository_keccak_source": "src/pq_rbbc_reference.py at base commit 95ed75d9676035c2f21c14ddcb50199c047bda21"
+  },
+  "files": {
+    "benchmarks/access_nizk/benchmark_r_access.py": "5a0860372ce29cf15fbc221b7b7aa890143807b7da462870c5dbf69d56391651",
+    "src/pq_sat_auth/v2/prototypes/access_nizk/adapter.py": "b43fc4f99d74c856c4145659ce1dabd0fbc25a55a0429a8583d2e60e49085571",
+    "src/pq_sat_auth/v2/prototypes/access_nizk/circuit.py": "198c599e16ab5ec1dbbb6b39cdc405596588be57ede5eb40a2cc771421c21e64",
+    "src/pq_sat_auth/v2/prototypes/access_nizk/mpcith.py": "cac2c0a64d0c02a52c559b4602b04429ed9484b653bd611afeea6c81e83e6385",
+    "src/pq_sat_auth/v2/prototypes/access_nizk/parameters.py": "a109dcc2fe524ef60d9b4a718888bad20789fcd5f575f3d30e159d904d99ebf6",
+    "tests/prototypes/access_nizk/test_mpcith_access_nizk.py": "938b6ec9526b1a53f5ed931f8a01d8f29bfd2da87ce32ca692c6d566e0f1e684"
+  },
+  "format": "PQ-SAT-R-ACCESS-PROOF-PROTOTYPE-MANIFEST-v0.1",
+  "m1_accounting": {
+    "access_request_v2_fixed_and_framing_bytes": 354,
+    "current_reference_proof_limit_bytes": 262144,
+    "fits_current_reference_proof_limit": false,
+    "full_m1_formula": "ticket_bytes + 2153265",
+    "measured_pi_access_bytes": 2151727,
+    "ml_kem_768_ue_public_key_bytes": 1184,
+    "subtotal_excluding_ticket_bytes": 2153265,
+    "ticket_bytes": null,
+    "ticket_bytes_status": "unmeasured; not assumed to be zero"
+  },
+  "parameters": {
+    "canonical_proof_bytes": 2151727,
+    "claimed_classical_interactive_soundness_bits": 128,
+    "classical_interactive_soundness_error": "(2/3)^219",
+    "name": "PQSAT-R-ACCESS-MPCITH-L1-219-v0.1",
+    "parameter_digest_sha256": "c8aa8fb6a36aa09b5abf9deaec4cbd7561a15f77611c3a7821bf1e79ff3342f3",
+    "parameter_version": 1,
+    "proof_suite_id": 65534,
+    "repetitions": 219,
+    "round_proof_bytes": 9825,
+    "view_transcript_bytes": 9600
+  },
+  "relation": {
+    "holder_binding": "holder_binding_tag = SHAKE256(PQ-SAT/ACCESS-HOLDER-BIND/v2 || k_hold || request_core_digest, 256)",
+    "holder_hash": "h = SHAKE256(PQ-RBBC/HOLD || k_hold, 256)",
+    "id": "PQSAT-R-ACCESS-EXACT-SHAKE256-BOOLEAN-v0.1",
+    "statement_adapter": "src/pq_sat_auth/v2/proof.py::AccessProofStatementV2",
+    "statement_fields": [
+      "access_profile_digest",
+      "access_pp_digest",
+      "h",
+      "request_core_digest",
+      "holder_binding_tag"
+    ],
+    "witness": "k_hold[32]"
+  },
+  "test_vector": {
+    "deterministic_test_parameters": "PQSAT-R-ACCESS-MPCITH-TEST-7-v0.1",
+    "proof_bytes": 68827,
+    "proof_sha256": "5d3d7788a0abed28eaeed9d7708cddfbcecc29df9a6c118ccc3358f16309527e",
+    "statement_bytes": 170,
+    "statement_sha256": "e7d5ac7b10bc4b4e6a303bd154829e11216e32d08b5720ff82c5c14989e471a5"
+  },
+  "validation": {
+    "full_repository": {
+      "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python -m unittest discover -s tests -q",
+      "errors": 0,
+      "failures": 0,
+      "passed": 1027,
+      "runtime_seconds": 777.581,
+      "skipped": 12,
+      "total": 1039
+    },
+    "targeted": {
+      "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python -m unittest -v tests.prototypes.access_nizk.test_mpcith_access_nizk",
+      "errors": 0,
+      "failures": 0,
+      "passed": 13,
+      "skipped": 0
+    }
+  }
+}

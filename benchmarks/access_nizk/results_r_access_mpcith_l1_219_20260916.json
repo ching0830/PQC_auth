@@ -1,0 +1,202 @@
+{
+  "analytical_estimates": {
+    "classical_interactive_soundness_bits": 128,
+    "m1_bytes": {
+      "access_request_v2_fixed_and_framing_bytes": 354,
+      "fits_current_262144_byte_reference_proof_limit": false,
+      "full_formula": "ticket_bytes + 2153265",
+      "measured_pi_access_bytes": 2151727,
+      "ml_kem_768_ue_public_key_bytes": 1184,
+      "subtotal_excluding_ticket_bytes": 2153265,
+      "ticket_bytes": null,
+      "ticket_status": "unmeasured; not assumed to be zero"
+    },
+    "soundness_basis": "floor(t*log2(3/2)); excludes Fiat-Shamir/QROM and implementation review"
+  },
+  "benchmark_fixture_seed_id": "PQ-SAT/R-ACCESS-MPCITH/BENCHMARK-FIXTURE/v0.1",
+  "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python benchmarks/access_nizk/benchmark_r_access.py --warmups 1 --iterations 5 --timeout-seconds 120",
+  "exact_measured": {
+    "canonical_proof_bytes": 2151727,
+    "circuit": {
+      "boolean_and_gates": 76800,
+      "boolean_xor_not_operations": 263724,
+      "canonical_statement_bytes": 170,
+      "external_assertions": 0,
+      "failed_assertions": 0,
+      "keccak_f1600_permutations": 2,
+      "nonlinear_constraints_with_bitness": 77056,
+      "public_output_equality_assertions": 512,
+      "public_tuple_input_bits": 1280,
+      "relation": "exact R_access: SHAKE256(PQ-RBBC/HOLD || k_hold, 256) and SHAKE256(PQ-SAT/ACCESS-HOLDER-BIND/v2 || k_hold || request_core_digest, 256)",
+      "secret_input_bitness_constraints": 256,
+      "secret_input_bits": 256,
+      "wire_count": 342318
+    },
+    "circuit_construction_ms": {
+      "max": 325.777077,
+      "median": 315.837475,
+      "min": 312.81768999999997,
+      "p95_nearest_rank": 325.777077
+    },
+    "fgs_verification_workload_proxy_ms": {
+      "max": 343.333829,
+      "median": 337.856612,
+      "min": 336.185788,
+      "p95_nearest_rank": 343.333829
+    },
+    "fiat_shamir_challenge_ms": {
+      "max": 0.232259,
+      "median": 0.207352,
+      "min": 0.200589,
+      "p95_nearest_rank": 0.232259
+    },
+    "fresh_worker_peak_rss_kib": {
+      "max": 40068.0,
+      "median": 39960.0,
+      "min": 39880.0,
+      "p95_nearest_rank": 40068.0
+    },
+    "fresh_worker_total_ms": {
+      "max": 1283.212664,
+      "median": 1261.015808,
+      "min": 1253.859247,
+      "p95_nearest_rank": 1283.212664
+    },
+    "mpc_simulation_and_commitment_ms": {
+      "max": 613.507709,
+      "median": 602.956862,
+      "min": 596.604956,
+      "p95_nearest_rank": 613.507709
+    },
+    "peak_rss_scope": "Linux ru_maxrss for a fresh worker; includes interpreter, setup, circuit construction, proof generation, proof bytes, and verification",
+    "preprocessing": {
+      "applicable": false,
+      "reason": "this prototype has no reusable offline preprocessing phase",
+      "seconds": null
+    },
+    "proof_serialization_ms": {
+      "max": 2.348312,
+      "median": 2.295191,
+      "min": 2.200532,
+      "p95_nearest_rank": 2.348312
+    },
+    "proof_sha256_per_iteration": [
+      "04f8cf36c2af71dc8f0182e8e311f1d57608cfa7fccce65d8b692bb4abb39aa8",
+      "7416596040465ded3f6962a00bb9cc0cc07a21808dbe4bb4cdf0f283f8034a09",
+      "c9d62f7c29812ebf6f0ff3d24438d4727ab645d7787caa7b440aadf9588e4218",
+      "66db786129d87f82bd2f441d0d38803e8f76524a997b8dac583201fb1820e0cf",
+      "0b0d00b095d9030787e16f6f633b39ba103558d980dace5d52c808f1460cb18a"
+    ],
+    "randomness_and_sharing_ms": {
+      "max": 0.49246100000000004,
+      "median": 0.482703,
+      "min": 0.479968,
+      "p95_nearest_rank": 0.49246100000000004
+    },
+    "setup_ms": {
+      "max": 0.08993,
+      "median": 0.081334,
+      "min": 0.078508,
+      "p95_nearest_rank": 0.08993
+    },
+    "ue_side_prover_workload_proxy_ms": {
+      "max": 616.392065,
+      "median": 605.93795,
+      "min": 599.647701,
+      "p95_nearest_rank": 616.392065
+    }
+  },
+  "format": "PQ-SAT-R-ACCESS-MPCITH-BENCHMARK-v0.1",
+  "generated_at_utc": "2026-09-15T19:01:42.515689+00:00",
+  "git": {
+    "branch": "codex/r-access-mpcith-prototype-v0-1",
+    "head": "95ed75d9676035c2f21c14ddcb50199c047bda21",
+    "source_file_sha256": {
+      "benchmarks/access_nizk/benchmark_r_access.py": "5a0860372ce29cf15fbc221b7b7aa890143807b7da462870c5dbf69d56391651",
+      "src/pq_sat_auth/v2/proof.py": "eae6b4d32cec57a9eaf8939b52bad04a23d506902b8cebf0d2830d0d459841cc",
+      "src/pq_sat_auth/v2/prototypes/access_nizk/circuit.py": "198c599e16ab5ec1dbbb6b39cdc405596588be57ede5eb40a2cc771421c21e64",
+      "src/pq_sat_auth/v2/prototypes/access_nizk/mpcith.py": "cac2c0a64d0c02a52c559b4602b04429ed9484b653bd611afeea6c81e83e6385",
+      "src/pq_sat_auth/v2/prototypes/access_nizk/parameters.py": "a109dcc2fe524ef60d9b4a718888bad20789fcd5f575f3d30e159d904d99ebf6"
+    },
+    "status_short": [
+      "AM benchmarks/access_nizk/benchmark_r_access.py",
+      "AM benchmarks/access_nizk/results_r_access_mpcith_l1_219_20260916.json",
+      "AM docs/artifacts/SATELLITE_ACCESS_R_ACCESS_PROOF_PROTOTYPE_v0_1_zh-TW.md",
+      "A  manifests/pq_sat_auth_r_access_prototype_v0_1.json",
+      "AM src/pq_sat_auth/v2/prototypes/__init__.py",
+      "A  src/pq_sat_auth/v2/prototypes/access_nizk/__init__.py",
+      "AM src/pq_sat_auth/v2/prototypes/access_nizk/adapter.py",
+      "AM src/pq_sat_auth/v2/prototypes/access_nizk/circuit.py",
+      "A  src/pq_sat_auth/v2/prototypes/access_nizk/mpcith.py",
+      "AM src/pq_sat_auth/v2/prototypes/access_nizk/parameters.py",
+      "AM tests/prototypes/__init__.py",
+      "AM tests/prototypes/access_nizk/__init__.py",
+      "A  tests/prototypes/access_nizk/test_mpcith_access_nizk.py"
+    ],
+    "working_tree_dirty": true
+  },
+  "host": {
+    "compiler_flags": "not applicable; pure Python prototype",
+    "cpu_model": "AMD Ryzen 5 7600X 6-Core Processor",
+    "external_runtime_dependencies": [],
+    "kernel": "6.8.0-138-generic",
+    "logical_cpu_count": 12,
+    "machine": "x86_64",
+    "memory_total_kib": 31980844,
+    "os": "Linux-6.8.0-138-generic-x86_64-with-glibc2.35",
+    "python": "3.12.9 | packaged by Anaconda, Inc. | (main, Feb  6 2025, 18:56:27) [GCC 11.2.0]",
+    "python_implementation": "CPython"
+  },
+  "interpretation": {
+    "ake_material_5629_bytes_is_not_full_access_total": true,
+    "exact_r_access_proved": true,
+    "experimental_reference_only": true,
+    "host_specific": true,
+    "production_closed": false,
+    "production_ready": false,
+    "proof_closed": false,
+    "prover_timing_label": "UE-side prover workload proxy",
+    "simulation_extractable": false,
+    "verification_timing_label": "FGS verification workload proxy"
+  },
+  "parameters": {
+    "canonical_proof_bytes": 2151727,
+    "circuit_id": "PQSAT-R-ACCESS-EXACT-SHAKE256-BOOLEAN-v0.1",
+    "claimed_classical_soundness_bits": 128,
+    "classical_interactive_soundness_error": "(2/3)^219",
+    "commitment_bytes": 32,
+    "construction_id": "3-party-ZKBoo-family-XOR-sharing-FS-SHAKE256",
+    "experimental_reference_only": true,
+    "name": "PQSAT-R-ACCESS-MPCITH-L1-219-v0.1",
+    "opened_neighbour_transcript_bytes_per_round": 9600,
+    "output_bytes": 64,
+    "parameter_digest_sha256": "c8aa8fb6a36aa09b5abf9deaec4cbd7561a15f77611c3a7821bf1e79ff3342f3",
+    "parameter_version": 1,
+    "production_ready": false,
+    "proof_suite_id": 65534,
+    "qrom_fiat_shamir_proof_closed": false,
+    "repetitions": 219,
+    "round_proof_bytes": 9825,
+    "seed_bytes": 32,
+    "simulation_extractable": false,
+    "test_only": false
+  },
+  "sampling": {
+    "failure_messages": [],
+    "failures": 0,
+    "measured_iterations_completed": 5,
+    "measured_iterations_requested": 5,
+    "success_rate": 1.0,
+    "wall_clock_seconds_including_workers": 8.654286719,
+    "warmup_failures": 0,
+    "warmup_iterations": 1,
+    "worker_model": "one fresh Python process per warmup/iteration"
+  },
+  "unmeasured": {
+    "production_ticket_bytes": true,
+    "real_mobile_or_satellite_ue_latency": true,
+    "satellite_or_mobile_peak_memory": true,
+    "satellite_path_latency": true,
+    "ue_energy": true
+  }
+}
