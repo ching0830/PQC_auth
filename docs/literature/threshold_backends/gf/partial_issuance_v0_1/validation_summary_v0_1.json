@@ -1,0 +1,225 @@
+{
+  "schema": "pqc_auth.gf_partial_issuance_validation.v0_1",
+  "date": "2026-09-14",
+  "branch": "codex/threshold-gf-partial-issuance-v0-1",
+  "base_commit": "d682b8b08892f663a81c4ef9d295b0c385354d0b",
+  "base_tree": "8b1527e87d3e61d986a25078ed5681717cdd7648",
+  "environment": {
+    "python": "3.12.9",
+    "platform": "Linux",
+    "machine": "x86_64"
+  },
+  "source_identities": [
+    {
+      "path": "src/pq_threshold_candidates/gf/partial_issuance_v0_1/__init__.py",
+      "bytes": 344,
+      "sha256": "baffd6800777a4f55907ef58dd1e5cb1a8afdeb83fa73996f7907f7d42d93264"
+    },
+    {
+      "path": "src/pq_threshold_candidates/gf/partial_issuance_v0_1/evaluator.py",
+      "bytes": 6763,
+      "sha256": "704f948888b775fb726215aa57e4e9b27f5f77029fdc1d39a14360e08cc9d331"
+    },
+    {
+      "path": "tests/threshold_candidates/gf/partial_issuance_v0_1/__init__.py",
+      "bytes": 67,
+      "sha256": "bb11cae0c0476d20d2e8c9ed89fca10d704b4f595727f5b6aa7cbc6486180553"
+    },
+    {
+      "path": "tests/threshold_candidates/gf/partial_issuance_v0_1/test_evaluator.py",
+      "bytes": 17479,
+      "sha256": "090134f2e0873e8fcf1615a6d7b6f73f499acd0505b6919a869504fdb4adde83"
+    },
+    {
+      "path": "docs/literature/threshold_backends/gf/partial_issuance_v0_1/IMPLEMENTATION_zh-TW.md",
+      "bytes": 10046,
+      "sha256": "dae5bd6949e517f37c35bcee5c62b622a0c6968a768b5fc54ad65c46a1e5ce18"
+    },
+    {
+      "path": "docs/literature/threshold_backends/gf/partial_issuance_v0_1/source_index_v0_1.json",
+      "bytes": 6591,
+      "sha256": "d0f988bb365d74d01e2ba0e6f30698b1f154b384c3924a58fa5505c740a4edee"
+    },
+    {
+      "path": "docs/literature/threshold_backends/gf/README_zh-TW.md",
+      "bytes": 3088,
+      "sha256": "f244a2b2978e97cb3ee5068986e5b37f14daf1a9ff7211b8cc9f2c6ce4d48904"
+    }
+  ],
+  "new_tests": {
+    "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python -m unittest discover -s tests/threshold_candidates/gf/partial_issuance_v0_1 -t tests -v",
+    "total": 27,
+    "passed": 27,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "elapsed_seconds": 4.395,
+    "log_identity": {
+      "path": "/tmp/pqc-gf-partial-new-tests.log",
+      "bytes": 5463,
+      "sha256": "309b506eb4e96b405b15793e0d7ce649dd0be7bdd22ac4eb771208f7deef1188"
+    },
+    "skip_reasons": {}
+  },
+  "targeted_tests": {
+    "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python -m unittest discover -s tests/threshold_candidates -v",
+    "total": 117,
+    "passed": 117,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "elapsed_seconds": 17.416,
+    "log_identity": {
+      "path": "/tmp/pqc-gf-partial-targeted.log",
+      "bytes": 18242,
+      "sha256": "167c8bee5f9246b3113de46455f9e5d6e8f8bd7762550b69b898263984d88cda"
+    },
+    "skip_reasons": {}
+  },
+  "full_regression": {
+    "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python -m unittest discover -s tests -v",
+    "total": 805,
+    "passed": 793,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 12,
+    "elapsed_seconds": 760.788,
+    "log_identity": {
+      "path": "/tmp/pqc-gf-partial-full.log",
+      "bytes": 137791,
+      "sha256": "46510f1fc63ea4327f2001d5befd93913b0b690bd120a747f58908813c645849"
+    },
+    "skip_reasons": {
+      "trusted external v2.19 recovery artifacts are not installed": 1,
+      "external v2.20 global-tail archive is not installed": 1,
+      "external v2.15 relocation assignment is not installed": 1,
+      "external v2.13 tree-0 assignment is not installed": 1,
+      "external v2.13 tree-0 execution cache is not installed": 1,
+      "external v2.14 replay artifacts are not installed": 1,
+      "external v2.14 tree-2 assignment is not installed": 1,
+      "external v2.22 tree-1 artifacts are not installed": 1,
+      "external v2.21 tree-2 artifacts are not installed": 1,
+      "external v2.23 tree-3 artifacts are not installed": 1,
+      "external v2.24 tree-4 artifacts are not installed": 1,
+      "external v2.25 batch artifacts are not installed": 1
+    }
+  },
+  "frozen_adapter_document_check": {
+    "command": "PYTHONDONTWRITEBYTECODE=1 python docs/literature/threshold_backends/gf/trusted_adapter_contract_v0_1/check_contract_v0_1.py",
+    "report_identity": {
+      "path": "/tmp/pqc-gf-partial-adapter-contract-check.json",
+      "bytes": 1448,
+      "sha256": "3800ae5db7e1fa3c1f28608b19b9ffe6bf40acf68752839ef8463d4a6503f554"
+    },
+    "report_matches_prior_exactly": true,
+    "result": {
+      "schema": "pqc_auth.gf_adapter_document_check.v0_1",
+      "proposal_contract_sha256": "bbb395352135c4c079895bd035fb1e38999793f5604bb0899dcbbdbd0fb41359",
+      "positive_document_cases": 3,
+      "negative_document_cases": 30,
+      "malformed_JSON_rejected": 5,
+      "rejected_mutations": [
+        "unknown_field",
+        "bool_role",
+        "wrong_role",
+        "production_purpose",
+        "promoted_production",
+        "config_only_auth",
+        "wrong_auth_domain",
+        "old_M_size",
+        "old_trace_witness",
+        "wrong_CAP_count",
+        "wrong_CAP_profile",
+        "missing_CAP_mask",
+        "missing_CAP_parent_join",
+        "public_d_M",
+        "missing_private_u",
+        "witness_in_verifier",
+        "setup_metadata_leak",
+        "origin_missing_epoch",
+        "request_anchor_override",
+        "private_setup_node",
+        "unknown_dependency",
+        "duplicate_dependency",
+        "self_cycle",
+        "origin_to_final_pp_cycle",
+        "relation_to_final_pp_cycle",
+        "backend_to_envelope_cycle",
+        "missing_key_origin_dependency",
+        "authentication_delayed",
+        "forged_owner_acceptance",
+        "forged_proof_closure"
+      ],
+      "construction_order": [
+        "key_material",
+        "profiles",
+        "configuration",
+        "key_origin_evidence",
+        "trace_binding",
+        "gf_relation_manifest",
+        "issue_backend_pp",
+        "common_pp",
+        "initialization_bundle",
+        "authenticated_initialization"
+      ],
+      "adapter_cryptography_executed": false,
+      "owner_acceptance_verified": false,
+      "production_qualified": false
+    }
+  },
+  "source_test_snapshot": {
+    "files": 4,
+    "pre_and_post_full_run_identities_match": true
+  },
+  "status_semantics": {
+    "I2_digest": "computed_unjoined; no expected digest or I3 consumer",
+    "I3": "open; canonical rho parser only, no CAP computation",
+    "identity_failures": "I2/I4/I5 not_evaluated; no I5 call",
+    "I4_mismatch": "I5 still evaluates using original M.h",
+    "unexpected_computation_fault": "error; no exception text in diagnostic",
+    "diagnostic_payload": "only check/status labels; no private packet or digest"
+  },
+  "claims": {
+    "partial_host_evaluator_implemented_and_tested": true,
+    "local_pp_ctx_key_self_consistency_checked": true,
+    "full_M_I2_digest_computed": true,
+    "I2_to_I3_join_verified": false,
+    "I3_CAP_H_RBBC_evaluated": false,
+    "reference_I4_I5_evaluated": true,
+    "configuration_authentication_verified": false,
+    "key_origin_certification_verified": false,
+    "backend_qualification_verified": false,
+    "issuer_identity_session_authorization_verified": false,
+    "witness_freshness_verified": false,
+    "native_constraints_integrated": false,
+    "full_relation_verified": false,
+    "witness_free_proof_verifier_implemented": false,
+    "threshold_implemented": false,
+    "external_independent_review": false,
+    "evidence_sealed": false,
+    "proof_closed": false,
+    "production_closed": false
+  },
+  "preserved_scope": [
+    "src/pq_threshold_candidates/gf/research_abi_v0_1",
+    "src/pq_threshold_candidates/gf/reference.py",
+    "src/pq_threshold_candidates/gf/profile.py",
+    "src/pq_threshold_candidates/gf/arithmetic.py",
+    "src/pq_threshold_candidates/contracts.py",
+    "docs/literature/threshold_backends/gf/abi_v0_1",
+    "src/pq_rbbc",
+    "ARCHITECTURE_zh-TW.md",
+    "RESEARCH_STATUS_zh-TW.md",
+    "ROADMAP_zh-TW.md",
+    "methodology.md",
+    "experiments.md",
+    "thesis-outline.md"
+  ],
+  "limitations": [
+    "No authenticated bundle or expected external pin is passed to this four-input evaluator. Complete self-consistent caller substitution can pass local checks.",
+    "The shared fixture is canonical and satisfies reference I4/I5, but is not a full I3-positive issuance instance.",
+    "Canonical beta/r/rho mutations leave I3 OPEN; full-relation and authentication properties always remain false.",
+    "Witness-bearing variable-time reference computation is not a native circuit, proof verifier, upstream KAT or cryptographic proof.",
+    "No state, randomness sampling, opening, production registration, PDF, secret packet or large artifact is added."
+  ]
+}

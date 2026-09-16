@@ -1,0 +1,182 @@
+{
+  "schema": "pqc_auth.gf_codecs_review_validation.v0_1",
+  "date": "2026-09-14",
+  "branch": "codex/threshold-gf-codecs-review-v0-1",
+  "review_target_commit": "8782d8ccd6bd77b52dd1b54d69fc1ff37d53a048",
+  "review_target_tree": "5819d211a718f15759c4b34cb22e2c18d2e00393",
+  "environment": {
+    "python": "3.12.9",
+    "platform": "Linux",
+    "machine": "x86_64"
+  },
+  "source_identities": [
+    {
+      "path": "docs/literature/threshold_backends/gf/codecs_review_v0_1/check_review_v0_1.py",
+      "bytes": 11835,
+      "sha256": "dbcaab2b90185e1031b50b80d87b574b88821cc94d7ea7e677346ec78aacd4b2"
+    },
+    {
+      "path": "docs/literature/threshold_backends/gf/codecs_review_v0_1/REVIEW_zh-TW.md",
+      "bytes": 6710,
+      "sha256": "0b8973dcaee37d4327ffc66b861db486f8a05623d027171806f637fd1a316e32"
+    },
+    {
+      "path": "docs/literature/threshold_backends/gf/codecs_review_v0_1/source_index_v0_1.json",
+      "bytes": 10512,
+      "sha256": "d40422a44e04de9eb2908d6b05b840d4e7720f71e0a9396a80e8e39eae028024"
+    },
+    {
+      "path": "docs/literature/threshold_backends/gf/README_zh-TW.md",
+      "bytes": 2566,
+      "sha256": "4cda7b621765e61b34b76fc0502c26d784a206d7893569904588131db0ba84cf"
+    }
+  ],
+  "review_experiments": {
+    "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:tests python docs/literature/threshold_backends/gf/codecs_review_v0_1/check_review_v0_1.py",
+    "result": {
+      "authentication_verified": false,
+      "binding_graph": {
+        "default_and_explicit_production_rejected": 512,
+        "mixed_graphs_rejected": 254,
+        "self_consistent_diagnostics": 2
+      },
+      "discrepancies": 0,
+      "elapsed_seconds": 3.688,
+      "external_independent_review": false,
+      "key_coefficients": {
+        "canonical_accepted": 27,
+        "out_of_range_rejected": 18
+      },
+      "packets": {
+        "common_pp": {
+          "one_bit_digest_accepted": 2048,
+          "single_bit_accepted": 2368,
+          "single_bit_rejected": 1544,
+          "zero_digest_rejected": 8
+        },
+        "issue_statement": {
+          "one_bit_digest_accepted": 256,
+          "single_bit_accepted": 1600,
+          "single_bit_rejected": 408,
+          "zero_digest_rejected": 1
+        },
+        "issue_witness": {
+          "one_bit_digest_accepted": 256,
+          "single_bit_accepted": 32870,
+          "single_bit_rejected": 1722,
+          "zero_digest_rejected": 1
+        },
+        "ticket_m": {
+          "one_bit_digest_accepted": 256,
+          "single_bit_accepted": 23680,
+          "single_bit_rejected": 360,
+          "zero_digest_rejected": 1
+        },
+        "trace_binding": {
+          "one_bit_digest_accepted": 1536,
+          "single_bit_accepted": 1856,
+          "single_bit_rejected": 664,
+          "zero_digest_rejected": 6
+        }
+      },
+      "production_qualified": false,
+      "schema": "pqc_auth.gf_codecs_review_experiments.v0_1"
+    },
+    "report_identity": {
+      "path": "/tmp/pqc-gf-codecs-review-experiments.json",
+      "bytes": 1324,
+      "sha256": "85cef3e20c7137fdf1aa9daee9eb9d3c8cf151cf6edf3485a5d43b7b915e7bcd"
+    }
+  },
+  "targeted_regression": {
+    "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python -m unittest discover -s tests/threshold_candidates -v",
+    "total": 90,
+    "passed": 90,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "elapsed_seconds": 12.674,
+    "log_identity": {
+      "path": "/tmp/pqc-gf-codecs-review-targeted.log",
+      "bytes": 13444,
+      "sha256": "f51b3a57c0e026e4ee948eb5a83228d32f4d6a5b69bea1f0ae711171e8ef7a2e"
+    }
+  },
+  "frozen_document_conformance": {
+    "command": "PYTHONDONTWRITEBYTECODE=1 python docs/literature/threshold_backends/gf/abi_v0_1/check_spec_v0_1.py",
+    "report_identity": {
+      "path": "/tmp/pqc-gf-codecs-review-spec.json",
+      "bytes": 1278,
+      "sha256": "46eab20e0c73baae4e82785591217f3c72967038859fc0b6155d2c92dcabd44d"
+    },
+    "report_matches_prior_exactly": true,
+    "structural_positives": 5,
+    "structural_negatives_rejected": 40
+  },
+  "prior_full_regression": {
+    "rerun_in_this_review": false,
+    "source_revision": "8782d8ccd6bd77b52dd1b54d69fc1ff37d53a048",
+    "source_summary": {
+      "path": "docs/literature/threshold_backends/gf/research_codecs_v0_1/validation_summary_v0_1.json",
+      "bytes": 7774,
+      "sha256": "859257dd2f0590ef251c85b3e1922554723f7350fc9acbd61df33edd5734977d"
+    },
+    "original_log_identity_rechecked": true,
+    "result": {
+      "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python -m unittest discover -s tests -v",
+      "total": 778,
+      "passed": 766,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 12,
+      "elapsed_seconds": 759.285,
+      "log_identity": {
+        "bytes": 132427,
+        "sha256": "7d2fec111677697dd363ebe4cc761de44e10bdd428523f3110046b5d4d4cc3a4"
+      },
+      "skip_reasons": {
+        "trusted external v2.19 recovery artifacts are not installed": 1,
+        "external v2.20 global-tail archive is not installed": 1,
+        "external v2.15 relocation assignment is not installed": 1,
+        "external v2.13 tree-0 assignment is not installed": 1,
+        "external v2.13 tree-0 execution cache is not installed": 1,
+        "external v2.14 replay artifacts are not installed": 1,
+        "external v2.14 tree-2 assignment is not installed": 1,
+        "external v2.22 tree-1 artifacts are not installed": 1,
+        "external v2.21 tree-2 artifacts are not installed": 1,
+        "external v2.23 tree-3 artifacts are not installed": 1,
+        "external v2.24 tree-4 artifacts are not installed": 1,
+        "external v2.25 batch artifacts are not installed": 1
+      }
+    },
+    "reason": "Review adds documentation and a separately executed experiment program; runtime source and existing tests are unchanged. Prior full results are historical, not a new run."
+  },
+  "scope": {
+    "runtime_source_changed": false,
+    "existing_tests_changed": false,
+    "frozen_ABI_changed": false,
+    "root_canonical_changed": false,
+    "other_lanes_changed": false
+  },
+  "findings": [],
+  "claims": {
+    "same_author_technical_review": true,
+    "finite_codec_differential_checks_passed": true,
+    "research_mixed_graph_checks_passed": true,
+    "external_independent_review": false,
+    "paper_verification_added": false,
+    "authentication_verified": false,
+    "key_origin_certification_verified": false,
+    "full_I1_I5_constraints_integrated": false,
+    "threshold_implemented": false,
+    "evidence_sealed": false,
+    "proof_closed": false,
+    "production_closed": false
+  },
+  "limitations": [
+    "The bit-mask oracle derives grammar from the same frozen ABI; finite differential agreement is not a formal proof.",
+    "Graph fixtures share existing test helpers, system builders and reference KeyGen; the second graph does not assert I5.",
+    "Canonical byte acceptance and hash equality do not establish cryptographic validity or trust.",
+    "Raw logs, packets, secret inputs, PDFs and downloaded artifacts are kept out of Git."
+  ]
+}

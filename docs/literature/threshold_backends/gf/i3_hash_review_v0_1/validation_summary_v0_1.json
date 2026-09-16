@@ -1,0 +1,180 @@
+{
+  "schema": "pqc_auth.gf_i3_hash_review_validation.v0_1",
+  "date": "2026-09-14",
+  "branch": "codex/threshold-gf-i3-hash-review-v0-1",
+  "review_target_commit": "2289fb2e5eee25ed12574f70b7f1831b3fa682a0",
+  "review_target_tree": "f8e675b142d9c0edce564b80878e1d124f57bbab",
+  "environment": {
+    "python": "3.12.9",
+    "platform": "Linux",
+    "machine": "x86_64"
+  },
+  "review_experiment": {
+    "command": "PYTHONDONTWRITEBYTECODE=1 python docs/literature/threshold_backends/gf/i3_hash_review_v0_1/check_review_v0_1.py",
+    "elapsed_seconds": 599.295,
+    "exit_code": 0,
+    "report_identity": {
+      "path": "/tmp/pqc-gf-i3-hash-review-experiment.json",
+      "bytes": 1149,
+      "sha256": "6af2f9acbb25f580896ee52cfe3dd3d665062bc7bc4a89f51d59778c4090f4bc"
+    },
+    "result": {
+      "CAP_executed": false,
+      "CAP_profile_sha256": "2ac471f8d7c6cb4e6352bbc5a2eb7f9394b807ff132aec8cadebd696f7b1fa38",
+      "additional_numeric_boundaries_accepted": 2,
+      "additional_type_length_rejections": 6,
+      "candidate_grammar_disagreements": 0,
+      "candidate_single_bit_mutations": {
+        "accepted": 42536,
+        "rejected": 592,
+        "total": 43128
+      },
+      "external_independent_review": false,
+      "flow_beta_status_counts": {
+        "failed": 2,
+        "matched_unverified_cap": 2,
+        "not_evaluated": 124
+      },
+      "flow_combinations": 128,
+      "full_I3_verified": false,
+      "precomputed_oracle_image_reused_for_flow_only": true,
+      "production_closed": false,
+      "proof_closed": false,
+      "public_candidate_rejections_before_partial_crypto": 592,
+      "purpose_preparse_rejections": 4,
+      "raw_private_values_emitted": false,
+      "real_hash_differential_cases": {
+        "matched": 3,
+        "permutation_input_states_compared_per_case": [
+          58,
+          58,
+          58,
+          58
+        ],
+        "wrong_u32_transcript_beta_rejected": 1
+      },
+      "schema": "pqc_auth.gf_i3_hash_review_experiment.v0_1",
+      "shared_Anemoi_permutation": true,
+      "status_or_call_order_disagreements": 0
+    }
+  },
+  "optimization_guard": {
+    "command": "PYTHONOPTIMIZE=1 PYTHONDONTWRITEBYTECODE=1 python docs/literature/threshold_backends/gf/i3_hash_review_v0_1/check_review_v0_1.py",
+    "expected_nonzero_exit": true,
+    "actual_exit_code": 1,
+    "stdout_empty": true,
+    "log_identity": {
+      "path": "/tmp/pqc-gf-i3-hash-review-optimization.log",
+      "bytes": 316,
+      "sha256": "ff6210441a8af05677c90b07eb7a0adf0aa4dc136b9e3cb74acc8be23fe4b454"
+    }
+  },
+  "targeted_tests": {
+    "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python -m unittest discover -s tests/threshold_candidates -v",
+    "executed_this_review": true,
+    "total": 142,
+    "passed": 142,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "elapsed_seconds": 49.059,
+    "log_identity": {
+      "path": "/tmp/pqc-gf-i3-hash-review-targeted.log",
+      "bytes": 22550,
+      "sha256": "528251ccbc19a943e6e518c38200d527d8e57e670e3532c3aabb47b0d238c1be"
+    }
+  },
+  "historical_full_regression": {
+    "executed_this_review": false,
+    "recorded_for_target_commit": "2289fb2e5eee25ed12574f70b7f1831b3fa682a0",
+    "summary_identity": {
+      "path": "docs/literature/threshold_backends/gf/i3_hash_join_v0_1/validation_summary_v0_1.json",
+      "bytes": 8218,
+      "sha256": "fe5b67ad06a418153512eefe01f8b72a4b3da9514336f7257fff295d9b7e5a9a"
+    },
+    "log_size_and_sha256_rechecked": true,
+    "result": {
+      "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python -m unittest discover -s tests -v",
+      "total": 830,
+      "passed": 818,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 12,
+      "elapsed_seconds": 791.507,
+      "log_identity": {
+        "path": "/tmp/pqc-gf-i3-hash-full.log",
+        "bytes": 142624,
+        "sha256": "3d9340ba45f37bf3493765a102e9ab87fb463267d438c1bc778468ee6c195580"
+      },
+      "skip_reasons": {
+        "trusted external v2.19 recovery artifacts are not installed": 1,
+        "external v2.20 global-tail archive is not installed": 1,
+        "external v2.15 relocation assignment is not installed": 1,
+        "external v2.13 tree-0 assignment is not installed": 1,
+        "external v2.13 tree-0 execution cache is not installed": 1,
+        "external v2.14 replay artifacts are not installed": 1,
+        "external v2.14 tree-2 assignment is not installed": 1,
+        "external v2.22 tree-1 artifacts are not installed": 1,
+        "external v2.21 tree-2 artifacts are not installed": 1,
+        "external v2.23 tree-3 artifacts are not installed": 1,
+        "external v2.24 tree-4 artifacts are not installed": 1,
+        "external v2.25 batch artifacts are not installed": 1
+      }
+    },
+    "reuse_reason": "All src/ and tests/ bytes match the target commit. This review adds only literature review source/docs/index/summary; related threshold tests were rerun."
+  },
+  "new_findings": [],
+  "source_identities": [
+    {
+      "path": "docs/literature/threshold_backends/gf/i3_hash_review_v0_1/check_review_v0_1.py",
+      "bytes": 15632,
+      "sha256": "d0a60c52e5d7b3a00388b3115f4b0806b84b11cad324210dbdbfe74cf9b410b3"
+    },
+    {
+      "path": "docs/literature/threshold_backends/gf/i3_hash_review_v0_1/REVIEW_zh-TW.md",
+      "bytes": 8608,
+      "sha256": "5f713d09f737b845c5393b579bd00732d8ffde9be91d08fe73184492e4b23a18"
+    },
+    {
+      "path": "docs/literature/threshold_backends/gf/i3_hash_review_v0_1/source_index_v0_1.json",
+      "bytes": 15795,
+      "sha256": "56920e81f75211b2e210134228b499729b2a33038411c4e95688164e26da1a13"
+    },
+    {
+      "path": "docs/literature/threshold_backends/gf/README_zh-TW.md",
+      "bytes": 3825,
+      "sha256": "3d48a1c5f9a568ca84718deb4325cf55a557d57f1675e3f7b7b0397384b194ce"
+    }
+  ],
+  "claims": {
+    "same_author_technical_review_completed": true,
+    "bounded_grammar_differential_passed": true,
+    "sponge_framing_padding_and_packing_compared": true,
+    "failure_order_and_safe_statuses_compared": true,
+    "shared_Anemoi_permutation_independently_verified": false,
+    "CAP_candidate_admissibility_verified": false,
+    "CAP_rho_execution_verified": false,
+    "CAP_derived_mask_verified": false,
+    "full_I3_verified": false,
+    "configuration_authentication_verified": false,
+    "key_origin_certification_verified": false,
+    "backend_qualification_verified": false,
+    "B_owner_acceptance_verified": false,
+    "native_constraints_integrated": false,
+    "full_relation_verified": false,
+    "witness_free_proof_verifier_implemented": false,
+    "threshold_implemented": false,
+    "paper_verified_full_instantiation": false,
+    "external_independent_review": false,
+    "evidence_sealed": false,
+    "proof_closed": false,
+    "production_closed": false
+  },
+  "scope": {
+    "runtime_and_tests_unchanged": true,
+    "root_canonical_edited": false,
+    "other_owner_worktree_edited": false,
+    "private_or_large_artifacts_added": false,
+    "merge_or_push_performed": false
+  }
+}

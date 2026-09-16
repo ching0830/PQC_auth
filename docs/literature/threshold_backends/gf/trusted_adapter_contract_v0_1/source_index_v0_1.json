@@ -1,0 +1,167 @@
+{
+  "schema": "pqc_auth.gf_trusted_adapter_sources.v0_1",
+  "date": "2026-09-14",
+  "base_commit": "00ec5c66c0238e12b4f43b0a5842f529713a9c58",
+  "base_tree": "96c0ff8524ff78d08d6f498e9f89b672e18ee0eb",
+  "canonical_main_at_start": "6f6d8c832c0f90d69d96ffe3abd0dcc8b8c562bb",
+  "prior_inventory": {
+    "path": "docs/literature/threshold_backends/source_inventory_v1.json",
+    "bytes": 13449,
+    "sha256": "8450774feaa2a1e91e394cfbccdc5bc33ac17106a1330be3ef56bccb3cd3ddb5",
+    "revision": "00ec5c66c0238e12b4f43b0a5842f529713a9c58"
+  },
+  "prior_review_summary": {
+    "path": "docs/literature/threshold_backends/gf/codecs_review_v0_1/validation_summary_v0_1.json",
+    "bytes": 7055,
+    "sha256": "92da4c90a64f0df00d6306ae2480650f5c9cb811ec191e28097fb321aed73aa3",
+    "revision": "00ec5c66c0238e12b4f43b0a5842f529713a9c58"
+  },
+  "identity_rechecks": {
+    "canonical_research_policy": 19,
+    "attachments": 5,
+    "prior_review_inputs": 4,
+    "matched": true
+  },
+  "repository_sources": [
+    {
+      "source_id": "protocol_guide",
+      "path": "docs/guides/PROTOCOL_TO_IMPLEMENTATION_GUIDE_zh-TW.md",
+      "revision": "00ec5c66c0238e12b4f43b0a5842f529713a9c58",
+      "bytes": 17194,
+      "sha256": "1c1dbee7695b04e715c66403b24be758a67ea7eb7c36b819f1918715ebf4001c",
+      "locators": "Sections 2 and 5: evaluator/circuit/replay/proof separation",
+      "access": "read_only_committed_source"
+    },
+    {
+      "source_id": "wire_contract",
+      "path": "docs/literature/threshold_backends/gf/abi_v0_1/contract_v0_1.json",
+      "revision": "00ec5c66c0238e12b4f43b0a5842f529713a9c58",
+      "bytes": 9376,
+      "sha256": "1f269b737a067f4647c1e6b64b4dbff3194bf24638be682c85ac2dc25c7c50a3",
+      "locators": "Complete frozen layouts, profiles, partition and false claims",
+      "access": "read_only_committed_source"
+    },
+    {
+      "source_id": "binding_spec",
+      "path": "docs/literature/threshold_backends/gf/abi_v0_1/SPEC_zh-TW.md",
+      "revision": "00ec5c66c0238e12b4f43b0a5842f529713a9c58",
+      "bytes": 12924,
+      "sha256": "6545058672be4bbc2f1c55a2cae7511e16de31b9f170eb62da2f4ae9d77df724",
+      "locators": "Sections 3-5: trust, artifact cycles, I1-I5 and opening",
+      "access": "read_only_committed_source"
+    },
+    {
+      "source_id": "system_bundle",
+      "path": "src/pq_rbbc/contracts/system.py",
+      "revision": "00ec5c66c0238e12b4f43b0a5842f529713a9c58",
+      "bytes": 14030,
+      "sha256": "4063a8ef0ad45e74f52abe4423c396b1668176d2f9ada4b24bea2724af17c4fc",
+      "locators": "L32-39 role separation; L244-374 SystemInitializationBundle validation/codec",
+      "access": "read_only_committed_source"
+    },
+    {
+      "source_id": "system_auth",
+      "path": "src/pq_rbbc/governance/system_init.py",
+      "revision": "00ec5c66c0238e12b4f43b0a5842f529713a9c58",
+      "bytes": 7610,
+      "sha256": "d31867c4520ba9ba28fcac5578b53c147245270f3645a05cb5d03991e4e93df2",
+      "locators": "L25-42 domain and abstract verifier; L113-162 exact bundle/trust-key/backend acceptance",
+      "access": "read_only_committed_source"
+    },
+    {
+      "source_id": "system_auth_tests",
+      "path": "tests/system_modules/governance/test_system_init.py",
+      "revision": "00ec5c66c0238e12b4f43b0a5842f529713a9c58",
+      "bytes": 10609,
+      "sha256": "55dc32d34c99327a85c3d92f269fd780e2410025d121411ec84ceeb15656c52e",
+      "locators": "L78-99 deterministic DigestTestVerifier and envelope; L196-272 authentication control-flow tests",
+      "access": "read_only_committed_source"
+    },
+    {
+      "source_id": "research_bindings",
+      "path": "src/pq_threshold_candidates/gf/research_abi_v0_1/bindings.py",
+      "revision": "00ec5c66c0238e12b4f43b0a5842f529713a9c58",
+      "bytes": 5509,
+      "sha256": "57514f6d22f8f9bce6b5d11208687b7834156ccdbb5b087dc4a5a6a1ed13de89",
+      "locators": "L66-124 default production refusal and research identity-only flow",
+      "access": "read_only_committed_source"
+    },
+    {
+      "source_id": "research_codecs",
+      "path": "src/pq_threshold_candidates/gf/research_abi_v0_1/codecs.py",
+      "revision": "00ec5c66c0238e12b4f43b0a5842f529713a9c58",
+      "bytes": 8822,
+      "sha256": "6c7d58803181291fb579cbbfe03f9603bf4d8fcb71aa76ca17648dbbc2f867be",
+      "locators": "L25-52 digest/CAP shape; L134-251 research packets; L254-260 full key record identity",
+      "access": "read_only_committed_source"
+    },
+    {
+      "source_id": "GF_reference",
+      "path": "src/pq_threshold_candidates/gf/reference.py",
+      "revision": "00ec5c66c0238e12b4f43b0a5842f529713a9c58",
+      "bytes": 11058,
+      "sha256": "58362248066333fcecada7960ab6951f08a7316a0a9a064a7ef09ec3a375ef06",
+      "locators": "L165-185 reference KeyGen; L230-281 encryption/decryption/I5; no threshold or origin certificate",
+      "access": "read_only_committed_source"
+    },
+    {
+      "source_id": "CAP_commit",
+      "path": "src/pq_rbbc_cap_commit.py",
+      "revision": "00ec5c66c0238e12b4f43b0a5842f529713a9c58",
+      "bytes": 32526,
+      "sha256": "be3a2a767561f009acc2a274a85410ae6e02e23abd24145aa1d61883dd2dceee",
+      "locators": "L122-133 legacy18 parameters; L335-353 rho serialization; L666-679 derived_mask",
+      "access": "read_only_committed_source"
+    },
+    {
+      "source_id": "CAP_request",
+      "path": "src/pq_rbbc_blind_uov_abi.py",
+      "revision": "00ec5c66c0238e12b4f43b0a5842f529713a9c58",
+      "bytes": 47227,
+      "sha256": "575de440a2477e24e562ceb0f3049a13deff6031f3aa434609b7752b631491a2",
+      "locators": "L235-268 request_from_production_cap: derived mask and H_RBBC request",
+      "access": "read_only_committed_source"
+    },
+    {
+      "source_id": "B_formal_relation",
+      "path": "src/pq_rbbc_issuance_relation_v1.py",
+      "revision": "ff4341bfa18f4cd77c2811e26a7753397cfe7fe8",
+      "bytes": 31165,
+      "sha256": "4c0db79e896824c77ef869fdfa2c8fc3e26c9942e12c0a49526f2b54bfbbf57e",
+      "locators": "L321-344 insecure hash-shape I3; L364-438 production refusal and test-only NIED I5",
+      "access": "read_only_committed_source"
+    },
+    {
+      "source_id": "B_production_inputs",
+      "path": "src/pq_rbbc_issuance_production_inputs_v1.py",
+      "revision": "e7af82e1e2c176485c03e08dad0e221adf0ee1e9",
+      "bytes": 40304,
+      "sha256": "7f57417efcea41bc94f477966dfaf629475b39b0ed1c0a4e389d4de10657357f",
+      "locators": "L268-412 NIED key/common PP; L415-503 CAP parser/r equality and legacy18 execution refusal; L707-809 qualification remains false",
+      "access": "read_only_committed_source"
+    },
+    {
+      "source_id": "ticket_verification",
+      "path": "src/pq_rbbc/tickets/verification.py",
+      "revision": "ecab1d9919d8627fb96fc986008a961a82a37df8",
+      "bytes": 16349,
+      "sha256": "d90bc314620e1ee0c8d822f0ccb6a371e4f1f56d2da60dda3ca6eff43f3fef14",
+      "locators": "L40-41,77-125 fixed 368-byte NIED M and payload digest; L283-370 verifier and TicketView",
+      "access": "read_only_committed_source"
+    },
+    {
+      "source_id": "opening_interfaces",
+      "path": "src/pq_rbbc/opening/interfaces.py",
+      "revision": "ecab1d9919d8627fb96fc986008a961a82a37df8",
+      "bytes": 7144,
+      "sha256": "80ddc2287609f8c748e3a10fa901c6b3a09cc3f6982cb7baf944414cf3a13f2c",
+      "locators": "L40-67 TicketView; L120-149 ThresholdOpeningContext; h/AD absent",
+      "access": "read_only_committed_source"
+    }
+  ],
+  "scope": [
+    "Only committed sources at the listed revisions were used; other worktrees were not edited or imported for execution.",
+    "Original attachment names/revisions/bytes/digests and source limitations remain in the linked exact inventory.",
+    "No new paper-verified, publisher byte-equivalence, certificate, reviewer attestation or cryptographic qualification claim."
+  ]
+}

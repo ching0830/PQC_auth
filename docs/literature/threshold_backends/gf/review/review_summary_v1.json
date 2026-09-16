@@ -1,0 +1,225 @@
+{
+  "schema": "pqc_auth.threshold_gf_tb2_review_summary.v1",
+  "date": "2026-09-13",
+  "branch": "codex/threshold-gf-tb2-review",
+  "review_target_commit": "b003c3d61ca8fa3382fc85848f81efaace634278",
+  "review_target_tree": "57b3ec1dbd6dafba7aff3c671a36047125cefa90",
+  "main_at_start": "6f6d8c832c0f90d69d96ffe3abd0dcc8b8c562bb",
+  "review_method": {
+    "same_author_review": true,
+    "separately_coded_arithmetic_and_full_decrypt_oracle": true,
+    "external_independent_reviewer_attestation": false,
+    "external_KAT": false,
+    "oracle_imports": [
+      "fractions",
+      "hashlib",
+      "struct"
+    ],
+    "oracle_keygen_independent": false,
+    "shared_dependencies": [
+      "Python bigint",
+      "stdlib SHAKE256",
+      "local runtime",
+      "reference KeyGen fixtures and R1"
+    ],
+    "cross_calculation_key_count": 3,
+    "witnesses_per_key": 4,
+    "full_ciphertext_and_decryption_cases": 12,
+    "ciphertext_component_mutations": 10,
+    "associated_data_mutations": 6,
+    "inner_serial_mismatch_cases": 1,
+    "oracle_only_malformed_record_cases": 4
+  },
+  "paper_source": {
+    "filename": "2021-096.pdf",
+    "bytes": 695683,
+    "sha256": "b730d4640218b5ea86b019a52501be2e4682b562e61a468abd08658ee393678e",
+    "source_id": "SRC-GF",
+    "title": "Gladius: LWR based efficient hybrid public key encryption with distributed decryption",
+    "kind": "user_supplied_pdf",
+    "declared_revision": null,
+    "catalog_revision": "2021-08-31 last of 5 revisions; received 2021-01-27",
+    "source_url": "https://eprint.iacr.org/2021/096",
+    "pdf_creation_date_raw": "D:20210831115837+02'00'",
+    "pdf_modification_date_raw": "D:20210831115837+02'00'",
+    "pdf_pages": 57,
+    "revision_attribution": "catalog_and_pdf_metadata_consistent; publisher_revision_byte_match_unconfirmed",
+    "remote_pdf_identity_verified": false,
+    "reviewed_locators": [
+      "p. 8 centered convention/CBD",
+      "p. 24 Figure 5 Hybrid2",
+      "p. 45 Figure 14 Pompeii"
+    ],
+    "attachment_instructions_are_authorization": false
+  },
+  "unchanged_source_audit": {
+    "source_inventory": {
+      "path": "docs/literature/threshold_backends/source_inventory_v1.json",
+      "bytes": 13449,
+      "sha256": "8450774feaa2a1e91e394cfbccdc5bc33ac17106a1330be3ef56bccb3cd3ddb5"
+    },
+    "canonical_research_policy_identities_verified": 19,
+    "tb2_summary": {
+      "path": "docs/literature/threshold_backends/gf/tb2_evidence_summary_v1.json",
+      "bytes": 7293,
+      "sha256": "058f0a29cff1b120e6ad99289c8f09b0e2b7ca41c3d71a363c6b0533065cf124"
+    },
+    "tb2_code_test_profile_identities_verified": 10,
+    "comparison": "Exact bytes/SHA-256 against the tracked source inventory and historical TB2 summary; not a new paper verification claim for all inventory entries."
+  },
+  "read_only_B_sources": [
+    {
+      "branch_observed": "codex/pq-rbbc-formal-issuance-relation-v1",
+      "revision": "ff4341bfa18f4cd77c2811e26a7753397cfe7fe8",
+      "path": "src/pq_rbbc_issuance_relation_v1.py",
+      "bytes": 31165,
+      "sha256": "4c0db79e896824c77ef869fdfa2c8fc3e26c9942e12c0a49526f2b54bfbbf57e",
+      "access": "read_only; not executed, imported, edited or integrated"
+    },
+    {
+      "branch_observed": "codex/pq-rbbc-issuance-production-inputs-v1",
+      "revision": "e7af82e1e2c176485c03e08dad0e221adf0ee1e9",
+      "path": "src/pq_rbbc_issuance_production_inputs_v1.py",
+      "bytes": 40304,
+      "sha256": "7f57417efcea41bc94f477966dfaf629475b39b0ed1c0a4e389d4de10657357f",
+      "access": "read_only; not executed, imported, edited or integrated"
+    }
+  ],
+  "review_source_identities": [
+    {
+      "path": "tests/threshold_candidates/gf/review/__init__.py",
+      "bytes": 64,
+      "sha256": "f80e4ac23ba57f0060868643b3defe4fd04d74dba3dbc05b9e6fbe5488f9a2fe"
+    },
+    {
+      "path": "tests/threshold_candidates/gf/review/oracle.py",
+      "bytes": 6729,
+      "sha256": "50154f310180b93f8b38d262ededd71a46e9869b72b2e5ce130c440e8db5dc52"
+    },
+    {
+      "path": "tests/threshold_candidates/gf/review/test_review.py",
+      "bytes": 5791,
+      "sha256": "0b2a7d55b45866023ddfe0bb6db5b22ab8152c6930b83168e876fecc1c1b34c2"
+    },
+    {
+      "path": "docs/literature/threshold_backends/gf/I5_INTERFACE_REQUEST_zh-TW.md",
+      "bytes": 4616,
+      "sha256": "6c29dfb7f81c4695176b47d006e22386d88cc23f1260a8213de8f26f4cf0369b"
+    },
+    {
+      "path": "docs/literature/threshold_backends/gf/README_zh-TW.md",
+      "bytes": 1909,
+      "sha256": "a9da5119b3dbf19d75657ef888de010c16feab0f79e95fa87a33454a4ffe3cd4"
+    },
+    {
+      "path": "docs/literature/threshold_backends/gf/review/REVIEW_zh-TW.md",
+      "bytes": 8043,
+      "sha256": "174ddb9edd4dc52948e258304c0709263a24b1c4cb14f09faa0b487bd904a146"
+    },
+    {
+      "path": "docs/literature/threshold_backends/gf/review/KEY_BINDING_ACCEPTANCE_zh-TW.md",
+      "bytes": 4730,
+      "sha256": "e099971bd1833e8cd655494b50f849f4888f23df342e2ca88a07c7d0594d5584"
+    }
+  ],
+  "new_review_tests": {
+    "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python -m unittest discover -s tests/threshold_candidates/gf/review -t tests -v",
+    "total": 6,
+    "passed": 6,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "elapsed_seconds": 6.352,
+    "log_identity": null,
+    "result_source": "tool output; standalone log not retained; all six also included in retained targeted/full logs"
+  },
+  "targeted_tests": {
+    "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python -m unittest discover -s tests/threshold_candidates -v",
+    "total": 60,
+    "passed": 60,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "elapsed_seconds": 11.105,
+    "log_identity": {
+      "bytes": 8174,
+      "sha256": "ed204618d41a08925621ffbea60999599b6ca97e802e1d27d0478b339742e781"
+    },
+    "skip_reasons": {}
+  },
+  "full_regression": {
+    "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python -m unittest discover -s tests -v",
+    "total": 748,
+    "passed": 736,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 12,
+    "elapsed_seconds": 759.093,
+    "log_identity": {
+      "bytes": 126527,
+      "sha256": "4d90697c6bc0eb33e2ed745e8d88e424f69f5091fd525e904a5182021a7f80b1"
+    },
+    "skip_reasons": {
+      "trusted external v2.19 recovery artifacts are not installed": 1,
+      "external v2.20 global-tail archive is not installed": 1,
+      "external v2.15 relocation assignment is not installed": 1,
+      "external v2.13 tree-0 assignment is not installed": 1,
+      "external v2.13 tree-0 execution cache is not installed": 1,
+      "external v2.14 replay artifacts are not installed": 1,
+      "external v2.14 tree-2 assignment is not installed": 1,
+      "external v2.22 tree-1 artifacts are not installed": 1,
+      "external v2.21 tree-2 artifacts are not installed": 1,
+      "external v2.23 tree-3 artifacts are not installed": 1,
+      "external v2.24 tree-4 artifacts are not installed": 1,
+      "external v2.25 batch artifacts are not installed": 1
+    }
+  },
+  "findings": [
+    {
+      "id": "GFR-01",
+      "priority": "P2",
+      "category": "interface_documentation_claim_boundary",
+      "summary": "I5 relation validity does not universally authenticate expected public-key identity.",
+      "counterexample": {
+        "witness": "all-zero legal 1024-bit u; generated by the regression, no witness record attached",
+        "distinct_correctly_generated_public_keys": true,
+        "same_ciphertext_across_keys": true,
+        "relation_under_other_key_accepts": true,
+        "other_key_decryption_matches_plaintext": true,
+        "same_caller_supplied_ctx": true
+      },
+      "honest_uniform_zero_probability": "2^-1024",
+      "claims_not_established": [
+        "honest-encryption privacy break",
+        "fixed-tpk different-plaintext opening counterexample",
+        "bypass of authenticated canonical ci/ctx federation configuration"
+      ],
+      "documentation_fix": "complete",
+      "candidate_regression": "passed",
+      "trusted_identity_binding_integration": "open",
+      "algorithm_change": false
+    }
+  ],
+  "claims": {
+    "same_author_technical_review_complete": true,
+    "reference_differential_checks_passed": true,
+    "cryptographic_algorithm_changed": false,
+    "frozen_profile_changed": false,
+    "historical_TB2_checkpoint_or_evidence_changed": false,
+    "common_ABI_changed": false,
+    "B_issuance_ABI_integrated": false,
+    "opening_ABI_integrated": false,
+    "threshold_implemented": false,
+    "TB3_started": false,
+    "external_independent_review_attestation": false,
+    "evidence_sealed": false,
+    "proof_closed": false,
+    "production_closed": false
+  },
+  "limitations": [
+    "Finite test cases do not supply cryptographic failure bounds or a security proof.",
+    "Witness reuse can repeat the OTP; I5 does not certify fresh randomness.",
+    "Trusted key/profile/pp/ctx binding and witness/M ABI integration remain open.",
+    "Original PDFs, extracted paper text, raw logs, secret key material and serialized witnesses are not repository deliverables."
+  ]
+}

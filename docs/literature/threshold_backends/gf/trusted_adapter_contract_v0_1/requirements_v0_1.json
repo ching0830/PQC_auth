@@ -1,0 +1,139 @@
+{
+  "schema": "pqc_auth.gf_trusted_adapter_requirements.v0_1",
+  "status": "proposal_only",
+  "wire_abi_sha256": "97e97589fdcb293101e866a3233b38e1f48c9bdbe5ad9ddc1daabe5f2b410158",
+  "crypto_profile_sha256": "3077ddb7e9f90c2a551c0fccff8719655b5e852394aa4e9326c9a7801225a9b7",
+  "wire_purpose": 1,
+  "oa_role": 5,
+  "configuration_auth_role": 1,
+  "initialization_auth_domain_hex": "50512d524242432f53595354454d2d494e49542d415554482f5631",
+  "authentication_scope": "exact_canonical_public_initialization_bundle",
+  "production_policy": "unconditionally_unavailable_for_this_research_ABI",
+  "packet_bytes": {
+    "trace_binding": 315,
+    "common_pp": 489,
+    "ticket_m": 3005,
+    "issue_statement": 251,
+    "issue_witness": 4324,
+    "public_key_record": 22590,
+    "trace_u": 128,
+    "cap_randomness": 1036,
+    "blind_mask": 72,
+    "beta": 72
+  },
+  "bridge": {
+    "cap_profile_sha256": "2ac471f8d7c6cb4e6352bbc5a2eb7f9394b807ff132aec8cadebd696f7b1fa38",
+    "h_rbbc_profile_sha256": "4fa0eb276ebba70a9f6c2f38f3f55d197c094121a2b614cc6ef9b7e8522cac87",
+    "cap_tree_count": 18,
+    "r_equals_CAP_derived_mask_required": true
+  },
+  "service_order": [
+    "purpose_gate",
+    "bounded_immutable_capture",
+    "authenticate_initialization",
+    "strict_byte_bindings",
+    "verify_key_origin",
+    "qualify_GF_relation_backend",
+    "evaluate_or_verify"
+  ],
+  "service_owned_inputs": [
+    "configuration_trust_anchor_and_key_resolver",
+    "configuration_signature_backend_and_profile_policy",
+    "key_origin_model_and_certifier_policy",
+    "GF_relation_backend_and_setup_policy"
+  ],
+  "forbidden_request_overrides": [
+    "configuration_trust_anchor_and_key_resolver",
+    "configuration_signature_backend_and_profile_policy",
+    "key_origin_model_and_certifier_policy",
+    "GF_relation_backend_and_setup_policy",
+    "accepted_receipt"
+  ],
+  "key_origin_expected_fields": [
+    "abi_sha256",
+    "crypto_profile_sha256",
+    "configuration_sha256",
+    "ctx",
+    "epoch",
+    "oa_role",
+    "purpose",
+    "oa_key_id",
+    "tpk_record_sha256",
+    "origin_model_id",
+    "certifier_policy_id"
+  ],
+  "construction_dependencies": {
+    "profiles": [],
+    "key_material": [],
+    "configuration": ["key_material"],
+    "key_origin_evidence": ["profiles", "key_material", "configuration"],
+    "trace_binding": ["profiles", "key_material", "configuration", "key_origin_evidence"],
+    "gf_relation_manifest": ["profiles", "trace_binding"],
+    "issue_backend_pp": ["key_material", "trace_binding", "gf_relation_manifest"],
+    "common_pp": ["trace_binding", "gf_relation_manifest", "issue_backend_pp"],
+    "initialization_bundle": ["key_material", "configuration", "common_pp"],
+    "authenticated_initialization": ["initialization_bundle"]
+  },
+  "dependency_semantics": "construction_prerequisites_and_embedded_identities_not_new_wire_fields",
+  "per_ticket_inputs_forbidden_in_setup": [
+    "sid", "rid", "M", "sn", "h", "C", "d_M", "r", "rho", "u", "k_hold"
+  ],
+  "public_statement_semantic": ["pp", "ctx", "sid", "rid", "beta"],
+  "private_witness_semantic": ["M", "r", "rho", "k_hold", "u"],
+  "research_evaluator_inputs": ["common_pp", "tpk_record", "statement", "witness"],
+  "proof_verifier_inputs": ["common_pp", "statement", "proof"],
+  "native_join_requirements": {
+    "J01": "M.pp == statement.pp == SHA256(full_common_pp)",
+    "J02": "M.ctx == statement.ctx == authenticated_configuration.ctx",
+    "J03": "d_M = SHAKE256(PQ-RBBC/TICKET || full_3005_byte_M, 32)",
+    "J04": "witness.r == CAP(witness.rho).derived_mask",
+    "J05": "statement.beta == witness.r XOR H_RBBC(J03.d_M, J04.CAP_commitment)",
+    "J06": "M.h == SHAKE256(PQ-RBBC/HOLD || witness.k_hold, 32)",
+    "J07": "I5.ad = M.ctx || M.sn || M.h; I5.plaintext = statement.rid || M.sn",
+    "J08": "all_c1_c2_c3_c4 == GF_Encrypt(same_canonical_tpk, J07.inputs, same_u128)"
+  },
+  "owner_deliverables": {
+    "S-AUTH": {
+      "owners": ["system"],
+      "required": ["signature_backend", "trusted_key_resolution", "profile_qualification", "acceptance_tests"],
+      "accepted": false
+    },
+    "T-ORIGIN": {
+      "owners": ["T", "system"],
+      "required": ["origin_model", "evidence_codec_and_domain", "certifier_policy", "evidence_verifier", "acceptance_tests"],
+      "accepted": false
+    },
+    "B-QUAL": {
+      "owners": ["B"],
+      "required": ["GF_backend_PP", "GF_full_relation_manifest", "setup_and_backend_qualification", "acceptance_tests"],
+      "accepted": false
+    },
+    "B-EVAL": {
+      "owners": ["B"],
+      "required": ["GF_witness_evaluator", "native_J01_J08_constraints", "mutation_and_replay_evidence"],
+      "accepted": false
+    },
+    "B-VERIFY": {
+      "owners": ["B"],
+      "required": ["witness_free_VerifyIssue", "proof_codec", "qualified_proof_backend", "acceptance_tests"],
+      "accepted": false
+    }
+  },
+  "acceptance_ids": [
+    "TA01", "TA02", "TA03", "TA04", "TA05", "TA06", "TA07", "TA08",
+    "TA09", "TA10", "TA11", "TA12", "TA13", "TA14", "TA15", "TA16"
+  ],
+  "claims": {
+    "adapter_requirements_defined": true,
+    "adapter_requirements_owner_accepted": false,
+    "authentication_adapter_implemented": false,
+    "key_origin_verifier_implemented": false,
+    "GF_full_relation_integrated": false,
+    "witness_free_proof_verifier_implemented": false,
+    "acceptance_matrix_cryptographically_tested": false,
+    "external_independent_review": false,
+    "evidence_sealed": false,
+    "proof_closed": false,
+    "production_closed": false
+  }
+}

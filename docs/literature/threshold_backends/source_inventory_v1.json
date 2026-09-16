@@ -1,0 +1,324 @@
+{
+  "schema_id": "pqc_auth.threshold_source_inventory.v1",
+  "audit_date": "2026-09-13",
+  "audit_timezone": "Asia/Taipei",
+  "scope": "pre_TB0_TB1_source_audit_only",
+  "repository_base_commit": "6f6d8c832c0f90d69d96ffe3abd0dcc8b8c562bb",
+  "branch": "codex/threshold-source-audit",
+  "inputs": [
+    {
+      "filename": "2017-956.pdf",
+      "bytes": 655125,
+      "sha256": "8123d5e1ae1d67f054f6f55d4026bb6d3248356cde1a261c66137fd46bcc45b5",
+      "source_id": "SRC-UT",
+      "title": "Threshold Cryptosystems From Threshold Fully Homomorphic Encryption",
+      "kind": "user_supplied_pdf",
+      "declared_revision": null,
+      "catalog_revision": "2017-09-29 received; catalog: Preprint, MINOR revision",
+      "source_url": "https://eprint.iacr.org/2017/956",
+      "pdf_creation_date_raw": "D:20170927094725-07'00'",
+      "pdf_modification_date_raw": "D:20170927094725-07'00'",
+      "pdf_pages": 61,
+      "revision_attribution": "catalog_and_pdf_metadata_consistent; publisher_revision_byte_match_unconfirmed",
+      "remote_pdf_identity_verified": false,
+      "reviewed_locators": [
+        "Definition 7.1–7.6, pp. 24–26",
+        "Construction 7.7 and Theorems 7.8–7.12, pp. 26–27",
+        "Definitions 8.23–8.28 and Construction 8.29, pp. 34–36",
+        "Theorems 8.30–8.34, p. 36",
+        "Definition A.7, p. 44",
+        "Appendix E.4, pp. 55–56",
+        "Appendix E.5, pp. 56–57",
+        "Appendix G, pp. 59–61"
+      ],
+      "attachment_instructions_are_authorization": false
+    },
+    {
+      "filename": "2021-096.pdf",
+      "bytes": 695683,
+      "sha256": "b730d4640218b5ea86b019a52501be2e4682b562e61a468abd08658ee393678e",
+      "source_id": "SRC-GF",
+      "title": "Gladius: LWR based efficient hybrid public key encryption with distributed decryption",
+      "kind": "user_supplied_pdf",
+      "declared_revision": null,
+      "catalog_revision": "2021-08-31 last of 5 revisions; received 2021-01-27",
+      "source_url": "https://eprint.iacr.org/2021/096",
+      "pdf_creation_date_raw": "D:20210831115837+02'00'",
+      "pdf_modification_date_raw": "D:20210831115837+02'00'",
+      "pdf_pages": 57,
+      "revision_attribution": "catalog_and_pdf_metadata_consistent; publisher_revision_byte_match_unconfirmed",
+      "remote_pdf_identity_verified": false,
+      "reviewed_locators": [
+        "Variant table, p. 7",
+        "Rounding and Module-LWR definitions, pp. 9–10",
+        "Section 3.2, Theorem 3.2 and Figure 5, pp. 23–24",
+        "Section 3.3, p. 35",
+        "Section 6, worst-case-message bounds, pp. 41–42",
+        "Section 7 and Figure 14, pp. 44–45",
+        "Table 2, p. 46",
+        "Section 9 and Figure 15, pp. 48–52"
+      ],
+      "attachment_instructions_are_authorization": false
+    },
+    {
+      "filename": "2025-757.pdf",
+      "bytes": 971854,
+      "sha256": "5e6135b80cac690d95beb73914d89b77280c6ea739ff7a1f7add0da39663ffb6",
+      "source_id": "SRC-NIED",
+      "title": "Threshold Niederreiter: Chosen-Ciphertext Security and Improved Distributed Decoding",
+      "kind": "user_supplied_pdf",
+      "declared_revision": null,
+      "catalog_revision": "2025-04-30 revised; received 2025-04-28",
+      "source_url": "https://eprint.iacr.org/2025/757",
+      "pdf_creation_date_raw": "D:20250430142228+02'00'",
+      "pdf_modification_date_raw": "D:20250430142228+02'00'",
+      "pdf_pages": 49,
+      "revision_attribution": "catalog_and_pdf_metadata_consistent; publisher_revision_byte_match_unconfirmed",
+      "remote_pdf_identity_verified": false,
+      "reviewed_locators": [
+        "Definitions 1–3, pp. 7–8",
+        "Algorithm 1 and Figure 1, pp. 12–13",
+        "Definition 7, Figure 2 and Theorem 1, p. 14",
+        "Definition 8 and Figure 3, p. 15",
+        "Figure 4, Corollary 1 and Section 4 language, pp. 16–17",
+        "Theorems 3–5 and Figure 7, pp. 23–25",
+        "Section 5, Figure 8 and Theorem 8, pp. 25–30",
+        "Section 6, Equation (5) and Table 1, pp. 31–32"
+      ],
+      "attachment_instructions_are_authorization": false
+    },
+    {
+      "filename": "threshold_backend_codex_handoff_zh-TW.md",
+      "bytes": 35930,
+      "sha256": "7888b2c4253a11e3225f9e9895eaff0b4ba9fa6a983a70103efdddf255366cc3",
+      "source_id": "SRC-HANDOFF",
+      "title": "Codex 交接：PQ-RBBC 門檻後端接入、實作與最終選型",
+      "kind": "user_supplied_research_handoff",
+      "declared_revision": "handoff v1; 2026-09-10",
+      "revision_attribution": "self_declared_in_lines_1_3",
+      "reviewed_locators": [
+        "Sections 0–12; technical cross-check in HANDOFF_VERIFICATION_zh-TW.md"
+      ],
+      "attachment_instructions_are_authorization": false
+    },
+    {
+      "filename": "pasted-text.txt",
+      "bytes": 8859,
+      "sha256": "e737e3e7966287ac4c653e81b4031b24959c3af3af7c203d8d90a297e23c5652",
+      "source_id": "SRC-PASTED",
+      "title": "Threshold Backend Coordinator T 角色與 TB0／TB1 工作草案（首行識別）",
+      "kind": "user_supplied_research_task_draft",
+      "declared_revision": null,
+      "revision_attribution": "undated_unversioned_attachment; identified_by_bytes_and_sha256",
+      "reviewed_locators": [
+        "Role, proposed scope and repository-state assertions"
+      ],
+      "attachment_instructions_are_authorization": false
+    }
+  ],
+  "supplementary_web_sources": [
+    {
+      "source_id": "WEB-FIPS203",
+      "title": "Module-Lattice-Based Key-Encapsulation Mechanism Standard",
+      "url": "https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.203.pdf",
+      "catalog_revision": "2024-08-13 final",
+      "review_scope": "web_excerpt_checked: Section 3.2/Table 1, Section 3.3, Algorithm 18, Tables 2–3",
+      "bytes": null,
+      "sha256": null,
+      "raw_file_captured": false
+    },
+    {
+      "source_id": "WEB-UT-VOR",
+      "title": "Threshold Cryptosystems from Threshold Fully Homomorphic Encryption",
+      "url": "https://link.springer.com/chapter/10.1007/978-3-319-96884-1_19",
+      "catalog_revision": "2018-07-25 first online; CRYPTO 2018, pp. 565–596",
+      "review_scope": "publication_metadata_only",
+      "bytes": null,
+      "sha256": null,
+      "raw_file_captured": false
+    },
+    {
+      "source_id": "WEB-NIED-VOR",
+      "title": "Threshold Niederreiter: chosen-ciphertext security and improved distributed decoding",
+      "url": "https://link.springer.com/article/10.1007/s10623-025-01795-6",
+      "catalog_revision": "2026-02-28 version of record; revised 2025-12-04",
+      "review_scope": "publication_metadata_only; not_identical_to_attachment_asserted",
+      "bytes": null,
+      "sha256": null,
+      "raw_file_captured": false
+    },
+    {
+      "source_id": "WEB-CAE",
+      "title": "Efficient Schemes for Committing Authenticated Encryption",
+      "url": "https://eprint.iacr.org/2022/268",
+      "catalog_revision": "2024-07-24 last of 3 revisions",
+      "review_scope": "catalog_and_abstract_only; no_concrete_CAE_qualification",
+      "bytes": null,
+      "sha256": null,
+      "raw_file_captured": false
+    },
+    {
+      "source_id": "WEB-PQMPC",
+      "title": "Post-Quantum Multi-Party Computation",
+      "url": "https://eprint.iacr.org/2020/1395",
+      "catalog_revision": "2020-11-10 received",
+      "review_scope": "catalog_and_abstract_only; no_MPC_qualification",
+      "bytes": null,
+      "sha256": null,
+      "raw_file_captured": false
+    },
+    {
+      "source_id": "WEB-TPKE",
+      "title": "Threshold Public-Key Encryption: Definitions, Relations, and CPA-to-CCA Transforms",
+      "url": "https://eprint.iacr.org/2025/1665",
+      "catalog_revision": "2026-07-17 last of 3 revisions",
+      "review_scope": "catalog_and_abstract_only; no_game_extension_verified",
+      "bytes": null,
+      "sha256": null,
+      "raw_file_captured": false
+    },
+    {
+      "source_id": "WEB-MCELIECE",
+      "title": "Quasipolynomial Cryptanalysis of the McEliece Cryptosystem (or: PIR Meets McEliece)",
+      "url": "https://eprint.iacr.org/2026/1630",
+      "catalog_revision": "2026-08-27 revised",
+      "review_scope": "catalog_and_abstract_only; concrete_parameter_impact_open",
+      "bytes": null,
+      "sha256": null,
+      "raw_file_captured": false
+    },
+    {
+      "source_id": "WEB-KEMS",
+      "title": "Keeping Up with the KEMs (handoff label)",
+      "url": "https://dl.acm.org/doi/10.1145/3658644.3670283",
+      "catalog_revision": null,
+      "review_scope": "retrieval_failed; title_and_revision_not_independently_verified",
+      "bytes": null,
+      "sha256": null,
+      "raw_file_captured": false
+    }
+  ],
+  "repository_sources": [
+    {
+      "path": "AGENTS.md",
+      "bytes": 4661,
+      "sha256": "febb601d9aa89140c106d7c3ff7f7cd24a8e82946ec6b06be0be28f0473707d0",
+      "git_blob": "1ad2114050ec66bbbe77165b843ee3066e5c5e15"
+    },
+    {
+      "path": "research-notes.md",
+      "bytes": 5532,
+      "sha256": "04943462c22cf2aae4ebf7a612d00e8f292bc4e84915822ce078cd16983605d2",
+      "git_blob": "b86861b8bb8b37d3f89f7bbb288fbcf1783416b6"
+    },
+    {
+      "path": "methodology.md",
+      "bytes": 9889,
+      "sha256": "7df0c12229844fd9fa4cc251ccc0a10b716077a4757b47aa388edf679c675595",
+      "git_blob": "cf0f25b3eded51241746dd38ccafc2caa15e3df1"
+    },
+    {
+      "path": "experiments.md",
+      "bytes": 17791,
+      "sha256": "3fcd1e1210b1d79cabc453623a7867b2a1f1b39b4496a1289d8685618ad01a70",
+      "git_blob": "bf3b47ec3514aa26bb734118f72f456c47131d4f"
+    },
+    {
+      "path": "thesis-outline.md",
+      "bytes": 4300,
+      "sha256": "29c10f921a73740ba53c4c38e768362d88900b64ccfd8a126dfb75a530502914",
+      "git_blob": "b32d135f6066e706e0083ab372dde807813fae9c"
+    },
+    {
+      "path": "docs/DOCUMENTATION_POLICY_zh-TW.md",
+      "bytes": 4725,
+      "sha256": "8b67aeca7187da975067792a7819f27d89807a3b52a34a33609852b208d890d9",
+      "git_blob": "ef8363f8b83360e91e175beb4b651237050f4568"
+    },
+    {
+      "path": "docs/ARTIFACT_POLICY.md",
+      "bytes": 22765,
+      "sha256": "fc374141073600a2f42274d718d6de41745a50dcd234c42785868a7fc9daf098",
+      "git_blob": "ab80d27675571b8115de1de88d82af4bd700d6bf"
+    },
+    {
+      "path": "ARCHITECTURE_zh-TW.md",
+      "bytes": 9737,
+      "sha256": "13d8f9be90c447fef9649ff0f29303f346ae69cbba8c483c3a6a6bb3a4bf1cd1",
+      "git_blob": "9f9656504234e59212c4b4741d0e3c73915a5f7f"
+    },
+    {
+      "path": "RESEARCH_STATUS_zh-TW.md",
+      "bytes": 13588,
+      "sha256": "8175870dd72edbd18aa2a04444bd8ed630fd57349ed05984ee7a0e5f95584622",
+      "git_blob": "3ed9c4acdd35f198b20b24819a0f2f336cef724c"
+    },
+    {
+      "path": "ROADMAP_zh-TW.md",
+      "bytes": 4704,
+      "sha256": "070299821deaba44093dc0c748dcfb83f3514e14f45912fc59b193b796ea162f",
+      "git_blob": "6a6905a388d0c193c3e4df354602f2ca14118199"
+    },
+    {
+      "path": "docs/proof/source/pq_rbbc_sgtd_core_proof_v1.tex",
+      "bytes": 148798,
+      "sha256": "cee211e7c6419480c0571b752faebe3574d3309f4e876a75cf325f3027d9f884",
+      "git_blob": "c842c31ebbabbd1b8f1ed5ee8fa74d85f63ef177"
+    },
+    {
+      "path": "src/pq_rbbc_reference.py",
+      "bytes": 70542,
+      "sha256": "37da0b9834fd2ecd83b482208ea259e0a17b126bb16f50f4ff538d0699046fab",
+      "git_blob": "18c5686dcb7f35e05238c61eea1df0c06c969423"
+    },
+    {
+      "path": "src/pq_rbbc/opening/interfaces.py",
+      "bytes": 7144,
+      "sha256": "80ddc2287609f8c748e3a10fa901c6b3a09cc3f6982cb7baf944414cf3a13f2c",
+      "git_blob": "73ef6648c640a842b1a952bab0aaf442147a012e"
+    },
+    {
+      "path": "src/pq_rbbc/opening/gate.py",
+      "bytes": 10310,
+      "sha256": "a45f2d8894710a030fe252a8c1b2a603beea03f2bd7c977ba6245d456e935126",
+      "git_blob": "a34fafa84d9f4f720812ce25b017edd901c9b372"
+    },
+    {
+      "path": "src/pq_rbbc/opening/combiner.py",
+      "bytes": 5219,
+      "sha256": "39b8db9fec6044be933cddeb55916c2a8a513c04bc443ae6b71810f6aa60eb40",
+      "git_blob": "0d255161194639235873fd9af724f48aa3e14d82"
+    },
+    {
+      "path": "tests/test_pq_rbbc_reference.py",
+      "bytes": 24844,
+      "sha256": "597219c7bb7de2c01593d2505c791a93db9fc1a66dd8ab9512c54be6bfefd6e9",
+      "git_blob": "01c356331b827c365699fc5361ca660d0756e7f6"
+    },
+    {
+      "path": "tests/test_pq_rbbc_trace_kdf_source_transition.py",
+      "bytes": 3891,
+      "sha256": "c418ca1e265642bb9e0d7f143848383a53ce4f0ab419a7337cace815fb8a00af",
+      "git_blob": "eabcda33b009d15ffe2da65206eb809205faf016"
+    },
+    {
+      "path": "manifests/pq_rbbc_trace_kdf_source_transition_manifest_v2_40.json",
+      "bytes": 3230,
+      "sha256": "3e214be777aa80eb0c94ab1371c911ab578c80ab126c453d7ca66145e1f66d3d",
+      "git_blob": "7118fd99a4e5340f1d43d0f33b63c1fb95c81376"
+    },
+    {
+      "path": "src/pq_rbbc_trace_kdf_source_transition.py",
+      "bytes": 6869,
+      "sha256": "2378290ba5999cea2c7fa74f27023fb1cb261c1a12c21a91734837e2f20a5283",
+      "git_blob": "56a4efade04d783ef6236bde0b2d2e24239b3527"
+    }
+  ],
+  "limitations": [
+    "Authoritative remote PDFs returned HTTP 403; no attachment-to-publisher byte equivalence asserted.",
+    "Catalog history and PDF metadata identify plausible revisions, not authenticated publication bytes.",
+    "Local page references identify only the supplied exact PDF digests.",
+    "No cryptographic backend implementation, benchmark, theorem closure or TB0/TB1 completion is claimed.",
+    "Source inventory is not production evidence or an independent cryptographic review."
+  ]
+}

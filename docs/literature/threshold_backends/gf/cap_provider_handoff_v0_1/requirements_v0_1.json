@@ -1,0 +1,191 @@
+{
+  "schema": "pqc_auth.gf_cap_provider_handoff.v0_1",
+  "status": "proposal_dependency_open",
+  "date": "2026-09-14",
+  "t_base_commit": "417ee834ffb7fa26740b22cb43716099b0fed635",
+  "b_reviewed_commit": "c1c2b5d2690643fc136e4c39a867e4376cdb9a97",
+  "owner_acceptance": {
+    "B": false,
+    "system": false
+  },
+  "profiles": {
+    "gf_abi_sha256": "97e97589fdcb293101e866a3233b38e1f48c9bdbe5ad9ddc1daabe5f2b410158",
+    "cap_sha256": "2ac471f8d7c6cb4e6352bbc5a2eb7f9394b807ff132aec8cadebd696f7b1fa38",
+    "h_rbbc_sha256": "4fa0eb276ebba70a9f6c2f38f3f55d197c094121a2b614cc6ef9b7e8522cac87"
+  },
+  "private_inputs": {
+    "rho_bytes": 1036,
+    "optional_same_d_M_bytes": 32
+  },
+  "private_outputs": {
+    "commitment_bytes": 5391,
+    "derived_mask_bits": 576,
+    "derived_mask_comparison_bytes": 72
+  },
+  "operations_are_unimplemented_semantics_not_new_wire_API": true,
+  "request_may_supply_provider_or_trusted_output": false,
+  "current_provider_available": false,
+  "provider_acceptance_cases_executed": 0,
+  "acceptance_cases": [
+    {
+      "id": "CP01",
+      "level": "host_provider",
+      "stimulus": "兩組真正 legacy18 rho；各自實算 CAP，組裝 matching r／beta 的 GF inputs。",
+      "expected": "各自 host I3 算式成立；authentication／native／proof／production 不因此成立。",
+      "observable": "完整 rho 與各自 c_r／derived mask 的外部 identity、實際 CAP 次數、獨立 reference comparison。",
+      "status": "not_run"
+    },
+    {
+      "id": "CP02",
+      "level": "host_provider",
+      "stimulus": "任選可 parse 的 candidate c_r 並修正 beta，但沒有該 rho 的 CAP 輸出。",
+      "expected": "不可進入真實 provider 結果路徑；既有 candidate match 不升級。",
+      "observable": "無 request-controlled commitment／receipt 入口；沒有 full I3 acceptance。",
+      "status": "not_run"
+    },
+    {
+      "id": "CP03",
+      "level": "host_provider",
+      "stimulus": "保留兩個 salts，修改 18 root pairs 中一個 bit，保留舊 c_r／r／beta；選擇經實算確認 outputs 不同的 fixture。",
+      "expected": "由修改後完整 rho 重新執行，不能接受舊 output；salt equality 不足。",
+      "observable": "兩次不同 rho 的獨立 CAP outputs；舊結果拼接被拒絕的位置。",
+      "status": "not_run"
+    },
+    {
+      "id": "CP04",
+      "level": "host_provider",
+      "stimulus": "固定真實 rho／c_r，翻轉 W.r 一個 bit，並修正 public beta 使 XOR 方程仍成立。",
+      "expected": "derived-mask equality 失敗，H consumer 不執行。",
+      "observable": "CAP 次數 1、H 次數 0；拒絕碼不含 r／mask／rho。",
+      "status": "not_run"
+    },
+    {
+      "id": "CP05",
+      "level": "host_provider",
+      "stimulus": "修改 c_r 中一個 grammar 合法欄位並修正 beta。",
+      "expected": "不等於同一次 CAP execution 的 c_r，不能接受。",
+      "observable": "對照真實 output identity；拒絕不能僅靠 parser 或 beta mismatch。",
+      "status": "not_run"
+    },
+    {
+      "id": "CP06",
+      "level": "host_provider",
+      "stimulus": "將不同 invocation 的 rho／commitment／derived mask／d_M 跨次拼接。",
+      "expected": "拒絕任一不屬於同一 captured invocation 的組合。",
+      "observable": "逐一替換每項值及 identity；不可重用 caller 可建構的 successful receipt。",
+      "status": "not_run"
+    },
+    {
+      "id": "CP07",
+      "level": "host_provider",
+      "stimulus": "省略 purpose、明示 production，或給未知／非字串用途及 invalid private inputs。",
+      "expected": "production unavailable 或 purpose error，均先於 private parse。",
+      "observable": "private parser／CAP／H touch counts 全為 0。",
+      "status": "not_run"
+    },
+    {
+      "id": "CP08",
+      "level": "host_provider",
+      "stimulus": "bounded 4+4、unified-tree 或其他 CAP／H／GF profile；相同 mask width 也測。",
+      "expected": "凍結 identity 不符即拒絕；不得重寫 header 或裁切 roots 後接受。",
+      "observable": "CAP／H touch counts 為 0；5391／511 與 1036／236 差異明列。",
+      "status": "not_run"
+    },
+    {
+      "id": "CP09",
+      "level": "host_provider",
+      "stimulus": "rho 未知 version、FP、root count，field padding 非零、短／長／trailing bytes。",
+      "expected": "strict decode 拒絕，不啟動 CAP。",
+      "observable": "每類 codec mutation 的拒絕位置與 CAP 次數 0。",
+      "status": "not_run"
+    },
+    {
+      "id": "CP10",
+      "level": "host_provider",
+      "stimulus": "provider 輸出錯型別／長度／FP／salt／padding；mask 為 bool、負值或 >= 2^576。",
+      "expected": "內部 output validation 拒絕，H 不執行；不截斷 mask。",
+      "observable": "每類 fault 的 H 次數 0；由測試 harness 注入，正式 API 無 override。",
+      "status": "not_run"
+    },
+    {
+      "id": "CP11",
+      "level": "host_provider",
+      "stimulus": "provider unavailable、exception、中途失敗或不完整 output。",
+      "expected": "回報安全 stage／code；不 fallback 成 candidate match。",
+      "observable": "H 次數 0、無 output receipt／secret repr；CAP 次數依實際 failure point 分開列。",
+      "status": "not_run"
+    },
+    {
+      "id": "CP12",
+      "level": "host_provider",
+      "stimulus": "common pp／完整 tpk record／X.pp／M.pp／X.ctx／M.ctx mismatch。",
+      "expected": "在 CAP 前拒絕；不得以 caller 自報一致 digest 取代完整 binding。",
+      "observable": "各 binding mutation 的 CAP／H 次數 0。",
+      "status": "not_run"
+    },
+    {
+      "id": "CP13",
+      "level": "host_provider",
+      "stimulus": "M header 更改但仍使用舊 d_M，或只 hash ciphertext／NIED message。",
+      "expected": "I2 對完整 M3005 計算；舊／錯範圍 digest 不得進入成功接合。",
+      "observable": "另行完整 M digest oracle；與同一 H input 對照，private d_M 不公開。",
+      "status": "not_run"
+    },
+    {
+      "id": "CP14",
+      "level": "host_provider",
+      "stimulus": "H transcript 使用 u32 lengths、交換 d_M 與 c_r、錯 domain 或截短 output。",
+      "expected": "與真實 H_RBBC canonical u64 transcript／72-byte image 不同，拒絕。",
+      "observable": "獨立 framing／padding／packing 對照；共享 permutation 的限制另記。",
+      "status": "not_run"
+    },
+    {
+      "id": "CP15",
+      "level": "host_provider",
+      "stimulus": "caller 傳 mutable input、verified flag、替代 executor，或驗證 pathname 後換檔。",
+      "expected": "拒絕 override；hash／parse／consume 使用同一 captured immutable bytes。",
+      "observable": "入口簽名、capture 與檔案讀取次數；same bytes 不等於 writer-quiescence 證明。",
+      "status": "not_run"
+    },
+    {
+      "id": "CP16",
+      "level": "host_provider",
+      "stimulus": "檢查所有成功／失敗結果、repr、errors、公開驗證入口及 portable evidence。",
+      "expected": "不輸出 private M／r／rho／c_r／d_M／CAP state；production 仍 unavailable。",
+      "observable": "status-only diagnostic 與敏感欄位檢查；provider evidence 的 private artifacts 外置。",
+      "status": "not_run"
+    },
+    {
+      "id": "CN01",
+      "level": "native_relation",
+      "stimulus": "只修改 CAP-derived mask 或 W.r 其中一側的 native wires。",
+      "expected": "J04 ordinary equality rows 拒絕，即使同步修正 beta。",
+      "observable": "producer／consumer bit ranges、equality rows、fresh mutation replay；host check 不替代。",
+      "status": "not_run"
+    },
+    {
+      "id": "CN02",
+      "level": "native_relation",
+      "stimulus": "只修改完整 M 到 I2、或 I2 到 H 的一側 wires，含 M 的 ABI／pp header。",
+      "expected": "J03 的相應 ordinary constraints 拒絕。",
+      "observable": "完整 3005-byte M 與 256-bit d_M 的 native source／consumer map。",
+      "status": "not_run"
+    },
+    {
+      "id": "CN03",
+      "level": "native_relation",
+      "stimulus": "只修改 CAP c_r 到 H、或 r／H image 到 public beta 的一側 wires。",
+      "expected": "J05 相應 ordinary constraints 拒絕；stage digest 相等不足。",
+      "observable": "43128-bit c_r／576-bit mask／image／beta 的 same-wire 或 equality rows replay。",
+      "status": "not_run"
+    },
+    {
+      "id": "CN04",
+      "level": "native_relation",
+      "stimulus": "向 public statement／per-ticket pp／proof header 加 private outputs，或 Verify 要求 W。",
+      "expected": "拒絕 partition／API 變更；凍結 X251／W4324／pp489 維持各自角色。",
+      "observable": "public/private input map、verifier signature 與 relation manifest；無 witness-free verifier 就 OPEN。",
+      "status": "not_run"
+    }
+  ]
+}
