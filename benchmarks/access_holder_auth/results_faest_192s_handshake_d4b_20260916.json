@@ -1,0 +1,152 @@
+{
+  "claim_boundary": {
+    "access_composition_proof_closed": false,
+    "faest_official_api_self_test_passed": true,
+    "faest_official_known_answer_test_checked": false,
+    "faest_second_provider_interoperability_tested": false,
+    "issuer_signature_generated": false,
+    "new_r_issue_implemented": false,
+    "production_aead_instantiated": false,
+    "production_closed": false,
+    "production_ready": false,
+    "r_key_circuit_implemented": false,
+    "real_faest_192s_holder_signature_generated": true,
+    "real_ml_kem_shared_secret_established": true
+  },
+  "d4_ml_dsa_comparator": {
+    "artifact_path": "benchmarks/access_holder_auth/results_ml_dsa_65_handshake_d4_20260916.json",
+    "artifact_sha256": "c974994a65f9d4b01d40d7db8184f9ce02bfa403ef9f185111ea3911f4f29be2",
+    "ml_dsa_median_ms_from_frozen_d4": {
+      "full_handshake": 1.8505265,
+      "holder_sign": 0.47256200000000004,
+      "holder_verify": 0.142819
+    },
+    "same_host_identity": true,
+    "timing_comparison_caveat": "separate runs and different providers; descriptive host comparison only",
+    "wire_delta_bytes": {
+      "explicit_complete_handshake": 4197,
+      "holder_authenticator": 6101,
+      "holder_public_key": -1904,
+      "m1": 4197
+    }
+  },
+  "dependencies": {
+    "cffi": "1.17.1",
+    "faest_reference": "3.0.0+9236611c42d1a761a58a44cabef7aeedd40d85bb",
+    "pqcrypto": "0.3.3",
+    "provider_production_ready": false
+  },
+  "external_faest_provider": {
+    "api_test_bytes": 627128,
+    "api_test_path_external_not_committed": "/tmp/faest-ref-v3-build/faest_192s/faest_192s_api_test",
+    "api_test_sha256": "fc4b6a68c7e18144bad0bb706e769d6e65b091ae952c602411ba43721cfe0707",
+    "build_config_sha256": "03b6fd8f956a9bc195cac3994a7e9be508280bd19a57b06c86b1e2064424cbbe",
+    "build_features": {
+      "aesni": true,
+      "avx2_available": true,
+      "buildtype": "release",
+      "march_native": true,
+      "sha3": "opt64"
+    },
+    "generated_faest_192s_header_sha256": "b1989b530709ac88603382e05e3c8591e181ce45c6c191eb0b02b738abfae74e",
+    "library_bytes": 699624,
+    "library_path_external_not_committed": "/tmp/faest-ref-v3-build/libfaest.so.2.0.0",
+    "library_sha256": "08c53ec7b217c39ab7041020849b8655b02b2a4925808fd82270c122ddac47a6",
+    "official_api_self_test_passed": true,
+    "official_known_answer_test_checked": false,
+    "source_clean": true,
+    "source_commit": "9236611c42d1a761a58a44cabef7aeedd40d85bb",
+    "source_meson_sha256": "2bfc34f80efe434a11e1c050210fa53400599304e57fc9f050e424029d6d0a8e",
+    "source_release_tag": null,
+    "source_repository": "https://github.com/faest-sign/faest-ref",
+    "source_version": "3.0.0"
+  },
+  "format": "PQ-SAT-R-ACCESS-HOLDER-AUTH-D4B-FAEST-BENCHMARK-v0.1",
+  "generated_at_utc": "2026-09-16T10:48:18.555319+00:00",
+  "git": {
+    "branch": "codex/r-access-50k-d4b-faest-handshake",
+    "head": "68a01813b32dc1a0cda755e8e6e0f5e7cdb894c0",
+    "source_file_sha256": {
+      "benchmarks/access_holder_auth/benchmark_faest_192s_handshake.py": "d9d181d75472376b76cadc74c2ca1ee5b8df2424260f98f0ed52f3ff0c864010",
+      "src/pq_sat_auth/v2/prototypes/holder_auth_v3/codec.py": "486a6820ee7ff5370044f8b9082f3ee5845ec0b3edabb4b05b462dd42ea13253",
+      "src/pq_sat_auth/v2/prototypes/holder_auth_v3/providers.py": "c4c8d14aee4f2d439fe91dc8444bf43661b86fd644e7e181a95089799a8cb31a",
+      "src/pq_sat_auth/v2/prototypes/holder_auth_v3/suite.py": "b4cc0d95a3d6bcd64bc4c8a7d70437dd8197abd40cc4821172268c66d2722c05",
+      "tests/prototypes/holder_auth_v3/test_faest_holder_auth_handshake.py": "c35d39cd1e81d7cd0328d5db134fb7afa4316a3b4f980299812ab3a37e292731"
+    },
+    "status_short": [
+      "M src/pq_sat_auth/v2/prototypes/holder_auth_v3/__init__.py",
+      " M src/pq_sat_auth/v2/prototypes/holder_auth_v3/codec.py",
+      " M src/pq_sat_auth/v2/prototypes/holder_auth_v3/providers.py",
+      " M src/pq_sat_auth/v2/prototypes/holder_auth_v3/suite.py",
+      "?? benchmarks/access_holder_auth/benchmark_faest_192s_handshake.py",
+      "?? tests/prototypes/holder_auth_v3/test_faest_holder_auth_handshake.py"
+    ],
+    "working_tree_dirty": true
+  },
+  "host": {
+    "cpu_model": "AMD Ryzen 5 7600X 6-Core Processor",
+    "kernel": "6.8.0-138-generic",
+    "logical_cpu_count": 12,
+    "machine": "x86_64",
+    "memory_total_kib": 31980844,
+    "os": "Linux-6.8.0-138-generic-x86_64-with-glibc2.35",
+    "process_peak_rss_kib": 33680,
+    "python": "3.12.9 | packaged by Anaconda, Inc. | (main, Feb  6 2025, 18:56:27) [GCC 11.2.0]",
+    "python_executable": "/tmp/pqc_auth_d4b_venv/bin/python"
+  },
+  "profile": {
+    "access_suite_id": 65296,
+    "first_record_ciphertext_status": "17-byte conditional size fixture; production AEAD not instantiated",
+    "holder_parameter_digest_sha256": "b07b2bd53c05fa9a42a76aaadf40e5ec2ca62ea9d66fb5f38a00fd1a7bc55fb5",
+    "holder_signing_input_bytes": 13689,
+    "holder_suite": "FAEST-192s-v3",
+    "holder_suite_id": 65298,
+    "issuer_signature_bytes_status": "11,644-byte provisional size fixture; not a generated PQ-RBBC signature"
+  },
+  "sampling": {
+    "iterations": 30,
+    "warmups": 3
+  },
+  "timing": {
+    "faest_keygen_reference": {
+      "max_ms": 0.002414,
+      "median_ms": 0.001493,
+      "min_ms": 0.001433,
+      "p95_nearest_rank_ms": 0.002094
+    },
+    "fgs_holder_verify_faest_reference": {
+      "max_ms": 77.492456,
+      "median_ms": 75.2602035,
+      "min_ms": 74.810312,
+      "p95_nearest_rank_ms": 76.43147
+    },
+    "full_handshake_faest_reference": {
+      "max_ms": 217.183705,
+      "median_ms": 197.2393275,
+      "min_ms": 192.321469,
+      "p95_nearest_rank_ms": 215.378025
+    },
+    "scope": "host wall-clock; full handshake includes FAEST holder keygen/sign/verify, ML-DSA FGS keygen/sign/verify, ML-KEM keygen/encap/decap, codecs and Finished",
+    "ue_holder_sign_faest_reference": {
+      "max_ms": 143.797806,
+      "median_ms": 120.9803775,
+      "min_ms": 116.23091,
+      "p95_nearest_rank_ms": 139.228886
+    }
+  },
+  "wire_bytes": {
+    "candidate_ticket_fixture": 12126,
+    "explicit_m3_complete_handshake": 28047,
+    "explicit_m3_margin_below_50000": 21953,
+    "fgs_authenticator": 3309,
+    "fgs_public_key_preconfigured_not_on_wire": 1952,
+    "first_application_record_conditional": 377,
+    "first_record_complete_handshake": 28226,
+    "first_record_margin_below_50000": 21774,
+    "holder_authenticator": 9410,
+    "holder_public_key": 48,
+    "m1_access_request": 23094,
+    "m2_access_accept": 4755,
+    "m3_session_activate": 198
+  }
+}

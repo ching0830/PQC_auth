@@ -13,7 +13,6 @@ from .codec import (
     CHANNEL_BINDING_NONE,
     FINISHED_BYTES,
     HOLDER_SUITE_ML_DSA_65,
-    ML_DSA_65_PARAMETER_DIGEST,
     ML_DSA_65_SIGNATURE_BYTES,
     FirstApplicationRecordV3,
     HolderAccessAcceptV3,
@@ -34,6 +33,7 @@ from .codec import (
     encode_access_request,
     encode_first_application_record,
     encode_session_activate,
+    holder_suite_shape,
 )
 from .providers import MLDSA65Provider, MLKEM768Provider
 
@@ -202,7 +202,8 @@ def verify_holder_authenticated_request(
             return False
         if ticket.payload.holder_suite_id != request.holder_suite_id:
             return False
-        if ticket.payload.holder_parameter_digest != ML_DSA_65_PARAMETER_DIGEST:
+        shape = holder_suite_shape(request.holder_suite_id)
+        if ticket.payload.holder_parameter_digest != shape.parameter_digest:
             return False
         expected_binding = derive_holder_public_key_binding(
             request.holder_suite_id,
@@ -264,8 +265,9 @@ def run_experimental_handshake(
     holder_provider: MLDSA65Provider,
     fgs_provider: MLDSA65Provider,
     kem_provider: MLKEM768Provider,
+    holder_suite_id: int = HOLDER_SUITE_ML_DSA_65,
 ) -> HandshakeArtifactsV3:
-    """Execute one real ML-DSA/ML-KEM handshake in the isolated profile."""
+    """Execute one real holder-signature/ML-KEM handshake in the isolated profile."""
 
     if (
         holder_provider.production_ready
@@ -274,14 +276,20 @@ def run_experimental_handshake(
     ):
         raise ValueError("D4 adapters must remain explicitly non-production")
 
+    shape = holder_suite_shape(holder_suite_id)
     holder_public_key, holder_secret_key = holder_provider.generate_keypair()
-    ticket = build_candidate_ticket_fixture(holder_public_key)
+    if len(holder_public_key) != shape.public_key_bytes:
+        raise ValueError("holder provider public-key length does not match suite")
+    ticket = build_candidate_ticket_fixture(
+        holder_public_key,
+        holder_suite_id=shape.suite_id,
+    )
     ticket_bytes = ticket.encode()
     ue_kem_public_key, ue_kem_secret_key = kem_provider.generate_keypair()
 
     request_draft = HolderAccessRequestV3(
         access_suite_id=ACCESS_SUITE_ID,
-        holder_suite_id=HOLDER_SUITE_ML_DSA_65,
+        holder_suite_id=shape.suite_id,
         system_config_digest=_fixture(b"system-config"),
         ctx=ticket.payload.ctx,
         epoch=20260916,
@@ -297,12 +305,14 @@ def run_experimental_handshake(
         ticket=ticket_bytes,
         ue_kem_epk=ue_kem_public_key,
         holder_public_key=holder_public_key,
-        holder_authenticator=bytes(ML_DSA_65_SIGNATURE_BYTES),
+        holder_authenticator=bytes(shape.signature_bytes),
     )
     holder_signature = holder_provider.sign(
         holder_secret_key,
         request_draft.holder_signing_input(),
     )
+    if len(holder_signature) != shape.signature_bytes:
+        raise ValueError("holder provider signature length does not match suite")
     request = replace(request_draft, holder_authenticator=holder_signature)
     request_bytes = encode_access_request(request)
     decoded_request = decode_access_request(request_bytes)

@@ -6,6 +6,7 @@ and registry.  It is a measurement prototype, not a production access suite.
 
 from .codec import (
     ACCESS_SUITE_ID,
+    HOLDER_SUITE_FAEST_192S,
     HOLDER_SUITE_ML_DSA_65,
     CandidateTicketPayloadV3,
     CandidateTicketV3,
@@ -25,9 +26,11 @@ from .codec import (
     encode_candidate_ticket,
     encode_first_application_record,
     encode_session_activate,
+    holder_suite_shape,
 )
 from .providers import (
     DilithiumPyMLDSA65Provider,
+    FAEST192sReferenceProvider,
     PQCryptoMLDSA65Provider,
     PQCryptoMLKEM768Provider,
     ProviderUnavailable,
@@ -45,10 +48,12 @@ PRODUCTION_CLOSED = False
 
 __all__ = [
     "ACCESS_SUITE_ID",
+    "HOLDER_SUITE_FAEST_192S",
     "HOLDER_SUITE_ML_DSA_65",
     "CandidateTicketPayloadV3",
     "CandidateTicketV3",
     "DilithiumPyMLDSA65Provider",
+    "FAEST192sReferenceProvider",
     "FirstApplicationRecordV3",
     "HandshakeArtifactsV3",
     "HolderAccessAcceptV3",
@@ -69,6 +74,7 @@ __all__ = [
     "encode_candidate_ticket",
     "encode_first_application_record",
     "encode_session_activate",
+    "holder_suite_shape",
     "run_experimental_handshake",
     "verify_holder_authenticated_request",
 ]

@@ -22,6 +22,7 @@ MAX_FRAME_BODY_BYTES = 100_000
 
 ACCESS_SUITE_ID = 0xFF10
 HOLDER_SUITE_ML_DSA_65 = 0xFF11
+HOLDER_SUITE_FAEST_192S = 0xFF12
 CHANNEL_BINDING_NONE = 0
 CHANNEL_BINDING_AUTHENTICATED_EXPORTER = 1
 
@@ -32,6 +33,9 @@ HOLDER_PARAMETER_DIGEST_BYTES = 32
 HOLDER_PUBLIC_KEY_BINDING_BYTES = 48
 ML_DSA_65_PUBLIC_KEY_BYTES = 1_952
 ML_DSA_65_SIGNATURE_BYTES = 3_309
+FAEST_192S_PUBLIC_KEY_BYTES = 48
+FAEST_192S_PRIVATE_KEY_BYTES = 40
+FAEST_192S_SIGNATURE_BYTES = 9_410
 ML_KEM_768_PUBLIC_KEY_BYTES = 1_184
 ML_KEM_768_CIPHERTEXT_BYTES = 1_088
 FINISHED_BYTES = 48
@@ -70,6 +74,48 @@ ML_DSA_65_PARAMETER_DESCRIPTOR = (
 ML_DSA_65_PARAMETER_DIGEST = hashlib.sha256(
     ML_DSA_65_PARAMETER_DESCRIPTOR
 ).digest()
+FAEST_192S_PARAMETER_DESCRIPTOR = (
+    b"FAEST-SPEC:3.0/FAEST-192s/AES-192/beta=2/ell=1728/"
+    b"tau=16/w-grind=12/t-open=162/pk=48/sk=40/sig=9410"
+)
+FAEST_192S_PARAMETER_DIGEST = hashlib.sha256(
+    FAEST_192S_PARAMETER_DESCRIPTOR
+).digest()
+
+
+@dataclass(frozen=True)
+class HolderSuiteShapeV3:
+    suite_id: int
+    name: str
+    parameter_digest: bytes
+    public_key_bytes: int
+    signature_bytes: int
+
+
+_HOLDER_SUITE_SHAPES = {
+    HOLDER_SUITE_ML_DSA_65: HolderSuiteShapeV3(
+        suite_id=HOLDER_SUITE_ML_DSA_65,
+        name="ML-DSA-65",
+        parameter_digest=ML_DSA_65_PARAMETER_DIGEST,
+        public_key_bytes=ML_DSA_65_PUBLIC_KEY_BYTES,
+        signature_bytes=ML_DSA_65_SIGNATURE_BYTES,
+    ),
+    HOLDER_SUITE_FAEST_192S: HolderSuiteShapeV3(
+        suite_id=HOLDER_SUITE_FAEST_192S,
+        name="FAEST-192s-v3",
+        parameter_digest=FAEST_192S_PARAMETER_DIGEST,
+        public_key_bytes=FAEST_192S_PUBLIC_KEY_BYTES,
+        signature_bytes=FAEST_192S_SIGNATURE_BYTES,
+    ),
+}
+
+
+def holder_suite_shape(holder_suite_id: int) -> HolderSuiteShapeV3:
+    suite = _uint(holder_suite_id, 16, "holder_suite_id")
+    try:
+        return _HOLDER_SUITE_SHAPES[suite]
+    except KeyError as error:
+        raise ValueError("unsupported experimental holder suite") from error
 
 
 class PrototypeEncodingError(ValueError):
@@ -183,8 +229,7 @@ class CandidateTicketPayloadV3:
         _fixed(self.ctx, CONTEXT_BYTES, "ctx")
         _fixed(self.serial, SERIAL_BYTES, "serial")
         _uint(self.holder_suite_id, 16, "holder_suite_id")
-        if self.holder_suite_id != HOLDER_SUITE_ML_DSA_65:
-            raise ValueError("unsupported experimental holder suite")
+        holder_suite_shape(self.holder_suite_id)
         _fixed(
             self.holder_parameter_digest,
             HOLDER_PARAMETER_DIGEST_BYTES,
@@ -360,23 +405,28 @@ def _fixture_bytes(label: bytes, size: int) -> bytes:
     return hashlib.shake_256(b"PQ-SAT/D4-FIXTURE/v0.1/" + label).digest(size)
 
 
-def build_candidate_ticket_fixture(holder_public_key: bytes) -> CandidateTicketV3:
+def build_candidate_ticket_fixture(
+    holder_public_key: bytes,
+    *,
+    holder_suite_id: int = HOLDER_SUITE_ML_DSA_65,
+) -> CandidateTicketV3:
     """Build the 12,126-byte size fixture; its issuer bytes are not a signature."""
 
+    shape = holder_suite_shape(holder_suite_id)
     key = _fixed(
         holder_public_key,
-        ML_DSA_65_PUBLIC_KEY_BYTES,
+        shape.public_key_bytes,
         "holder_public_key",
     )
     payload = CandidateTicketPayloadV3(
         profile_version=FRAME_VERSION,
         ctx=_fixture_bytes(b"ctx", CONTEXT_BYTES),
         serial=_fixture_bytes(b"serial", SERIAL_BYTES),
-        holder_suite_id=HOLDER_SUITE_ML_DSA_65,
-        holder_parameter_digest=ML_DSA_65_PARAMETER_DIGEST,
+        holder_suite_id=shape.suite_id,
+        holder_parameter_digest=shape.parameter_digest,
         holder_public_key_binding=derive_holder_public_key_binding(
-            HOLDER_SUITE_ML_DSA_65,
-            ML_DSA_65_PARAMETER_DIGEST,
+            shape.suite_id,
+            shape.parameter_digest,
             key,
         ),
         syndrome=_fixture_bytes(b"trace-syndrome", 208),
@@ -422,8 +472,7 @@ class HolderAccessRequestV3:
         _uint(self.holder_suite_id, 16, "holder_suite_id")
         if self.access_suite_id != ACCESS_SUITE_ID:
             raise ValueError("unsupported experimental access suite")
-        if self.holder_suite_id != HOLDER_SUITE_ML_DSA_65:
-            raise ValueError("unsupported experimental holder suite")
+        shape = holder_suite_shape(self.holder_suite_id)
         for name in (
             "system_config_digest",
             "ctx",
@@ -454,12 +503,12 @@ class HolderAccessRequestV3:
         _fixed(self.ue_kem_epk, ML_KEM_768_PUBLIC_KEY_BYTES, "ue_kem_epk")
         _fixed(
             self.holder_public_key,
-            ML_DSA_65_PUBLIC_KEY_BYTES,
+            shape.public_key_bytes,
             "holder_public_key",
         )
         _fixed(
             self.holder_authenticator,
-            ML_DSA_65_SIGNATURE_BYTES,
+            shape.signature_bytes,
             "holder_authenticator",
         )
 
@@ -553,7 +602,7 @@ def derive_attempt_id(request: HolderAccessRequestV3) -> bytes:
     return _shake(
         ATTEMPT_ID_LABEL,
         derive_use_key(ticket),
-        derive_request_digest(request),
+        request.holder_signing_input(),
     )
 
 

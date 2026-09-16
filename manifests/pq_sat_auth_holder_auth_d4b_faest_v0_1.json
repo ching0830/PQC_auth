@@ -1,0 +1,188 @@
+{
+  "base": {
+    "branch": "codex/r-access-50k-d4b-faest-handshake",
+    "commit": "68a01813b32dc1a0cda755e8e6e0f5e7cdb894c0",
+    "scope": "isolated D4b FAEST counterpart; shared v0.2 parser, production registry, VerifyTicket, and one-time store unchanged"
+  },
+  "benchmark": {
+    "artifact": {
+      "bytes": 6524,
+      "path": "benchmarks/access_holder_auth/results_faest_192s_handshake_d4b_20260916.json",
+      "sha256": "8eabd26a4a77ae01a95a5ed2f46496bc732c2f51acc90f90c97303197065a2b3"
+    },
+    "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src /tmp/pqc_auth_d4b_venv/bin/python benchmarks/access_holder_auth/benchmark_faest_192s_handshake.py --warmups 3 --iterations 30 --faest-library /tmp/faest-ref-v3-build/libfaest.so.2.0.0 --faest-library-sha256 08c53ec7b217c39ab7041020849b8655b02b2a4925808fd82270c122ddac47a6 --faest-source-dir /tmp/faest-ref-v2.0.4 --faest-api-test /tmp/faest-ref-v3-build/faest_192s/faest_192s_api_test --faest-api-test-sha256 fc4b6a68c7e18144bad0bb706e769d6e65b091ae952c602411ba43721cfe0707 --output benchmarks/access_holder_auth/results_faest_192s_handshake_d4b_20260916.json",
+    "host_scope": "single-host reference-provider wall-clock; not mobile UE, satellite, network, backhaul, energy, or optimized-provider measurement",
+    "iterations": 30,
+    "peak_process_rss_kib": 33680,
+    "timing_ms": {
+      "faest_keygen_reference": {
+        "max": 0.002414,
+        "median": 0.001493,
+        "min": 0.001433,
+        "p95_nearest_rank": 0.002094
+      },
+      "fgs_holder_verify_faest_reference": {
+        "max": 77.492456,
+        "median": 75.2602035,
+        "min": 74.810312,
+        "p95_nearest_rank": 76.43147
+      },
+      "full_handshake_faest_reference": {
+        "max": 217.183705,
+        "median": 197.2393275,
+        "min": 192.321469,
+        "p95_nearest_rank": 215.378025
+      },
+      "ue_holder_sign_faest_reference": {
+        "max": 143.797806,
+        "median": 120.9803775,
+        "min": 116.23091,
+        "p95_nearest_rank": 139.228886
+      }
+    },
+    "warmups": 3
+  },
+  "claim_boundary": {
+    "access_composition_proof_closed": false,
+    "experimental_reference_only": true,
+    "faest_official_api_self_test_passed": true,
+    "faest_official_known_answer_test_checked": false,
+    "faest_optimized_provider_benchmarked": false,
+    "faest_second_provider_interoperability_tested": false,
+    "generic_signature_is_se_nizk": false,
+    "new_r_issue_implemented": false,
+    "old_exact_r_access_preserved": false,
+    "production_aead_instantiated": false,
+    "production_closed": false,
+    "production_pq_rbbc_ticket_measured": false,
+    "production_ready": false,
+    "proof_closed": false,
+    "r_key_circuit_implemented": false,
+    "real_faest_192s_signature_generated": true,
+    "real_ml_kem_shared_secret_established": true,
+    "same_core_attempt_identity_stable": true,
+    "wire_target_met_for_provisional_fixture": true
+  },
+  "d4_ml_dsa_comparator": {
+    "artifact_path": "benchmarks/access_holder_auth/results_ml_dsa_65_handshake_d4_20260916.json",
+    "artifact_sha256": "c974994a65f9d4b01d40d7db8184f9ce02bfa403ef9f185111ea3911f4f29be2",
+    "explicit_complete_handshake_delta_bytes": 4197,
+    "holder_authenticator_delta_bytes": 6101,
+    "holder_public_key_delta_bytes": -1904,
+    "m1_delta_bytes": 4197,
+    "timing_comparison": "descriptive only; separate runs and reference FAEST versus native pqcrypto ML-DSA"
+  },
+  "dependencies": {
+    "cffi": "1.17.1",
+    "dilithium-py": "1.4.0",
+    "faest-reference": "3.0.0+9236611c42d1a761a58a44cabef7aeedd40d85bb",
+    "meson": "1.9.0",
+    "ninja": "1.13.0",
+    "pqcrypto": "0.3.3",
+    "provider_production_ready": false,
+    "python": "3.12.9"
+  },
+  "external_faest_provider": {
+    "api_test": {
+      "bytes": 627128,
+      "path_not_committed": "/tmp/faest-ref-v3-build/faest_192s/faest_192s_api_test",
+      "result": "Sign/Verify test passed",
+      "sha256": "fc4b6a68c7e18144bad0bb706e769d6e65b091ae952c602411ba43721cfe0707"
+    },
+    "build": {
+      "aesni": true,
+      "avx2_available": true,
+      "build_config_sha256": "03b6fd8f956a9bc195cac3994a7e9be508280bd19a57b06c86b1e2064424cbbe",
+      "buildtype": "release",
+      "compiler": "GCC 11.4.0",
+      "generated_header_sha256": "b1989b530709ac88603382e05e3c8591e181ce45c6c191eb0b02b738abfae74e",
+      "march_native": true,
+      "sha3": "opt64"
+    },
+    "library": {
+      "bytes": 699624,
+      "path_not_committed": "/tmp/faest-ref-v3-build/libfaest.so.2.0.0",
+      "sha256": "08c53ec7b217c39ab7041020849b8655b02b2a4925808fd82270c122ddac47a6"
+    },
+    "source": {
+      "clean": true,
+      "commit": "9236611c42d1a761a58a44cabef7aeedd40d85bb",
+      "commit_date": "2026-09-15T10:17:12+02:00",
+      "meson_sha256": "2bfc34f80efe434a11e1c050210fa53400599304e57fc9f050e424029d6d0a8e",
+      "release_tag": null,
+      "repository": "https://github.com/faest-sign/faest-ref",
+      "version": "3.0.0"
+    }
+  },
+  "files": {
+    "benchmarks/access_holder_auth/benchmark_faest_192s_handshake.py": "d9d181d75472376b76cadc74c2ca1ee5b8df2424260f98f0ed52f3ff0c864010",
+    "benchmarks/access_holder_auth/results_faest_192s_handshake_d4b_20260916.json": "8eabd26a4a77ae01a95a5ed2f46496bc732c2f51acc90f90c97303197065a2b3",
+    "docs/artifacts/SATELLITE_ACCESS_HOLDER_AUTH_D4B_FAEST_HANDSHAKE_v0_1_zh-TW.md": "7b8b2231d3c7191bbd96ddfddc177bb8841ce77829ccfbbbeaa100cbc70918ad",
+    "src/pq_sat_auth/v2/prototypes/holder_auth_v3/__init__.py": "850107f099aba1dc48b2369223f49304f56255a7d894f391d0e2e70261fb7834",
+    "src/pq_sat_auth/v2/prototypes/holder_auth_v3/codec.py": "486a6820ee7ff5370044f8b9082f3ee5845ec0b3edabb4b05b462dd42ea13253",
+    "src/pq_sat_auth/v2/prototypes/holder_auth_v3/providers.py": "c4c8d14aee4f2d439fe91dc8444bf43661b86fd644e7e181a95089799a8cb31a",
+    "src/pq_sat_auth/v2/prototypes/holder_auth_v3/suite.py": "b4cc0d95a3d6bcd64bc4c8a7d70437dd8197abd40cc4821172268c66d2722c05",
+    "tests/prototypes/holder_auth_v3/test_faest_holder_auth_handshake.py": "c35d39cd1e81d7cd0328d5db134fb7afa4316a3b4f980299812ab3a37e292731"
+  },
+  "format": "PQ-SAT-HOLDER-AUTH-D4B-FAEST-MANIFEST-v0.1",
+  "frozen_vectors": {
+    "activation_sha256": "14c78614fd8681efce596852ca2d052923886d393e5c0eccee739c9e55fe8e20",
+    "candidate_ticket_sha256": "66b1bbf3cdcf5e5bc4b7b107d1353249dc5ac21f39406b5c156a561dd0c2ab33",
+    "first_record_sha256": "d5561794625fd52c44b5cbc1977ec4c6777a73d64354f59b64116982a2797c8f",
+    "holder_auth_core_sha256": "a2ead75a23180afc2ec14d8e6716a531a30d77a6695c76742cdc469eab2dbc93",
+    "holder_signing_input_sha256": "88ab20b8dc6f3a3d53ba9e6fdecb8e27bdd1dafd64b4444533ce39abfb96e882",
+    "request_sha256": "8754824d3e3388ca7917684f428fd771ef6facd96784ffd4a06b43c5239cc795",
+    "response_sha256": "98b1339beba817fb5926ccb02a07f5a904a9d737a0d5cba07bae119ea27d11ce"
+  },
+  "profile": {
+    "access_suite_id": 65296,
+    "holder_parameter_digest_sha256": "b07b2bd53c05fa9a42a76aaadf40e5ec2ca62ea9d66fb5f38a00fd1a7bc55fb5",
+    "holder_suite": "FAEST-192s-v3",
+    "holder_suite_id": 65298,
+    "magic": "PQSAT-A3",
+    "version": 3
+  },
+  "validation": {
+    "d4_and_d4b_targeted": {
+      "command": "PQC_AUTH_ML_DSA_ACVP_SIGVER_JSON=/tmp/ML-DSA-sigVer-FIPS204-internalProjection.json PQC_AUTH_FAEST_REF_LIBRARY=/tmp/faest-ref-v3-build/libfaest.so.2.0.0 PQC_AUTH_FAEST_REF_LIBRARY_SHA256=08c53ec7b217c39ab7041020849b8655b02b2a4925808fd82270c122ddac47a6 PQC_AUTH_FAEST_REF_SOURCE_DIR=/tmp/faest-ref-v2.0.4 PQC_AUTH_FAEST_REF_API_TEST=/tmp/faest-ref-v3-build/faest_192s/faest_192s_api_test PQC_AUTH_FAEST_REF_API_TEST_SHA256=fc4b6a68c7e18144bad0bb706e769d6e65b091ae952c602411ba43721cfe0707 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src /tmp/pqc_auth_d4b_venv/bin/python -m unittest -v tests.prototypes.holder_auth_v3.test_holder_auth_handshake tests.prototypes.holder_auth_v3.test_faest_holder_auth_handshake",
+      "errors": 0,
+      "failures": 0,
+      "passed": 18,
+      "skipped": 0
+    },
+    "existing_access_ticket_nizk_targeted": {
+      "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python -m unittest -v tests.system.test_pq_sat_auth_access_v2 tests.system.test_pq_sat_auth_access_proof_v2 tests.system_modules.tickets.test_verification tests.prototypes.access_nizk.test_mpcith_access_nizk",
+      "errors": 0,
+      "failures": 0,
+      "passed": 48,
+      "skipped": 0
+    },
+    "full_repository": {
+      "command": "PQC_AUTH_ML_DSA_ACVP_SIGVER_JSON=/tmp/ML-DSA-sigVer-FIPS204-internalProjection.json PQC_AUTH_FAEST_REF_LIBRARY=/tmp/faest-ref-v3-build/libfaest.so.2.0.0 PQC_AUTH_FAEST_REF_LIBRARY_SHA256=08c53ec7b217c39ab7041020849b8655b02b2a4925808fd82270c122ddac47a6 PQC_AUTH_FAEST_REF_SOURCE_DIR=/tmp/faest-ref-v2.0.4 PQC_AUTH_FAEST_REF_API_TEST=/tmp/faest-ref-v3-build/faest_192s/faest_192s_api_test PQC_AUTH_FAEST_REF_API_TEST_SHA256=fc4b6a68c7e18144bad0bb706e769d6e65b091ae952c602411ba43721cfe0707 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src /tmp/pqc_auth_d4b_venv/bin/python -m unittest discover -s tests -q",
+      "errors": 0,
+      "failures": 0,
+      "passed": 1045,
+      "runtime_seconds": 764.194,
+      "skipped": 12,
+      "total": 1057
+    }
+  },
+  "wire_bytes": {
+    "candidate_ticket_fixture": 12126,
+    "explicit_m3_complete_handshake": 28047,
+    "explicit_m3_margin_below_50000": 21953,
+    "fgs_authenticator": 3309,
+    "first_application_record_conditional": 377,
+    "first_record_complete_handshake": 28226,
+    "first_record_margin_below_50000": 21774,
+    "holder_authenticator": 9410,
+    "holder_private_key": 40,
+    "holder_public_key": 48,
+    "issuer_signature_fixture": 11644,
+    "m1_access_request": 23094,
+    "m2_access_accept": 4755,
+    "m3_session_activate": 198,
+    "ml_kem_768_ciphertext": 1088,
+    "ml_kem_768_public_key": 1184
+  }
+}

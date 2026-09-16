@@ -7,11 +7,18 @@ permitted.  Both adapters remain experimental and ``production_ready=False``.
 
 from __future__ import annotations
 
+import ctypes
+import hashlib
 from dataclasses import dataclass
+from functools import lru_cache
 from importlib.metadata import PackageNotFoundError, version
+from pathlib import Path
 from typing import Protocol, runtime_checkable
 
 from .codec import (
+    FAEST_192S_PRIVATE_KEY_BYTES,
+    FAEST_192S_PUBLIC_KEY_BYTES,
+    FAEST_192S_SIGNATURE_BYTES,
     ML_DSA_65_PUBLIC_KEY_BYTES,
     ML_DSA_65_SIGNATURE_BYTES,
     ML_KEM_768_CIPHERTEXT_BYTES,
@@ -22,6 +29,8 @@ from .codec import (
 ML_DSA_65_SECRET_KEY_BYTES = 4_032
 ML_KEM_768_SECRET_KEY_BYTES = 2_400
 ML_KEM_SHARED_SECRET_BYTES = 32
+FAEST_REFERENCE_VERSION = "3.0.0"
+FAEST_REFERENCE_COMMIT = "9236611c42d1a761a58a44cabef7aeedd40d85bb"
 
 
 class ProviderUnavailable(RuntimeError):
@@ -39,6 +48,56 @@ def _exact(value: bytes, size: int, name: str) -> bytes:
     if not isinstance(value, bytes) or len(value) != size:
         raise ValueError(f"{name} must be exactly {size} bytes")
     return value
+
+
+def _ctypes_bytes(value: bytes):
+    if not isinstance(value, bytes):
+        raise TypeError("native provider input must be bytes")
+    if not value:
+        return (ctypes.c_uint8 * 1)()
+    return (ctypes.c_uint8 * len(value)).from_buffer_copy(value)
+
+
+@lru_cache(maxsize=4)
+def _load_faest_reference_library(
+    library_path: str,
+    expected_sha256: str,
+) -> ctypes.CDLL:
+    path = Path(library_path)
+    if not path.is_absolute():
+        raise ProviderUnavailable("FAEST library path must be absolute")
+    try:
+        raw = path.read_bytes()
+    except OSError as error:
+        raise ProviderUnavailable("FAEST reference library is unavailable") from error
+    actual_sha256 = hashlib.sha256(raw).hexdigest()
+    if actual_sha256 != expected_sha256:
+        raise ProviderUnavailable("FAEST reference library SHA-256 mismatch")
+    try:
+        library = ctypes.CDLL(str(path))
+    except OSError as error:
+        raise ProviderUnavailable("FAEST reference library cannot be loaded") from error
+
+    pointer = ctypes.POINTER(ctypes.c_uint8)
+    library.faest_192s_keygen.argtypes = [pointer, pointer]
+    library.faest_192s_keygen.restype = ctypes.c_int
+    library.faest_192s_sign.argtypes = [
+        pointer,
+        pointer,
+        ctypes.c_size_t,
+        pointer,
+        ctypes.POINTER(ctypes.c_size_t),
+    ]
+    library.faest_192s_sign.restype = ctypes.c_int
+    library.faest_192s_verify.argtypes = [
+        pointer,
+        pointer,
+        ctypes.c_size_t,
+        pointer,
+        ctypes.c_size_t,
+    ]
+    library.faest_192s_verify.restype = ctypes.c_int
+    return library
 
 
 @runtime_checkable
@@ -129,7 +188,6 @@ class PQCryptoMLDSA65Provider:
         except (TypeError, ValueError, RuntimeError, ProviderUnavailable):
             return False
 
-
 @dataclass(frozen=True)
 class DilithiumPyMLDSA65Provider:
     """Pure-Python FIPS 204 experiment provider.
@@ -212,6 +270,103 @@ class DilithiumPyMLDSA65Provider:
         except (TypeError, ValueError, RuntimeError, ProviderUnavailable):
             return False
 
+
+@dataclass(frozen=True)
+class FAEST192sReferenceProvider:
+    """Pinned FAEST v3 reference implementation loaded from an external build.
+
+    The shared library is deliberately not bundled.  Callers must provide an
+    absolute path and its exact SHA-256 identity.  The provider is a research
+    measurement adapter, not a production-qualified cryptographic module.
+    """
+
+    library_path: str
+    library_sha256: str
+    name: str = "faest-ref/faest_192s"
+    package: str = "faest-ref"
+    source_commit: str = FAEST_REFERENCE_COMMIT
+    production_ready: bool = False
+
+    def __post_init__(self) -> None:
+        if len(self.library_sha256) != 64:
+            raise ValueError("FAEST library SHA-256 must be 64 hex characters")
+        try:
+            bytes.fromhex(self.library_sha256)
+        except ValueError as error:
+            raise ValueError("FAEST library SHA-256 must be hexadecimal") from error
+        if self.source_commit != FAEST_REFERENCE_COMMIT:
+            raise ValueError("FAEST source commit does not match the frozen D4b revision")
+
+    @property
+    def package_version(self) -> str:
+        return f"{FAEST_REFERENCE_VERSION}+{self.source_commit}"
+
+    def _library(self) -> ctypes.CDLL:
+        return _load_faest_reference_library(
+            self.library_path,
+            self.library_sha256,
+        )
+
+    def generate_keypair(self) -> tuple[bytes, bytes]:
+        public_key = (ctypes.c_uint8 * FAEST_192S_PUBLIC_KEY_BYTES)()
+        secret_key = (ctypes.c_uint8 * FAEST_192S_PRIVATE_KEY_BYTES)()
+        result = self._library().faest_192s_keygen(public_key, secret_key)
+        if result != 0:
+            raise RuntimeError("FAEST-192s key generation failed")
+        return bytes(public_key), bytes(secret_key)
+
+    def sign(self, secret_key: bytes, message: bytes) -> bytes:
+        key = _exact(
+            secret_key,
+            FAEST_192S_PRIVATE_KEY_BYTES,
+            "FAEST-192s private key",
+        )
+        if not isinstance(message, bytes):
+            raise TypeError("FAEST message must be bytes")
+        key_buffer = _ctypes_bytes(key)
+        message_buffer = _ctypes_bytes(message)
+        signature = (ctypes.c_uint8 * FAEST_192S_SIGNATURE_BYTES)()
+        signature_length = ctypes.c_size_t(FAEST_192S_SIGNATURE_BYTES)
+        result = self._library().faest_192s_sign(
+            key_buffer,
+            message_buffer,
+            len(message),
+            signature,
+            ctypes.byref(signature_length),
+        )
+        if result != 0 or signature_length.value != FAEST_192S_SIGNATURE_BYTES:
+            raise RuntimeError("FAEST-192s signing failed")
+        return bytes(signature)
+
+    def verify(
+        self,
+        public_key: bytes,
+        message: bytes,
+        signature: bytes,
+    ) -> bool:
+        try:
+            key = _exact(
+                public_key,
+                FAEST_192S_PUBLIC_KEY_BYTES,
+                "FAEST-192s public key",
+            )
+            sig = _exact(
+                signature,
+                FAEST_192S_SIGNATURE_BYTES,
+                "FAEST-192s signature",
+            )
+            if not isinstance(message, bytes):
+                return False
+            result = self._library().faest_192s_verify(
+                _ctypes_bytes(key),
+                _ctypes_bytes(message),
+                len(message),
+                _ctypes_bytes(sig),
+                len(sig),
+            )
+            return result == 0
+        except (TypeError, ValueError, RuntimeError, ProviderUnavailable):
+            return False
 
 @dataclass(frozen=True)
 class PQCryptoMLKEM768Provider:
