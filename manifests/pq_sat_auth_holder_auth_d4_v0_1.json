@@ -1,0 +1,161 @@
+{
+  "base": {
+    "branch": "codex/r-access-50k-d4-ml-dsa-handshake",
+    "commit": "08603d7007e222290ce9ef8e981e7f759ab04341",
+    "scope": "isolated D4 prototype; shared v0.2 protocol, parser, registry, VerifyTicket, and one-time store unchanged"
+  },
+  "benchmark": {
+    "artifact": {
+      "bytes": 5295,
+      "path": "benchmarks/access_holder_auth/results_ml_dsa_65_handshake_d4_20260916.json",
+      "sha256": "c974994a65f9d4b01d40d7db8184f9ce02bfa403ef9f185111ea3911f4f29be2"
+    },
+    "command": "PQC_AUTH_ML_DSA_ACVP_SIGVER_JSON=/tmp/ML-DSA-sigVer-FIPS204-internalProjection.json PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src /tmp/pqc_auth_d4_venv/bin/python benchmarks/access_holder_auth/benchmark_ml_dsa_handshake.py --warmups 3 --iterations 30 --acvp-sigver-json /tmp/ML-DSA-sigVer-FIPS204-internalProjection.json --output benchmarks/access_holder_auth/results_ml_dsa_65_handshake_d4_20260916.json",
+    "host_scope": "single-host wall-clock; not mobile UE, satellite, network, backhaul, or energy measurement",
+    "iterations": 30,
+    "peak_process_rss_kib": 38496,
+    "timing_ms": {
+      "fgs_holder_verify_pqcrypto": {
+        "max": 0.157527,
+        "median": 0.142819,
+        "min": 0.141808,
+        "p95_nearest_rank": 0.146627
+      },
+      "full_handshake_pqcrypto": {
+        "max": 3.478162,
+        "median": 1.8505265,
+        "min": 1.308809,
+        "p95_nearest_rank": 3.19035
+      },
+      "holder_sign_dilithium_py": {
+        "max": 93.785553,
+        "median": 21.9320385,
+        "min": 11.788311,
+        "p95_nearest_rank": 91.328768
+      },
+      "holder_verify_dilithium_py": {
+        "max": 5.841612,
+        "median": 5.7663895,
+        "min": 5.746212,
+        "p95_nearest_rank": 5.83593
+      },
+      "ue_holder_sign_pqcrypto": {
+        "max": 0.940865,
+        "median": 0.472562,
+        "min": 0.204616,
+        "p95_nearest_rank": 0.907001
+      }
+    },
+    "warmups": 3
+  },
+  "claim_boundary": {
+    "access_composition_proof_closed": false,
+    "experimental_reference_only": true,
+    "generic_signature_is_se_nizk": false,
+    "holder_signature_profile_implemented": true,
+    "independent_cryptographic_review": false,
+    "new_r_issue_implemented": false,
+    "old_exact_r_access_preserved": false,
+    "production_aead_instantiated": false,
+    "production_closed": false,
+    "production_pq_rbbc_ticket_measured": false,
+    "production_ready": false,
+    "proof_closed": false,
+    "r_key_circuit_implemented": false,
+    "real_ml_dsa_signature_generated": true,
+    "real_ml_kem_shared_secret_established": true,
+    "two_provider_ml_dsa_interop_tested": true,
+    "wire_target_met_for_provisional_fixture": true
+  },
+  "dependencies": {
+    "cffi": "1.17.1",
+    "dilithium-py": "1.4.0",
+    "pqcrypto": "0.3.3",
+    "provider_production_ready": false,
+    "python": "3.12.9"
+  },
+  "files": {
+    "benchmarks/access_holder_auth/benchmark_ml_dsa_handshake.py": "d4b0d79ff5a9cff46122c3096e0045805f0799a5df132b34669d90e096a26482",
+    "benchmarks/access_holder_auth/results_ml_dsa_65_handshake_d4_20260916.json": "c974994a65f9d4b01d40d7db8184f9ce02bfa403ef9f185111ea3911f4f29be2",
+    "docs/artifacts/SATELLITE_ACCESS_HOLDER_AUTH_D4_ML_DSA_HANDSHAKE_v0_1_zh-TW.md": "30f14b1734436f95f8fabd83fffc1a629431f7a2082c5f7705a1a040055ef048",
+    "src/pq_sat_auth/v2/prototypes/holder_auth_v3/__init__.py": "748b8137eaa2bd7c7b64e0261853b7aaf91c67a8b97cba606259b982cd91a61c",
+    "src/pq_sat_auth/v2/prototypes/holder_auth_v3/codec.py": "62016cc06d7bc0c8d594dfd2499baeb8d156d011e35c926346cdfae197ecc562",
+    "src/pq_sat_auth/v2/prototypes/holder_auth_v3/providers.py": "7d0272ff27c44004a1569777c934019b46c48debb250fa1c0b9cec1404c0d2b5",
+    "src/pq_sat_auth/v2/prototypes/holder_auth_v3/suite.py": "de25784d0e38609f80cbf5ee9651bb76e7b340fce6006c86b9c396830b6c854a",
+    "tests/prototypes/holder_auth_v3/__init__.py": "110c1862c201ff576ae21f9388becd5258838193f405f19dc89335000df06ec7",
+    "tests/prototypes/holder_auth_v3/test_holder_auth_handshake.py": "b9127de027201db089f3de5e3c3c49c772faa878ba0ed22926fcfd33c40d5754"
+  },
+  "format": "PQ-SAT-HOLDER-AUTH-D4-MANIFEST-v0.1",
+  "frozen_vectors": {
+    "activation_sha256": "9ae8c22825b74ff5575c3d757dcf80e32b3e11f2b4d30b03a340f4e198fd0853",
+    "candidate_ticket_sha256": "b992111734a6e2c1016c4ebcad1c79ff3534c30e282357a7cb81d63ba88d5264",
+    "first_record_sha256": "b84362ba0afc1f266be99f9f22db6d0e683c2502f6ee48edc8266d7a694a4edc",
+    "holder_auth_core_sha256": "aedf84ae8af060c5d513995dc5f24fff851a5b79b6cdab3b3eb06e9a87baa0ae",
+    "holder_signing_input_sha256": "3ef57a174275143ccc67fcb959ff4c0aa055006030411e047681994bd5ff8f6b",
+    "request_sha256": "514bed0b29fc472f708c59c956162ecfe5bcdd9d4e3abc780ecced8e83271e86",
+    "response_sha256": "0523855d6d9c72bde738e38a7594d443f5e4830920f2c3e1149352f3bc66f6c6"
+  },
+  "official_acvp_input": {
+    "bytes": 4533178,
+    "dilithium_py_accepted_positive_vector": true,
+    "external_local_path_not_committed": "/tmp/ML-DSA-sigVer-FIPS204-internalProjection.json",
+    "parameter_set": "ML-DSA-65",
+    "pqcrypto_checked_for_exact_nonempty_context_vector": false,
+    "sha256": "47cdd6314c7f746d02421ffcba89d4dbc7bb875ac49e07a029fdfc26fba55437",
+    "source": "https://raw.githubusercontent.com/usnistgov/ACVP-Server/master/gen-val/json-files/ML-DSA-sigVer-FIPS204/internalProjection.json",
+    "test_case_id": 33,
+    "test_group_id": 3
+  },
+  "profile": {
+    "access_suite_id": 65296,
+    "holder_parameter_digest_sha256": "74425ee63fd18e813632a7bd072b84b91e38c7bf3d31e1914352a5ae3f7170e4",
+    "holder_suite": "ML-DSA-65",
+    "holder_suite_id": 65297,
+    "magic": "PQSAT-A3",
+    "ml_dsa_native_context": "empty",
+    "protocol_domain_encoded_in_signed_message": true,
+    "version": 3
+  },
+  "validation": {
+    "existing_access_ticket_nizk_targeted": {
+      "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python -m unittest -v tests.system.test_pq_sat_auth_access_v2 tests.system.test_pq_sat_auth_access_proof_v2 tests.system_modules.tickets.test_verification tests.prototypes.access_nizk.test_mpcith_access_nizk",
+      "errors": 0,
+      "failures": 0,
+      "passed": 48,
+      "skipped": 0
+    },
+    "full_repository": {
+      "command": "PQC_AUTH_ML_DSA_ACVP_SIGVER_JSON=/tmp/ML-DSA-sigVer-FIPS204-internalProjection.json PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src /tmp/pqc_auth_d4_venv/bin/python -m unittest discover -s tests -q",
+      "errors": 0,
+      "failures": 0,
+      "passed": 1036,
+      "runtime_seconds": 772.698,
+      "skipped": 12,
+      "total": 1048
+    },
+    "prototype_targeted": {
+      "command": "PQC_AUTH_ML_DSA_ACVP_SIGVER_JSON=/tmp/ML-DSA-sigVer-FIPS204-internalProjection.json PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src /tmp/pqc_auth_d4_venv/bin/python -m unittest -v tests.prototypes.holder_auth_v3.test_holder_auth_handshake",
+      "errors": 0,
+      "failures": 0,
+      "passed": 9,
+      "skipped": 0
+    }
+  },
+  "wire_bytes": {
+    "candidate_ticket_fixture": 12126,
+    "explicit_m3_complete_handshake": 23850,
+    "explicit_m3_margin_below_50000": 26150,
+    "fgs_authenticator": 3309,
+    "first_application_record_conditional": 377,
+    "first_record_complete_handshake": 24029,
+    "first_record_margin_below_50000": 25971,
+    "holder_authenticator": 3309,
+    "holder_public_key": 1952,
+    "issuer_signature_fixture": 11644,
+    "m1_access_request": 18897,
+    "m2_access_accept": 4755,
+    "m3_session_activate": 198,
+    "ml_kem_768_ciphertext": 1088,
+    "ml_kem_768_public_key": 1184
+  }
+}

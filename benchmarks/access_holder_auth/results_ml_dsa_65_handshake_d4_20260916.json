@@ -1,0 +1,134 @@
+{
+  "claim_boundary": {
+    "access_composition_proof_closed": false,
+    "issuer_signature_generated": false,
+    "new_r_issue_implemented": false,
+    "official_positive_acvp_vector_checked": true,
+    "production_aead_instantiated": false,
+    "production_closed": false,
+    "production_ready": false,
+    "r_key_circuit_implemented": false,
+    "real_ml_dsa_holder_signature_generated": true,
+    "real_ml_kem_shared_secret_established": true,
+    "two_ml_dsa_providers_interoperable": true
+  },
+  "dependencies": {
+    "cffi": "1.17.1",
+    "dilithium-py": "1.4.0",
+    "pqcrypto": "0.3.3",
+    "provider_production_ready": false
+  },
+  "format": "PQ-SAT-R-ACCESS-HOLDER-AUTH-D4-BENCHMARK-v0.1",
+  "generated_at_utc": "2026-09-16T10:13:54.500388+00:00",
+  "git": {
+    "branch": "codex/r-access-50k-d4-ml-dsa-handshake",
+    "head": "08603d7007e222290ce9ef8e981e7f759ab04341",
+    "source_file_sha256": {
+      "benchmarks/access_holder_auth/benchmark_ml_dsa_handshake.py": "d4b0d79ff5a9cff46122c3096e0045805f0799a5df132b34669d90e096a26482",
+      "src/pq_sat_auth/v2/prototypes/holder_auth_v3/codec.py": "62016cc06d7bc0c8d594dfd2499baeb8d156d011e35c926346cdfae197ecc562",
+      "src/pq_sat_auth/v2/prototypes/holder_auth_v3/providers.py": "7d0272ff27c44004a1569777c934019b46c48debb250fa1c0b9cec1404c0d2b5",
+      "src/pq_sat_auth/v2/prototypes/holder_auth_v3/suite.py": "de25784d0e38609f80cbf5ee9651bb76e7b340fce6006c86b9c396830b6c854a",
+      "tests/prototypes/holder_auth_v3/test_holder_auth_handshake.py": "b9127de027201db089f3de5e3c3c49c772faa878ba0ed22926fcfd33c40d5754"
+    },
+    "status_short": [
+      "?? benchmarks/access_holder_auth/",
+      "?? src/pq_sat_auth/v2/prototypes/holder_auth_v3/",
+      "?? tests/prototypes/holder_auth_v3/"
+    ],
+    "working_tree_dirty": true
+  },
+  "host": {
+    "cpu_model": "AMD Ryzen 5 7600X 6-Core Processor",
+    "kernel": "6.8.0-138-generic",
+    "logical_cpu_count": 12,
+    "machine": "x86_64",
+    "memory_total_kib": 31980844,
+    "os": "Linux-6.8.0-138-generic-x86_64-with-glibc2.35",
+    "process_peak_rss_kib": 38496,
+    "python": "3.12.9 | packaged by Anaconda, Inc. | (main, Feb  6 2025, 18:56:27) [GCC 11.2.0]",
+    "python_executable": "/tmp/pqc_auth_d4_venv/bin/python"
+  },
+  "interoperability": {
+    "dilithium_py_signature_verified_by_dilithium_py": true,
+    "dilithium_py_signature_verified_by_pqcrypto": true,
+    "pqcrypto_signature_verified_by_dilithium_py": true,
+    "pqcrypto_signature_verified_by_pqcrypto": true
+  },
+  "official_acvp": {
+    "context_bytes": 142,
+    "dilithium_py_accepted": true,
+    "expected": true,
+    "parameter_set": "ML-DSA-65",
+    "pqcrypto_checked": false,
+    "pqcrypto_reason": "pqcrypto 0.3.3 high-level API does not expose the non-empty FIPS 204 context input used by this vector",
+    "pre_hash": "pure",
+    "signature_interface": "external",
+    "source": "https://raw.githubusercontent.com/usnistgov/ACVP-Server/master/gen-val/json-files/ML-DSA-sigVer-FIPS204/internalProjection.json",
+    "source_bytes": 4533178,
+    "source_sha256": "47cdd6314c7f746d02421ffcba89d4dbc7bb875ac49e07a029fdfc26fba55437",
+    "test_case_id": 33,
+    "test_group_id": 3
+  },
+  "profile": {
+    "access_suite_id": 65296,
+    "first_record_ciphertext_status": "17-byte conditional size fixture; production AEAD not instantiated",
+    "holder_parameter_digest_sha256": "74425ee63fd18e813632a7bd072b84b91e38c7bf3d31e1914352a5ae3f7170e4",
+    "holder_signing_input_bytes": 15593,
+    "holder_suite": "ML-DSA-65",
+    "issuer_signature_bytes_status": "11,644-byte provisional size fixture; not a generated PQ-RBBC signature",
+    "native_context": "empty",
+    "protocol_domain_encoded_in_signed_message": true
+  },
+  "sampling": {
+    "iterations": 30,
+    "warmups": 3
+  },
+  "timing": {
+    "fgs_holder_verify_pqcrypto": {
+      "max_ms": 0.157527,
+      "median_ms": 0.142819,
+      "min_ms": 0.141808,
+      "p95_nearest_rank_ms": 0.146627
+    },
+    "full_handshake_pqcrypto": {
+      "max_ms": 3.478162,
+      "median_ms": 1.8505265,
+      "min_ms": 1.308809,
+      "p95_nearest_rank_ms": 3.19035
+    },
+    "holder_sign_dilithium_py": {
+      "max_ms": 93.785553,
+      "median_ms": 21.932038499999997,
+      "min_ms": 11.788311,
+      "p95_nearest_rank_ms": 91.328768
+    },
+    "holder_verify_dilithium_py": {
+      "max_ms": 5.841612,
+      "median_ms": 5.7663895,
+      "min_ms": 5.746212,
+      "p95_nearest_rank_ms": 5.83593
+    },
+    "scope": "host wall-clock; full handshake includes two ML-DSA keygens, two signatures, ML-KEM keygen/encap/decap, codecs and Finished",
+    "ue_holder_sign_pqcrypto": {
+      "max_ms": 0.940865,
+      "median_ms": 0.47256200000000004,
+      "min_ms": 0.204616,
+      "p95_nearest_rank_ms": 0.907001
+    }
+  },
+  "wire_bytes": {
+    "candidate_ticket_fixture": 12126,
+    "explicit_m3_complete_handshake": 23850,
+    "explicit_m3_margin_below_50000": 26150,
+    "fgs_authenticator": 3309,
+    "fgs_public_key_preconfigured_not_on_wire": 1952,
+    "first_application_record_conditional": 377,
+    "first_record_complete_handshake": 24029,
+    "first_record_margin_below_50000": 25971,
+    "holder_authenticator": 3309,
+    "holder_public_key": 1952,
+    "m1_access_request": 18897,
+    "m2_access_accept": 4755,
+    "m3_session_activate": 198
+  }
+}
