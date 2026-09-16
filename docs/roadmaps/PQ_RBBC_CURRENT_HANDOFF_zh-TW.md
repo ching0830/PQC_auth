@@ -6,6 +6,32 @@
 
 日期：2026 年 9 月 16 日
 
+## Issuance fresh parent I1–I5 CandidateSet 唯讀 preflight（獨立 branch）
+
+從 finding-free Global-tail completion sealer commit
+`12be68c199f108c0141e613b7e70cba251183168` 建立
+`codex/pq-rbbc-issuance-parent-i1-i5-candidateset-preflight-v1`。本branch只建立bounded
+two-tree／four-leaf `INSECURE-TEST-ONLY` fresh parent CandidateSet read-only preflight；不修改
+predecessor、v2.38／v2.39 historical evidence、system architecture、ticket lifecycle或`pq_sat_auth`。
+
+CandidateSet固定40個source roles：completion handoff、completion sealer既有36個immutable roles、
+parent parameters、statement與witness。External handoff digest先於dependent snapshot validation或
+CAP host computation驗證；identity、parse、binding及future consumption皆使用同一`Snapshot.raw`，
+不得pathname reopen。
+
+Frozen bounded fixture以direct host reference checks確認I1–I5五個conjunct的M／ctx、ticket message、
+two-tree rho、r、511-byte c_r、72-byte request hash、beta、holder及trace binding一致。這不是circuit
+replay：parent constraints與native join rows皆為0。Parent-local input/import interval固定為
+`[1,18143)`，其中public 1,600 bits、secret 11,622 bits；future CAP-to-parent native joins規劃6,654
+bits。Computed與absolute composed intervals維持null，3,100,000 rows只是未觀測planning upper bound。
+
+SID只檢查canonical/nonzero；freshness與linearizable reservation未實作。Fresh parent consumer、
+legacy18 production provider、formal`pi_issue`、qualified PQ-SE、large replay/proving、Proof-closed與
+Production-closed仍全部為false。本exact commit須先取得finding-free唯讀technical/security
+re-review；通過後下一個serial gate是 **bounded independently invocable fresh parent I1–I5 relation
+consumer**。詳細contract見
+[fresh parent CandidateSet artifact note](../artifacts/PQ_RBBC_ISSUANCE_PARENT_I1_I5_CANDIDATESET_PREFLIGHT_V1_zh-TW.md)。
+
 ## Issuance Global-tail completion sealer／parent-input CandidateSet（獨立 branch）
 
 從 finding-free Global-B corrective commit
