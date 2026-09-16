@@ -1,0 +1,74 @@
+<div id="pqc-learning-one-rtt" role="img" aria-label="待評估的單往返候選：使用者事先核驗 FGS 所需公開資料，第一則訊息即附票券、接入 NIZK 與金鑰建立資料。FGS 依完整驗證、使用狀態及金鑰確認條件回覆受認證結果。此圖是設計目標，尚非已實作或證明安全的協定。">
+  <style>
+    #pqc-learning-one-rtt { width: 100%; color: var(--foreground); }
+    #pqc-learning-one-rtt .round-trip-diagram { display: block; width: 100%; }
+    #pqc-learning-one-rtt .round-trip-diagram text { fill: var(--foreground); font-family: inherit; }
+    #pqc-learning-one-rtt .round-trip-diagram .node { fill: color-mix(in srgb, var(--viz-series-1) 9%, var(--background)); stroke: var(--border); }
+    #pqc-learning-one-rtt .round-trip-diagram .lane { stroke: var(--border); stroke-width: 1; }
+    #pqc-learning-one-rtt .round-trip-diagram .arrow { fill: none; stroke: var(--muted-foreground); stroke-width: 1.5; }
+    #pqc-learning-one-rtt .round-trip-diagram .label-background { fill: var(--background); }
+  </style>
+  <svg class="round-trip-diagram" xmlns="http://www.w3.org/2000/svg" aria-labelledby="pqc-one-rtt-title pqc-one-rtt-desc">
+    <title id="pqc-one-rtt-title">首則附 NIZK 的單往返候選</title>
+    <desc id="pqc-one-rtt-desc">候選尚未定案。前提為 UE 已取得並認證所需的 FGS 公開資料、有效期與金鑰。所有現場訊息經衛星中繼，首則含票券、接入證明與金鑰建立資料，FGS 核驗並依待定的使用狀態與金鑰確認規則處理，再回覆受認證結果，UE 核驗。1 RTT 是目標，前置取得資料、後端查詢及額外確認均須另行核算。</desc>
+  </svg>
+  <script>
+    (() => {
+      const root = document.getElementById('pqc-learning-one-rtt');
+      const svg = root.querySelector('.round-trip-diagram');
+      const ns = 'http://www.w3.org/2000/svg';
+      function element(name, attributes, parent) {
+        const item = document.createElementNS(ns, name);
+        for (const [key, value] of Object.entries(attributes)) item.setAttribute(key, String(value));
+        parent.appendChild(item);
+        return item;
+      }
+      function draw() {
+        const old = svg.querySelector('[data-drawing]');
+        if (old) old.remove();
+        const width = Math.max(280, Math.round(root.getBoundingClientRect().width));
+        const height = 476;
+        svg.setAttribute('viewBox', '0 0 ' + width + ' ' + height);
+        svg.setAttribute('height', String(height));
+        const group = element('g', { 'data-drawing': '' }, svg);
+        const left = width / 4;
+        const right = width * 3 / 4;
+        function label(x, y, value, small = false, weight = 400, mask = false) {
+          const text = element('text', { x, y, 'text-anchor': 'middle', 'font-weight': weight, class: small ? 'text-small' : '' }, group);
+          text.textContent = value;
+          if (mask) {
+            const box = text.getBBox();
+            const background = element('rect', { x: box.x - 5, y: box.y - 2, width: box.width + 10, height: box.height + 4, class: 'label-background' }, group);
+            group.insertBefore(background, text);
+          }
+        }
+        function node(x, y, w, title, detail) {
+          element('rect', { x, y, width: w, height: 57, rx: 8, class: 'node' }, group);
+          label(x + w / 2, y + 25, title, false, 500);
+          label(x + w / 2, y + 47, detail, true);
+        }
+        function arrow(start, end, y, title, detail) {
+          element('line', { x1: start, y1: y, x2: end, y2: y, class: 'arrow' }, group);
+          const back = end + (end > start ? -7 : 7);
+          element('path', { d: 'M ' + back + ' ' + (y - 4) + ' L ' + end + ' ' + y + ' L ' + back + ' ' + (y + 4), class: 'arrow' }, group);
+          label(width / 2, y - 39, title, false, 500, true);
+          label(width / 2, y - 17, detail, true, 400, true);
+        }
+        label(width / 2, 24, '候選：1 RTT 接入', false, 500);
+        label(width / 2, 46, '尚未定案；現場訊息經衛星中繼', true);
+        const preWidth = Math.min(370, width - 16);
+        node((width - preWidth) / 2, 65, preWidth, '前提：已核驗 FGS 公開資料', '含本方案所需的有效期與金鑰資料');
+        label(left, 154, '小明 UE', false, 500);
+        label(right, 154, 'FGS 地面站', false, 500);
+        [left, right].forEach(x => element('line', { x1: x, y1: 169, x2: x, y2: 465, class: 'lane' }, group));
+        arrow(left, right, 238, '票券＋接入 NIZK＋金鑰建立資料', '綁定目標、期間、請求與金鑰');
+        const checkWidth = Math.min(305, width - 32);
+        node(width - 16 - checkWidth, 257, checkWidth, 'FGS：驗證＋使用狀態', '須配套金鑰確認與安全接受條件');
+        arrow(right, left, 379, '受認證的接受回應', '與此次請求及協議金鑰綁定');
+        node(16, 403, Math.min(248, width - 32), 'UE 核驗受認證回應', '目標：一趟往返取得接入結果');
+      }
+      new ResizeObserver(draw).observe(root);
+      draw();
+    })();
+  </script>
+</div>

@@ -1,0 +1,49 @@
+<section id="repo-map-v24" aria-labelledby="repo-map-v24-title" aria-describedby="repo-map-v24-desc">
+  <style>
+    #repo-map-v24 { width: 100%; color: var(--foreground); background: transparent; font-size: var(--font-size-base); }
+    #repo-map-v24 * { box-sizing: border-box; }
+    #repo-map-v24 h2, #repo-map-v24 h3, #repo-map-v24 p { margin: 0; }
+    #repo-map-v24 .lead { margin-top: .35rem; color: var(--muted-foreground); }
+    #repo-map-v24 .zones { display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); gap: .55rem; margin-top: 1rem; }
+    #repo-map-v24 .zone { min-width: 0; padding: .7rem; border-top: 3px solid var(--viz-series-1); background: color-mix(in srgb,var(--card) 72%,transparent); }
+    #repo-map-v24 .zone:nth-child(2) { border-color: var(--viz-series-5); }
+    #repo-map-v24 .zone:nth-child(3) { border-color: var(--viz-series-3); }
+    #repo-map-v24 .zone:nth-child(4) { border-color: var(--viz-series-2); }
+    #repo-map-v24 .zone:nth-child(5) { border-color: var(--viz-series-4); }
+    #repo-map-v24 .zone span { display:block; margin-top:.3rem; color:var(--muted-foreground); overflow-wrap:anywhere; }
+    #repo-map-v24 .chain { display:grid; grid-template-columns:1fr auto 1fr auto 1fr auto 1fr; align-items:stretch; gap:.4rem; margin-top:1rem; }
+    #repo-map-v24 .step { min-width:0; padding:.7rem; border:1px solid var(--border); }
+    #repo-map-v24 .step strong, #repo-map-v24 .step span { display:block; }
+    #repo-map-v24 .step span { margin-top:.25rem; color:var(--muted-foreground); overflow-wrap:anywhere; }
+    #repo-map-v24 .arrow { align-self:center; color:var(--accent-foreground); font-size:1.3rem; }
+    #repo-map-v24 .limit { margin-top:.85rem; padding:.75rem; text-align:center; background:color-mix(in srgb,var(--accent) 45%,transparent); color:var(--accent-foreground); }
+    #repo-map-v24 .example { margin-top:.7rem; text-align:center; color:var(--muted-foreground); }
+    @media (max-width:760px) {
+      #repo-map-v24 .zones { grid-template-columns:repeat(3,minmax(0,1fr)); }
+      #repo-map-v24 .chain { grid-template-columns:1fr; }
+      #repo-map-v24 .arrow { transform:rotate(90deg); justify-self:center; }
+    }
+    @media (max-width:390px) { #repo-map-v24 .zones { grid-template-columns:1fr; } }
+  </style>
+
+  <h2 id="repo-map-v24-title">Repository 地圖：一項主張要走過哪些檔案</h2>
+  <p id="repo-map-v24-desc" class="lead">先辨認檔案責任，再沿規格、實作、測試與證據閱讀；檔案存在不等於系統完成。</p>
+
+  <div class="zones" aria-label="repository 的五個區域">
+    <div class="zone"><h3>研究理由</h3><span>research-notes<br>methodology<br>experiments<br>thesis-outline</span></div>
+    <div class="zone"><h3>正式定義</h3><span>ARCHITECTURE<br>RESEARCH_STATUS<br>ROADMAP</span></div>
+    <div class="zone"><h3>實作</h3><span>src/pq_sat_auth<br>src/pq_rbbc<br>src/pq_rbbc_*.py</span></div>
+    <div class="zone"><h3>驗證證據</h3><span>tests<br>manifests<br>checksums<br>artifacts／proof</span></div>
+    <div class="zone"><h3>導覽學習</h3><span>modules<br>docs/guides<br>learning</span></div>
+  </div>
+
+  <div class="chain" aria-label="framing 功能的閱讀路徑">
+    <div class="step"><strong>1　語意與狀態</strong><span>Architecture／Research Status</span></div><div class="arrow">→</div>
+    <div class="step"><strong>2　Source</strong><span>pq_sat_auth/framing.py</span></div><div class="arrow">→</div>
+    <div class="step"><strong>3　Tests</strong><span>test_pq_sat_auth_framing.py</span></div><div class="arrow">→</div>
+    <div class="step"><strong>4　可支持結論</strong><span>canonical framing 的六組測試通過</span></div>
+  </div>
+
+  <div class="limit"><strong>不能跳級：</strong>Implemented ≠ Tested ≠ Proof-closed ≠ Production-closed</div>
+  <p class="example">Framing parser 通過測試，只代表被測格式規則成立；不代表 ticket、NIZK、PQ AKE 或整體匿名性已被證明。</p>
+</section>

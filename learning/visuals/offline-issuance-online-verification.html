@@ -1,0 +1,119 @@
+<div id="pqc-learning-precompute-boundary" role="img" aria-label="後量子計算前移的邊界。接入前先完成註冊身分認證、hidden ticket 與追責密文建立、發行 NIZK、盲簽署與票券保存。接入時保留只有當下才知道的 serving context、freshness、持票者認證、票券與政策驗證、PQ AKE、replay state 和 session commit。正式文獻比較應依各衛星認證論文的實際流程，而不是假設它們每次都查詢 HNCC。">
+  <style>
+    #pqc-learning-precompute-boundary { width: 100%; color: var(--foreground); }
+    #pqc-learning-precompute-boundary .boundary { display: block; width: 100%; }
+    #pqc-learning-precompute-boundary .boundary text { fill: var(--foreground); font-family: inherit; }
+    #pqc-learning-precompute-boundary .boundary .offline { fill: color-mix(in srgb, var(--viz-series-1) 11%, var(--background)); stroke: var(--viz-series-1); }
+    #pqc-learning-precompute-boundary .boundary .online { fill: color-mix(in srgb, var(--viz-series-2) 11%, var(--background)); stroke: var(--viz-series-2); }
+    #pqc-learning-precompute-boundary .boundary .state { fill: color-mix(in srgb, var(--viz-series-3) 11%, var(--background)); stroke: var(--viz-series-3); }
+    #pqc-learning-precompute-boundary .boundary .flow { fill: none; stroke: var(--muted-foreground); stroke-width: 1.5; }
+    #pqc-learning-precompute-boundary .boundary .divide { stroke: var(--border); stroke-width: 1.5; stroke-dasharray: 5 5; }
+    #pqc-learning-precompute-boundary .boundary .muted { fill: var(--muted-foreground); }
+    #pqc-learning-precompute-boundary .boundary .key { fill: var(--primary); }
+    #pqc-learning-precompute-boundary .boundary .warning { fill: var(--destructive); }
+  </style>
+  <svg class="boundary" xmlns="http://www.w3.org/2000/svg" aria-labelledby="pqc-precompute-title pqc-precompute-desc">
+    <title id="pqc-precompute-title">後量子運算能前移的先前移</title>
+    <desc id="pqc-precompute-desc">時間線分成接入前與衛星在線兩段。接入前完成身分認證、票券建立、發行 NIZK、盲簽署和保存。接入時核對當下環境、新鮮性、持票者、票券政策、PQ AKE、replay state 和 session。文獻比較需依各論文原始流程。</desc>
+  </svg>
+  <script>
+    (() => {
+      const root = document.getElementById('pqc-learning-precompute-boundary');
+      const svg = root.querySelector('.boundary');
+      const ns = 'http://www.w3.org/2000/svg';
+      function add(name, attributes, parent) {
+        const item = document.createElementNS(ns, name);
+        for (const [key, value] of Object.entries(attributes)) item.setAttribute(key, String(value));
+        parent.appendChild(item);
+        return item;
+      }
+      function draw() {
+        const old = svg.querySelector('[data-drawing]');
+        if (old) old.remove();
+        const width = Math.max(280, Math.round(root.getBoundingClientRect().width));
+        const narrow = width < 560;
+        const height = narrow ? 990 : 520;
+        svg.setAttribute('viewBox', '0 0 ' + width + ' ' + height);
+        svg.setAttribute('height', String(height));
+        const group = add('g', { 'data-drawing': '' }, svg);
+        function label(x, y, value, size = 12, weight = 400, className = '', anchor = 'middle') {
+          const item = add('text', { x, y, 'text-anchor': anchor, 'font-size': size, 'font-weight': weight, class: className }, group);
+          item.textContent = value;
+        }
+        function box(x, y, w, h, title, line1, line2, className) {
+          add('rect', { x, y, width: w, height: h, rx: 9, class: className }, group);
+          label(x + w / 2, y + 23, title, 13, 500);
+          label(x + w / 2, y + 46, line1, 11.5);
+          label(x + w / 2, y + 64, line2, 11.5);
+        }
+        function arrow(x1, y1, x2, y2) {
+          add('line', { x1, y1, x2, y2, class: 'flow' }, group);
+          const angle = Math.atan2(y2 - y1, x2 - x1);
+          const len = 7;
+          const spread = 0.55;
+          add('path', {
+            d: 'M ' + (x2 - len * Math.cos(angle - spread)) + ' ' + (y2 - len * Math.sin(angle - spread)) +
+              ' L ' + x2 + ' ' + y2 +
+              ' L ' + (x2 - len * Math.cos(angle + spread)) + ' ' + (y2 - len * Math.sin(angle + spread)),
+            class: 'flow'
+          }, group);
+        }
+        label(width / 2, 24, '後量子運算：能前移的先前移', narrow ? 15 : 16, 500);
+        label(width / 2, 46, '切分依據：是否需要本次接入才知道的資料', 11.5, 400, 'muted');
+        if (!narrow) {
+          const margin = 12;
+          const gap = 12;
+          const nodeW = (width - margin * 2 - gap * 3) / 4;
+          const xs = [0,1,2,3].map(i => margin + i * (nodeW + gap));
+          const h = 76;
+          label(16, 91, '接入前', 12, 500, 'key', 'start');
+          box(xs[0], 104, nodeW, h, '註冊與設定', 'HNCC 認證 rid', '取得共同 ctx／keys', 'offline');
+          box(xs[1], 104, nodeW, h, '建立 hidden ticket', 'k_hold／sn／C／randomness', '資料留在 UE witness', 'offline');
+          box(xs[2], 104, nodeW, h, '重型發行運算', 'pi_issue＋盲簽署', 'HNCC 驗證；UE Finalize', 'offline');
+          box(xs[3], 104, nodeW, h, '預存票券 T', '尚未指定本次 FGS', '等待日後接入', 'offline');
+          for (let i=0;i<3;i++) arrow(xs[i]+nodeW, 142, xs[i+1]-2, 142);
+          label(width / 2, 211, '將不依賴當次接入的高成本工作移出 latency-critical path', 12, 500, 'key');
+          add('line', { x1: 12, y1: 236, x2: width - 12, y2: 236, class: 'divide' }, group);
+          label(16, 268, '在線', 12, 500, 'warning', 'start');
+          box(xs[0], 282, nodeW, h, '本次接入資料', 'ticket＋serving context', 'freshness＋UE key share', 'online');
+          box(xs[1], 282, nodeW, h, 'FGS 當下驗證', '票券／持票者／policy', 'expiry／revocation', 'online');
+          box(xs[2], 282, nodeW, h, 'PQ AKE', '綁定端點與 transcript', '建立 fresh session key', 'online');
+          box(xs[3], 282, nodeW, h, 'Replay state', 'Reserve → Commit', 'session＋CONSUMED', 'state');
+          for (let i=0;i<3;i++) arrow(xs[i]+nodeW, 320, xs[i+1]-2, 320);
+          arrow(xs[3]+nodeW/2, 180, xs[3]+nodeW/2, 280);
+          label(width / 2, 397, '依賴當下 FGS、freshness、session 或權威狀態，不能全部預先計算', 12, 500, 'warning');
+          label(width / 2, 443, '附帶效益：HNCC 不參與每次接入，有助 issuer unlinkability', 12, 400, 'muted');
+          label(width / 2, 474, '正式比較：依每篇衛星認證論文的實際流程與相同量測範圍', 12, 500);
+          label(width / 2, 499, '不能假設其他論文都採 FGS ↔ HNCC 在線查詢', 11.5, 500, 'warning');
+        } else {
+          const x = 14;
+          const w = width - 28;
+          const h = 76;
+          label(width / 2, 81, '接入前：可預先完成', 12.5, 500, 'key');
+          box(x, 94, w, h, '註冊與設定', 'HNCC 認證 rid', '取得共同 ctx／keys', 'offline');
+          box(x, 190, w, h, '建立 hidden ticket', 'k_hold／sn／C／randomness', '資料留在 UE witness', 'offline');
+          box(x, 286, w, h, '重型發行運算', 'pi_issue＋盲簽署＋Finalize', '完成並預存票券 T', 'offline');
+          arrow(width/2, 170, width/2, 188);
+          arrow(width/2, 266, width/2, 284);
+          label(width / 2, 393, '高成本 issuance work 移出接入路徑', 11.5, 500, 'key');
+          add('line', { x1: 20, y1: 420, x2: width - 20, y2: 420, class: 'divide' }, group);
+          label(width / 2, 452, '衛星在線：依賴當下資料', 12.5, 500, 'warning');
+          box(x, 465, w, h, '本次接入資料', 'ticket／serving context／freshness', 'UE key share', 'online');
+          box(x, 561, w, h, 'FGS 當下驗證', '票券／持票者／policy', 'expiry／revocation', 'online');
+          box(x, 657, w, h, 'PQ AKE', '端點與 transcript 綁定', '建立 fresh session key', 'online');
+          box(x, 753, w, h, 'Replay state', 'Reserve → Commit', 'session＋CONSUMED', 'state');
+          arrow(width/2, 541, width/2, 559);
+          arrow(width/2, 637, width/2, 655);
+          arrow(width/2, 733, width/2, 751);
+          label(width / 2, 860, '當下驗證與狀態不能全部預先計算', 11.5, 500, 'warning');
+          label(width / 2, 902, 'HNCC 不在線是附帶的隱私效益', 11.5, 400, 'muted');
+          label(width / 2, 938, '論文比較須依各篇實際流程', 12, 500);
+          label(width / 2, 963, '不能假設它們都在線查 HNCC', 11.5, 500, 'warning');
+        }
+      }
+      draw();
+      if (typeof ResizeObserver !== 'undefined') new ResizeObserver(draw).observe(root);
+      else window.addEventListener('resize', draw);
+    })();
+  </script>
+</div>

@@ -1,0 +1,62 @@
+<section id="threat-boundary-v23" aria-labelledby="threat-boundary-v23-title" aria-describedby="threat-boundary-v23-desc">
+  <style>
+    #threat-boundary-v23 { width: 100%; color: var(--foreground); background: transparent; font-size: var(--font-size-base); }
+    #threat-boundary-v23 * { box-sizing: border-box; }
+    #threat-boundary-v23 h2, #threat-boundary-v23 h3, #threat-boundary-v23 p { margin: 0; }
+    #threat-boundary-v23 .lead { margin-top: 0.35rem; color: var(--muted-foreground); }
+    #threat-boundary-v23 .models { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.75rem; margin-top: 1rem; }
+    #threat-boundary-v23 .model { min-width: 0; padding-top: 0.55rem; border-top: 3px solid var(--viz-series-1); }
+    #threat-boundary-v23 .model:nth-child(2) { border-top-color: var(--viz-series-3); }
+    #threat-boundary-v23 .model:nth-child(3) { border-top-color: var(--viz-series-4); }
+    #threat-boundary-v23 .model span { display: block; margin-top: 0.18rem; color: var(--muted-foreground); }
+    #threat-boundary-v23 .availability { margin-top: 0.75rem; padding: 0.65rem; text-align: center; background: color-mix(in srgb, var(--viz-series-5) 10%, transparent); }
+    #threat-boundary-v23 .availability span { color: var(--muted-foreground); }
+    #threat-boundary-v23 .actors { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.7rem; margin-top: 0.9rem; }
+    #threat-boundary-v23 .actor { min-width: 0; padding-top: 0.5rem; border-top: 1px solid var(--border); }
+    #threat-boundary-v23 .actor strong, #threat-boundary-v23 .actor span { display: block; }
+    #threat-boundary-v23 .actor span { margin-top: 0.18rem; color: var(--muted-foreground); }
+    #threat-boundary-v23 .claims { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.65rem; margin-top: 0.9rem; padding-top: 0.75rem; border-top: 1px solid var(--border); }
+    #threat-boundary-v23 .claim { min-width: 0; }
+    #threat-boundary-v23 .claim strong, #threat-boundary-v23 .claim span { display: block; }
+    #threat-boundary-v23 .claim span { margin-top: 0.18rem; color: var(--muted-foreground); }
+    #threat-boundary-v23 .template { margin-top: 0.85rem; padding: 0.75rem; background: color-mix(in srgb, var(--accent) 45%, transparent); color: var(--accent-foreground); text-align: center; }
+    #threat-boundary-v23 .warning { margin-top: 0.65rem; color: var(--muted-foreground); text-align: center; }
+    @media (max-width: 620px) {
+      #threat-boundary-v23 .models, #threat-boundary-v23 .actors { grid-template-columns: 1fr; }
+      #threat-boundary-v23 .claims { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 390px) {
+      #threat-boundary-v23 .claims { grid-template-columns: 1fr; }
+    }
+  </style>
+
+  <h2 id="threat-boundary-v23-title">Threat model：先寫攻擊能力，再寫安全結論</h2>
+  <p id="threat-boundary-v23-desc" class="lead">同一個角色在不同性質中可以有不同假設；「不可用」則是獨立的 availability 維度。</p>
+
+  <div class="models" aria-label="三種行為與控制模型">
+    <section class="model"><h3>Honest-but-curious</h3><span>遵守協定；保存並分析正常 view。HNCC 目前採此模型。</span></section>
+    <section class="model"><h3>Malicious</h3><span>可偏離協定、偽造輸入、重放、並行、分享資料或拒絕。</span></section>
+    <section class="model"><h3>Compromised</h3><span>攻擊者取得內部 secrets／state 並控制角色；須列明拿到什麼。</span></section>
+  </div>
+
+  <div class="availability"><strong>Unavailable 是另一條軸：</strong> <span>crash、offline、partition 或 DoS 可破壞服務，不必同時洩漏 secrets。</span></div>
+
+  <div class="actors" aria-label="目前角色假設">
+    <div class="actor"><strong>UE</strong><span>允許 malicious；endpoint 全失陷另論</span></div>
+    <div class="actor"><strong>HNCC＋HGS</strong><span>HNCC honest-but-curious；HGS view 待定</span></div>
+    <div class="actor"><strong>LEO／FLEO</strong><span>Untrusted active relay；可觀察、改動、丟棄</span></div>
+    <div class="actor"><strong>FGS</strong><span>Access／one-use 依賴它正確驗證與提交</span></div>
+    <div class="actor"><strong>Replay backend</strong><span>假設 atomic、durable、linearizable</span></div>
+    <div class="actor"><strong>FAC＋OA</strong><span>同一治理組織；分別計算 t_F／t_O shares</span></div>
+  </div>
+
+  <div class="claims" aria-label="安全性與必要邊界">
+    <div class="claim"><strong>Issuer unlinkability</strong><span>Honest-protocol HNCC＋共同 metadata＋無 opening threshold</span></div>
+    <div class="claim"><strong>One-use access</strong><span>Correct FGS＋holder auth＋權威 state</span></div>
+    <div class="claim"><strong>Opening privacy</strong><span>攻擊者控制少於 tₒ shares</span></div>
+    <div class="claim"><strong>Availability</strong><span>敵對 relay／partition 下不由密碼學保證</span></div>
+  </div>
+
+  <div class="template"><strong>完整主張＝</strong> property ＋ adversary／view ＋ assumptions ＋ winning event ＋ claim status</div>
+  <p class="warning">無效垃圾票券不保證可開出真人；ticket＋k_hold 一起失竊時，opening 只會回到票券原綁定的 rid。</p>
+</section>

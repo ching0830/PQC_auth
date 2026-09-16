@@ -1,0 +1,163 @@
+# 隨課程累積的術語表
+
+這份表先提供課內的白話意思。正式定義、攻擊者能力與安全條件會在相應單元補充。
+詞彙已列入教材，不代表學習者已掌握；理解狀態見 [學習進度](PROGRESS_zh-TW.md)。
+
+| 詞彙 | 課內的白話意思 | 容易混淆之處 |
+| --- | --- | --- |
+| 接入（access） | 裝置申請開始使用網路服務 | 收到無線訊號還不表示已獲准使用服務 |
+| 身分（identity） | 系統用來指認使用者或實體的資料；本課主要指註冊身分 | 身分不必是姓名；固定帳號也能連結紀錄 |
+| 認證（authentication） | 驗證對方所宣稱的身分或憑證持有關係 | 可以設計成驗證憑證持有關係，而不直接揭露註冊身分 |
+| 授權（authorization） | 按規則決定允許對方執行哪些操作 | 通過某種認證，不等於可使用所有服務 |
+| 憑證／票券（credential／ticket） | 可供驗證使用資格的資料；ticket 是本專案的具體設計對象 | 數位資料可複製，安全性還需要持有者驗證與使用規則 |
+| 發行者（issuer） | 檢查註冊／發行條件並發出票券的一方 | 知道註冊身分，不代表應被允許追蹤後續每次使用 |
+| 驗證者（verifier） | 接入時執行所需檢查的一方 | 本專案主要由 FGS 地面站負責，不預設衛星承擔全部驗證 |
+| HNCC | Home NCC；本專案的註冊／票券發行端，並在行政上管理 HGS | 註冊時知道身分；對其不可連結的目標是限制發行紀錄與後續票券使用的對應 |
+| HGS | 行政上隸屬 HNCC 的 home-side ground station | 作者已確認隸屬關係；目前 canonical architecture 尚未固定其協定責任與資料可見性，不能自行假定 |
+| FGS | 隸屬其他／受訪 NCC 的接入驗證地面站與連線端點 | 希望能驗證票券、持票者及服務條件，而不直接取得註冊身分；不與 HNCC 屬於同一行政域 |
+| Home／visited administrative domain | 分別把 HNCC＋HGS 與其他 NCC＋FGS 視為兩個營運管理域 | 分域是為了列資料視角與控制邊界，不表示兩個 NCC 永遠不會合作或分享資料 |
+| 可連結性（linkability） | 能判斷多次紀錄屬於同一對象、票券或識別值 | 不知道真實姓名，仍可能把多次紀錄串起來 |
+| 身分開啟（identity opening） | 在符合授權條件後，從票券的追責資料恢復註冊身分 | 需要額外權限與程序，不是一般接入驗證自動執行的動作 |
+| 門檻（threshold） | 必須取得至少規定數目的有效參與份額才可完成指定操作 | 多人控制仍需明確授權；不能只以湊足人數代替全部條件 |
+| 信任假設（trust assumption） | 設計明確要求某些角色或環境遵守的條件 | 安全結論只能在列明的假設與攻擊模型內成立 |
+| 協定（protocol） | 各角色交換哪些資料、依什麼順序檢查和回應的約定 | 一張流程圖之外，後續還需要精確的資料與失敗處理規則 |
+| 後量子（post-quantum） | 密碼學設計以能抵抗一般與量子計算攻擊者為目標，運算可在一般電腦執行 | 不要求量子通訊或量子電腦；各元件、參數與組合仍須分析，名稱含 PQ 不等於已完成安全證明 |
+| 安全假設（security assumption） | 安全分析依賴的前提，例如指定數學問題對模型中的攻擊者難以有效求解 | 應交代攻擊能力與參數；一般電腦的困難性不自動推成量子困難性 |
+| 先收集、以後解密（harvest now, decrypt later） | 先保存目前無法解讀的密文，期待日後有能力恢復明文 | 票券過期不會自動消除已保存密文的身分隱私風險 |
+| 格式檢查／解析（parsing） | 檢查資料能否依約定的欄位、長度與版本解讀 | 資料長得正確，不表示它真實或獲得授權 |
+| 持票者秘密（holder secret） | 使用者裝置持有、與票券綁定且用來支持持票者證明的秘密資料 | 不是公開票券內容，也不是開啟單位持有的秘密份額 |
+| 持票者認證（holder authentication） | 驗證此次請求者能證明自己掌握票券所綁定的秘密 | 複製票券不應等於掌握秘密；實際證明機制仍待選定與完成 |
+| 接入新鮮值（FGS nonce） | 在目前接入草稿中，地面站為此次接入提供的新值 | 草稿要求不可預測且不重複；它和證明內部的 Fiat–Shamir challenge 不是同一項資料 |
+| NIZK | 非互動式零知識證明；共同參數等前提就緒後，證明本身不需要驗證者即時出題 | 非互動性不自動保證接入不可重放，也不決定整個連線協定的往返數 |
+| 公開敘述／輸入（statement） | 指定這次要證明的事及其公開資料，例如對指定摘要 `h` 證明知道相應秘密 | 公開是相對於該證明的驗證者；本機檢查函式的輸入不等於協定對外傳送的內容 |
+| 秘密見證（witness） | 證明者持有、能使指定規則成立的秘密資料 | witness 與傳給驗證者的 proof 不同；證明者使用 witness 產生 proof |
+| 關係／規則（relation） | 公開輸入與秘密見證必須共同滿足的精確條件 | 證明系統不會自動補回漏寫的條件；例如只檢查長度，不會驗證摘要綁定 |
+| Fiat–Shamir | 用規定的 hash 計算挑戰，將合適的互動式證明轉為非互動式的方法 | 不等於證明者可任選挑戰；也不是所有 NIZK 或後量子安全的同義詞 |
+| 雜湊（hash） | 把輸入轉成摘要的函式；固定函式、設定與輸出長度後，相同輸入產生相同摘要 | 本課的持票者摘要沒有用解密金鑰還原秘密的功能；候選輸入太少時仍可猜測比對，摘要本身也不證明掌握秘密 |
+| 摘要（digest） | 雜湊函式輸出的資料，例如由持票者秘密算出的 `h` | 本專案的 `h` 不是註冊身分；相同摘要也不保證數學上只有唯一對應輸入 |
+| 明文／密文（plaintext／ciphertext） | 明文是加密前的資料；密文是加密後得到的受保護表示 | 密文可以出現在票券中，看到密文不等於已取得裡面的明文 |
+| 加密／解密（encryption／decryption） | 依密碼學方案把明文轉成密文，再以所需金鑰資料恢復明文 | 本專案追責資料的加密公鑰與發行簽署金鑰不同；合法開啟還需要授權檢查與足夠有效份額 |
+| OA（opening authority） | 最高 federation governance organization 內負責受控身分開啟的功能／成員 | 與 FAC 同屬最高治理組織，但 opening authorization、opening shares 與其他 key roles 仍有不同用途 |
+| 綁定（binding） | 使驗證結果依賴指定內容，換掉受保護內容後，原證明不能直接沿用 | 把欄位放在訊息旁邊不等於綁定；本課討論票券、挑戰與此次接入內容的認證綁定 |
+| 重放（replay） | 攻擊者保存一份先前真實有效的訊息，再送一次，企圖讓驗證端把舊訊息當成新的合法請求 | 不必偽造簽章或知道秘密；signature／NIZK 有效不表示訊息新鮮，合法同 attempt retry 也需與攻擊區分 |
+| 關係重播（relation／row replay） | 把已保存的 assignment 或中間結果重新代入 relation／constraints，重做一致性檢查 | 是 PQ-RBBC 工程驗證程序，不是攻擊者重送網路訊息；局部 replay 通過也不等於完整 proof |
+| 端點（endpoint） | 執行協定並保存相關狀態的裝置或服務，例如使用者手機與地面站 | 攻擊者只能觀察網路，與能讀取或控制端點，是不同的攻擊能力 |
+| 秘密洩漏（secret compromise） | 攻擊者取得原本應受保護的秘密資料 | 取得可使用的持票者秘密後，可能產生新的有效證明；票券簽章有效不會排除這種情境 |
+| 撤銷（revocation） | 使原本可接受的票券、金鑰等物件不再被接受 | 驗證端須取得並執行撤銷資訊；換新秘密不會自動使舊票券失效 |
+| 簽章（signature） | 可驗證資料是否得到對應簽署金鑰持有者簽署的密碼學資料 | 本課只介紹票券簽章的用途；有效簽章不自動驗證當下出示者，也不保證資料中所有敘述為真 |
+| 簽署金鑰／私鑰（signing key／private key） | 在本堂中，發行端保密保存並用於簽署運算的金鑰 | 與使用者的持票者秘密、開啟端秘密份額不同；本專案的 bsk 用於盲發行回應 |
+| 驗證金鑰／公鑰（verification key／public key） | 在本堂中，可提供給驗證者，用來檢查內容與簽章的金鑰 | 公開不代表可任意相信來源；驗證能力不提供發行端的簽署能力 |
+| 盲簽章（blind signature） | 使用者隱藏待簽內容，由發行者參與簽署後，再完成可公開驗證的簽章；安全目標包含發行紀錄與最終結果不可連結 | HNCC 仍知道申請者的註冊身分，並檢查發行資格及規則；保證依適用安全模型而定 |
+| 盲化（blinding） | 依盲簽章方案，用隨機資料把待簽內容轉成隱藏內容的請求 | 需要按規定產生並保留完成簽章所需的本機資料；最終票券內容仍會出示給 FGS |
+| 隨機數／亂數（random value） | 依指定程序與分布取樣得到的值，可以是整數或 bytes 等資料 | 是否不可預測、是否可重用、是否保密，要依用途分別判斷；隨機取樣不保證絕無碰撞 |
+| 票券序號（serial number） | 本專案為每張票券新取樣的 16-byte 值，出示時可見，並綁定於追責明文 | 序號本身不證明持有秘密，也不會自動記錄票券已使用 |
+| bit／byte | bit 表示 0 或 1；一個 byte 包含 8 個 bit | `token_bytes(32)` 產生 32 bytes，即 256 bits；長度不直接等於整個方案的安全強度 |
+| secrets | Python 隨附、提供安全亂數工具的模組，例如 `token_bytes(n)` | 示範產生 bytes 不等於完成特殊格式取樣、秘密儲存或整個發行程序 |
+| 固定測試資料（deterministic fixture） | 以固定輸入建立可重現資料，讓測試核對相同結果 | 固定公開測試種子算出的值不能用作正式使用者秘密；fixture 通過不證明安全取樣 |
+| UE（user equipment） | 本專案中使用者的裝置，例如小明持票接入的裝置 | 保存秘密並參與協定；不是只有被動出示票券的資料容器 |
+| FAC | 最高 federation governance organization 內負責聯盟設定與發行授權的功能 | 與 OA 同屬最高治理組織；功能與 key roles 的區分不表示它們是不同公司 |
+| Federation governance organization | 包含 FAC 與 OA 功能、位於最高層並負責整體系統治理的組織 | 同一組織內仍可用不同 keys、threshold、帳號、操作人員與稽核流程分權；不能據此宣稱抵抗整個治理組織失陷 |
+| Satellite operator | 營運 LEO／FLEO，並與 NCC 合作提供衛星連線的組織 | 與 NCC 是合作關係；目前 canonical 文件的 `Operator` policy role 是否完全等同此組織仍待正式固定 |
+| Operator（現有文件角色） | 現有架構中定義服務政策、適用期間與服務環境等營運設定的角色 | 名稱可能與 satellite operator 混淆；作者的治理拓撲更正尚待 canonical 文件同步 |
+| 中繼（relay） | 接收並轉送兩端之間的通訊，本專案主要對應 LEO／FLEO 路徑 | 轉送不等於持有發行或開啟金鑰，也不自動保證內容機密性 |
+| 連線／會話（session） | 雙方為一次已建立的通訊維護的狀態，可包含多筆後續資料交換 | 一次性票券限制初始連線建立，不表示每筆資料都要重新發行票券 |
+| 連線金鑰（session key） | 依連線協定建立、用於保護該連線通訊的秘密金鑰 | 與持票者秘密、票券序號不同；具體 PQ AKE 仍待選定與完成 |
+| 票券消耗（ticket consumption） | 在系統中保存票券已成功建立初始連線的狀態，阻止再次建立新連線 | 不代表刪除票券 bytes；驗證失敗不消耗，同一次成功嘗試的合法重試可恢復原結果 |
+| 換手（handover） | 服務環境改變時，依協定將既有連線安全延續到新環境 | 草稿要求與原 session 綁定的授權；不能重用已消耗票券建立新初始連線 |
+| 信任起點（trust anchor） | 驗證端透過可信流程預先取得、用來核驗後續設定的金鑰等可信資料 | 不能只因陌生設定檔附上一把公鑰及可驗證的簽章，就把那把公鑰當成可信來源 |
+| 共同設定（configuration） | 本專案共用的版本、期間、政策與金鑰識別等規則 | `ctx` 綁定設定內容，但雜湊本身不證明聯盟已授權；實作的 initialization bundle 另包含公開參照與門檻資料 |
+| 發行授權（IssuerGrant） | 限定 HNCC 依哪份設定、政策、金鑰、期間及額度執行發行活動的授權資料 | 不等於使用者票券或案件開啟授權；管理函式通過不表示已完成 NIZK 與簽章 |
+| 額度（quota） | 管理流程允許的活動次數上限 | 目前發行模型記錄通過授權的 session；它與 FGS 保存某張票券是否已使用的狀態不同 |
+| 註冊身分識別值（rid） | 本專案代表已認證註冊身分的資料 | 發行時 HNCC 已知；不能相信使用者任填的身分，也不作為額外明文欄位隨票券出示 |
+| 發行 session 識別值（sid） | 辨認一次發行流程的值，由發行端指定並配合重放檢查 | 與票券序號 `sn` 及接入 session 不同；正式證明須綁定此次發行公開輸入 |
+| 盲化請求（β／y） | 裝置依盲簽章方案建立，供 HNCC 產生簽署回應的請求 | 本核心 `β = y`；請求本身不是完整票券，也不是 `pi_issue` |
+| 簽署回應（z）與完成簽章（Finalize） | HNCC 回傳 `z`，裝置結合本機保留資料得到最終簽章 | `z` 不等於最終 `sigma`；完成後裝置仍須驗簽才接受 |
+| 服務環境（serving context） | 指定接入所屬的營運端、地面站、中繼／服務範圍、期間與政策等資料 | 與票券共同設定 `ctx` 有不同用途；需受接入認證綁定，不能任意搬到另一環境 |
+| 交握紀錄（transcript） | 協定中需共同核對並綁定的訊息內容 | 本草稿摘要包含 Init、Challenge 與 Finish 核心欄位；計算摘要本身不等於認證 |
+| 後量子認證金鑰協議（PQ AKE） | 以後量子安全為目標，認證通訊對端並建立本次連線金鑰的協定 | 具體方案尚待選定與完成；不是只交換亂數或把秘密金鑰送出去 |
+| 金鑰協議資料（key share） | 協定中傳送、供雙方計算協議金鑰使用的資料 | 欄位內容依選定方案而定；不是最終 session key 或 OA 秘密份額 |
+| 金鑰確認（key confirmation） | 以協定資料支持確認對方掌握這次協議的金鑰 | 必須綁定此次接入；與持票者秘密認證不同，也不能省略對端認證要求 |
+| 編解碼（codec） | 將欄位依固定規定轉成 bytes，再按規定讀回 | 格式正確不代表內部簽章、認證或金鑰協議有效 |
+| 不透明欄位（opaque field） | 外層以 bytes 保存、由對應內部協定解讀驗證的欄位 | 不是「已加密」的意思；外層長度檢查不能取代內部密碼學驗證 |
+| 往返時間（RTT） | 訊息從指定起點抵達對端、再收到回應的時間 | 1 RTT 候選指本次首則申請到 UE 核驗回應；預先取資料、證明計算與後端等待須另計 |
+| 預先金鑰（prekey） | 預先發布並認證、供後續金鑰協議使用的公鑰資料 | 是否一次性、何時刪除秘密及如何更新，影響重放、前向安全與可用性 |
+| 接受時間窗口 | 驗證端依規則接受某段期間內請求的範圍 | 限制過舊請求不等於防止窗口內複製；仍需使用狀態與完整接入綁定 |
+| 原子操作（atomic operation） | 一組相關改變對外只會呈現完整成功或沒有成功，不留下部分完成的中間結果 | 一次性使用需要讓競爭者無法同時取得成功；不表示電腦真的只執行一條指令 |
+| 線性一致性（linearizability） | 多個並行操作對外可視為依某個單一先後順序生效 | 目前 reference 只在單一 Python process 內提供；跨 FGS 仍需正式後端 |
+| 預留（reservation） | 已驗證的唯一 attempt 暫時取得建立 session 的資格 | `RESERVED` 尚未等於成功；另一個 attempt 不能接手，同一 attempt 可安全重試 |
+| 冪等性（idempotency） | 同一項操作重做，系統仍回到同一個邏輯結果 | 同 attempt 重試可恢復原 session／回應，不代表允許同票券建立新 session |
+| 持久性（durability） | 已提交的狀態在程式或機器中斷後仍可被可靠恢復 | 記憶體 reference store 不具此能力；通過並行測試不等於通過 crash recovery |
+| 時鐘誤差（clock skew） | 兩個時鐘對同一時刻顯示的時間差 | 票券效期與保存期限需要部署規則固定容許範圍，不能假設所有 FGS 時鐘完全相同 |
+| 撤銷（revocation） | 票券或相關金鑰原本可能有效，後來由受治理政策禁止繼續接受 | 與過期、已消耗不同；撤銷資料的認證、散布與既有 session 政策仍須另外定義 |
+| 撤銷快照／版本（revocation snapshot／generation） | FGS 某次檢查所依據的撤銷資料內容及其版本 | Reserve／Commit 時須防止沿用競爭期間已過時的結果；版本號本身不會證明來源可信 |
+| 可序列化順序（serializable order） | 多項交易的最終效果等同某個逐一執行順序 | 用於裁定撤銷與消耗競爭；與單一操作的線性一致性相關但著重整組交易結果 |
+| 一般拒絕（generic reject） | 對外不細分無效、過期、撤銷或已消耗原因的拒絕結果 | 可減少直接狀態探測，但 timing、大小與流量差異仍需量測；內部可保存受控 reason code |
+| 開啟請求（OpeningRequest／Q） | 將確切票券、案件、證據、用途、期限、nonce、設定與金鑰識別綁成 OA 可核驗的請求 | 不是只傳一段密文；更換任何受授權欄位都應使原 authorization 失效 |
+| 開啟授權（opening authorization） | 准許在指定案件、證據、用途與期限下開啟指定票券的認證資料 | 是案件治理權限，不是 OA 的解密秘密份額，也不是一般性的查詢許可 |
+| 開啟份額（OpenShare） | 一位 OA 在完整請求通過檢查後，以自己的秘密份額產生並認證的門檻輸入 | 必須綁定同一 request、ticket、case、epoch 與 key；不能把裸 partial-decrypt 結果任意混用 |
+| 合併器（Combiner） | 核對不同 OA 的有效份額數量與一致性，達門檻後重建追責明文的元件 | 只計算份額數不夠；還要防重複成員、混合請求並執行終點認證與序號比對 |
+| 追責認證（trace authentication） | 檢查解密出的追責資料確實帶有協定要求的完整性／來源綁定 | 能把 bytes 解密出來不表示可直接相信其身分；目前 production 機制仍未完成 |
+| Opening replay | 防止同一案件授權／開啟請求被反覆拿去取得 OA 份額的狀態控制 | 與 ticket consumption 不同；後者防止同一票券建立第二個 initial session |
+| 失敗關閉（fail closed） | 關鍵驗證或狀態不確定時拒絕輸出敏感結果 | 可能犧牲可用性；在 opening 中可避免釋出未被可靠記錄的份額或身分 |
+| 資料可見性（data visibility） | 指定某個角色在某個協定階段能直接取得哪些欄位或狀態 | 看不見 `rid` 不表示無法透過固定票券、session 或 metadata 連結活動 |
+| 網路中介資料（network metadata） | 通訊內容以外仍可觀察的時間、位置、路徑、封包大小與頻率等資訊 | 加密訊息內容不會自動隱藏這些線索；匿名宣稱需列明相關假設 |
+| 浮水印／個人化標記（watermark） | 刻意或意外放入公開設定或票券欄位、可辨認特定使用者的特殊值 | 盲簽章不能補救由 issuer 放入的可見唯一標記，因此共同 metadata 必須受治理 |
+| 離線發行（offline issuance） | 在實際接入之前完成身分認證、關係證明與票券發行，使 HNCC 不必加入每次接入 | 不是完全不通訊；成本被移到較早階段，UE 還要管理票券庫存與效期 |
+| 在線路徑／關鍵路徑（online／latency-critical path） | 使用者從發出接入請求到收到可用 session 結果之間必須等待的處理與通訊 | 移出 HNCC 查詢不代表沒有 FGS 驗證或 replay-store backhaul |
+| Backhaul | 衛星接入端以外，FGS 與 HNCC、共享狀態服務或其他地面後端之間的網路路徑 | 需說明指哪一段；減少 UE–FGS RTT 不會自動移除地面狀態等待 |
+| 延遲預算（latency budget） | 把端到端等待拆成衛星 RTT、密碼學計算、排隊、狀態存取與後端查詢等部分 | 訊息數較少不保證一定更快；必須使用相同範圍與實際量測比較 |
+| 預先計算／計算前移（precomputation／computation shifting） | 將不依賴當次接入資料的高成本工作提前完成，縮短 latency-critical path | 依賴目前端點、freshness、session key 或權威狀態的工作不能直接預先計算並永久重用 |
+| 工作／運算放置（work／computation placement） | 決定某項驗證、證明、狀態或金鑰工作由 UE、衛星、地面站或後端的哪一端執行 | 與行政隸屬及訊息數是不同問題；FGS 驗證仍可設計成一往返 |
+| 權威狀態（authoritative state） | 所有可接受 verifier 都必須服從、用來唯一裁決 ticket 是否已使用的狀態 | 各衛星或 FGS 各存一份但只做最終一致，可能在同步前重複接受 |
+| Replay backend／replay store | FGS 後方以原子交易保存 `UNSEEN`、`RESERVED`、`CONSUMED`，並裁決哪個 access attempt 能使用票券的內部服務／資料庫 | 不負責讓 signature／NIZK 成立；密碼驗證通過後仍要靠它阻止另一台 FGS 同時接受同一票券 |
+| 唯一寫入者（single writer） | 讓某個 ticket 的狀態只由一個指定節點裁決與提交 | 可避免並行雙寫；路由、故障移轉與舊新 writer 交接仍須保持唯一性 |
+| 早期拒絕（early rejection） | 在訊息抵達完整 verifier 前，以便宜檢查丟棄明顯錯誤或不合規的流量 | 可節省後端負載，不一定縮短合法使用者建立 session 的 RTT；FGS 仍可能需要完整重驗 |
+| Expiry bucket | 一群票券共同採用的有效期間設定；本專案把它放入共同 configuration 並綁進 `ctx` | Exact 單位、長度與相鄰 bucket 規則仍待 deployment profile 固定；不應替每位使用者設定可辨識的精確期限 |
+| 票券庫存（ticket inventory） | UE 在接入前已取得、仍可使用的一組 one-use tickets | 票多可提高 HNCC 失聯時的可用性，也增加 wallet 儲存、過期浪費與整批失竊風險 |
+| 低庫存門檻（low watermark） | 可用票券降到某個數量時，提前開始補發的觸發值 `L` | 應涵蓋 issuance outage 與補發期間可能發生的接入；不是等到零張才補發 |
+| Wallet journal | UE 本機可靠記錄 ticket 為 unused、reserved 或 outcome-known 的狀態 | App restart、備份 rollback 或多裝置同步不能讓可能已被 FGS 消耗的 ticket 回到 unused |
+| 威脅模型（threat model） | 明確列出攻擊者控制誰、能看／改／阻斷什麼、哪些角色仍誠實及什麼事件算攻擊成功 | 不是列一串攻擊名稱；安全結論只能在模型寫明的能力與假設內成立 |
+| Honest-but-curious | 角色遵守協定，但保存並分析正常執行時可見的資料 | 若故意改參數、加入 watermark、跳過檢查或偽造訊息，就已是 malicious 行為 |
+| Malicious | 角色可任意偏離協定、選擇輸入、重放、並行、說謊、分享資料或拒絕服務 | 不自動表示能讀取其他誠實端點的 secrets 或破解密碼學 |
+| Compromised／corrupted | 攻擊者取得角色內部控制權、secrets 或 state，並可讓它任意行動 | 必須列出被取得的具體資料；只洩漏 ticket bytes 與整個 UE wallet 失陷不同 |
+| Untrusted | 設計不依賴該角色正確行動，協定須容忍其允許的竊聽、修改、重放或丟棄能力 | 不等於其他角色的內部 secrets 也已洩漏；例如 untrusted relay 不自動取得 OA shares |
+| Unavailable | 角色或網路因 crash、斷線、partition、維修或 DoS 無法提供服務 | 主要影響 availability；和 honest／malicious／compromised 是不同維度 |
+| Security game | Challenger 建立 keys／state 並開放指定操作，攻擊者嘗試觸發明確 winning event 的安全實驗 | 每個 game 只支持其定義的性質；unit tests 和 game-based proof 是不同證據 |
+| 比較基準（baseline） | 用於評估新機制的已定義參考方案、既有論文或測量條件 | 論文比較必須忠實採用對方實際機制與可比範圍，不能用自己虛構的共同流程代替 |
+| 相關研究（related work） | 說明既有研究解決的問題、方法與尚存缺口的文獻集合 | 被引用不等於已有可重現實作，也不表示可直接做數值同比 |
+| 比較論文（comparison paper） | 本研究選來做機制、安全性或效能對照的論文 | 流程可以不同；須先固定比較事件、成本邊界和證據等級 |
+| 正規化比較（normalized comparison） | 把不同方案放入明確的共同成本模型，例如相同 security level、operation cost、bytes 與 RTT 定義 | 需要公開換算假設；不能把不同 primitive 的一次 operation 當成相同成本 |
+| 作者原報告值（paper-reported result） | 從原論文保留的量測數字及其硬體、參數與計時範圍 | 不是本研究在相同環境重測的結果；跨論文數值不可省略來源條件 |
+| 攤銷成本（amortized cost） | 把一次共用或預先工作依其實際服務的多次操作分攤 | 必須同時報告總成本、可使用次數與過期／未使用成本，不能用平均值讓工作消失 |
+| 批次大小（batch size） | 一次共同處理的請求數量 | 批次越大可能改善平均計算成本，也可能增加等待湊批次的 latency |
+| 吞吐量（throughput） | 系統在單位時間內完成的請求數量 | 高 throughput 不保證單一使用者等待時間低；需和 per-request latency 分開報告 |
+| `NR`／`NA`／`OPEN` | `NR` 表示論文未報告，`NA` 表示該項不適用，`OPEN` 表示本研究尚未封閉 | 不知道時應保留空缺含義，不能自行假設成通過、失敗或零成本 |
+| `Show`／presentation | 使用 credential 產生給 verifier 檢查的一次出示證明 | Reusable anonymous `Show` 每次需要新的 randomized proof；不是重送同一份固定 signed ticket |
+| 可重新隨機化（rerandomization） | 以新的 randomness 產生外觀看似不同、但仍能證明來自有效 credential 的表示或證明 | 任意添加亂數不會自動保持驗證關係，也不保證 unlinkability |
+| 多次出示（multi-show） | 同一 credential 可合法支援多次 presentation 的使用模型 | 原生通常不限制使用次數；quota、撤銷、Replay 與裝置外洩仍需另外處理 |
+| 防重複標記（nullifier） | 從秘密、domain 或使用條件導出的公開標記，用來辨認不允許的重複使用 | 設計不當或在太大範圍固定使用會造成 sessions 可連結；目前 v0.1 沒有採用此機制 |
+| 雙重使用（double spend） | 同一個本應受次數限制的 token／權利被使用超過允許次數 | Online prevention 要在第二次成功前拒絕；offline detection 允許先接受、之後才偵測，兩者保證不同 |
+| 發行者不可連結性（issuer unlinkability） | 發行者知道哪些身分完成 issuance，但難以把之後看到的最終 tickets 配回各 issuance sessions | 不隱藏註冊身分；需要 blind issuance、共同 metadata 等假設，且不自動抵抗 traffic correlation |
+| 發行紀錄（issuance transcript／view） | 發行端在一次 issuance 中看到並保存的公開輸入、訊息、狀態與 randomness／internal data | Blindness 的目標不是刪除紀錄，而是使紀錄不足以配對最終 ticket |
+| 盲簽署回應（blind-signing response） | Issuer 對 blind request 執行簽署端運算後回傳的中間結果，本專案記為 `z` | `z` 不是最終 signature；UE 還要以本機 blinding data 執行 `Finalize` |
+| 浮水印攻擊（watermarking attack） | 發行端在 metadata、參數、格式或其他可見欄位放入特定使用者專屬標記 | Blind-signature primitive 不會自動清除協定外層的唯一標記；需共同設定與治理限制 |
+| 流量關聯（traffic correlation） | 依發行與使用的時間、封包大小、路徑、位置或頻率推測兩筆活動的關係 | Cryptographic issuer unlinkability 通常不隱藏這些 metadata；需要 batching、延遲、padding 或網路層措施另行分析 |
+| 最小權限（least privilege） | 每個角色、程序或帳號只取得完成工作所需的最少資料、金鑰與操作權 | 權限越多，單一 compromise 的影響範圍越大；最小權限不會阻止多角色共謀 |
+| 職責分離（separation of duties） | 把批准、執行、驗證或解密等高風險能力交給不同權限角色 | 只改角色名稱不夠；若共用 key、帳號、seed 或管理控制域，實際仍可能集中 |
+| 失陷範圍（compromise domain） | 一次漏洞、憑證外洩或管理失誤可能同時控制的一組元件、keys 或角色 | 不同 key IDs 不保證獨立；還要檢查生成、storage、帳號、備份與 rotation 是否共用 |
+| 金鑰角色（key role） | 限制一把 key 只能驗證、簽署或解密特定類型資料的用途標記 | 已知且有效的錯誤角色 key 仍必須拒絕；需搭配 domain-separated message encoding |
+| 行政隸屬（administrative ownership） | 說明人員、設備或服務由哪個組織管理，例如 HGS 隸屬 HNCC | 不等於所有協定工作、資料庫與密碼 keys 都可無限制共用 |
+| 協定角色（protocol role） | 說明一個參與者依協定可接收、驗證、產生哪些訊息 | 同一組織可以執行多個 protocol roles；組織名稱也不能取代精確訊息與狀態定義 |
+| 跨域資料共享（cross-domain data sharing） | 不同行政域把各自的 issuance、access 或 network metadata 放在一起分析 | 比「角色合併」更精確；可能出於合作、調查、外洩或惡意行為，能否關聯取決於密碼與 metadata 邊界 |
+| 門檻腐化（threshold compromise） | 攻擊者取得至少門檻數量的有效 secret shares | 少於 `t_O` 的 privacy 結論不涵蓋達到門檻的攻擊者；治理 gate 也不能替代秘密份額安全 |
+| Repository／repo | 由 Git 管理的一整個專案工作區，可同時包含文件、source、tests 與 evidence | 不等於只有 Python 程式；repo 中有檔案也不表示相關功能已完成 |
+| Repository root | 專案最外層資料夾，本專案目前是 `PQC_auth/` | 相對路徑都以某個目前位置解讀；執行命令前要知道自己位於哪個目錄 |
+| Path | 指向檔案或資料夾的位置；可分 relative path 與 absolute path | 相同檔名可能在不同資料夾；必須連同路徑判斷責任 |
+| Source／原始碼 | 放在 `src/`、可由 Python 執行或 import 的實作文字 | 有 executable code 只支持 Implemented，不自動支持 Tested、Proof-closed 或 Production-closed |
+| Test／測試 | 對具體輸入、輸出、錯誤或排程執行檢查的程式 | 通過只支持已涵蓋 cases；不是所有攻擊者的安全證明 |
+| Manifest | 以 JSON 等機器可讀格式保存參數、identity、metrics 與 claim boundary | 不取代原始 artifact、實際 execution、tests 或 proof |
+| Artifact | 實作或實驗產生、供後續核對的具體輸出，例如 relation、assignment、proof 或 metadata | 名稱或檔案存在不證明來源可信；須核對版本、size、checksum 與 manifest |
+| Canonical source | 對特定問題具有正式權責的定義或狀態來源 | README、guide 或教材適合導航，但不能覆蓋正式狀態與 machine evidence |
+
+專案用語依 [架構](../ARCHITECTURE_zh-TW.md) 與
+[研究方法](../methodology.md) 解釋；本表不替代各模組正式規格。

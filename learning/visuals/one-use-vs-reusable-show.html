@@ -1,0 +1,133 @@
+<section id="ticket-use-model-v18" aria-labelledby="ticket-use-model-v18-title" aria-describedby="ticket-use-model-v18-desc">
+  <style>
+    #ticket-use-model-v18 {
+      width: 100%;
+      color: var(--foreground);
+      background: transparent;
+      font-size: var(--font-size-base);
+    }
+    #ticket-use-model-v18 * { box-sizing: border-box; }
+    #ticket-use-model-v18 h2,
+    #ticket-use-model-v18 h3,
+    #ticket-use-model-v18 p { margin: 0; }
+    #ticket-use-model-v18 .lead {
+      margin-top: 0.4rem;
+      color: var(--muted-foreground);
+    }
+    #ticket-use-model-v18 .lanes {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.3rem;
+      margin-top: 1rem;
+    }
+    #ticket-use-model-v18 .lane {
+      min-width: 0;
+      border-top: 3px solid var(--viz-series-1);
+      padding-top: 0.65rem;
+    }
+    #ticket-use-model-v18 .lane.show {
+      border-top-color: var(--viz-series-4);
+    }
+    #ticket-use-model-v18 .tagline {
+      color: var(--muted-foreground);
+      margin-top: 0.25rem;
+    }
+    #ticket-use-model-v18 .flow {
+      display: flex;
+      align-items: stretch;
+      gap: 0.35rem;
+      margin-top: 0.75rem;
+    }
+    #ticket-use-model-v18 .node {
+      flex: 1 1 0;
+      min-width: 0;
+      padding: 0.6rem 0.45rem;
+      background: color-mix(in srgb, var(--viz-series-1) 10%, transparent);
+    }
+    #ticket-use-model-v18 .show .node {
+      background: color-mix(in srgb, var(--viz-series-4) 10%, transparent);
+    }
+    #ticket-use-model-v18 .node strong,
+    #ticket-use-model-v18 .node span { display: block; }
+    #ticket-use-model-v18 .node span {
+      color: var(--muted-foreground);
+      margin-top: 0.2rem;
+    }
+    #ticket-use-model-v18 .arrow {
+      display: grid;
+      place-items: center;
+      color: var(--muted-foreground);
+      flex: 0 0 auto;
+    }
+    #ticket-use-model-v18 .facts {
+      margin: 0.75rem 0 0;
+      padding-left: 1.1rem;
+    }
+    #ticket-use-model-v18 .facts li { margin-top: 0.3rem; }
+    #ticket-use-model-v18 .boundary {
+      margin-top: 1rem;
+      padding-block: 0.75rem;
+      border-block: 1px solid var(--border);
+      text-align: center;
+    }
+    #ticket-use-model-v18 .boundary strong { font-weight: 500; }
+    #ticket-use-model-v18 .choice {
+      margin-top: 0.75rem;
+      padding: 0.75rem;
+      text-align: center;
+      color: var(--accent-foreground);
+      background: color-mix(in srgb, var(--accent) 48%, transparent);
+    }
+    #ticket-use-model-v18 .choice strong { font-weight: 500; }
+    @media (max-width: 620px) {
+      #ticket-use-model-v18 .lanes { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 380px) {
+      #ticket-use-model-v18 .flow { flex-direction: column; }
+      #ticket-use-model-v18 .arrow { min-height: 1.2rem; }
+      #ticket-use-model-v18 .arrow span { transform: rotate(90deg); }
+    }
+  </style>
+
+  <h2 id="ticket-use-model-v18-title">一張用一次，或一份憑證出示多次？</h2>
+  <p id="ticket-use-model-v18-desc" class="lead">兩種模型都能追求匿名，但使用次數、在線證明與共享狀態的責任不同。</p>
+
+  <div class="lanes">
+    <section class="lane" aria-labelledby="one-use-heading">
+      <h3 id="one-use-heading">One-use ticket batch</h3>
+      <p class="tagline">預先取得多張不同票券，每次 initial access 消耗一張。</p>
+      <div class="flow" aria-label="一次性票券流程">
+        <div class="node"><strong>Wallet</strong><span>T₁ · T₂ · T₃</span></div>
+        <div class="arrow" aria-hidden="true"><span>→</span></div>
+        <div class="node"><strong>Access 1</strong><span>出示 T₁</span></div>
+        <div class="arrow" aria-hidden="true"><span>→</span></div>
+        <div class="node"><strong>FGS state</strong><span>T₁ = CONSUMED</span></div>
+      </div>
+      <ul class="facts">
+        <li>下次 initial access 改用 T₂。</li>
+        <li>嚴格一次性需要原子共享狀態。</li>
+        <li>代價是票券庫存、補發與 crash ambiguity。</li>
+      </ul>
+    </section>
+
+    <section class="lane show" aria-labelledby="show-heading">
+      <h3 id="show-heading">Reusable anonymous Show</h3>
+      <p class="tagline">保留一份 credential，每次產生不同的零知識 presentation。</p>
+      <div class="flow" aria-label="可重用匿名出示流程">
+        <div class="node"><strong>Credential C</strong><span>長期保存</span></div>
+        <div class="arrow" aria-hidden="true"><span>→</span></div>
+        <div class="node"><strong>Show 1</strong><span>π₁，fresh r₁</span></div>
+        <div class="arrow" aria-hidden="true"><span>→</span></div>
+        <div class="node"><strong>Show 2</strong><span>π₂，fresh r₂</span></div>
+      </div>
+      <ul class="facts">
+        <li>π₁、π₂ 應無法被直接連回同一 holder。</li>
+        <li>每次需執行新的 randomized ZK Show。</li>
+        <li>原生不限制使用次數；quota 需額外機制。</li>
+      </ul>
+    </section>
+  </div>
+
+  <div class="boundary"><strong>直接重送目前固定票券 T：</strong>是可連結的 ticket reuse，不是 reusable anonymous Show。</div>
+  <div class="choice"><strong>v0.1 選擇 one-use：</strong>沿用現有 fixed ticket core，接受 wallet 與 authoritative state 的系統代價。</div>
+</section>

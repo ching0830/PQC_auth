@@ -1,0 +1,66 @@
+<div id="pqc-learning-issuance" role="img" aria-label="發行資料流：HNCC 確認身分與發行流程，小明的裝置保留隱藏票券和秘密，只送盲化請求與發行證明。HNCC 檢查通過後回傳簽署回應，裝置完成並驗證最終票券。">
+  <style>
+    #pqc-learning-issuance { width: 100%; color: var(--foreground); }
+    #pqc-learning-issuance .issuance-diagram { display: block; width: 100%; }
+    #pqc-learning-issuance .issuance-diagram text { fill: var(--foreground); font-family: inherit; }
+    #pqc-learning-issuance .issuance-diagram .node { fill: color-mix(in srgb, var(--viz-series-1) 9%, var(--background)); stroke: var(--border); }
+    #pqc-learning-issuance .issuance-diagram .lane { stroke: var(--border); stroke-width: 1; }
+    #pqc-learning-issuance .issuance-diagram .arrow { fill: none; stroke: var(--muted-foreground); stroke-width: 1.5; }
+  </style>
+  <svg class="issuance-diagram" xmlns="http://www.w3.org/2000/svg" aria-labelledby="pqc-issue-title pqc-issue-desc">
+    <title id="pqc-issue-title">小明申請一張票券</title>
+    <desc id="pqc-issue-desc">由上向下閱讀。註冊認證完成後，HNCC 已知 rid 並指定 sid。裝置建立隱藏票券，保留秘密與亂數，送出 β 與 pi_issue；HNCC 核驗發行條件和證明，通過才回傳 z。裝置執行 Finalize 並驗簽，保存 T，持票者秘密分開保護。圖中的階段不代表完整網路訊息數量。</desc>
+  </svg>
+  <script>
+    (() => {
+      const root = document.getElementById('pqc-learning-issuance');
+      const svg = root.querySelector('.issuance-diagram');
+      const ns = 'http://www.w3.org/2000/svg';
+      function element(name, attributes, parent) {
+        const item = document.createElementNS(ns, name);
+        for (const [key, value] of Object.entries(attributes)) item.setAttribute(key, String(value));
+        parent.appendChild(item);
+        return item;
+      }
+      function draw() {
+        const old = svg.querySelector('[data-drawing]');
+        if (old) old.remove();
+        const width = Math.max(280, Math.round(root.getBoundingClientRect().width));
+        const height = 580;
+        svg.setAttribute('viewBox', '0 0 ' + width + ' ' + height);
+        svg.setAttribute('height', String(height));
+        const group = element('g', { 'data-drawing': '' }, svg);
+        const left = width / 4;
+        const right = width * 3 / 4;
+        const nodeWidth = Math.min(250, (width - 32) / 2);
+        function label(x, y, value, small = false, weight = 400) {
+          const text = element('text', { x, y, 'text-anchor': 'middle', 'font-weight': weight, class: small ? 'text-small' : '' }, group);
+          text.textContent = value;
+        }
+        function node(x, y, title, lines) {
+          element('rect', { x: x - nodeWidth / 2, y, width: nodeWidth, height: 96, rx: 8, class: 'node' }, group);
+          label(x, y + 28, title, false, 500);
+          lines.forEach((line, index) => label(x, y + 51 + index * 21, line, true));
+        }
+        function arrow(start, end, y, title) {
+          element('line', { x1: start, y1: y, x2: end, y2: y, class: 'arrow' }, group);
+          const back = end + (end > start ? -7 : 7);
+          element('path', { d: 'M ' + back + ' ' + (y - 4) + ' L ' + end + ' ' + y + ' L ' + back + ' ' + (y + 4), class: 'arrow' }, group);
+          label(width / 2, y - 15, title);
+        }
+        label(left, 24, 'UE 小明裝置', false, 500);
+        label(right, 24, 'HNCC 發行端', false, 500);
+        label(width / 2, 62, '註冊認證完成', false, 500);
+        label(width / 2, 84, 'HNCC 確認 rid，指定 sid', true);
+        [left, right].forEach(x => element('line', { x1: x, y1: 102, x2: x, y2: 568, class: 'lane' }, group));
+        node(left, 116, '建立票券內容 M', ['秘密與亂數留本機', '產生 β 與 pi_issue']);
+        arrow(left, right, 258, 'β ＋ pi_issue');
+        node(right, 284, '核驗發行申請', ['發行條件與 pi_issue', '通過才簽署回應']);
+        arrow(right, left, 430, '簽署回應 z');
+        node(left, 458, '完成最終簽章', ['Finalize 後驗簽', '存票券；秘密另存']);
+      }
+      new ResizeObserver(draw).observe(root);
+      draw();
+    })();
+  </script>
+</div>

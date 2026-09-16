@@ -1,0 +1,121 @@
+<div id="pqc-learning-ticket-state" role="img" aria-label="一次性票券狀態流程：通過必要驗證後，UNSEEN 經原子 Reserve 成為 RESERVED；唯一 attempt 將 session、回應及消耗狀態共同 Commit 後成為 CONSUMED。Commit 前只有確認沒有生效結果才能 Abort；同一 attempt 在 CONSUMED 時只回復原回應，不同 attempt 一律拒絕。">
+  <style>
+    #pqc-learning-ticket-state { width: 100%; color: var(--foreground); }
+    #pqc-learning-ticket-state .ticket-state-diagram { display: block; width: 100%; }
+    #pqc-learning-ticket-state .ticket-state-diagram text { fill: var(--foreground); font-family: inherit; }
+    #pqc-learning-ticket-state .ticket-state-diagram .state { fill: color-mix(in srgb, var(--viz-series-1) 10%, var(--background)); stroke: var(--border); }
+    #pqc-learning-ticket-state .ticket-state-diagram .final-state { fill: color-mix(in srgb, var(--viz-series-2) 12%, var(--background)); stroke: var(--border); }
+    #pqc-learning-ticket-state .ticket-state-diagram .transition { fill: none; stroke: var(--muted-foreground); stroke-width: 1.5; }
+    #pqc-learning-ticket-state .ticket-state-diagram .return { fill: none; stroke: var(--viz-series-3); stroke-width: 1.5; }
+    #pqc-learning-ticket-state .ticket-state-diagram .reject { fill: none; stroke: var(--destructive); stroke-width: 1.5; }
+    #pqc-learning-ticket-state .ticket-state-diagram .label-mask { fill: var(--background); }
+  </style>
+  <svg class="ticket-state-diagram" xmlns="http://www.w3.org/2000/svg" aria-labelledby="pqc-ticket-state-title pqc-ticket-state-desc">
+    <title id="pqc-ticket-state-title">一次性票券的三個狀態</title>
+    <desc id="pqc-ticket-state-desc">票券在權威 store 沒有紀錄時是 UNSEEN。必要驗證通過後，只有一個 attempt 能原子 Reserve 成為 RESERVED。唯一 attempt 將 session、相同重試所需回應與消耗紀錄共同 Commit 後成為 CONSUMED。Commit 前只有確認沒有任何生效結果才能 Abort 回 UNSEEN。CONSUMED 後，同一 attempt 只取回原回應，不同 attempt 拒絕。</desc>
+  </svg>
+  <script>
+    (() => {
+      const root = document.getElementById('pqc-learning-ticket-state');
+      const svg = root.querySelector('.ticket-state-diagram');
+      const ns = 'http://www.w3.org/2000/svg';
+      function add(name, attributes, parent) {
+        const item = document.createElementNS(ns, name);
+        for (const [key, value] of Object.entries(attributes)) item.setAttribute(key, String(value));
+        parent.appendChild(item);
+        return item;
+      }
+      function draw() {
+        const previous = svg.querySelector('[data-drawing]');
+        if (previous) previous.remove();
+        const width = Math.max(280, Math.round(root.getBoundingClientRect().width));
+        const narrow = width < 520;
+        const height = narrow ? 548 : 365;
+        svg.setAttribute('viewBox', '0 0 ' + width + ' ' + height);
+        svg.setAttribute('height', String(height));
+        const group = add('g', { 'data-drawing': '' }, svg);
+        function text(x, y, value, small = false, weight = 400, anchor = 'middle', mask = false) {
+          const label = add('text', { x, y, 'text-anchor': anchor, 'font-weight': weight, class: small ? 'text-small' : '' }, group);
+          label.textContent = value;
+          if (mask) {
+            const box = label.getBBox();
+            const background = add('rect', { x: box.x - 4, y: box.y - 2, width: box.width + 8, height: box.height + 4, class: 'label-mask' }, group);
+            group.insertBefore(background, label);
+          }
+          return label;
+        }
+        function state(x, y, w, title, line1, line2, final = false) {
+          add('rect', { x, y, width: w, height: 82, rx: 9, class: final ? 'final-state' : 'state' }, group);
+          text(x + w / 2, y + 25, title, false, 500);
+          text(x + w / 2, y + 49, line1, true);
+          text(x + w / 2, y + 68, line2, true);
+        }
+        function arrow(x1, y1, x2, y2, className = 'transition') {
+          add('line', { x1, y1, x2, y2, class: className }, group);
+          const angle = Math.atan2(y2 - y1, x2 - x1);
+          const length = 7;
+          const spread = 0.55;
+          const ax = x2 - length * Math.cos(angle - spread);
+          const ay = y2 - length * Math.sin(angle - spread);
+          const bx = x2 - length * Math.cos(angle + spread);
+          const by = y2 - length * Math.sin(angle + spread);
+          add('path', { d: 'M ' + ax + ' ' + ay + ' L ' + x2 + ' ' + y2 + ' L ' + bx + ' ' + by, class: className }, group);
+        }
+        text(width / 2, 24, '一次性票券的三個狀態', false, 500);
+        text(width / 2, 45, '狀態改變處理並行、重試與中斷', true);
+        if (!narrow) {
+          const margin = 12;
+          const gap = 90;
+          const nodeWidth = (width - margin * 2 - gap * 2) / 3;
+          const y = 84;
+          const x1 = margin;
+          const x2 = margin + nodeWidth + gap;
+          const x3 = margin + (nodeWidth + gap) * 2;
+          state(x1, y, nodeWidth, 'UNSEEN', '沒有使用紀錄', '仍須驗證請求');
+          state(x2, y, nodeWidth, 'RESERVED', '唯一 attempt 執行中', '尚未完成 session');
+          state(x3, y, nodeWidth, 'CONSUMED', '唯一 session 已提交', '不能重新使用', true);
+          arrow(x1 + nodeWidth, y + 41, x2, y + 41);
+          text((x1 + nodeWidth + x2) / 2, y + 24, '驗證通過', true, 500);
+          text((x1 + nodeWidth + x2) / 2, y + 66, '原子 Reserve', true);
+          arrow(x2 + nodeWidth, y + 41, x3, y + 41);
+          text((x2 + nodeWidth + x3) / 2, y + 24, '共同提交', true, 500);
+          text((x2 + nodeWidth + x3) / 2, y + 66, 'Commit', true);
+          const abortY = 225;
+          add('path', { d: 'M ' + (x2 + nodeWidth / 2) + ' ' + (y + 82) + ' C ' + (x2 + nodeWidth / 2) + ' ' + abortY + ', ' + (x1 + nodeWidth / 2) + ' ' + abortY + ', ' + (x1 + nodeWidth / 2) + ' ' + (y + 82), class: 'return' }, group);
+          arrow(x1 + nodeWidth / 2, y + 97, x1 + nodeWidth / 2, y + 82, 'return');
+          text((x1 + x2 + nodeWidth) / 2, abortY + 18, '確認沒有生效結果，才可 Abort', true, 500);
+          const loopX = x3 + nodeWidth / 2;
+          add('path', { d: 'M ' + (loopX - 34) + ' ' + (y + 82) + ' C ' + (loopX - 34) + ' 265, ' + (loopX + 34) + ' 265, ' + (loopX + 34) + ' ' + (y + 82), class: 'transition' }, group);
+          arrow(loopX + 34, y + 97, loopX + 34, y + 82);
+          text(loopX, 280, '同一 attempt：回復原回應', true, 500);
+          add('line', { x1: x3 + 18, y1: 315, x2: x3 + nodeWidth - 18, y2: 315, class: 'reject' }, group);
+          text(loopX, 340, '不同 attempt：拒絕', true, 500);
+        } else {
+          const nodeWidth = width - 56;
+          const x = 28;
+          const y1 = 66;
+          const y2 = 226;
+          const y3 = 386;
+          state(x, y1, nodeWidth, 'UNSEEN', '沒有使用紀錄', '仍須驗證請求');
+          state(x, y2, nodeWidth, 'RESERVED', '唯一 attempt 執行中', '尚未完成 session');
+          state(x, y3, nodeWidth, 'CONSUMED', '唯一 session 已提交', '不能重新使用', true);
+          arrow(width / 2, y1 + 82, width / 2, y2);
+          text(width / 2, y1 + 113, '驗證通過', true, 500, 'middle', true);
+          text(width / 2, y1 + 134, '原子 Reserve', true, 400, 'middle', true);
+          arrow(width / 2, y2 + 82, width / 2, y3);
+          text(width / 2, y2 + 113, 'session＋回應＋狀態', true, 500, 'middle', true);
+          text(width / 2, y2 + 134, '共同 Commit', true, 400, 'middle', true);
+          add('path', { d: 'M ' + x + ' ' + (y2 + 41) + ' C 5 ' + (y2 + 41) + ', 5 ' + (y1 + 41) + ', ' + x + ' ' + (y1 + 41), class: 'return' }, group);
+          arrow(x, y1 + 56, x, y1 + 41, 'return');
+          text(7, y1 + 150, '確認無結果', true, 500, 'start', true);
+          text(7, y1 + 171, '才能 Abort', true, 400, 'start', true);
+          text(width / 2, 494, '同一 attempt：回復原回應', true, 500);
+          add('line', { x1: 32, y1: 518, x2: width - 32, y2: 518, class: 'reject' }, group);
+          text(width / 2, 541, '不同 attempt：拒絕', true, 500);
+        }
+      }
+      new ResizeObserver(draw).observe(root);
+      draw();
+    })();
+  </script>
+</div>
