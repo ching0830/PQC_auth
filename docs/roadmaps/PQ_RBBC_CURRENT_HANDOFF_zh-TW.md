@@ -6,6 +6,11 @@
 
 日期：2026 年 9 月 11 日
 
+> Issuance 已有獨立且持續前進的 checkpoint 鏈。為避免本文件同時管理 CAP launch 與
+> issuance relation 兩條工作線，issuance 的目前入口改由
+> [`PQ_RBBC_ISSUANCE_CURRENT_HANDOFF_zh-TW.md`](PQ_RBBC_ISSUANCE_CURRENT_HANDOFF_zh-TW.md)
+> 負責；本文件只保留 CAP／unified-tree production handoff。
+
 ## V2.43 reservation-binding checkpoint（corrective 重審通過；real reservation 已建立）
 
 V2.42 corrective AI technical re-review 通過後，實際 machine contract 仍缺少可綁定
