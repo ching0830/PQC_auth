@@ -1,0 +1,59 @@
+{
+  "schema": "PQSAT.ThesisCode.Validation.v0.1",
+  "date": "2026-10-31",
+  "selectedSuiteWithLocalCControls": {
+    "testsRun": 48,
+    "passed": 45,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 3,
+    "skipReasons": [
+      "external Hplus lifecycle native build not requested (1)",
+      "exact full public setup artifact execution not requested (2)"
+    ]
+  },
+  "cleanRelocatedSourceWithoutArtifacts": {
+    "testsRun": 45,
+    "passed": 41,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 4,
+    "importedModules": 74,
+    "helpExit": 0,
+    "doctorMissingExit": 2,
+    "runMissingExit": 2,
+    "missingInputsReported": 164,
+    "sanitizedEnvironment": true,
+    "sourceDirectoryContainsSpaces": true
+  },
+  "comparison": {
+    "old30ExactSummaryMatched": true,
+    "openingTenSampleSeriesChecked": 84,
+    "newCryptographicExecutions": 0
+  },
+  "sourceRebuild": {
+    "orderedPatches": 11,
+    "upstreamFilesCompared": 732,
+    "exactPatchedForkSourceMatched": true,
+    "CargoCompilationExecuted": false,
+    "bitIdenticalRlibRebuildQualified": false
+  },
+  "externalInputReadOnlyAudit": {
+    "verified": 164,
+    "copied": 0,
+    "totalBytes": 1350185973
+  },
+  "nativeC": {
+    "librariesAndControlExecutableCompiled": 5,
+    "newProfileProverLoaderAccepted": true,
+    "legacyProfileProverLoaderRejected": true
+  },
+  "fullProofOrPerformanceRerun": false,
+  "wholeSystemProofClosed": false,
+  "issuerUnlinkabilityClosed": false,
+  "whitespaceFormatPolicy": {
+    "patchFilesOnly": "unified-diff context whitespace preserved; blank-at-eol/space-before-tab disabled narrowly by .gitattributes",
+    "frozenPatchIdentitiesPreserved": true,
+    "ordinarySourcesAndDocsWarnings": 0
+  }
+}

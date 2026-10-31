@@ -1,0 +1,5 @@
+{
+  "schema": "PQSAT.ThesisCode.Runtime.v0.1",
+  "artifacts": "/absolute/path/to/pqsat-thesis-artifacts-v0-1",
+  "run_root": "/tmp/pqsat-buov-cap-hplus-publication-v0-1"
+}

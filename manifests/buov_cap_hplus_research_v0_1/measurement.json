@@ -1,0 +1,321 @@
+{
+  "attempts": [
+    {
+      "label": "python-pilot-v1",
+      "reason": "test referenced nonexistent relation._PROFILE; corrected to codec",
+      "result": "one test error"
+    },
+    {
+      "label": "regression-v1..v4",
+      "reason": "shared lock busy",
+      "result": "not_started"
+    },
+    {
+      "label": "regression-v5",
+      "reason": "test index usize needed checked conversion to u32",
+      "result": "build_failed"
+    },
+    {
+      "label": "regression-v6",
+      "result": "passed",
+      "scope": "migration regression"
+    },
+    {
+      "label": "regression-v7",
+      "result": "passed",
+      "scope": "migration regression plus full count-only lowering"
+    }
+  ],
+  "base_commit": "e8f4aa35e7895d6d6acfd643b630e711bef51922",
+  "boundaries": {
+    "Evidence_sealed": false,
+    "Production_closed": false,
+    "Proof_closed": false,
+    "backend_qualification": false,
+    "formal_binding_proof_closed": false,
+    "full_new_pi_iss_prove_verify": false,
+    "full_new_relation_satisfiability": false,
+    "new_same_state_lifecycle": false
+  },
+  "census": {
+    "CS_materialized": false,
+    "Prove": 0,
+    "Verify": 0,
+    "compiler_id": null,
+    "count_seconds": 9.322228214999999,
+    "counts": {
+      "AND": 16361386,
+      "ZERO": 3263533,
+      "constants": 8487,
+      "max_operand_support": 2631,
+      "native_len_bytes": 872897760,
+      "operand_terms": 179246977,
+      "private_words": 19866173,
+      "public_words": 106,
+      "serialized_bytes": 2718916370,
+      "templates": {
+        "payload_bytes": 35266672,
+        "terms": 4333414,
+        "unique": 14984
+      }
+    },
+    "counts_bytes_are_format_arithmetic_not_RSS": true,
+    "n_test_queries": 309,
+    "new_full_setup_instantiated": false,
+    "private_values_received": false,
+    "process_hwm_bytes": 77193216,
+    "proof_bytes": null,
+    "public_T_sha256": "4ce48825d1e78c704b89a160be8d47932ae9bc7948d282d0c7c12c8ccc63c986",
+    "query_target_bits": 128,
+    "satisfiability_checked": false,
+    "schema": "BUOVCAPHPlusFullCountV1",
+    "setup_id": null
+  },
+  "new_source_pins": {
+    "benchmarks/buov_cap_hplus_research_v0_1/__init__.py": {
+      "bytes": 75,
+      "sha256": "46bc5dfe90ee13236236ffe272bd9ee2057c530650a59f4c2fc958d9b7dbeec2"
+    },
+    "benchmarks/buov_cap_hplus_research_v0_1/regression.py": {
+      "bytes": 10956,
+      "sha256": "7c3645be39d817e4f2e8a045efadbd2bec5bbef9a52ee618dbc49828627b3bdc"
+    },
+    "native/blind_uov_cap_hplus_research_v0_1/input_controls.c": {
+      "bytes": 659,
+      "sha256": "de3d5f6e35909dddd0b9faf5260d667cbf3e3596cd66d850edbb198d6db425c1"
+    },
+    "native/blind_uov_cap_hplus_research_v0_1/opening.c": {
+      "bytes": 11157,
+      "sha256": "352581a0dad65c8adcb1aadfb5bfb72e29fb39aee51dd2996022d6224f1512e1"
+    },
+    "native/blind_uov_cap_hplus_research_v0_1/opening.h": {
+      "bytes": 2203,
+      "sha256": "ad9e81277dc544a8de6394b1d122e59794b00453ce153cba13fdd03addd8aa11"
+    },
+    "native/buov_cap_hplus_research_v0_1/src/census_main.rs": {
+      "bytes": 2699,
+      "sha256": "1ec1c82c8b7d2abe8a6ecf05a528ce0b49f4fd6a5cacb5560bfd2c74a2bf7e86"
+    },
+    "native/buov_cap_hplus_research_v0_1/src/direct_relation.rs": {
+      "bytes": 12688,
+      "sha256": "ac68f7aabda73970ee1c91c8a7d0c37488757d0e5b83592cad8265685f675710"
+    },
+    "native/buov_cap_hplus_research_v0_1/src/direct_relation_profile.rs": {
+      "bytes": 2975,
+      "sha256": "26a7109e5b450a03042b375e682c7aefa0305042bcbee5208c82dcc130a8839d"
+    },
+    "native/buov_cap_hplus_research_v0_1/src/hplus_tests.rs": {
+      "bytes": 3395,
+      "sha256": "6e622c36b6fc2017738cecb43798a46f7d4f1970321fdb41bb016e285890fb11"
+    },
+    "native/buov_cap_hplus_research_v0_1/src/lib.rs": {
+      "bytes": 407,
+      "sha256": "2204cc2b998ec299ab1b3714e690c89972e23155e6fae8356cbe7d4eef287ef7"
+    },
+    "src/pq_rbbc/blind_uov_hplus_research_v0_1/__init__.py": {
+      "bytes": 541,
+      "sha256": "1ee644822cb6238ba23b4f0b5eae50d14f8c1f5a70b6ea667bc4595168edfa56"
+    },
+    "src/pq_rbbc/blind_uov_hplus_research_v0_1/_pins.py": {
+      "bytes": 256,
+      "sha256": "1172534596a854bf6e56aded434ffbd2e27e60579f1c5a2b583c6dea4630bb23"
+    },
+    "src/pq_rbbc/blind_uov_hplus_research_v0_1/field.py": {
+      "bytes": 906,
+      "sha256": "dd7129afb42c76b39fcbacfadbfc67088d9b34498046aa4cf1d039b48c3a944b"
+    },
+    "src/pq_rbbc/blind_uov_hplus_research_v0_1/native_opening.py": {
+      "bytes": 13991,
+      "sha256": "e30f6872f608a33ae84425ce2100dc7c1d56f726c45d2bae9510415144cdb7d1"
+    },
+    "src/pq_rbbc/blind_uov_hplus_research_v0_1/parameters.py": {
+      "bytes": 5276,
+      "sha256": "4bc7a0731ee207d701c1881844337b20f0241786d199842f1ff1dd125ccf9148"
+    },
+    "src/pq_rbbc/blind_uov_hplus_research_v0_1/source_boundary.py": {
+      "bytes": 986,
+      "sha256": "1e0b7d71b55fb560549f3aae4a97cc343d5afa7ae27314fb65de8c0e9f7c6259"
+    },
+    "tests/test_buov_cap_hplus_research_v0_1.py": {
+      "bytes": 12653,
+      "sha256": "c5638fa278e7a3bf0e1e6916f668095e7c796ac2853cbcc45522a92593ebcd24"
+    }
+  },
+  "old_evidence_not_relabelled": true,
+  "parameter_derivation": {
+    "FRI_schedule": null,
+    "blinding_per_segment_derived": 316,
+    "compact_cache_generated": false,
+    "compact_public_cache_candidate_bytes": 688968080,
+    "dummy_wires_derived": 310,
+    "inner_oracle_len_derived": 9933087,
+    "inner_oracle_log_derived": 24,
+    "mask_condition": "same r7 degree2 B128 path, actual valid x64 padded outer row log <=63; actual new setup uninstantiated",
+    "mask_dimensions_conditional": [
+      7,
+      2
+    ],
+    "mask_len_conditional": 512,
+    "mask_log_conditional": 9,
+    "n_test_queries_native": 309,
+    "new_setup_instantiated": false,
+    "outer_M0": null,
+    "outer_P0": null,
+    "outer_V0": null,
+    "query_target_bits": 128,
+    "source_build_receipt_pin": {
+      "bytes": 404539,
+      "sha256": "fd3a13cb881d8e02107e818686308e9a1e9ff84e3af444e8d96cb67ef793a2ca"
+    },
+    "source_pins": {
+      "crates/core/src/constraint_system/system.rs": {
+        "bytes": 51534,
+        "sha256": "5361feea3af9ff05facb815356450cc29250163abe2c2a8f28101c20b4521726"
+      },
+      "crates/iop/src/channel/mod.rs": {
+        "bytes": 11485,
+        "sha256": "5a31f35f0b6f1e2985f6323f77cd245863e372c7ec8a2c2f45331c507f80db70"
+      },
+      "crates/iop/src/fri/common.rs": {
+        "bytes": 41622,
+        "sha256": "4d82f637e874229aca6e9a30478ab75a825d8c7ba11209b7c6fcdd2af93e794f"
+      },
+      "crates/ip/src/mlecheck.rs": {
+        "bytes": 10237,
+        "sha256": "fdedf82984299e5eac946cd0b6c0a4ad81788cdbb5fd087bae18479d69f9dc31"
+      },
+      "crates/spartan-frontend/src/constraint_system.rs": {
+        "bytes": 19290,
+        "sha256": "053eb55678b6e8e4486fc766cf9e41ec01603ec633a1521bf144c46e723bfbfd"
+      },
+      "crates/spartan-verifier/src/constraint_system.rs": {
+        "bytes": 9484,
+        "sha256": "06f83c25f5cfe3e8c520440bcb41bec70cd01102c4722651833a05e8d62f70ea"
+      },
+      "crates/verifier/src/verify.rs": {
+        "bytes": 18163,
+        "sha256": "7affcbb79c8bcd10685a94cad8f2c906949fd20482b5bd29d42856a3452d8d5c"
+      },
+      "crates/verifier/src/zk_config.rs": {
+        "bytes": 16282,
+        "sha256": "24a6631427d6ee8654ef7023166fd85b3394a619b30ed00f09ecc7c84c5d5da1"
+      }
+    },
+    "total_new_proof_bytes": null
+  },
+  "post_measurement_cleanup": {
+    "src/pq_rbbc/blind_uov_hplus_research_v0_1/field.py": {
+      "AST_identical": true,
+      "change": "remove extra EOF blank line for git diff --check",
+      "final": {
+        "bytes": 905,
+        "sha256": "f9bc1f76a567d04e22cf6727bb5fdd84264b722a00dabd96622c221ac738ee92"
+      },
+      "measured": {
+        "bytes": 906,
+        "sha256": "dd7129afb42c76b39fcbacfadbfc67088d9b34498046aa4cf1d039b48c3a944b"
+      },
+      "tests_not_repeated_for_whitespace_only": true
+    }
+  },
+  "profile": {
+    "binding_id": "6f74ae31aefd848081ff766c0e43bedc1cb790240d5019d3276f4a23dcf26d82",
+    "native_opening_abi": 2,
+    "old_proof_setup_cache_compatible": false,
+    "profile_fingerprint": "8579638797c2fa6f9ef09aef518e81213e566115e042744e5b782d8c49c5f07d",
+    "relation_id": "2640c97a96cb34febf8c2f4844f43ec16d0c6664b051342e8f2b5e80c3f37c9c"
+  },
+  "public_external_evidence": {
+    "python-pilot-v1.json": {
+      "bytes": 375,
+      "sha256": "ac00e859a188562dd37440cbd48b30f1323de49ea7dae6eec806d68693193a1e"
+    },
+    "python-targeted-v2/result.json": {
+      "bytes": 369,
+      "sha256": "d8c01739c29d396915a5d9939fbd4eaf782c647d42b107b4a60b3ad34a35de0c"
+    },
+    "regression-v5.json": {
+      "bytes": 1131,
+      "sha256": "f4d4a5eec134afbc8c92d54d665b08d52f2d8b16d190d5ee05c3bd10e31fb3d7"
+    },
+    "regression-v6.json": {
+      "bytes": 1122,
+      "sha256": "350fcc0011482499c4648731191f38fcad74b11047b060bff61504612b5a183a"
+    },
+    "regression-v7.json": {
+      "bytes": 1132,
+      "sha256": "d9a9e2d24117fbbb77c9ca4404059e7bcf251f58f6d92ca933d15af3cc917c1d"
+    },
+    "regression-v7/build-inputs.json": {
+      "bytes": 23337,
+      "sha256": "c777cfd8ca9b6ad0c5f2570c61367265d39803899590e4602840c678919448c7"
+    },
+    "regression-v7/build.json": {
+      "bytes": 28962,
+      "sha256": "8efa3de5d6c9a760a3e1e7f38140faed1fc43888125a43489965c6f94a78f97c"
+    },
+    "regression-v7/census.json": {
+      "bytes": 923,
+      "sha256": "aa01b81c8ff8541583fa06b85711483147cce19194d5f1d2b290de2a56caf970"
+    },
+    "regression-v7/result.json": {
+      "bytes": 30024,
+      "sha256": "78782c55512df3f0fe38f0468ceccd9260c86fab4225143b0c8f9488de441c1c"
+    }
+  },
+  "relation_changed": true,
+  "resource_metadata_note": "Generic public-build guard is reused only for resource control. Its raw proof_profile_unchanged field does not assert equivalence of the changed H+ relation.",
+  "resources": {
+    "MemAvailable_min": 28853219328,
+    "MemAvailable_start": 28989001728,
+    "cpu_affinity": [
+      0
+    ],
+    "directory_bytes": 20921822,
+    "exit": 0,
+    "no_residual_group": true,
+    "policy": {
+      "directory_bytes": 10737418240,
+      "file_bytes": 1073741824,
+      "output_bytes": 16777216,
+      "process_as": 8589934592,
+      "start_available": 17179869184,
+      "stop_available": 8589934592,
+      "threads": 8,
+      "tree_rss": 4294967296,
+      "wall_seconds": 1800
+    },
+    "sampled_process_as_bytes": 707551232,
+    "sampled_process_rss_bytes": 266313728,
+    "sampled_process_threads": 5,
+    "sampled_rss_is_hard_bound": false,
+    "sampled_tree_rss_bytes": 287109120,
+    "stop": null,
+    "wall_seconds": 14.82089749071747
+  },
+  "schema": "BUOVCAPHPlusMigrationCheckpointV1",
+  "tests": {
+    "final_python": {
+      "errors": 0,
+      "failed": 0,
+      "passed": 12,
+      "skipped": 0
+    },
+    "final_rust": {
+      "failed": 0,
+      "ignored": 0,
+      "passed": 31
+    },
+    "full_repository_suite_run": false,
+    "legacy_python_and_early_new_run": {
+      "errors": 0,
+      "failed": 0,
+      "passed": 78,
+      "skipped_native_class": 1
+    },
+    "resource_policy_unit_tests": {
+      "failed": 0,
+      "passed": 6
+    }
+  }
+}

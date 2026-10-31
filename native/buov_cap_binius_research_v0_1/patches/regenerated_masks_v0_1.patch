@@ -1,0 +1,205 @@
+--- a/crates/iop-prover/src/basefold/channel.rs
++++ b/crates/iop-prover/src/basefold/channel.rs
+@@ -30,7 +30,7 @@
+ 	},
+ };
+ use itertools::izip;
+-use rand::{CryptoRng, SeedableRng, rngs::StdRng};
++use rand::{CryptoRng, Rng, SeedableRng, rngs::StdRng};
+ 
+ use crate::{
+ 	basefold::prove_mlecheck_basefold,
+@@ -50,6 +50,9 @@
+ 	/// The mask buffer generated during [`fri::encode_masked`] for a ZK oracle, held by the
+ 	/// channel because it is the only party that knows it. `None` for a non-ZK (unmasked) oracle.
+ 	mask: Option<FieldBuffer<P, Data>>,
++    // Research-only, fresh CSPRNG seed kept in RAM instead of a retained mask.
++    // Never serialized, logged, observed into a transcript or given to a verifier.
++    mask_seed: Option<[u8;32]>,
+ 	/// RS-encoded codeword, drawn from the channel's allocator.
+ 	codeword: FieldBuffer<P, Data>,
+ 	/// The Merkle commitment handle for query proofs, owning the committed tree.
+@@ -114,6 +117,8 @@
+ 	/// length is also the number of oracles committed so far.
+ 	queue: Vec<Vec<QueuedRelation<P, A::Vec<P>>>>,
+ 	rng: StdRng,
++    // Explicit opt-in; the ordinary mask sampler and retained buffers stay unchanged.
++    recompute_masks: bool,
+ 	/// The allocator every codeword, mask and encode temporary is drawn from.
+ 	alloc: A,
+ }
+@@ -151,9 +156,23 @@
+ 			committed_oracles: Vec::new(),
+ 			queue: Vec::new(),
+ 			rng: StdRng::from_rng(&mut rng),
++            recompute_masks: false,
+ 			alloc,
+ 		}
+ 	}
++
++    /// RAM-saving research strategy. Fresh per-oracle seeds replace retained
++    /// mask buffers. Coin consumption changes, while specs/security parameters
++    /// and the masks actually used by encoding/opening remain consistent.
++    /// Profile callers must keep a single thread and a non-recycling allocator
++    /// if they want dropped temporary masks to release their memory promptly.
++    pub fn with_recomputed_masks(mut self) -> Self {
++        assert_eq!(binius_utils::rayon::current_num_threads(),1,
++            "regenerated-mask research profile requires one thread");
++        assert!(self.committed_oracles.is_empty(),"mask strategy must be selected before any commitment");
++        self.recompute_masks=true;
++        self
++    }
+ 
+ 	/// Consumes the channel and proves the single combined opening over **all** committed oracles.
+ 	///
+@@ -173,6 +192,7 @@
+ 			committed_oracles,
+ 			queue,
+ 			rng: _,
++            recompute_masks: _,
+ 			alloc,
+ 		} = self;
+ 
+@@ -266,10 +286,14 @@
+ 		let _scope = tracing::debug_span!("Compute ZK mask opening values").entered();
+ 		let sigmas = izip!(&relations, oracle_specs, &committed_oracles)
+ 			.filter(|(_, spec, _)| spec.is_zk)
+-			.map(|(relation, _, committed)| {
+-				let mask = committed.mask.as_ref().expect("ZK oracle carries a mask");
+-				inner_product_par(mask, &relation.transparent)
+-			})
++            .map(|(relation, spec, committed)| {
++                let regenerated = committed.mask_seed.as_ref().map(|seed|
++                    fri::regenerate_mask_from_seed::<P,_>(spec.log_msg_len,seed,alloc));
++                let mask = committed.mask.as_ref().or(regenerated.as_ref())
++                    .expect("ZK oracle carries a retained mask or private seed");
++                // The local regenerated mask drops before processing another oracle.
++                inner_product_par(mask, &relation.transparent)
++            })
+ 			.collect::<Vec<_>>();
+ 		channel.send_many(&sigmas);
+ 
+@@ -287,8 +311,11 @@
+ 		assert_eq!(message.log_len(), n_i); // pre-condition
+ 
+ 		if spec.is_zk {
+-			let mask = committed.mask.as_ref().expect("ZK oracle carries a mask");
+-			let gamma_broadcast = P::broadcast(gamma.expect("γ sampled when ZK oracles present"));
++            let regenerated = committed.mask_seed.as_ref().map(|seed|
++                fri::regenerate_mask_from_seed::<P,_>(n_i,seed,alloc));
++            let mask = committed.mask.as_ref().or(regenerated.as_ref())
++                .expect("ZK oracle carries a retained mask or private seed");
++            let gamma_broadcast = P::broadcast(gamma.expect("γ sampled when ZK oracles present"));
+ 
+ 			let _scope = tracing::debug_span!("Fold message and ZK mask", log_len = n_i).entered();
+ 			(message.as_mut(), mask.as_ref())
+@@ -658,17 +685,22 @@
+ 
+ 		// Encode oracle `index` of the combined FRI parameters. ZK oracles interleave a fresh mask
+ 		// (`encode_masked`); non-ZK oracles encode the message alone (`encode_interleaved`).
+-		let (codeword, mask) = if spec.is_zk {
+-			let MaskedCodeword { codeword, mask } = fri::encode_masked(
+-				&self.fri_params,
+-				index,
+-				self.ntt,
+-				buffer.as_view(),
+-				&mut self.rng,
+-				&self.alloc,
+-			);
+-			(codeword, Some(mask))
+-		} else {
++        let (codeword, mask, mask_seed) = if spec.is_zk {
++            if self.recompute_masks {
++                let mut seed=[0u8;32];
++                self.rng.fill_bytes(&mut seed);
++                let MaskedCodeword {codeword,mask}=fri::encode_masked(
++                    &self.fri_params,index,self.ntt,buffer.as_view(),
++                    StdRng::from_seed(seed),&self.alloc);
++                // Release BEFORE Merkle construction, not merely before phase A.
++                drop(mask);
++                (codeword,None,Some(seed))
++            } else {
++                let MaskedCodeword { codeword, mask } = fri::encode_masked(
++                    &self.fri_params,index,self.ntt,buffer.as_view(),&mut self.rng,&self.alloc);
++                (codeword,Some(mask),None)
++            }
++        } else {
+ 			(
+ 				fri::encode_interleaved(
+ 					&self.fri_params,
+@@ -677,11 +709,12 @@
+ 					buffer.as_view(),
+ 					&self.alloc,
+ 				),
+-				None,
+-			)
+-		};
+-
+-		// Commit the codeword over the Merkle channel, with one interleaved coset per leaf.
++                None,
++                None,
++            )
++        };
++
++        // Commit the codeword over the Merkle channel, with one interleaved coset per leaf.
+ 		let merkle_scope = tracing::debug_span!("Merkle commit").entered();
+ 		let leaf_size = 1 << self.fri_params.input_oracles()[index].log_batch_size();
+ 		let commitment = self
+@@ -689,8 +722,9 @@
+ 			.send_merkle_commitment(codeword.as_view(), leaf_size);
+ 		drop(merkle_scope);
+ 
+-		self.committed_oracles.push(CommittedOracleData {
+-			mask,
++        self.committed_oracles.push(CommittedOracleData {
++            mask,
++            mask_seed,
+ 			codeword,
+ 			commitment,
+ 			message: Some(buffer),
+--- a/crates/iop-prover/src/fri/encode.rs
++++ b/crates/iop-prover/src/fri/encode.rs
+@@ -8,7 +8,7 @@
+ use binius_iop::fri::FRIParams;
+ use binius_math::{FieldBuffer, FieldSlice, ntt::AdditiveNTT, reed_solomon::ReedSolomonCode};
+ use binius_utils::rand::par_rand;
+-use rand::{CryptoRng, rngs::StdRng};
++use rand::{CryptoRng, SeedableRng, rngs::StdRng};
+ 
+ /// Reed-Solomon encodes one input oracle's interleaved message.
+ ///
+@@ -86,6 +86,22 @@
+ 	pub codeword: FieldBuffer<P, Data>,
+ 	/// The generated random mask, of equal length to the message.
+ 	pub mask: FieldBuffer<P, Data>,
++}
++
++/// Recompute the exact mask produced by `encode_masked` when its RNG starts
++/// as `StdRng::from_seed(*seed)`. Uses the SAME packed length, packed type and
++/// `par_rand<StdRng>` per-index sampler; seed bytes are private RAM-only coins.
++/// This helper neither changes oracle parameters nor observes a transcript.
++/// A seed must be fresh for each real committed oracle; fixed seeds are tests only.
++pub fn regenerate_mask_from_seed<P: PackedField, A: Allocator>(
++    log_len: usize, seed: &[u8;32], alloc: &A,
++) -> FieldBuffer<P,A::Vec<P>> {
++    assert!(log_len < usize::BITS as usize, "bounded regenerated-mask scalar dimension");
++    let packed_len = 1usize << log_len.saturating_sub(P::LOG_WIDTH);
++    let mut rng = StdRng::from_seed(*seed);
++    let mask_values = par_rand::<StdRng,_,_>(packed_len, &mut rng, P::random)
++        .collect_into_alloc_vec(alloc);
++    FieldBuffer::new(log_len,mask_values)
+ }
+ 
+ /// Generates the original random mask and encodes directly in one final codeword allocation.
+--- a/crates/prover/src/zk_config.rs
++++ b/crates/prover/src/zk_config.rs
+@@ -159,6 +159,9 @@
+ 		let basefold_channel = self
+ 			.basefold_compiler
+ 			.create_channel_from_transcript::<H, Challenger_, _, _>(transcript, &mut rng, alloc);
++        let basefold_channel = if self.is_research_unmerged() {
++            basefold_channel.with_recomputed_masks()
++        } else { basefold_channel };
+ 		let mut wrapped_channel = ZKWrappedProverChannel::new(
+ 			MergeProverChannel::new(basefold_channel, &self.oracle_schedule, alloc),
+ 			&self.outer_iop_prover,

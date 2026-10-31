@@ -1,0 +1,18 @@
+{
+  "schema": "pqsat.binius-research-patch.v0.1",
+  "patch_sha256": "1118579e4cdf28c21e4a08cb81968fc6b9c0a3d9f8cce09485e9894b240242c4",
+  "files": [
+    {
+      "path": "crates/verifier/src/verify.rs",
+      "base_sha256": "a7ead676950aac7144513068c1db5b46d25ef6ce1f798110c67c369b6c66e360",
+      "patched_sha256": "7affcbb79c8bcd10685a94cad8f2c906949fd20482b5bd29d42856a3452d8d5c"
+    }
+  ],
+  "upstream_commit": "4428e759dd27956bd5b9ae5025d67eb8ccc1accf",
+  "base_public_cache_build_sha256": "610ef3e2afa2263ea19780b2d6b429af2a344fec6029560b7598f6913674c7e7",
+  "security_parameters_changed": true,
+  "query_target_bits": 128,
+  "constraint_polynomial_changed": false,
+  "standalone_spartan_constant_changed": false,
+  "full_protocol_security_qualification": false
+}

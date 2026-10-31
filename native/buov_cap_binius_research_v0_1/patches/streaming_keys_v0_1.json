@@ -1,0 +1,37 @@
+{
+  "schema": "pqsat.binius-research-patch.v0.1",
+  "upstream_commit": "4428e759dd27956bd5b9ae5025d67eb8ccc1accf",
+  "patch_sha256": "6e8e116231db021f17da6999641b3f9595805b9cb900ee0428e488fd11d70829",
+  "files": [
+    {
+      "path": "crates/prover/src/protocols/shift/key_collection/streaming.rs",
+      "base_sha256": null,
+      "patched_sha256": "17a835ffdf9f5d71b40b9519e0844a314411db2a5947b7c333fc7d1e3528ea17"
+    },
+    {
+      "path": "crates/prover/src/protocols/shift/key_collection/mod.rs",
+      "base_sha256": "f17d059cd062e303aef2e5047aca5e380fac6385cbddbfb123d1665b16757dd8",
+      "patched_sha256": "83fc0b435a2d5adc0ea113406fc0b0e105079b87cd5f7a8a72491eb973afd45b"
+    },
+    {
+      "path": "crates/prover/src/protocols/shift/key_collection/collection.rs",
+      "base_sha256": "f61f88a2ef4558c6dd7132bf730989f1f53e6a09f98e31415cc2fca6a9283320",
+      "patched_sha256": "9ddc60cf84e55686d03769b32b95df99a567d1aec75fc4b604cae42face5cacb"
+    },
+    {
+      "path": "crates/prover/src/protocols/shift/key_collection/builder.rs",
+      "base_sha256": "6c169f5a2e74be5633b0ad8c479a48ff34250ffbea6c7b7d8619b958194817f3",
+      "patched_sha256": "c48bffd73cbccfef006e4b2ce769876ec837760ce748472c6a65bb4fd39c6f7b"
+    },
+    {
+      "path": "crates/prover/src/protocols/shift/phase_1.rs",
+      "base_sha256": "b2e387b10e72ada8c6f365f77fe7c5cf7c5030dac8cf54d97d090e0941222696",
+      "patched_sha256": "860574cdc7852662b33c214fdd668f87e7fce613a206c87ebb474b1d0239c273"
+    },
+    {
+      "path": "crates/prover/src/zk_config.rs",
+      "base_sha256": "bb8c4fec20c269ea911fe2f56a81bf324b9f1f4e270b5d7685c5a17b0b499237",
+      "patched_sha256": "d647b89a43ab5f50cf4d9c203da2e8ba071e3e46cfb4d85231edd38359dab440"
+    }
+  ]
+}

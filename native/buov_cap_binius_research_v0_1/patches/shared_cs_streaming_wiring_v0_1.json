@@ -1,0 +1,37 @@
+{
+  "schema": "pqsat.binius-research-patch.v0.1",
+  "upstream_commit": "4428e759dd27956bd5b9ae5025d67eb8ccc1accf",
+  "patch_sha256": "fbacae7edf2e35f4bc114500883543c54194df1459b04f65a0bf4d7932871488",
+  "files": [
+    {
+      "path": "crates/math/src/multilinear/sparse.rs",
+      "base_sha256": "7086e93c318676c459e8102f017455fa61c13ae9c0f45f5c4c28c337081d306c",
+      "patched_sha256": "cd86f54a9949b39cb02ba75fd92fae8c83472888a53303517d68815357cdf9f4"
+    },
+    {
+      "path": "crates/verifier/src/verify.rs",
+      "base_sha256": "c1751c314bd85492ca9c5e6002e5402b74fa001d44d7723e3ceba3007bd5ed8c",
+      "patched_sha256": "a7ead676950aac7144513068c1db5b46d25ef6ce1f798110c67c369b6c66e360"
+    },
+    {
+      "path": "crates/prover/src/prove.rs",
+      "base_sha256": "ce7b94d353daf8055af0d6eacea35021e81e30d861b911bab297a01d41974058",
+      "patched_sha256": "75a3e23736c8d8f900414a049b08cdcc1155c8201f068f46d62b1a8ab825ff29"
+    },
+    {
+      "path": "crates/verifier/src/zk_config.rs",
+      "base_sha256": "49cdfc74c39079142a33798dccf4b67105be50ba7e37e6e43d3d898d55327d6a",
+      "patched_sha256": "b47d5ea0337a4775a3353d8fcf5957b98b11c359af7f8156b66e85db8f3ecc90"
+    },
+    {
+      "path": "crates/verifier/src/protocols/shift/wiring.rs",
+      "base_sha256": "b1af2f41f08f51a8189c4bec609c949767bcf2d2086b5279ca7c2e39760e31c3",
+      "patched_sha256": "e109f34eff66497ee8c2858b070ee108036df4cdfc97283d34677b2f521c9a50"
+    },
+    {
+      "path": "crates/verifier/src/protocols/shift/verify.rs",
+      "base_sha256": "9d7fbb29d38bbbf5f3d23d19dec069b34395327ce553586147f93a86971a256b",
+      "patched_sha256": "bfd1347a8bc462199180d8b8f4e4bfa465b9426d0b1e8e381fa3abc5aadcd7ad"
+    }
+  ]
+}

@@ -1,0 +1,97 @@
+{
+  "additional_gf64_multiplications": 48,
+  "base_commit": "e8f4aa35e7895d6d6acfd643b630e711bef51922",
+  "consistency": {
+    "almost_uniform_denominator_power": 256,
+    "almost_uniform_exact_bits": 236,
+    "almost_uniform_numerator": 1048576,
+    "cap_relation_degree": 2,
+    "degree_in_chi": 32,
+    "degree_in_party_coordinate": 1,
+    "formula": "Hplus(p)[i] = chi[i] * sum(a[j] * chi[i]^j, j=0..31)",
+    "mask": "Mhat is XORed after Hplus; never scaled",
+    "pair_union_count": 153
+  },
+  "domain_prefix": "PQSAT-BUOV-CAP-HPLUS-0.1/",
+  "excluded": [
+    "full_Init_image",
+    "R1_common_root_image",
+    "other_17_origins",
+    "holder_KeyGen_image"
+  ],
+  "parent_fingerprint": "fc6706429f10d3bcc5600d4b427ca604a19f22c31ec35b171f40513b1a4bcb25",
+  "planes": 12,
+  "profile_id": "pqsat-blind-uov-hplus-research-v0.1",
+  "profile_version_u16": 2,
+  "reused_python_sources": {
+    "src/pq_rbbc/blind_uov_pqsat_v0_1/__init__.py": {
+      "bytes": 3871,
+      "sha256": "517abdc12513d38a4dd85ff9a62db4ee64545e63021f25534c7ea420410beb55"
+    },
+    "src/pq_rbbc/blind_uov_pqsat_v0_1/codec.py": {
+      "bytes": 13885,
+      "sha256": "05f105f3fee9c26dbb9bce1cccfa135d456a2a116d24489f8ae82ccef1114c1c"
+    },
+    "src/pq_rbbc/blind_uov_pqsat_v0_1/consistency.py": {
+      "bytes": 6106,
+      "sha256": "b8339d9eaa9cd55e759832a2a8e8fbde4ca89c9e495f42b4ae80a4d0fdfbd9ab"
+    },
+    "src/pq_rbbc/blind_uov_pqsat_v0_1/evaluation.py": {
+      "bytes": 9202,
+      "sha256": "ffc0b305d469ea253ee5b70a0c0732b29006f75bba712526706131c8c373113d"
+    },
+    "src/pq_rbbc/blind_uov_pqsat_v0_1/field.py": {
+      "bytes": 5770,
+      "sha256": "6df61996a502ffc6d56b8cf603630f7b655544554fd6ebb1a603aabe1ed78b76"
+    },
+    "src/pq_rbbc/blind_uov_pqsat_v0_1/native_opening.py": {
+      "bytes": 13695,
+      "sha256": "209e6651cc28d8318f1bf5a9f3d5ed0465e0a22c73ccf37c79ba1a6e92472cc5"
+    },
+    "src/pq_rbbc/blind_uov_pqsat_v0_1/native_relation.py": {
+      "bytes": 15617,
+      "sha256": "8bbba524fd91bfb2d2596906269d6bf42e5457e31291c7529d8638875a43c003"
+    },
+    "src/pq_rbbc/blind_uov_pqsat_v0_1/native_verifier.py": {
+      "bytes": 12398,
+      "sha256": "062cdf27cb3d78624147383aff046444a94ff9c4b3aac4e8565276c64ea9fa2f"
+    },
+    "src/pq_rbbc/blind_uov_pqsat_v0_1/parameters.py": {
+      "bytes": 93401,
+      "sha256": "0136272f43c64d8eeffae1ee808c10a5bff991567a703e21a82ffd18465b61ba"
+    },
+    "src/pq_rbbc/blind_uov_pqsat_v0_1/prover.py": {
+      "bytes": 25728,
+      "sha256": "102d77af2782c021317247769d86ed1f37ef45a0230bb7ad64f206726cb5c931"
+    },
+    "src/pq_rbbc/blind_uov_pqsat_v0_1/relation.py": {
+      "bytes": 34741,
+      "sha256": "6b232cde7e6046f2fe667744b9b4e2bee71dfacee731526b52e6880c80511f96"
+    },
+    "src/pq_rbbc/blind_uov_pqsat_v0_1/response.py": {
+      "bytes": 6047,
+      "sha256": "755d504970ac0d32f81f985056675ff7a98a9c1550f9c07ef134cfd78c8dc0c2"
+    },
+    "src/pq_rbbc/blind_uov_pqsat_v0_1/transcript.py": {
+      "bytes": 12278,
+      "sha256": "e9964460e29dc0d4c03e853180a7ee238fa632ff927154968b0b8a039a424d65"
+    },
+    "src/pq_rbbc/blind_uov_pqsat_v0_1/tree.py": {
+      "bytes": 23337,
+      "sha256": "55139baf2debbefb22df3671904b14f54fd90b9395fd6d9889f032b00962e4d6"
+    },
+    "src/pq_rbbc/blind_uov_pqsat_v0_1/uov.py": {
+      "bytes": 35649,
+      "sha256": "eec700c4ad0c7919b1d670b4c4e2fa47d1fee540b9d74bb002c87462b1023f1a"
+    },
+    "src/pq_rbbc/blind_uov_pqsat_v0_1/verifier.py": {
+      "bytes": 14882,
+      "sha256": "df0e7a1af91daba4a2aea9ef6b5cd3138b9477cccbce8a2cd4ddb805e73e3822"
+    }
+  },
+  "schema": "BUOVCAPHPlusResearchProfileDeltaV1",
+  "selected_parties": 2048,
+  "selected_repetition": 2,
+  "selected_tape_bits": 2322,
+  "suite_id_u16": 65331
+}

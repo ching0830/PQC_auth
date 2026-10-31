@@ -1,0 +1,26 @@
+{
+  "schema": "pqsat.binius-research-patch.v0.1",
+  "upstream_commit": "4428e759dd27956bd5b9ae5025d67eb8ccc1accf",
+  "base_patches": [
+    "shared_cs_streaming_wiring_v0_1",
+    "streaming_keys_v0_1",
+    "masked_encode_workspace_v0_1",
+    "compact_operands_v0_1",
+    "research_oracle_schedule_v0_1",
+    "bounded_prover_workspace_v0_1",
+    "checkpoint_merkle_v0_1",
+    "regenerated_masks_v0_1",
+    "bounded_parallel_v0_1"
+  ],
+  "patch_sha256": "42f8188bf8e7534ecebd76b701d7b5f98035afbde45d105acdf64192a14f65ea",
+  "files": [
+    {
+      "path": "crates/core/src/constraint_system/stored_operand.rs",
+      "base_sha256": "3a3e378aeda152baa29ecb5ca99690277708fd6f1ed04123317411071554cff3",
+      "patched_sha256": "8cbb0d801e5b689a2a5eb394914abd1398b48f2e65eb6cefff5f96b33fa82d06"
+    }
+  ],
+  "security_parameters_changed": false,
+  "constraint_polynomial_changed": false,
+  "private_value_specialization": false
+}

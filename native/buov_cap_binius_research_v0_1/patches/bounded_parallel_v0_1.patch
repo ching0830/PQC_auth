@@ -1,0 +1,73 @@
+--- a/crates/iop-prover/src/basefold/channel.rs
++++ b/crates/iop-prover/src/basefold/channel.rs
+@@ -164,11 +164,11 @@
+     /// RAM-saving research strategy. Fresh per-oracle seeds replace retained
+     /// mask buffers. Coin consumption changes, while specs/security parameters
+     /// and the masks actually used by encoding/opening remain consistent.
+-    /// Profile callers must keep a single thread and a non-recycling allocator
++    /// Profile callers must use 1/2/4 workers and a non-recycling allocator
+     /// if they want dropped temporary masks to release their memory promptly.
+     pub fn with_recomputed_masks(mut self) -> Self {
+-        assert_eq!(binius_utils::rayon::current_num_threads(),1,
+-            "regenerated-mask research profile requires one thread");
++        let _ = binius_utils::rayon::config::research_log_num_shares(
++            binius_utils::rayon::current_num_threads());
+         assert!(self.committed_oracles.is_empty(),"mask strategy must be selected before any commitment");
+         self.recompute_masks=true;
+         self
+--- a/crates/prover/src/zk_config.rs
++++ b/crates/prover/src/zk_config.rs
+@@ -84,6 +84,11 @@
+ 		zk_verifier: &ZKVerifier<H>,
+ 		key_collection: KeyCollection,
+ 	) -> Result<Self, Error> {
++        let width = binius_utils::rayon::current_num_threads();
++        let log_num_shares = if zk_verifier.is_research_unmerged() {
++            binius_utils::rayon::config::research_log_num_shares(width)
++        } else { width.ilog2() as usize };
++
+ 		// Build the inner IOPProver.
+ 		let inner_iop_verifier = zk_verifier.inner_iop_verifier().clone();
+ 		let inner_iop_prover = IOPProver::new(inner_iop_verifier.clone(), key_collection);
+@@ -106,7 +111,6 @@
+ 			let _guard = tracing::debug_span!("Precompute NTT domain").entered();
+ 			ProverDomain::generate(log_domain_size, zk_verifier.is_research_unmerged())
+ 		};
+-		let log_num_shares = binius_utils::rayon::current_num_threads().ilog2() as usize;
+ 		let ntt = NeighborsLastMultiThread::new(domain_context, log_num_shares);
+ 		let basefold_compiler =
+ 			BaseFoldProverCompiler::from_verifier_compiler(zk_verifier.basefold_compiler(), ntt);
+--- a/crates/utils/src/rayon/config.rs
++++ b/crates/utils/src/rayon/config.rs
+@@ -4,6 +4,31 @@
+ use std::{num::NonZero, sync::OnceLock, thread::available_parallelism};
+ 
+ use super::ThreadPoolBuildError;
++
++/// Requested worker-stack component of the bounded research profile.
++/// Guard pages, allocator/runtime metadata and the calling thread are separate.
++pub const RESEARCH_WORKER_STACK_BYTES: usize = 2 * 1024 * 1024;
++
++/// Only the explicitly authorized research widths. This changes no polynomial,
++/// sampler, oracle schedule or security parameter. Unsupported widths reject
++/// before a pool or NTT task configuration is constructed.
++pub fn research_log_num_shares(width: usize) -> usize {
++    assert!(matches!(width, 1 | 2 | 4), "research parallel width must be 1, 2 or 4");
++    width.ilog2() as usize
++}
++
++/// Builds exactly one bounded global research pool. Call once, before ANY
++/// parallel operation; an already initialized global pool returns an error.
++/// Width 1 uses the calling thread. Width 2/4 creates that many workers in
++/// addition to the caller, so the OS thread count is normally 3/5 respectively.
++/// Process CPU affinity and tree/RSS/wall/AS limits remain runner obligations.
++pub fn adjust_research_thread_pool(width: usize) -> Result<(), ThreadPoolBuildError> {
++    let _ = research_log_num_shares(width);
++    let builder = super::ThreadPoolBuilder::new().num_threads(width)
++        .stack_size(RESEARCH_WORKER_STACK_BYTES);
++    if width == 1 { builder.use_current_thread().build_global() }
++    else { builder.build_global() }
++}
+ 
+ /// Builds the global rayon pool, sized to the machine's physical cores.
+ ///

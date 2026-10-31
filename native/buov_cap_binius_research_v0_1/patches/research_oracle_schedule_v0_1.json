@@ -1,0 +1,40 @@
+{
+  "schema": "pqsat.binius-research-patch.v0.1",
+  "upstream_commit": "4428e759dd27956bd5b9ae5025d67eb8ccc1accf",
+  "base_patches": [
+    "shared_cs_streaming_wiring_v0_1",
+    "streaming_keys_v0_1",
+    "masked_encode_workspace_v0_1",
+    "compact_operands_v0_1"
+  ],
+  "patch_sha256": "273b97dd93a77371106501045a60155c0b1fc3ff5f163ad50904fbcbb1f3db56",
+  "files": [
+    {
+      "path": "crates/iop/src/channel/mod.rs",
+      "base_sha256": "353fe4bab3bc8bac3dcf228035a7e7d257faf9207165d3addc4a47a83422b9dc",
+      "patched_sha256": "5a31f35f0b6f1e2985f6323f77cd245863e372c7ec8a2c2f45331c507f80db70"
+    },
+    {
+      "path": "crates/prover/src/zk_config.rs",
+      "base_sha256": "d647b89a43ab5f50cf4d9c203da2e8ba071e3e46cfb4d85231edd38359dab440",
+      "patched_sha256": "29ebcd6ce5f5db1b8dcbcedea113194f883ad2c3c802d4417fcf6e3a5d1c5566"
+    },
+    {
+      "path": "crates/verifier/src/zk_config.rs",
+      "base_sha256": "b47d5ea0337a4775a3353d8fcf5957b98b11c359af7f8156b66e85db8f3ecc90",
+      "patched_sha256": "24a6631427d6ee8654ef7023166fd85b3394a619b30ed00f09ecc7c84c5d5da1"
+    }
+  ],
+  "research_profile": "explicit_unmerged_oracles_v0_1",
+  "security_target_bits": 96,
+  "security_target_changed": false,
+  "oracle_grouping_changed": true,
+  "oracle_specs_len_and_is_zk_changed": false,
+  "basefold_parameters_recomputed": true,
+  "wrapper_blinding_recomputed_from_current_query_count": true,
+  "extra_challenge_samples": 0,
+  "default_setup_behavior_changed": false,
+  "legacy_codec_for_research_profile": "reject_before_output",
+  "formal_security_qualification": false,
+  "production_profile": false
+}

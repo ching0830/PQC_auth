@@ -1,0 +1,23 @@
+{
+  "schema": "PQSAT.ThesisCode.Provenance.v0.1",
+  "thesisCommit": "b266f322fd30de2bd0d08786d1bd2c707f54f22d",
+  "runtimeCommit": "416738901f79a1bfe4d5c407e38d6d4b4f344a64",
+  "old30Commit": "9bc14fc4c73bcec714acaa01950b34411ba2b18d",
+  "thesisReceipt": {
+    "bytes": 67981,
+    "sha256": "a7963e56e4b6a7b9f36204462af23e74d28491ba0d0ead27f48a44b34d290aba"
+  },
+  "rootPublicationAuthorizationCard": {
+    "bytes": 1938,
+    "sha256": "2b8e0767cc3820e78fdcae0da41d3af624fda21a2459dade0dd0e8735020811b"
+  },
+  "history": "new orphan root; existing research branches and worktrees retained",
+  "scope": "Hchi+ issuance to independent ticket verification; independent comparison data analysis only",
+  "Backend": null,
+  "qualified2PC": false,
+  "gate": "BLOCKED",
+  "wholeSystemProofClosed": false,
+  "issuerUnlinkabilityClosed": false,
+  "newMaskCandidatesIncluded": false,
+  "wholeLifecycleMeasured": false
+}

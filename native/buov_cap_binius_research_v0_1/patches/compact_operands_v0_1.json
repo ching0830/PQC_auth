@@ -1,0 +1,81 @@
+{
+  "schema": "pqsat.binius-research-patch.v0.1",
+  "upstream_commit": "4428e759dd27956bd5b9ae5025d67eb8ccc1accf",
+  "base_patches": [
+    "shared_cs_streaming_wiring_v0_1",
+    "streaming_keys_v0_1"
+  ],
+  "patch_sha256": "6c93d4eeb6a132026bb67bc02bf981c5b367bf9544c45e91d08dbc8e5377b64f",
+  "files": [
+    {
+      "path": "crates/core/src/constraint_system/constraint.rs",
+      "base_sha256": "e47b075dcd36fd3ddc7754c36fc7e9fd7abf01432567655f1c0faf1d74709724",
+      "patched_sha256": "7dc2813031bf11483343b452b6082c1858f2e79a9e1292d9ce151b3b6a7788da"
+    },
+    {
+      "path": "crates/core/src/constraint_system/mod.rs",
+      "base_sha256": "869454c010df6de2ea20c679b67c03b1d2d6fe7cdfb26680261cf1685d42afd3",
+      "patched_sha256": "3c3287df88c4b739d0f81f38cfc95f1197919a835ce8ec91c4a1303d81fc175e"
+    },
+    {
+      "path": "crates/core/src/constraint_system/shift.rs",
+      "base_sha256": "96a36414d2ef36970d7e4bf8f49abee3404540b7694dd8126f39688a0a0fb9b7",
+      "patched_sha256": "263fa737710229fc118bf1bb08950deda04ab6fcb1081b6d08bd224f43fea32e"
+    },
+    {
+      "path": "crates/core/src/constraint_system/stored_operand.rs",
+      "base_sha256": null,
+      "patched_sha256": "3a3e378aeda152baa29ecb5ca99690277708fd6f1ed04123317411071554cff3"
+    },
+    {
+      "path": "crates/core/src/constraint_system/system.rs",
+      "base_sha256": "a63a34a096e31b069a5092e2be0548e4c037869e2ef0ee3e944c40a966460abe",
+      "patched_sha256": "5361feea3af9ff05facb815356450cc29250163abe2c2a8f28101c20b4521726"
+    },
+    {
+      "path": "crates/core/src/constraint_system/value_vec.rs",
+      "base_sha256": "433391d86eaf769aa4f0ca4e914881792700e45ddc2fc155b754f0adaf1cff43",
+      "patched_sha256": "ebcefda429fedf927f5efef603606504e578f235aedebf71cafcae0fe7720618"
+    },
+    {
+      "path": "crates/frontend/src/artifact/stat.rs",
+      "base_sha256": "fe9a64bbd8b0f0eced0485afb03b280799833e705b5c0a7ad9dce67500bfe094",
+      "patched_sha256": "3f92723d48651789c8eb69a23f55594744fde1235c4904cd178d5a1ac8b05973"
+    },
+    {
+      "path": "crates/frontend/src/lower/constraint.rs",
+      "base_sha256": "b54e6cae5dcffb9a95285289516d32b0a4d5caf5c69125b8c58a3edb8ee9afad",
+      "patched_sha256": "678ff90c8ead23b7bcdb60c28fcfd5657f8d802a26bde2a2ef5ae3fffbe87a8d"
+    },
+    {
+      "path": "crates/prover/src/protocols/shift/key_collection/builder.rs",
+      "base_sha256": "c48bffd73cbccfef006e4b2ce769876ec837760ce748472c6a65bb4fd39c6f7b",
+      "patched_sha256": "236f883b53b1524ebf36d87bdbe55d6273ebe2be042de4993fce56f29ee34d16"
+    },
+    {
+      "path": "crates/prover/src/protocols/shift/key_collection/streaming.rs",
+      "base_sha256": "17a835ffdf9f5d71b40b9519e0844a314411db2a5947b7c333fc7d1e3528ea17",
+      "patched_sha256": "b67d80cc617a6639da025617e3246d3e62a23d7e70c1e686d22bb2dde473983a"
+    },
+    {
+      "path": "crates/prover/src/prove.rs",
+      "base_sha256": "75a3e23736c8d8f900414a049b08cdcc1155c8201f068f46d62b1a8ab825ff29",
+      "patched_sha256": "e06e7aa32139b6130b0c2f5a509c1ab87541ce251b438edf2a6e61f9ba092136"
+    },
+    {
+      "path": "crates/verifier/src/protocols/shift/wiring.rs",
+      "base_sha256": "e109f34eff66497ee8c2858b070ee108036df4cdfc97283d34677b2f521c9a50",
+      "patched_sha256": "9261eb9dcfd000ecad4131905bb55deb95afa8b7cdc4dd26caf2b57bcdbfe307"
+    }
+  ],
+  "security_parameters_changed": false,
+  "constraint_polynomial_changed": false,
+  "private_value_specialization": false,
+  "template_normalization": "two private address bases: first private index and first private index farther than4096; nearest-base assignment, tie base1; bit29 cluster tag plus signed delta mod2^29; Constant/InOut/Scratch unchanged",
+  "dictionary_limits": {
+    "unique_templates": 1000000,
+    "payload_bytes": 268435456
+  },
+  "payload_metric_scope": "template term lengths plus x64 Arc counters/Vec header, excludes dictionary buckets and allocator spare",
+  "private_index_limit_exclusive": 67108864
+}

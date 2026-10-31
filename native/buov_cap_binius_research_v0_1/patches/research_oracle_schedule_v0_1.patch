@@ -1,0 +1,239 @@
+--- a/crates/iop/src/channel/mod.rs
++++ b/crates/iop/src/channel/mod.rs
+@@ -108,6 +108,8 @@
+ 	///
+ 	/// Anything past the last entry is in the round still open.
+ 	ends: Vec<usize>,
++    // Explicit research profile marker; not inferred from coincidental singleton rounds.
++    research_unmerged: bool,
+ }
+ 
+ impl OracleSchedule {
+@@ -116,8 +118,24 @@
+ 		Self {
+ 			specs: Vec::new(),
+ 			ends: Vec::new(),
++            research_unmerged: false,
+ 		}
+ 	}
++
++    /// Explicit research view of an ACTUAL setup-channel recording, one group
++    /// per oracle. Closing these groups draws no challenge and changes no spec.
++    /// This is a commitment-layout experiment, not a new security qualification.
++    pub fn into_research_unmerged(self) -> Self {
++        let mut result = Self::new();
++        for spec in self.specs {
++            result.push(spec);
++            result.end_round();
++        }
++        result.research_unmerged = true;
++        result
++    }
++
++    pub const fn is_research_unmerged(&self) -> bool { self.research_unmerged }
+ 
+ 	/// Appends one oracle to the round currently open.
+ 	pub fn push(&mut self, spec: OracleSpec) {
+@@ -163,6 +181,14 @@
+ 	///
+ 	/// A round is masked as a whole, so its oracle is zero-knowledge if any member is.
+ 	pub fn merged_specs(&self) -> Vec<OracleSpec> {
++        if self.research_unmerged {
++            assert_eq!(self.ends.len(), self.specs.len(), "research groups must remain singleton");
++            assert!(self.ends.iter().enumerate().all(|(i, end)| *end == i + 1),
++                "research oracle grouping must remain canonical");
++            // In particular, retain each original len: the ordinary merged
++            // view pads content to a whole group, even for a singleton.
++            return self.specs.clone();
++        }
+ 		self.rounds()
+ 			.map(|round| OracleSpec {
+ 				is_zk: round.iter().any(|spec| spec.is_zk),
+@@ -240,3 +266,39 @@
+ 		claim: Self::Elem,
+ 	) -> Result<(), Error>;
+ }
++
++#[cfg(test)]
++mod research_schedule_tests {
++    use super::*;
++    use super::oracle_setup::OracleSetupChannel;
++    use binius_field::Ghash128b;
++    #[test]
++    fn actual_specs_are_unchanged_when_each_oracle_gets_its_own_group() {
++        let mut channel=OracleSetupChannel::new(true);
++        IOPVerifierChannel::<Ghash128b>::recv_oracle(&mut channel,3,2,true).unwrap();
++        IOPVerifierChannel::<Ghash128b>::recv_oracle(&mut channel,5,3,false).unwrap();
++        let ordinary=channel.into_oracle_schedule();
++        let research=ordinary.clone().into_research_unmerged();
++        assert!(!ordinary.is_research_unmerged());assert!(research.is_research_unmerged());
++        assert_eq!(ordinary.n_rounds(),1);assert_eq!(research.n_rounds(),2);
++        assert_eq!(ordinary.specs(),research.specs());
++        assert_eq!(research.merged_specs(),ordinary.specs());
++        assert_eq!(ordinary.merged_specs(),vec![OracleSpec::new_zk(4)]);
++        assert_eq!(research.rounds().map(|r|r.len()).collect::<Vec<_>>(),vec![1,1]);
++    }
++    #[test]
++    fn default_round_closing_behavior_and_empty_schedule_stay_unchanged() {
++        let mut ordinary=OracleSchedule::new();
++        ordinary.push(OracleSpec::new(2));ordinary.push(OracleSpec::new(2));ordinary.end_round();
++        assert_eq!(ordinary.merged_specs(),vec![OracleSpec::new(3)]);
++        assert_eq!(ordinary.clone().into_research_unmerged().specs(),ordinary.specs());
++        let empty=OracleSchedule::new().into_research_unmerged();
++        assert!(empty.merged_specs().is_empty());assert_eq!(empty.n_rounds(),0);
++    }
++    #[test]
++    #[should_panic(expected="research groups must remain singleton")]
++    fn a_mutated_research_schedule_cannot_silently_admit_an_unclosed_group() {
++        let mut research=OracleSchedule::new().into_research_unmerged();
++        research.push(OracleSpec::new_zk(4));research.merged_specs();
++    }
++}
+--- a/crates/prover/src/zk_config.rs
++++ b/crates/prover/src/zk_config.rs
+@@ -122,6 +122,9 @@
+ 		})
+ 	}
+ 
++    /// Public setup profile, shared verbatim with the matching verifier.
++    pub fn is_research_unmerged(&self) -> bool { self.oracle_schedule.is_research_unmerged() }
++
+ 	/// Returns a reference to the inner IOP prover.
+ 	pub const fn inner_iop_prover(&self) -> &IOPProver {
+ 		&self.inner_iop_prover
+@@ -139,6 +142,10 @@
+ 		mut rng: impl CryptoRng,
+ 		transcript: &mut ProverTranscript<Challenger_>,
+ 	) -> Result<(), Error> {
++        if self.is_research_unmerged() {
++            binius_verifier::signature::observe_message::<H, _>(
++                &mut transcript.observe(), binius_verifier::zk_config::RESEARCH_UNMERGED_PROFILE_TAG);
++        }
+ 		// The replay closure captures the public words as a borrowed slice.
+ 		let inout_words = witness.inout();
+ 
+@@ -230,6 +237,9 @@
+ 	Output<H::LeafHash>: SerializeBytes + DeserializeBytes,
+ {
+ 	fn serialize(&self, mut write_buf: impl BufMut) -> Result<(), SerializationError> {
++        if self.is_research_unmerged() {
++            return Err(SerializationError::InvalidConstruction { name: "ZKProver::research_profile_serialization_disabled" });
++        }
+         if self.inner_iop_prover.key_collection().is_streaming() {
+             return Err(SerializationError::InvalidConstruction {
+                 name: "ZKProver::streaming_serialization_disabled",
+--- a/crates/verifier/src/zk_config.rs
++++ b/crates/verifier/src/zk_config.rs
+@@ -52,6 +52,9 @@
+ 	verify::{IOPVerifier, SECURITY_BITS},
+ };
+ 
++/// Domain separation for the explicit 96-bit diagnostic research layout.
++pub const RESEARCH_UNMERGED_PROFILE_TAG: &[u8] = b"BINIUS64/RESEARCH-UNMERGED-ORACLES/v0.1\0";
++
+ /// Zero-knowledge verifier for Binius64 constraint systems.
+ ///
+ /// Wraps the Binius64 IOP verifier with a Spartan-based ZK wrapper. Call [`Self::setup`] with
+@@ -74,7 +77,19 @@
+ 	Output<H::LeafHash>: DeserializeBytes,
+ {
+ 	/// Constructs a ZK verifier for a constraint system.
+-	pub fn setup(constraint_system: ConstraintSystem, log_inv_rate: usize) -> Result<Self, Error> {
++    pub fn setup(constraint_system: ConstraintSystem, log_inv_rate: usize) -> Result<Self, Error> {
++        Self::setup_with_profile(constraint_system, log_inv_rate, false)
++    }
++
++    /// Research-only commitment grouping. Oracle lengths, hiding flags and
++    /// verifier rules are retained. BaseFold/FRI and wrapper blinding are
++    /// rebuilt from this setup, with the existing SECURITY_BITS=96 target.
++    /// No full security qualification or production claim follows from it.
++    pub fn setup_research_unmerged(constraint_system: ConstraintSystem, log_inv_rate: usize) -> Result<Self, Error> {
++        Self::setup_with_profile(constraint_system, log_inv_rate, true)
++    }
++
++    fn setup_with_profile(constraint_system: ConstraintSystem, log_inv_rate: usize, research_unmerged: bool) -> Result<Self, Error> {
+ 		let _setup_guard = tracing::debug_span!("Setup ZK verifier").entered();
+ 
+ 		constraint_system.validate()?;
+@@ -137,7 +152,8 @@
+ 				1 << outer_iop_verifier.constraint_system().log_public()
+ 			];
+ 			let _ = outer_iop_verifier.verify((), &public, &mut channel);
+-			channel.into_oracle_schedule()
++            let recorded = channel.into_oracle_schedule();
++            if research_unmerged { recorded.into_research_unmerged() } else { recorded }
+ 		};
+ 
+ 		let merkle_scheme = BinaryMerkleTreeScheme::<B128, H>::new();
+@@ -159,6 +175,8 @@
+ 		})
+ 	}
+ 
++    pub const fn is_research_unmerged(&self) -> bool { self.oracle_schedule.is_research_unmerged() }
++
+ 	/// Returns a reference to the inner IOP verifier.
+ 	pub const fn inner_iop_verifier(&self) -> &IOPVerifier {
+ 		&self.inner_iop_verifier
+@@ -214,6 +232,9 @@
+ 		inout: &[Word],
+ 		transcript: &mut VerifierTranscript<Challenger_>,
+ 	) -> Result<(), Error> {
++        if self.is_research_unmerged() {
++            crate::signature::observe_message::<H, _>(&mut transcript.observe(), RESEARCH_UNMERGED_PROFILE_TAG);
++        }
+ 		// Create BaseFold channel, merge each round's oracles, and wrap with outer verifier.
+ 		let channel = self
+ 			.basefold_compiler
+@@ -301,6 +322,11 @@
+ 	Output<H::LeafHash>: DeserializeBytes,
+ {
+ 	fn serialize(&self, mut write_buf: impl BufMut) -> Result<(), SerializationError> {
++        // Legacy v1 bytes have no profile field and always deserialize through
++        // default setup. Reject BEFORE writing bytes instead of mislabelling.
++        if self.is_research_unmerged() {
++            return Err(SerializationError::InvalidConstruction { name: "ZKVerifier::research_profile_serialization_disabled" });
++        }
+ 		const VERSION: u32 = 1;
+ 		VERSION.serialize(&mut write_buf)?;
+ 		self.constraint_system().serialize(&mut write_buf)?;
+@@ -338,3 +364,40 @@
+ 	#[error("constraint system error: {0}")]
+ 	ConstraintSystem(#[from] binius_core::ConstraintSystemError),
+ }
++
++#[cfg(test)]
++mod research_schedule_tests {
++    use super::*;
++    use binius_core::constraint_system::{AndConstraint,ValueIndex,ZeroConstraint};
++    use binius_hash::StdHashSuite;
++    fn small_cs()->ConstraintSystem {
++        ConstraintSystem{constants:vec![Word(u64::MAX)],n_inout:1,n_private:4,
++            and_constraints:vec![AndConstraint::plain_abc([ValueIndex::private(0)],
++                [ValueIndex::private(1)],[ValueIndex::private(2)])],
++            zero_constraints:vec![ZeroConstraint::plain([ValueIndex::private(2),ValueIndex::inout(0)]),
++                ZeroConstraint::plain([ValueIndex::private(3)])],
++            imul_constraints:Vec::new(),bmul_constraints:Vec::new()}
++    }
++    #[test]
++    fn research_setup_preserves_actual_oracles_and_rebuilds_fri_blinding() {
++        let ordinary=ZKVerifier::<StdHashSuite>::setup(small_cs(),1).unwrap();
++        let research=ZKVerifier::<StdHashSuite>::setup_research_unmerged(small_cs(),1).unwrap();
++        assert!(!ordinary.is_research_unmerged());assert!(research.is_research_unmerged());
++        assert_eq!(ordinary.oracle_schedule().specs(),research.oracle_schedule().specs());
++        assert_eq!(research.oracle_schedule().n_rounds(),research.oracle_schedule().specs().len());
++        assert_eq!(research.basefold_compiler().oracle_specs(),research.oracle_schedule().specs());
++        let queries=fri::calculate_n_test_queries(SECURITY_BITS,1);
++        assert_eq!(research.basefold_compiler().fri_params().n_test_queries(),queries);
++        assert_eq!(research.outer_iop_verifier().constraint_system().blinding_info().n_dummy_wires,queries+1);
++        let mut bytes=Vec::new();assert!(research.serialize(&mut bytes).is_err());assert!(bytes.is_empty());
++    }
++    #[test]
++    fn default_codec_still_contains_exactly_its_v1_seed_and_reloads_as_default() {
++        let ordinary=ZKVerifier::<StdHashSuite>::setup(small_cs(),1).unwrap();
++        let mut expected=Vec::new();1u32.serialize(&mut expected).unwrap();
++        ordinary.constraint_system().serialize(&mut expected).unwrap();1usize.serialize(&mut expected).unwrap();
++        let mut actual=Vec::new();ordinary.serialize(&mut actual).unwrap();assert_eq!(actual,expected);
++        let reloaded=ZKVerifier::<StdHashSuite>::deserialize(actual.as_slice()).unwrap();
++        assert!(!reloaded.is_research_unmerged());assert_eq!(ordinary.oracle_schedule(),reloaded.oracle_schedule());
++    }
++}

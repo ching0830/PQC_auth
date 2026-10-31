@@ -1,0 +1,802 @@
+--- a/crates/core/src/constraint_system/constraint.rs
++++ b/crates/core/src/constraint_system/constraint.rs
+@@ -6,7 +6,7 @@
+ use binius_utils::serialization::{DeserializeBytes, SerializationError, SerializeBytes};
+ use bytes::{Buf, BufMut};
+ 
+-use super::{ShiftedValueIndex, ValueIndex, ValueVec};
++use super::{ShiftedValueIndex, StoredOperand, ValueIndex, ValueVec};
+ use crate::{error::ConstraintViolation, word::Word};
+ 
+ /// Operand type.
+@@ -61,7 +61,7 @@
+ ///
+ /// The operands are stored in the order given by [`ZeroConstraint::OPERAND_NAMES`].
+ #[derive(Debug, Clone, Default)]
+-pub struct ZeroConstraint(pub [Operand; ZeroConstraint::ARITY]);
++pub struct ZeroConstraint(pub [StoredOperand; ZeroConstraint::ARITY]);
+ 
+ impl ZeroConstraint {
+ 	/// Number of operands.
+@@ -78,11 +78,11 @@
+ 
+ 	/// Creates a new Zero constraint from an XOR combination of the given shifted values.
+ 	pub fn new(val: impl IntoIterator<Item = ShiftedValueIndex>) -> ZeroConstraint {
+-		ZeroConstraint([val.into_iter().collect()])
++		ZeroConstraint([val.into_iter().collect::<Operand>()].map(Into::into))
+ 	}
+ 
+ 	/// Operand VAL.
+-	pub const fn val(&self) -> &Operand {
++	pub const fn val(&self) -> &StoredOperand {
+ 		&self.0[0]
+ 	}
+ 
+@@ -101,8 +101,8 @@
+ 	}
+ }
+ 
+-impl AsRef<[Operand; ZeroConstraint::ARITY]> for ZeroConstraint {
+-	fn as_ref(&self) -> &[Operand; Self::ARITY] {
++impl AsRef<[StoredOperand; ZeroConstraint::ARITY]> for ZeroConstraint {
++	fn as_ref(&self) -> &[StoredOperand; Self::ARITY] {
+ 		&self.0
+ 	}
+ }
+@@ -118,7 +118,7 @@
+ 	where
+ 		Self: Sized,
+ 	{
+-		<[Operand; Self::ARITY]>::deserialize(read_buf).map(Self)
++		<[StoredOperand; Self::ARITY]>::deserialize(read_buf).map(Self)
+ 	}
+ }
+ 
+@@ -129,7 +129,7 @@
+ ///
+ /// The operands are stored in the order given by [`AndConstraint::OPERAND_NAMES`].
+ #[derive(Debug, Clone, Default)]
+-pub struct AndConstraint(pub [Operand; AndConstraint::ARITY]);
++pub struct AndConstraint(pub [StoredOperand; AndConstraint::ARITY]);
+ 
+ impl AndConstraint {
+ 	/// Number of operands.
+@@ -159,24 +159,24 @@
+ 		c: impl IntoIterator<Item = ShiftedValueIndex>,
+ 	) -> AndConstraint {
+ 		AndConstraint([
+-			a.into_iter().collect(),
+-			b.into_iter().collect(),
+-			c.into_iter().collect(),
+-		])
++			a.into_iter().collect::<Operand>(),
++			b.into_iter().collect::<Operand>(),
++			c.into_iter().collect::<Operand>(),
++		].map(Into::into))
+ 	}
+ 
+ 	/// Operand A.
+-	pub const fn a(&self) -> &Operand {
++	pub const fn a(&self) -> &StoredOperand {
+ 		&self.0[0]
+ 	}
+ 
+ 	/// Operand B.
+-	pub const fn b(&self) -> &Operand {
++	pub const fn b(&self) -> &StoredOperand {
+ 		&self.0[1]
+ 	}
+ 
+ 	/// Operand C.
+-	pub const fn c(&self) -> &Operand {
++	pub const fn c(&self) -> &StoredOperand {
+ 		&self.0[2]
+ 	}
+ 
+@@ -198,8 +198,8 @@
+ 	}
+ }
+ 
+-impl AsRef<[Operand; AndConstraint::ARITY]> for AndConstraint {
+-	fn as_ref(&self) -> &[Operand; Self::ARITY] {
++impl AsRef<[StoredOperand; AndConstraint::ARITY]> for AndConstraint {
++	fn as_ref(&self) -> &[StoredOperand; Self::ARITY] {
+ 		&self.0
+ 	}
+ }
+@@ -215,7 +215,7 @@
+ 	where
+ 		Self: Sized,
+ 	{
+-		<[Operand; Self::ARITY]>::deserialize(read_buf).map(Self)
++		<[StoredOperand; Self::ARITY]>::deserialize(read_buf).map(Self)
+ 	}
+ }
+ 
+@@ -226,7 +226,7 @@
+ ///
+ /// The operands are stored in the order given by [`ImulConstraint::OPERAND_NAMES`].
+ #[derive(Debug, Clone, Default)]
+-pub struct ImulConstraint(pub [Operand; ImulConstraint::ARITY]);
++pub struct ImulConstraint(pub [StoredOperand; ImulConstraint::ARITY]);
+ 
+ impl ImulConstraint {
+ 	/// Number of operands.
+@@ -237,26 +237,26 @@
+ 	pub const OPERAND_NAMES: [&'static str; Self::ARITY] = ["a", "b", "lo", "hi"];
+ 
+ 	/// A operand.
+-	pub const fn a(&self) -> &Operand {
++	pub const fn a(&self) -> &StoredOperand {
+ 		&self.0[0]
+ 	}
+ 
+ 	/// B operand.
+-	pub const fn b(&self) -> &Operand {
++	pub const fn b(&self) -> &StoredOperand {
+ 		&self.0[1]
+ 	}
+ 
+ 	/// LO operand.
+ 	///
+ 	/// The low 64 bits of the result of the multiplication.
+-	pub const fn lo(&self) -> &Operand {
++	pub const fn lo(&self) -> &StoredOperand {
+ 		&self.0[2]
+ 	}
+ 
+ 	/// HI operand.
+ 	///
+ 	/// The high 64 bits of the result of the multiplication.
+-	pub const fn hi(&self) -> &Operand {
++	pub const fn hi(&self) -> &StoredOperand {
+ 		&self.0[3]
+ 	}
+ 
+@@ -292,8 +292,8 @@
+ 	}
+ }
+ 
+-impl AsRef<[Operand; ImulConstraint::ARITY]> for ImulConstraint {
+-	fn as_ref(&self) -> &[Operand; Self::ARITY] {
++impl AsRef<[StoredOperand; ImulConstraint::ARITY]> for ImulConstraint {
++	fn as_ref(&self) -> &[StoredOperand; Self::ARITY] {
+ 		&self.0
+ 	}
+ }
+@@ -309,7 +309,7 @@
+ 	where
+ 		Self: Sized,
+ 	{
+-		<[Operand; Self::ARITY]>::deserialize(read_buf).map(Self)
++		<[StoredOperand; Self::ARITY]>::deserialize(read_buf).map(Self)
+ 	}
+ }
+ 
+@@ -321,7 +321,7 @@
+ ///
+ /// The operands are stored in the order given by [`BmulConstraint::OPERAND_NAMES`].
+ #[derive(Debug, Clone, Default)]
+-pub struct BmulConstraint(pub [Operand; BmulConstraint::ARITY]);
++pub struct BmulConstraint(pub [StoredOperand; BmulConstraint::ARITY]);
+ 
+ impl BmulConstraint {
+ 	/// Number of operands.
+@@ -333,32 +333,32 @@
+ 		["a_lo", "a_hi", "b_lo", "b_hi", "c_lo", "c_hi"];
+ 
+ 	/// Low word of the A operand.
+-	pub const fn a_lo(&self) -> &Operand {
++	pub const fn a_lo(&self) -> &StoredOperand {
+ 		&self.0[0]
+ 	}
+ 
+ 	/// High word of the A operand.
+-	pub const fn a_hi(&self) -> &Operand {
++	pub const fn a_hi(&self) -> &StoredOperand {
+ 		&self.0[1]
+ 	}
+ 
+ 	/// Low word of the B operand.
+-	pub const fn b_lo(&self) -> &Operand {
++	pub const fn b_lo(&self) -> &StoredOperand {
+ 		&self.0[2]
+ 	}
+ 
+ 	/// High word of the B operand.
+-	pub const fn b_hi(&self) -> &Operand {
++	pub const fn b_hi(&self) -> &StoredOperand {
+ 		&self.0[3]
+ 	}
+ 
+ 	/// Low word of the C (product) operand.
+-	pub const fn c_lo(&self) -> &Operand {
++	pub const fn c_lo(&self) -> &StoredOperand {
+ 		&self.0[4]
+ 	}
+ 
+ 	/// High word of the C (product) operand.
+-	pub const fn c_hi(&self) -> &Operand {
++	pub const fn c_hi(&self) -> &StoredOperand {
+ 		&self.0[5]
+ 	}
+ 
+@@ -389,14 +389,14 @@
+ ///
+ /// - bit `i` of the low word is the coefficient of `X^i`.
+ /// - bit `i` of the high word is the coefficient of `X^(64 + i)`.
+-fn eval_element(values: &ValueVec, lo: &Operand, hi: &Operand) -> u128 {
++fn eval_element(values: &ValueVec, lo: &StoredOperand, hi: &StoredOperand) -> u128 {
+ 	let Word(lo) = values.eval_operand(lo);
+ 	let Word(hi) = values.eval_operand(hi);
+ 	lo as u128 | ((hi as u128) << 64)
+ }
+ 
+-impl AsRef<[Operand; BmulConstraint::ARITY]> for BmulConstraint {
+-	fn as_ref(&self) -> &[Operand; Self::ARITY] {
++impl AsRef<[StoredOperand; BmulConstraint::ARITY]> for BmulConstraint {
++	fn as_ref(&self) -> &[StoredOperand; Self::ARITY] {
+ 		&self.0
+ 	}
+ }
+@@ -412,7 +412,7 @@
+ 	where
+ 		Self: Sized,
+ 	{
+-		<[Operand; Self::ARITY]>::deserialize(read_buf).map(Self)
++		<[StoredOperand; Self::ARITY]>::deserialize(read_buf).map(Self)
+ 	}
+ }
+ 
+@@ -477,7 +477,7 @@
+ 			vec![ShiftedValueIndex::srl(ValueIndex::constant(1), 32)],
+ 			vec![ShiftedValueIndex::plain(ValueIndex::constant(2))],
+ 			vec![ShiftedValueIndex::plain(ValueIndex::constant(3))],
+-		]);
++		].map(Into::into));
+ 
+ 		let mut buf = Vec::new();
+ 		constraint.serialize(&mut buf).unwrap();
+@@ -501,7 +501,7 @@
+ 				ShiftedValueIndex::sar(ValueIndex::constant(5), 15),
+ 				ShiftedValueIndex::plain(ValueIndex::constant(6)),
+ 			],
+-		]);
++		].map(Into::into));
+ 
+ 		let mut buf = Vec::new();
+ 		constraint.serialize(&mut buf).unwrap();
+@@ -609,7 +609,7 @@
+ 		let b = 0x0fed_cba9_8765_4321u64;
+ 		let product = a as u128 * b as u128;
+ 		let values = values(&[a, b, product as u64, (product >> 64) as u64]);
+-		let constraint = ImulConstraint([at(0), at(1), at(2), at(3)]);
++		let constraint = ImulConstraint([at(0), at(1), at(2), at(3)].map(Into::into));
+ 
+ 		assert!(constraint.verify(&values).is_ok());
+ 	}
+@@ -621,7 +621,7 @@
+ 		let b = 0x0fed_cba9_8765_4321u64;
+ 		let product = a as u128 * b as u128;
+ 		let values = values(&[a, b, product as u64, 0]);
+-		let constraint = ImulConstraint([at(0), at(1), at(2), at(3)]);
++		let constraint = ImulConstraint([at(0), at(1), at(2), at(3)].map(Into::into));
+ 
+ 		match constraint.verify(&values).unwrap_err() {
+ 			ConstraintViolation::Imul {
+@@ -649,7 +649,7 @@
+ 		let [b_lo, b_hi] = split(B);
+ 		let [c_lo, c_hi] = split(A_TIMES_B);
+ 		let values = values(&[a_lo, a_hi, b_lo, b_hi, c_lo, c_hi]);
+-		let constraint = BmulConstraint([at(0), at(1), at(2), at(3), at(4), at(5)]);
++		let constraint = BmulConstraint([at(0), at(1), at(2), at(3), at(4), at(5)].map(Into::into));
+ 
+ 		assert!(constraint.verify(&values).is_ok());
+ 	}
+@@ -660,7 +660,7 @@
+ 		let [b_lo, b_hi] = split(B);
+ 		let [c_lo, c_hi] = split(A_TIMES_B ^ 1);
+ 		let values = values(&[a_lo, a_hi, b_lo, b_hi, c_lo, c_hi]);
+-		let constraint = BmulConstraint([at(0), at(1), at(2), at(3), at(4), at(5)]);
++		let constraint = BmulConstraint([at(0), at(1), at(2), at(3), at(4), at(5)].map(Into::into));
+ 
+ 		match constraint.verify(&values).unwrap_err() {
+ 			ConstraintViolation::Bmul { a, b, c, expected } => {
+--- a/crates/core/src/constraint_system/mod.rs
++++ b/crates/core/src/constraint_system/mod.rs
+@@ -3,6 +3,7 @@
+ //! Constraint system and related definitions.
+ 
+ mod constraint;
++mod stored_operand;
+ mod layout;
+ pub mod m4;
+ mod proof;
+@@ -14,6 +15,7 @@
+ mod values_data;
+ 
+ pub use constraint::*;
++pub use stored_operand::*;
+ pub use layout::*;
+ pub use proof::*;
+ pub use shift::*;
+--- a/crates/core/src/constraint_system/shift.rs
++++ b/crates/core/src/constraint_system/shift.rs
+@@ -883,10 +883,10 @@
+ ///
+ /// An empty operand evaluates to the zero word, the XOR identity.
+ #[inline]
+-pub fn eval_operand(source: &impl WordSource, operand: &[ShiftedValueIndex]) -> Word {
+-	operand
+-		.iter()
+-		.fold(Word::ZERO, |acc, term| acc ^ term.eval(source))
++pub fn eval_operand<T: std::borrow::Borrow<ShiftedValueIndex>>(
++    source: &impl WordSource, operand: impl IntoIterator<Item=T>,
++) -> Word {
++    operand.into_iter().fold(Word::ZERO, |acc, term| acc ^ term.borrow().eval(source))
+ }
+ 
+ impl SerializeBytes for ShiftedValueIndex {
+--- /dev/null
++++ b/crates/core/src/constraint_system/stored_operand.rs
+@@ -0,0 +1,229 @@
++//! Public wire-structure compression; never specializes on witness values.
++use std::{collections::HashSet, fmt, sync::Arc};
++use binius_utils::serialization::{DeserializeBytes,SerializationError,SerializeBytes};
++use bytes::{Buf,BufMut};
++use super::{Operand,ShiftedValueIndex,ValueIndex,ValueSegment};
++
++/// Sixteen bytes on the admitted x64 platform. Only private indices are
++/// relative to two public wire-address bases; Constant/InOut identities and
++/// both shift slots remain unchanged. Admitted private indices are <2^26.
++/// Template bit29 tags the second base; lower29 bits store delta mod2^29.
++#[derive(Clone,Debug,PartialEq,Eq)]
++pub struct StoredOperand {template:Arc<Vec<ShiftedValueIndex>>,private_bases:[u32;2]}
++
++#[derive(Clone)]
++pub struct StoredTerms<'a> {terms:std::slice::Iter<'a,ShiftedValueIndex>,private_bases:[u32;2]}
++impl Iterator for StoredTerms<'_> {
++    type Item=ShiftedValueIndex;
++    fn next(&mut self)->Option<Self::Item> {self.terms.next().map(|term| {
++        let mut term=*term;
++        if term.value_index.segment()==ValueSegment::Private {
++            let encoded=term.value_index.index();
++            let cluster=(encoded>>DELTA_BITS) as usize;
++            let index=(encoded&DELTA_MASK).wrapping_add(self.private_bases[cluster])&DELTA_MASK;
++            assert!(index<PRIVATE_CAP,"decoded private index exceeds admitted research shape");
++            term.value_index=ValueIndex::private(index);
++        }
++        term
++    })}
++    fn size_hint(&self)->(usize,Option<usize>) {self.terms.size_hint()}
++}
++impl ExactSizeIterator for StoredTerms<'_> {}
++impl<'a> IntoIterator for &'a StoredOperand {
++    type Item=ShiftedValueIndex;type IntoIter=StoredTerms<'a>;
++    fn into_iter(self)->Self::IntoIter {self.iter()}
++}
++const PRIVATE_CAP:u32=1<<26;
++const DELTA_BITS:u32=29;
++const DELTA_MASK:u32=(1<<DELTA_BITS)-1;
++const SECOND_CLUSTER_DISTANCE:u32=4096;
++fn normalize(mut terms:Operand)->Result<([u32;2],Operand),TemplateLimitError> {
++    if terms.iter().any(|t|t.value_index.segment()==ValueSegment::Private && t.value_index.index()>=PRIVATE_CAP) {
++        return Err(TemplateLimitError::PrivateIndexOutOfRange);
++    }
++    let base1=terms.iter().find(|t|t.value_index.segment()==ValueSegment::Private)
++        .map_or(0,|t|t.value_index.index());
++    let base2=terms.iter().find(|t|t.value_index.segment()==ValueSegment::Private
++        && t.value_index.index().abs_diff(base1)>SECOND_CLUSTER_DISTANCE)
++        .map_or(base1,|t|t.value_index.index());
++    let bases=[base1,base2];
++    for term in &mut terms {
++        if term.value_index.segment()==ValueSegment::Private {
++            let index=term.value_index.index();
++            // Nearest public ADDRESS base; ties always use the first cluster.
++            // This never reads a word from the secret witness.
++            let cluster=usize::from(index.abs_diff(base2)<index.abs_diff(base1));
++            let delta=index.wrapping_sub(bases[cluster])&DELTA_MASK;
++            term.value_index=ValueIndex::private(delta|((cluster as u32)<<DELTA_BITS));
++        }
++    }
++    terms.shrink_to_fit();Ok((bases,terms))
++}
++impl From<Operand> for StoredOperand {
++    fn from(terms:Operand)->Self {let (private_bases,terms)=normalize(terms).expect("private operand index exceeds admitted 26-bit research shape");Self{private_bases,template:Arc::new(terms)}}
++}
++impl Default for StoredOperand {fn default()->Self {Vec::new().into()}}
++impl FromIterator<ShiftedValueIndex> for StoredOperand {
++    fn from_iter<T:IntoIterator<Item=ShiftedValueIndex>>(terms:T)->Self {terms.into_iter().collect::<Operand>().into()}
++}
++impl StoredOperand {
++    pub fn len(&self)->usize {self.template.len()}
++    pub fn is_empty(&self)->bool {self.template.is_empty()}
++    pub fn iter(&self)->StoredTerms<'_> {StoredTerms{terms:self.template.iter(),private_bases:self.private_bases}}
++    /// Compatibility mutation for small tests/builders; breaks sharing safely.
++    pub fn push(&mut self,term:ShiftedValueIndex) {let mut terms:Operand=self.iter().collect();terms.push(term);*self=terms.into();}
++    /// Compatibility filter over decoded PUBLIC wire structure. Rebuilds this
++    /// operand's normalized template without mutating any shared Arc allocation.
++    pub fn retain(&mut self,keep:impl FnMut(&ShiftedValueIndex)->bool) {
++        let mut terms:Operand=self.iter().collect();terms.retain(keep);*self=terms.into();
++    }
++    pub fn shares_template_with(&self,other:&Self)->bool {Arc::ptr_eq(&self.template,&other.template)}
++}
++impl PartialEq<Operand> for StoredOperand {
++    fn eq(&self,other:&Operand)->bool {self.iter().eq(other.iter().copied())}
++}
++impl SerializeBytes for StoredOperand {
++    fn serialize(&self,mut out:impl BufMut)->Result<(),SerializationError> {
++        self.len().serialize(&mut out)?;
++        for term in self {term.serialize(&mut out)?;}Ok(())
++    }
++}
++impl DeserializeBytes for StoredOperand {
++    fn deserialize(input:impl Buf)->Result<Self,SerializationError> {
++        let (private_bases,terms)=normalize(Operand::deserialize(input)?)
++            .map_err(|_|SerializationError::InvalidConstruction{name:"StoredOperand::private_index_range"})?;
++        Ok(Self{private_bases,template:Arc::new(terms)})
++    }
++}
++
++#[derive(Clone,Debug,Default)]
++pub struct TemplateMetrics {
++    pub unique_templates:usize,pub template_terms:usize,pub payload_bytes:usize,
++    pub operand_count:usize,pub referenced_terms:usize,pub hash_capacity:usize,
++}
++#[derive(Clone,Copy,Debug,PartialEq,Eq)]
++pub enum TemplateLimitError {DictionaryLimit,PrivateIndexOutOfRange}
++impl fmt::Display for TemplateLimitError {fn fmt(&self,f:&mut fmt::Formatter<'_>)->fmt::Result {f.write_str(match self {Self::DictionaryLimit=>"public operand-template census limit exceeded",Self::PrivateIndexOutOfRange=>"private wire index exceeds admitted 26-bit research shape"})}}
++impl std::error::Error for TemplateLimitError {}
++
++/// Explicit per-relation dictionary. No global cache or secret-data key exists.
++/// Census and actual construction call the SAME intern method; census drops
++/// the returned handle immediately instead of retaining any CS operand rows.
++pub struct TemplateInterner {
++    templates:HashSet<Arc<Vec<ShiftedValueIndex>>>,max_unique:usize,max_payload_bytes:usize,
++    metrics:TemplateMetrics,
++}
++impl TemplateInterner {
++    pub fn new(max_unique:usize,max_payload_bytes:usize)->Self {
++        assert!(max_unique>0 && max_unique<=1_000_000 && max_payload_bytes<=256*1024*1024,
++            "bounded public template dictionary policy");
++        Self{templates:HashSet::new(),max_unique,max_payload_bytes,metrics:TemplateMetrics::default()}
++    }
++    pub fn intern(&mut self,terms:Operand)->Result<StoredOperand,TemplateLimitError> {
++        let n=terms.len();let (private_bases,terms)=normalize(terms)?;
++        let template=if let Some(found)=self.templates.get(&terms) {Arc::clone(found)} else {
++            // 40B is Arc counters + Vec header on x64; the public metrics are
++            // requested components, excluding HashSet buckets/allocator spare.
++            let bytes=40usize.checked_add(8usize.checked_mul(n).ok_or(TemplateLimitError::DictionaryLimit)?).ok_or(TemplateLimitError::DictionaryLimit)?;
++            let total=self.metrics.payload_bytes.checked_add(bytes).ok_or(TemplateLimitError::DictionaryLimit)?;
++            if self.templates.len()>=self.max_unique || total>self.max_payload_bytes {return Err(TemplateLimitError::DictionaryLimit);}
++            let template=Arc::new(terms);self.templates.insert(Arc::clone(&template));
++            self.metrics.payload_bytes=total;self.metrics.template_terms+=n;template
++        };
++        self.metrics.operand_count+=1;self.metrics.referenced_terms+=n;
++        Ok(StoredOperand{template,private_bases})
++    }
++    pub fn metrics(&self)->TemplateMetrics {
++        let mut m=self.metrics.clone();m.unique_templates=self.templates.len();m.hash_capacity=self.templates.capacity();m
++    }
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++    use super::super::{Shift,ValueVec};
++    use crate::Word;
++    #[test]
++    fn shifted_private_templates_reuse_without_moving_constants_or_inout() {
++        let terms=|base|vec![ShiftedValueIndex::plain(ValueIndex::constant(3)),
++            ShiftedValueIndex::rotr(ValueIndex::private(base),7),
++            ShiftedValueIndex::new(ValueIndex::private(base+4),[Shift::srl(3),Shift::sll(3)]),
++            ShiftedValueIndex::plain(ValueIndex::inout(9))];
++        let mut interner=TemplateInterner::new(16,4096);
++        let a=interner.intern(terms(8)).unwrap();let b=interner.intern(terms(808)).unwrap();
++        assert!(a.shares_template_with(&b));assert_eq!(a.iter().collect::<Operand>(),terms(8));
++        assert_eq!(b.iter().collect::<Operand>(),terms(808));assert_eq!(interner.metrics().unique_templates,1);
++        assert_eq!(std::mem::size_of::<StoredOperand>(),16);
++        let mut original=Vec::new();terms(808).serialize(&mut original).unwrap();
++        let mut compressed=Vec::new();b.serialize(&mut compressed).unwrap();assert_eq!(original,compressed);
++        let decoded=StoredOperand::deserialize(compressed.as_slice()).unwrap();assert_eq!(decoded,b);
++    }
++    #[test]
++    fn arbitrary_order_and_repeated_terms_are_preserved() {
++        let terms=vec![ShiftedValueIndex::plain(ValueIndex::private(99)),
++            ShiftedValueIndex::plain(ValueIndex::private(0)),ShiftedValueIndex::plain(ValueIndex::private(99))];
++        let stored:StoredOperand=terms.clone().into();assert_eq!(stored.iter().collect::<Operand>(),terms);
++        let values=ValueVec::new_from_data(0,&[],&vec![Word(7);100]);
++        assert_eq!(values.eval_operand(&stored),values.eval_operand(&terms));
++    }
++    #[test]
++    fn limits_fail_before_dictionary_growth_and_existing_templates_still_work() {
++        let mut interner=TemplateInterner::new(1,256);
++        interner.intern(vec![ShiftedValueIndex::plain(ValueIndex::private(0))]).unwrap();
++        interner.intern(vec![ShiftedValueIndex::plain(ValueIndex::private(45))]).unwrap();
++        assert!(interner.intern(vec![ShiftedValueIndex::sll(ValueIndex::private(0),1)]).is_err());
++        assert_eq!(interner.metrics().unique_templates,1);
++    }
++    #[test]
++    fn retain_decodes_before_filtering_and_preserves_shared_template() {
++        let mut interner=TemplateInterner::new(8,4096);
++        let terms=vec![ShiftedValueIndex::plain(ValueIndex::constant(0)),
++            ShiftedValueIndex::plain(ValueIndex::private(77)),
++            ShiftedValueIndex::sll(ValueIndex::private(81),3)];
++        let mut changed=interner.intern(terms.clone()).unwrap();let original=changed.clone();
++        assert!(changed.shares_template_with(&original));
++        changed.retain(|term|term.value_index!=ValueIndex::private(77));
++        assert_eq!(original.iter().collect::<Operand>(),terms);
++        assert_eq!(changed.iter().collect::<Operand>(),vec![terms[0],terms[2]]);
++        assert!(!changed.shares_template_with(&original));
++    }
++    #[test]
++    fn two_private_clusters_share_despite_different_gaps_and_preserve_wire_bytes() {
++        let terms=|semantic:u32,temporary:u32|vec![
++            ShiftedValueIndex::plain(ValueIndex::constant(3)),
++            ShiftedValueIndex::rotr(ValueIndex::private(semantic),17),
++            ShiftedValueIndex::new(ValueIndex::private(temporary),[Shift::srl(4),Shift::sll(4)]),
++            ShiftedValueIndex::plain(ValueIndex::private(temporary+7)),
++            ShiftedValueIndex::plain(ValueIndex::private(semantic+3)),
++            ShiftedValueIndex::plain(ValueIndex::inout(19))];
++        let mut dictionary=TemplateInterner::new(16,4096);
++        let a=dictionary.intern(terms(100,1_000_000)).unwrap();
++        let b=dictionary.intern(terms(1600,20_000_000)).unwrap();
++        assert!(a.shares_template_with(&b));
++        for (stored,original) in [(a,terms(100,1_000_000)),(b,terms(1600,20_000_000))] {
++            assert_eq!(stored.iter().collect::<Operand>(),original);
++            let mut raw=Vec::new();original.serialize(&mut raw).unwrap();
++            let mut compressed=Vec::new();stored.serialize(&mut compressed).unwrap();assert_eq!(raw,compressed);
++            let decoded=StoredOperand::deserialize(compressed.as_slice()).unwrap();assert_eq!(decoded,stored);
++        }
++        assert_eq!(dictionary.metrics().unique_templates,1);
++        assert_eq!(std::mem::size_of::<StoredOperand>(),16);
++    }
++    #[test]
++    fn negative_deltas_in_both_clusters_and_private_boundary_round_trip() {
++        for indices in [[1_000_000,100,999_998,95],[0,PRIVATE_CAP-1,3,PRIVATE_CAP-3]] {
++            let original:Operand=indices.into_iter().map(|i|ShiftedValueIndex::plain(ValueIndex::private(i))).collect();
++            let stored:StoredOperand=original.clone().into();
++            assert_eq!(stored.iter().collect::<Operand>(),original);
++        }
++    }
++    #[test]
++    fn unsupported_private_indices_fail_before_intern_or_deserialize() {
++        let invalid=vec![ShiftedValueIndex::plain(ValueIndex::private(PRIVATE_CAP))];
++        let mut dictionary=TemplateInterner::new(16,4096);
++        assert_eq!(dictionary.intern(invalid.clone()).unwrap_err(),TemplateLimitError::PrivateIndexOutOfRange);
++        assert_eq!(dictionary.metrics().unique_templates,0);
++        let mut bytes=Vec::new();invalid.serialize(&mut bytes).unwrap();
++        assert!(StoredOperand::deserialize(bytes.as_slice()).is_err());
++    }
++}
+--- a/crates/core/src/constraint_system/system.rs
++++ b/crates/core/src/constraint_system/system.rs
+@@ -9,7 +9,7 @@
+ use bytes::{Buf, BufMut};
+ 
+ use super::{
+-	AndConstraint, BmulConstraint, Composition, ConstraintKind, ImulConstraint, Operand, Shift,
++	AndConstraint, BmulConstraint, Composition, ConstraintKind, ImulConstraint, StoredOperand as Operand, Shift,
+ 	ValueIndex, ValueSegment, ValueVec, ZeroConstraint,
+ };
+ use crate::{
+@@ -373,8 +373,11 @@
+ 	///
+ 	/// The fault says nothing about where the operand sits, so a constraint operand and a chip-call
+ 	/// operand can both report it under their own naming.
+-	pub fn operand_fault(&self, operand: &Operand) -> Option<OperandFault> {
+-		operand.iter().find_map(|term| {
++	pub fn operand_fault<T: std::borrow::Borrow<super::ShiftedValueIndex>>(
++        &self, operand: impl IntoIterator<Item=T>,
++    ) -> Option<OperandFault> {
++        operand.into_iter().find_map(|term| {
++            let term=term.borrow();
+ 			for shift in term.shift_seq {
+ 				// check canonicity. SLL is the canonical form of the identity.
+ 				if !shift.is_canonical() {
+@@ -607,7 +610,7 @@
+ 				vec![ShiftedValueIndex::plain(ValueIndex::constant(1))],
+ 				vec![ShiftedValueIndex::plain(ValueIndex::constant(2))],
+ 				vec![ShiftedValueIndex::plain(ValueIndex::private(0))],
+-			])],
++			].map(Into::into))],
+ 			bmul_constraints: vec![BmulConstraint([
+ 				vec![ShiftedValueIndex::plain(ValueIndex::constant(0))],
+ 				vec![ShiftedValueIndex::plain(ValueIndex::constant(1))],
+@@ -615,7 +618,7 @@
+ 				vec![ShiftedValueIndex::plain(ValueIndex::inout(0))],
+ 				vec![ShiftedValueIndex::plain(ValueIndex::inout(1))],
+ 				vec![ShiftedValueIndex::sll(ValueIndex::constant(0), 5)],
+-			])],
++			].map(Into::into))],
+ 			..test_shape()
+ 		}
+ 	}
+@@ -877,7 +880,7 @@
+ 			vec![ShiftedValueIndex::plain(ValueIndex::private(3))], // b
+ 			vec![ShiftedValueIndex::plain(ValueIndex::private(4))], // lo
+ 			vec![ShiftedValueIndex::plain(ValueIndex::private(5))], // hi
+-		]));
++		].map(Into::into)));
+ 
+ 		let result = cs.validate();
+ 		assert!(
+@@ -999,7 +1002,7 @@
+ 			vec![ShiftedValueIndex::plain(ValueIndex::constant(1))], // b: valid
+ 			vec![ShiftedValueIndex::plain(ValueIndex::private(0))],  // lo: valid
+ 			vec![ShiftedValueIndex::plain(ValueIndex::private(100))], // hi: WAY out of range!
+-		]));
++		].map(Into::into)));
+ 
+ 		let result = cs.validate();
+ 		assert!(result.is_err(), "Should reject IMUL constraint with out-of-range index");
+@@ -1037,7 +1040,7 @@
+ 			vec![ShiftedValueIndex::plain(ValueIndex::private(0))],  // b_hi: valid private
+ 			vec![ShiftedValueIndex::plain(ValueIndex::private(1))],  // c_lo: valid private
+ 			vec![ShiftedValueIndex::plain(ValueIndex::private(100))], // c_hi: WAY out of range!
+-		]));
++		].map(Into::into)));
+ 
+ 		let result = cs.validate();
+ 		assert!(result.is_err(), "Should reject BMUL constraint with out-of-range index");
+--- a/crates/core/src/constraint_system/value_vec.rs
++++ b/crates/core/src/constraint_system/value_vec.rs
+@@ -208,7 +208,7 @@
+ 	/// An operand is the XOR of its shifted-value terms.
+ 	/// An empty operand evaluates to the zero word, the XOR identity.
+ 	#[inline]
+-	pub fn eval_operand(&self, operand: &[ShiftedValueIndex]) -> Word {
++	pub fn eval_operand<T: std::borrow::Borrow<ShiftedValueIndex>>(&self, operand: impl IntoIterator<Item=T>) -> Word {
+ 		super::shift::eval_operand(self, operand)
+ 	}
+ }
+--- a/crates/frontend/src/artifact/stat.rs
++++ b/crates/frontend/src/artifact/stat.rs
+@@ -5,7 +5,7 @@
+ 
+ use std::fmt;
+ 
+-use binius_core::{ConstraintSystem, InoutSegment, Operand, ShiftedValueIndex};
++use binius_core::{ConstraintSystem, InoutSegment, StoredOperand as Operand, ShiftedValueIndex};
+ use itertools::chain;
+ use rustc_hash::FxHashSet;
+ 
+@@ -310,9 +310,9 @@
+ 	fn visit_operand(&mut self, operand: &Operand) {
+ 		for term in operand {
+ 			if term.is_unshifted() {
+-				self.unshifted_terms.insert(*term);
++				self.unshifted_terms.insert(term);
+ 			} else {
+-				self.shifted_terms.insert(*term);
++				self.shifted_terms.insert(term);
+ 			}
+ 		}
+ 	}
+--- a/crates/frontend/src/lower/constraint.rs
++++ b/crates/frontend/src/lower/constraint.rs
+@@ -31,7 +31,7 @@
+ 			self.a.into_value_indices(arena, wire_mapping),
+ 			self.b.into_value_indices(arena, wire_mapping),
+ 			self.c.into_value_indices(arena, wire_mapping),
+-		])
++		].map(Into::into))
+ 	}
+ 
+ 	pub(super) fn mark_used(&self, arena: &[ShiftedWire], used_set: &mut EntitySet<Wire>) {
+@@ -64,7 +64,7 @@
+ 			self.b.into_value_indices(arena, wire_mapping),
+ 			self.lo.into_value_indices(arena, wire_mapping),
+ 			self.hi.into_value_indices(arena, wire_mapping),
+-		])
++		].map(Into::into))
+ 	}
+ 
+ 	pub(super) fn mark_used(&self, arena: &[ShiftedWire], used_set: &mut EntitySet<Wire>) {
+@@ -104,7 +104,7 @@
+ 			self.b_hi.into_value_indices(arena, wire_mapping),
+ 			self.c_lo.into_value_indices(arena, wire_mapping),
+ 			self.c_hi.into_value_indices(arena, wire_mapping),
+-		])
++		].map(Into::into))
+ 	}
+ 
+ 	pub(super) fn mark_used(&self, arena: &[ShiftedWire], used_set: &mut EntitySet<Wire>) {
+@@ -132,7 +132,7 @@
+ 		arena: &[ShiftedWire],
+ 		wire_mapping: &SecondaryMap<Wire, ValueIndex>,
+ 	) -> ZeroConstraint {
+-		ZeroConstraint([self.val.into_value_indices(arena, wire_mapping)])
++		ZeroConstraint([self.val.into_value_indices(arena, wire_mapping)].map(Into::into))
+ 	}
+ 
+ 	pub(super) fn mark_used(&self, arena: &[ShiftedWire], used_set: &mut EntitySet<Wire>) {
+@@ -161,7 +161,7 @@
+ 		let dst = wire_mapping[self.dst];
+ 		let mut operand = self.rhs.into_value_indices(arena, wire_mapping);
+ 		operand.push(ShiftedValueIndex::plain(dst));
+-		ZeroConstraint([operand])
++		ZeroConstraint([operand].map(Into::into))
+ 	}
+ 
+ 	pub(super) fn mark_used(&self, arena: &[ShiftedWire], used_set: &mut EntitySet<Wire>) {
+--- a/crates/prover/src/protocols/shift/key_collection/builder.rs
++++ b/crates/prover/src/protocols/shift/key_collection/builder.rs
+@@ -20,7 +20,7 @@
+ 
+ use std::{iter, ops::Range};
+ 
+-use binius_core::constraint_system::{ConstraintSystem, InoutSegment, Operand, Shift};
++use binius_core::constraint_system::{ConstraintSystem, InoutSegment, StoredOperand as Operand, Shift};
+ use binius_utils::rayon::prelude::*;
+ use binius_verifier::protocols::shift::{LOG_SHIFT_COUNT, SHIFT_COUNT};
+ use tracing::instrument;
+@@ -887,7 +887,7 @@
+ 			n_inout: 0,
+ 			n_private: 4,
+ 			zero_constraints: Vec::new(),
+-			and_constraints: vec![AndConstraint([terms, Vec::new(), Vec::new()])],
++			and_constraints: vec![AndConstraint([terms, Vec::new(), Vec::new()].map(Into::into))],
+ 			imul_constraints: Vec::new(),
+ 			bmul_constraints: Vec::new(),
+ 		}
+@@ -979,7 +979,7 @@
+ 		let hidden = ValueIndex::private(1);
+ 		let term = ShiftedValueIndex::srl(hidden, 3);
+ 		let cs = ConstraintSystem {
+-			zero_constraints: vec![ZeroConstraint([vec![term]])],
++			zero_constraints: vec![ZeroConstraint([vec![term]].map(Into::into))],
+ 			..one_constraint_system(vec![term])
+ 		};
+ 
+--- a/crates/prover/src/protocols/shift/key_collection/streaming.rs
++++ b/crates/prover/src/protocols/shift/key_collection/streaming.rs
+@@ -2,7 +2,7 @@
+ // Local research storage implementation: the protocol polynomial is unchanged.
+ 
+ use binius_compute::Allocator;
+-use binius_core::{constraint_system::{ConstraintSystem, InoutSegment, Operand}, word::Word};
++use binius_core::{constraint_system::{ConstraintSystem, InoutSegment, StoredOperand as Operand}, word::Word};
+ use binius_field::{BinaryField, Field, PackedField};
+ use binius_math::{FieldBuffer, FieldVec, multilinear::eq::eq_ind_partial_eval};
+ use super::{dense_shift_encoding::DenseShiftEncoding, key_segment::KeySegment};
+--- a/crates/prover/src/prove.rs
++++ b/crates/prover/src/prove.rs
+@@ -5,7 +5,7 @@
+ 
+ use binius_compute::{Allocator, BufferPool, VecLike};
+ use binius_core::{
+-	constraint_system::{ConstraintSystem, InoutSegment, Operand, ValueVec},
++	constraint_system::{ConstraintSystem, InoutSegment, StoredOperand as Operand, ValueVec},
+ 	word::Word,
+ };
+ use binius_field::{PackedField, Rijndael8b as B8};
+--- a/crates/verifier/src/protocols/shift/wiring.rs
++++ b/crates/verifier/src/protocols/shift/wiring.rs
+@@ -2,7 +2,7 @@
+ 
+ use std::sync::Arc;
+ 
+-use binius_core::constraint_system::{ConstraintSystem, InoutSegment, Operand};
++use binius_core::constraint_system::{ConstraintSystem, InoutSegment, StoredOperand as Operand};
+ use binius_field::{BinaryField, FieldOps, util::FieldFn};
+ use binius_math::{
+ 	line::extrapolate_line,
+@@ -314,7 +314,7 @@
+ 		// Two copies of one term sit at one address, and a bit set twice is clear.
+ 		let term = ShiftedValueIndex::new(ValueIndex::private(1), [Shift::srl(7), Shift::srl(3)]);
+ 		let mut cs = empty_system(0, 2);
+-		cs.and_constraints = vec![AndConstraint([vec![term, term], vec![term], vec![]])];
++		cs.and_constraints = vec![AndConstraint([vec![term, term], vec![term], vec![]].map(Into::into))];
+ 		let wiring = WiringInfo::new(&cs, InoutSegment::Public);
+ 		assert_eq!(wiring.indices(0).count(), 0);
+         let terms = wiring.indices(1).collect::<Vec<_>>();
+@@ -347,7 +347,7 @@
+     fn address_wider_than_63_bits_is_streamed_and_shared() {
+         let mut cs = empty_system(16, 26);
+         let term = ShiftedValueIndex::new(ValueIndex::private((1 << 26) - 1), [Shift::srl(7), Shift::srl(3)]);
+-        cs.zero_constraints[(1 << 16) - 1] = ZeroConstraint([vec![term]]);
++        cs.zero_constraints[(1 << 16) - 1] = ZeroConstraint([vec![term]].map(Into::into));
+         let cs = Arc::new(cs);
+         let wiring = WiringInfo::from_shared(Arc::clone(&cs), InoutSegment::Public);
+         assert!(Arc::ptr_eq(&cs, &wiring.constraint_system_arc()));

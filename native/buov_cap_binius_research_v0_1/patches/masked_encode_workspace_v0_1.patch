@@ -1,0 +1,234 @@
+--- a/crates/math/src/reed_solomon.rs
++++ b/crates/math/src/reed_solomon.rs
+@@ -7,7 +7,7 @@
+ 
+ use std::marker::PhantomData;
+ 
+-use binius_compute::Allocator;
++use binius_compute::{Allocator, VecLike};
+ use binius_field::{BinaryField, PackedField};
+ use getset::CopyGetters;
+ 
+@@ -149,6 +149,54 @@
+ 		ntt.forward_transform(output.as_mut_view(), self.log_inv_rate, log_batch_size);
+ 		output
+ 	}
++
++    /// Encodes an owned message in its already reserved final codeword allocation.
++    ///
++    /// The live prefix is the same interleaved message accepted by [`Self::encode_batch`]. Its
++    /// backing store must have room for the whole codeword. This method does not copy that prefix
++    /// into another full-size allocation: permutation, skipped-layer repetition, and the NTT all
++    /// operate on this backing store. The original allocating encoder remains a differential
++    /// reference and supports borrowed inputs as before.
++    ///
++    /// # Panics
++    ///
++    /// Panics before transforming if the message shape, NTT subspace, codeword address width, or
++    /// reserved capacity is invalid. All sums are checked before shifts or allocations.
++    pub fn encode_batch_inplace<P, NTT, Data>(
++        &self,
++        ntt: &NTT,
++        data: FieldBuffer<P, Data>,
++        log_batch_size: usize,
++    ) -> FieldBuffer<P, Data>
++    where
++        P: PackedField<Scalar = F>,
++        NTT: AdditiveNTT<Field = F> + Sync,
++        Data: VecLike<P>,
++    {
++        let log_input_len = self.log_dim().checked_add(log_batch_size)
++            .expect("precondition: interleaved message log length must not overflow");
++        let log_output_len = log_input_len.checked_add(self.log_inv_rate)
++            .expect("precondition: codeword log length must not overflow");
++        assert!(log_output_len < usize::BITS as usize,
++            "precondition: codeword scalar length must fit usize");
++        assert_eq!(data.log_len(), log_input_len,
++            "precondition: data.log_len() must equal log_dim() + log_batch_size");
++        let values = data.into_inner();
++        let packed_output_len = 1usize << log_output_len.saturating_sub(P::LOG_WIDTH);
++        assert!(values.capacity() >= packed_output_len,
++            "precondition: owned buffer must reserve the whole codeword");
++        assert_eq!(ntt.subspace(self.log_len()), self.subspace(),
++            "precondition: NTT subspace must match code subspace");
++
++        let _scope = tracing::trace_span!("Reed-Solomon encode in owned workspace",
++            log_len = self.log_len(), log_batch_size, symbol_bits = F::N_BITS).entered();
++        let mut output = FieldBuffer::new(log_input_len, values);
++        bit_reverse_packed(output.as_mut_view());
++        output.repeat_extend(log_output_len);
++        ntt.forward_transform(output.as_mut_view(), self.log_inv_rate, log_batch_size);
++        output
++    }
++
+ }
+ 
+ #[cfg(test)]
+@@ -297,4 +345,35 @@
+ 		// Same lifts with a wider packing width.
+ 		test_lift_duplicate_identity_helper::<PackedGhash4x128b>(4, 8, 2);
+ 	}
++    #[test]
++    fn owned_workspace_matches_allocating_encoder_without_reallocation() {
++        fn check<P: PackedField>(log_dim: usize, log_rate: usize, log_batch: usize)
++        where P::Scalar: BinaryField {
++            let mut rng = StdRng::seed_from_u64(931);
++            let rs = ReedSolomonCode::<P::Scalar>::new(log_dim, log_rate);
++            let context = GaoMateerPreExpanded::generate(rs.log_len());
++            let ntt = NeighborsLastReference { domain_context: &context };
++            let message = random_field_buffer::<P>(&mut rng, log_dim + log_batch);
++            let expected = rs.encode_batch(&ntt, message.as_view(), log_batch, &GlobalAllocator);
++            let workspace = FieldBuffer::from_view_with_capacity_in(&GlobalAllocator,
++                message.as_view(), log_dim + log_batch + log_rate);
++            let address = workspace.as_ref().as_ptr();
++            let actual = rs.encode_batch_inplace(&ntt, workspace, log_batch);
++            assert_eq!(actual.as_ref().as_ptr(), address);
++            assert_eq!(actual.log_len(), expected.log_len());
++            assert_eq!(actual.as_ref(), expected.as_ref());
++        }
++        for log_dim in [0, 1, 2, 3, 6] {
++            for log_rate in [0, 1, 2] {
++                // Upstream Gao-Mateer domains require positive dimension. Both encoders
++                // reject this pre-existing unsupported domain before any NTT.
++                if log_dim == 0 && log_rate == 0 { continue; }
++                for log_batch in [0, 1, 2] {
++                    check::<PackedGhash1x128b>(log_dim, log_rate, log_batch);
++                    check::<PackedGhash4x128b>(log_dim, log_rate, log_batch);
++                }
++            }
++        }
++    }
++
+ }
+--- a/crates/iop-prover/src/fri/encode.rs
++++ b/crates/iop-prover/src/fri/encode.rs
+@@ -88,7 +88,72 @@
+ 	pub mask: FieldBuffer<P, Data>,
+ }
+ 
+-/// Generates a random mask, interleaves it with the message, and Reed-Solomon encodes.
++/// Generates the original random mask and encodes directly in one final codeword allocation.
++///
++/// The mask has exactly the same per-index RNG distribution and packed bytes as
++/// [`encode_masked_legacy`]. The borrowed message and returned mask are both retained; only the
++/// temporary full `message || mask` allocation is removed. Small messages use their live scalar
++/// prefixes, so dead lanes cannot enter the combined message.
++///
++/// # Panics
++///
++/// Panics before mask generation for an invalid oracle, batch size, lift, message dimension, or
++/// overflowing codeword length. The owned encoder additionally verifies the NTT domain and final
++/// workspace capacity before any transform.
++pub fn encode_masked<F, P, NTT, A>(
++    params: &FRIParams<F>,
++    oracle_index: usize,
++    ntt: &NTT,
++    message: FieldSlice<'_, P>,
++    mut rng: impl CryptoRng,
++    alloc: &A,
++) -> MaskedCodeword<P, A::Vec<P>>
++where
++    F: BinaryField,
++    P: PackedField<Scalar = F>,
++    NTT: AdditiveNTT<Field = F> + Sync,
++    A: Allocator,
++{
++    let oracle_spec = params.input_oracles().get(oracle_index)
++        .expect("encode_masked requires a valid oracle index");
++    let log_batch_size = oracle_spec.log_early_batch_size
++        .checked_add(oracle_spec.log_later_batch_size)
++        .expect("encode_masked batch log length must not overflow");
++    assert_eq!(log_batch_size, 1,
++        "encode_masked requires log_batch_size == 1");
++    let oracle_log_dim = params.rs_code().log_dim().checked_sub(oracle_spec.log_lift)
++        .expect("encode_masked requires log_lift <= reduced code dimension");
++    assert_eq!(oracle_log_dim, message.log_len(),
++        "encode_masked requires the oracle's message dimension to match the message length");
++    let log_len = message.log_len();
++    let log_combined_len = log_len.checked_add(1)
++        .expect("encode_masked combined log length must not overflow");
++    let log_codeword_len = log_combined_len.checked_add(params.rs_code().log_inv_rate())
++        .expect("encode_masked codeword log length must not overflow");
++    assert!(log_codeword_len < usize::BITS as usize,
++        "encode_masked codeword scalar length must fit usize");
++
++    let gen_mask_scope = tracing::debug_span!("Generate random mask").entered();
++    let packed_len = 1usize << log_len.saturating_sub(P::LOG_WIDTH);
++    let mask_values =
++        par_rand::<StdRng, _, _>(packed_len, &mut rng, P::random).collect_into_alloc_vec(alloc);
++    let mask = FieldBuffer::new(log_len, mask_values);
++    drop(gen_mask_scope);
++
++    let mut workspace = alloc.alloc::<P>(1usize << log_codeword_len.saturating_sub(P::LOG_WIDTH));
++    if log_len < P::LOG_WIDTH {
++        workspace.push(P::from_scalars(iter::chain(message.iter_scalars(), mask.iter_scalars())));
++    } else {
++        workspace.extend_from_slice(message.as_ref());
++        workspace.extend_from_slice(mask.as_ref());
++    }
++    let combined_prefix = FieldBuffer::new(log_combined_len, workspace);
++    let rs_code = ReedSolomonCode::new(oracle_log_dim, params.rs_code().log_inv_rate());
++    let codeword = rs_code.encode_batch_inplace(ntt, combined_prefix, 1);
++    MaskedCodeword { codeword, mask }
++}
++
++/// Original allocating masked encoder retained as an explicit research differential control.
+ ///
+ /// This is used for zero-knowledge FRI commitments. The function generates a random mask of
+ /// equal length to the input message, concatenates `message || mask` as the interleaved message
+@@ -104,7 +169,7 @@
+ /// * `message` - the raw message to encode (not doubled)
+ /// * `rng` - cryptographic RNG for mask generation
+ /// * `alloc` - the allocator the mask, the codeword, and the concatenation temporary are drawn from
+-pub fn encode_masked<F, P, NTT, A>(
++pub fn encode_masked_legacy<F, P, NTT, A>(
+ 	params: &FRIParams<F>,
+ 	oracle_index: usize,
+ 	ntt: &NTT,
+@@ -216,4 +281,45 @@
+ 		// Verify the codeword has expected length (log_dim + log_batch_size + log_inv_rate).
+ 		assert_eq!(output.codeword.log_len(), log_dim + log_batch_size + log_inv_rate);
+ 	}
+-}
++    #[test]
++    fn masked_workspace_matches_legacy_mask_codeword_and_rng_state() {
++        use binius_field::{PackedGhash2x128b, PackedGhash4x128b};
++        use binius_iop::fri::CodewordSpec;
++        use rand::Rng;
++        fn check<P: PackedField<Scalar = B128>>(log_len: usize, log_rate: usize, lift: usize) {
++            let params = FRIParams::new_batch(ReedSolomonCode::new(log_len + lift, log_rate),
++                vec![CodewordSpec { log_lift: lift, log_early_batch_size: 1, log_later_batch_size: 0 }],
++                vec![], 1);
++            let context = GaoMateerOnTheFly::generate(log_len + lift + log_rate);
++            let ntt = NeighborsLastSingleThread::new(context);
++            let mut source_rng = StdRng::seed_from_u64(441);
++            let message = random_field_buffer::<P>(&mut source_rng, log_len);
++            let saved = message.clone();
++            let mut old_rng = StdRng::seed_from_u64(442);
++            let mut new_rng = StdRng::seed_from_u64(442);
++            let old = encode_masked_legacy(&params, 0, &ntt, message.as_view(), &mut old_rng, &GlobalAllocator);
++            let new = encode_masked(&params, 0, &ntt, message.as_view(), &mut new_rng, &GlobalAllocator);
++            assert_eq!(new.mask.log_len(), old.mask.log_len());
++            assert_eq!(new.mask.as_ref(), old.mask.as_ref());
++            assert_eq!(new.codeword.log_len(), old.codeword.log_len());
++            assert_eq!(new.codeword.as_ref(), old.codeword.as_ref());
++            assert_eq!(message, saved);
++            let (mut old_next, mut new_next) = ([0u8; 64], [0u8; 64]);
++            old_rng.fill_bytes(&mut old_next); new_rng.fill_bytes(&mut new_next);
++            assert_eq!(new_next, old_next);
++        }
++        for log_len in [0, 1, 2, 3, 6] {
++            for log_rate in [0, 1, 2] {
++                // The oracle's own domain is log_len + log_rate; lifting the shared
++                // parameters does not make a zero-dimensional oracle supported.
++                if log_len == 0 && log_rate == 0 { continue; }
++                for lift in [0, 2] {
++                    check::<PackedGhash1x128b>(log_len, log_rate, lift);
++                    check::<PackedGhash2x128b>(log_len, log_rate, lift);
++                    check::<PackedGhash4x128b>(log_len, log_rate, lift);
++                }
++            }
++        }
++    }
++
++}

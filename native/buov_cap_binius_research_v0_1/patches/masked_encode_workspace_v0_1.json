@@ -1,0 +1,17 @@
+{
+  "schema": "pqsat.binius-research-patch.v0.1",
+  "upstream_commit": "4428e759dd27956bd5b9ae5025d67eb8ccc1accf",
+  "patch_sha256": "bf4bd86548565df6d9a57b1cad200fb74ec8a0b3b3ea50a457235e8f197718bb",
+  "files": [
+    {
+      "path": "crates/math/src/reed_solomon.rs",
+      "base_sha256": "4145e4737b83ec1c84d31c1f39d9809d7d64d13de559c4898ea286ce48706552",
+      "patched_sha256": "1572a036630536a17fddde75b175a95e7829decb766cc5f9d4f935be49aeefc0"
+    },
+    {
+      "path": "crates/iop-prover/src/fri/encode.rs",
+      "base_sha256": "00a4e651aacaf7b69b9b3a3f310666629c7fe1239af753c8d4b57069e1d00c61",
+      "patched_sha256": "e730ae04b534cccecfdae3deea6404f2fd172e696605e29c0603825651b02b3e"
+    }
+  ]
+}

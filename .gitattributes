@@ -1,0 +1,5 @@
+# Unified-diff context carries a leading space before original tabs/blank lines.
+# Preserve frozen patch bytes; normal source/doc whitespace checks remain active.
+native/buov_cap_binius_research_v0_1/patches/*.patch whitespace=-blank-at-eol,-space-before-tab
+native/buov_cap_cs_cache_research_v0_1/patches/*.patch whitespace=-blank-at-eol,-space-before-tab
+native/buov_cap_target128_research_v0_1/patches/*.patch whitespace=-blank-at-eol,-space-before-tab

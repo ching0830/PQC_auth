@@ -1,0 +1,55 @@
+{
+  "schema": "PQSAT.ThesisCode.DependencyClosure.v0.1",
+  "entrypoint": "release.py",
+  "mainCommand": "python3 -B release.py run --config runtime.local.json --label FRESH-LABEL",
+  "mainRoles": [
+    "benchmarks.buov_cap_hplus_research_v0_1.run",
+    "benchmarks.buov_cap_hplus_research_v0_1.issuer",
+    "benchmarks.buov_cap_hplus_research_v0_1.ticket_consumer_verify"
+  ],
+  "issuanceProof": "native/buov_cap_hplus_research_v0_1/src/proof_main.rs: full-prove and full-verify, native prove_sig/verify_sig + finalize",
+  "CAPContinuation": "same-state continuation.py -> NativeCAPProver -> public-only independent NativeCAPVerifier",
+  "sourceOverlay": "blind_uov_hplus_research_v0_1 checks fixed profile/reused_python_sources before appending blind_uov_pqsat_v0_1 to its package path",
+  "Python": "3.12 stdlib for selected entrypoints; optional non-selected provider APIs do not supply the main proof",
+  "nativeRuntime": [
+    "Linux x86_64 /proc and memfd seals",
+    "C17 compiler / OpenMP libgomp",
+    "OpenSSL 3 libcrypto",
+    "system libc/libgcc/libz",
+    "pinned external Rust toolchain and 94 rlibs"
+  ],
+  "externalInputs": {
+    "catalog": "provenance/external_artifacts.json",
+    "required": 164,
+    "bytes": 1350185973,
+    "publicArtifactDownload": false,
+    "trustedInputsMustBeInstalled": true,
+    "bitIdenticalRebuildValidated": false
+  },
+  "RustSourceRebuild": {
+    "upstreamCommit": "4428e759dd27956bd5b9ae5025d67eb8ccc1accf",
+    "url": "https://github.com/binius-zk/binius64.git",
+    "orderedPatches": 11,
+    "completeCargoAdapter": "dependencies/binius/adapter",
+    "originalRecordedCargoStageFilesVerified": 35,
+    "patchedForkFilesExactCompared": 732
+  },
+  "independentComparisonAnalysis": [
+    "old30 original public samples + exact summary + two pure statistics modules",
+    "OA original ten-sample public timing series; warmup excluded"
+  ],
+  "notIncluded": [
+    "old comparison cryptographic runtimes",
+    "old full-repository research history/canonical workbench",
+    "old thesis/PDF versions",
+    "new unadopted mask candidates",
+    "private keys, actual registration RID, wallet, witness, CAP state",
+    "binary artifacts/cache/logs/checkpoints/assignments"
+  ],
+  "oldAbsolutePathStrings": "retained only in frozen historical defaults/provenance; release.py explicitly relocates the reachable main-role path allowlist and does not use them as inputs",
+  "gate": "BLOCKED",
+  "Backend": null,
+  "qualified2PC": false,
+  "wholeSystemProofClosed": false,
+  "issuerUnlinkabilityClosed": false
+}

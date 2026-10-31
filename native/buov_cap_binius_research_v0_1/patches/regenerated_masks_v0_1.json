@@ -1,0 +1,49 @@
+{
+  "schema": "pqsat.binius-research-patch.v0.1",
+  "upstream_commit": "4428e759dd27956bd5b9ae5025d67eb8ccc1accf",
+  "base_patches": [
+    "shared_cs_streaming_wiring_v0_1",
+    "streaming_keys_v0_1",
+    "masked_encode_workspace_v0_1",
+    "compact_operands_v0_1",
+    "research_oracle_schedule_v0_1",
+    "bounded_prover_workspace_v0_1",
+    "checkpoint_merkle_v0_1"
+  ],
+  "patch_sha256": "87a4fc709311346dd93f49dd57858022d9e5da6dcdb3fab098a002f48c62f414",
+  "files": [
+    {
+      "path": "crates/iop-prover/src/basefold/channel.rs",
+      "base_sha256": "931cddeccf5004ea906bf2567b95b5a120db211a8a191b07ef7692f1f1fd34e4",
+      "patched_sha256": "b1e75e4292135fafd15fabc5410edf72a24ceb78bd8550470dcee0d4f2100101"
+    },
+    {
+      "path": "crates/iop-prover/src/fri/encode.rs",
+      "base_sha256": "e730ae04b534cccecfdae3deea6404f2fd172e696605e29c0603825651b02b3e",
+      "patched_sha256": "e8bcc0978cf2e856db6f6d6b72592369f7547f7275f364782f15f940d3f0b6bc"
+    },
+    {
+      "path": "crates/prover/src/zk_config.rs",
+      "base_sha256": "80da97f5afa5fa1f423428281dca520a46c759e0655e246639e2da6187b9cc90",
+      "patched_sha256": "e8ca5d648ce45c66ab48d9d75d287141c0878b186b11a20213e17dafb5f95139"
+    }
+  ],
+  "research_profile": "explicit_unmerged_oracles_v0_1",
+  "strategy": "fresh_per_oracle_private_seed_recompute_masks",
+  "seed_bytes_per_zk_oracle": 32,
+  "seed_source": "channel CSPRNG fresh bytes for each committed ZK oracle",
+  "seed_storage": "private RAM only; no serialization, files, logs or transcript observations",
+  "rng_coin_consumption_changed_for_research_profile": true,
+  "default_sampler_changed": false,
+  "specs_lengths_is_zk_or_security_parameters_changed": false,
+  "helper_sampler": "identical par_rand<StdRng> packed length/type and per-index seeding to encode_masked(StdRng::from_seed(seed))",
+  "proof_threads": 1,
+  "release_points": [
+    "drop encoded mask before Merkle commitment",
+    "local sigma reconstruction dropped after each oracle",
+    "local blinding reconstruction dropped before phase A"
+  ],
+  "allocator_requirement": "non_recycling for prompt RAM release; selected only for explicit research unmerged ZKProver",
+  "formal_security_qualification": false,
+  "production_profile": false
+}

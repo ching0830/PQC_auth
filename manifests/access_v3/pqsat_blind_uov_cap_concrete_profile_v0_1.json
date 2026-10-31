@@ -1,0 +1,1036 @@
+{
+  "schema": "pq_sat_access_v3_blind_uov_cap_concrete_profile_v0_1",
+  "schema_version": "0.1",
+  "repository_base": "cd0c60fd2bcd9d83eb919c26e27adda848c52a09",
+  "created_on": "2026-09-17",
+  "status": "consistency_field_packing_corrected_and_tested_complete_cap_not_implemented",
+  "claims": {
+    "Defined": true,
+    "Instantiated": true,
+    "Implemented": false,
+    "Tested": false,
+    "Evidence_sealed": false,
+    "Proof_closed": false,
+    "Production_closed": false,
+    "evaluation_domain_component": {
+      "Implemented": true,
+      "Tested": true
+    },
+    "response_field_component": {
+      "Implemented": true,
+      "Tested": true
+    },
+    "finite_hidden_challenge_component": {
+      "Implemented": true,
+      "Tested": true
+    },
+    "consistency_packing_component": {
+      "Implemented": true,
+      "Tested": true
+    },
+    "pqsat_corrective_instantiation": true,
+    "blind_uov_author_paper_bit_exact_interoperability": false,
+    "complete_concrete_cap": {
+      "Implemented": false,
+      "Tested": false
+    },
+    "claim_boundary": "The PQ-SAT corrective evaluation-domain, TCitH response-field, finite-hidden-challenge, and consistency-polynomial packing components are implemented and tested. The complete CAP is not implemented or tested, and this is not Blind-UOV author-paper bit-exact interoperability, an evidence seal, a proof closure, or production qualification."
+  },
+  "source_identities": [
+    {
+      "source_id": "blind_uov_eprint_2025_895_revision_2025_10_31",
+      "kind": "external_primary_source",
+      "bytes": 1595999,
+      "sha256": "7ba2c040fd04823fb0d2aaad5e58348b5ef374726657ff1c0d87d000b4beff95",
+      "version_date": "2025-10-31",
+      "landing_url": "https://eprint.iacr.org/2025/895",
+      "pdf_url": "https://eprint.iacr.org/2025/895.pdf",
+      "revision_history_url": "https://eprint.iacr.org/archive/versions/2025/895",
+      "downloaded_on": "2026-09-17",
+      "cited_locations": [
+        "TCitH response size formula, printed page 21",
+        "Table 2, printed page 20",
+        "Protocol 9, printed page 38",
+        "Appendix A.2, printed page 33",
+        "Appendix A.3 and Equation (4), printed page 34",
+        "Appendix A.4 Equation (6), printed page 39",
+        "Protocol 11, printed page 40"
+      ],
+      "repository_storage": "not_committed_external_input"
+    },
+    {
+      "source_id": "tcith_eprint_2023_1573_revision_2025_05_19",
+      "kind": "external_primary_source",
+      "bytes": 1801955,
+      "sha256": "8b39b275ca6cb9430bc19ed838559d0aad7034b18501c7fb6c5ac630010d8414",
+      "version_date": "2025-05-19",
+      "landing_url": "https://eprint.iacr.org/2023/1573",
+      "pdf_url": "https://eprint.iacr.org/2023/1573.pdf",
+      "revision_history_url": "https://eprint.iacr.org/archive/versions/2023/1573",
+      "downloaded_on": "2026-09-17",
+      "cited_locations": [
+        "Definition 1 and infinity footnote, printed page 5",
+        "Section 3.2 field lifting and F* union {infinity} evaluation points, printed pages 16-18",
+        "Field-lifting communication discussion, printed pages 39-40"
+      ],
+      "repository_storage": "not_committed_external_input"
+    },
+    {
+      "source_id": "optimized_bavc_eprint_2024_490_revision_2025_03_31",
+      "kind": "external_primary_source",
+      "bytes": 1500374,
+      "sha256": "b41c874ea925a65f33984e0789951144dd012380c6e99e53859af53aa9ffe7a4",
+      "version_date": "2025-03-31",
+      "repository_storage": "not_committed_external_input"
+    },
+    {
+      "source_id": "pqsat_holder_authentication_protocol_tex",
+      "kind": "user_supplied_protocol_source",
+      "bytes": 33771,
+      "sha256": "1b0c2f1138d9be23d72d3221bea3257e1cae91eb08b8a778d4210a5ea26b276b",
+      "version_date": null,
+      "repository_storage": "not_committed_user_attachment"
+    },
+    {
+      "source_id": "pqsat_v3_p1_final_cap_profile_manifest",
+      "kind": "cross_lane_committed_source",
+      "bytes": 32879,
+      "sha256": "d506de24cfcb5536d6590aad9384c37a047218bedd5cccd4e2d31e4b1305aad9",
+      "git_commit": "e3d4eeac470c8a52883fbb6ddbc30ef7a9395210",
+      "repository_storage": "committed_on_codex_pqsat_v3_final_cap_profile_v0_1"
+    },
+    {
+      "source_id": "pqsat_v3_p2_reuse_audit",
+      "kind": "tracked_repository_source",
+      "bytes": 28311,
+      "sha256": "605d62c33ea60edc107dab90685682c168b4f2f69b697ad3f6de12a6e5832aa1",
+      "path": "docs/reviews/access_v3/FINAL_BLIND_UOV_REUSE_AUDIT_v0_1_zh-TW.md",
+      "repository_storage": "tracked_at_exact_base"
+    },
+    {
+      "source_id": "pqsat_v3_p3_m1_size_contract",
+      "kind": "tracked_repository_source",
+      "bytes": 13820,
+      "sha256": "ebfa4f4a9d78fc2819bcfac097fced9a1a4f37b6903628ac1c14e334c4f3704d",
+      "path": "docs/specs/access_v3/FINAL_M1_SIZE_CONTRACT_v0_1_zh-TW.md",
+      "repository_storage": "tracked_at_exact_base"
+    }
+  ],
+  "suite_identity": {
+    "candidate_research_suite_id_u16": 65330,
+    "candidate_research_suite_id_hex": "0xFF32",
+    "allocation_status": "private_research_candidate_manifest_only",
+    "production_registered": false,
+    "registry_source_change_authorized": false,
+    "collision_scan_at_exact_base": {
+      "searched_forms": [
+        "0xFF32",
+        "65330"
+      ],
+      "conflicting_hits": [],
+      "known_neighbor_ids": [
+        "0xFF10",
+        "0xFF11",
+        "0xFF12",
+        "0xFF30",
+        "0xFF31",
+        "0xFFFE",
+        "0xFFFF"
+      ]
+    }
+  },
+  "profile_parameter_document": {
+    "profile_id": "pqsat-blind-uov-iii-shorter-tcith-shake256-v0.1",
+    "profile_version_u16": 1,
+    "suite_id_u16": 65330,
+    "choice_rationale": {
+      "algebra_and_topology": "q=2, UOV-III dimensions, Shorter topology, d=2, tau=18, and Topen=174 are paper-derived fixed inputs; the selected conservative profile raises explicit PoW from the historical paper-row w=9 to w=13",
+      "backend": "TCitH minimizes implementation complexity and matches existing tree-oriented research experience; it is not inferred from Table 4",
+      "consistency": "kappa=64 permits stdlib-friendly binary-field arithmetic; t=4 makes eta=256 and the conservative tau-squared union gives error below 2^-227",
+      "symmetric": "SHAKE256 is available in the Python standard library, supports arbitrary output, and permits explicit domain separation",
+      "field_polynomials": "fixed sparse irreducible binary polynomials make independent arithmetic and canonical codecs reproducible",
+      "serialization": "self-identifying closed objects prevent profile confusion; variable frontier encoding avoids artificial Table 4 padding; TCitH q and Qbar coefficients use their group extension fields without truncation, padding, or forced bit compression",
+      "hidden_challenge": "raw low-mu hidden-position derivation remains unchanged; a separate fail-closed predicate accepts only finite party positions, keeps infinity opened, and credits no extra security bits for filtering or grinding"
+    },
+    "security": {
+      "nist_category": "III",
+      "target_security_bits": 192,
+      "cap_base_field": "F_2",
+      "cap_base_field_order_q": 2
+    },
+    "uov": {
+      "native_field": "GF(2^8)",
+      "native_field_order": 256,
+      "irreducible_polynomial": "x^8+x^4+x^3+x+1",
+      "irreducible_polynomial_integer": 283,
+      "n_variables": 184,
+      "m_equations": 72,
+      "cap_relation_constraints_over_F2": 576,
+      "cap_relation_constraint_derivation": "72 GF(2^8) equations times 8 polynomial-basis output coordinates",
+      "cap_relation_constraint_order": "native UOV equation index 0..71, then polynomial-basis output coefficient bit 0..7",
+      "cap_relation_equation": "for each ordered coordinate, coefficient_bit(Q_I(z) + r + u) = 0 over F_2",
+      "vinegar_variables": 112,
+      "r_bits": 576,
+      "z_bits": 1472,
+      "cap_witness_bits": 2048,
+      "witness_concatenation": "r || z",
+      "standalone_uov_salt_in_z": false
+    },
+    "cap": {
+      "tradeoff": "Shorter",
+      "backend": "TCitH",
+      "backend_selection_reason": "implementation simplicity and existing tree-engine experience; not attribution of the paper Table 4 aggregate to TCitH",
+      "degree_d": 2,
+      "tau": 18,
+      "tree_groups": [
+        {
+          "group_id": 0,
+          "repetitions": 2,
+          "repetition_indices": [0, 1],
+          "leaves_per_tree": 4096,
+          "mu": 12,
+          "rho": 16,
+          "rho_derivation": "least positive integer rho such that (2^12)^rho >= 2^192"
+        },
+        {
+          "group_id": 1,
+          "repetitions": 16,
+          "repetition_index_first": 2,
+          "repetition_index_last": 17,
+          "leaves_per_tree": 2048,
+          "mu": 11,
+          "rho": 18,
+          "rho_derivation": "least positive integer rho such that (2^11)^rho >= 2^192"
+        }
+      ],
+      "mixed_profile_scalar_rho": null,
+      "opened_seed_upper_bound_topen": 174,
+      "explicit_pow_bits_w": 13,
+      "accounted_frontier_security_bits": 0,
+      "soundness_accounted_total_pow_bits": 13,
+      "historical_paper_row_comparison": {
+        "explicit_pow_bits_w": 9,
+        "reported_total_pow_bits_decimal_text": "13.9",
+        "selected_profile_security_input": false,
+        "note": "Neither the decimal total nor an inferred frontier-grinding floor is credited in selected-profile security arithmetic."
+      },
+      "evaluation_domain": {
+        "kind": "zero_based_finite_nonzero_then_infinity_v0_1",
+        "position_indexing": "zero_based_canonical",
+        "secret_evaluation_point": {
+          "kind": "finite",
+          "value": 0
+        },
+        "groups": [
+          {
+            "group_id": 0,
+            "field": "GF(2^12)",
+            "field_cardinality": 4096,
+            "N": 4096,
+            "mu": 12,
+            "party_domain_cardinality": 4096,
+            "finite_position_first": 0,
+            "finite_position_last": 4094,
+            "finite_mapping": "phi(position)=position+1",
+            "infinity_position": 4095
+          },
+          {
+            "group_id": 1,
+            "field": "GF(2^11)",
+            "field_cardinality": 2048,
+            "N": 2048,
+            "mu": 11,
+            "party_domain_cardinality": 2048,
+            "finite_position_first": 0,
+            "finite_position_last": 2046,
+            "finite_mapping": "phi(position)=position+1",
+            "infinity_position": 2047
+          }
+        ],
+        "cardinality_rule": "N=(2^mu-1)+1",
+        "finite_points": "all nonzero field elements exactly once in integer order 1..2^mu-1",
+        "infinity_occurrences_per_group": 1,
+        "secret_point_in_party_domain": false,
+        "reciprocal_coordinate": {
+          "finite": "gf_inv(phi(position))",
+          "infinity": 0,
+          "infinity_coordinate_is_field_inverse": false
+        },
+        "polynomial": {
+          "form": "P(X)=mask*X+plain",
+          "secret_evaluation": "P(0)=plain",
+          "infinity_evaluation": "P(infinity)=mask"
+        },
+        "commitment": {
+          "plain": "sum(all tapes)",
+          "mask": "sum(finite-position tapes / phi(position))"
+        },
+        "opening": {
+          "hidden_finite": "sum over i != h of (1 + phi(h)*reciprocal_coordinate(phi(i)))*tape_i",
+          "hidden_infinity": "sum over finite i of tape_i/phi(i)"
+        },
+        "compatibility": {
+          "pqsat_corrective_instantiation": true,
+          "blind_uov_appendix_a3_bit_exact": false,
+          "reason": "Blind-UOV Appendix A.3 does not specify the infinity special case; this profile adopts the primary-source TCitH infinity semantics as an explicit PQ-SAT correction."
+        }
+      },
+      "hidden_challenge": {
+        "raw_derivation": {
+          "domain": "PQSAT-BUOV-CAP-0.1/OPEN-INDEX",
+          "input_fields": ["profile_fingerprint", "h3", "u64be(pow_nonce)", "u16be(repetition_index)"],
+          "output_rule": "read the first two XOF bytes as u16be and mask the low mu bits",
+          "rejection_sampling": false,
+          "modulo_n_minus_one": false,
+          "remapping": false,
+          "position_spaces": [
+            {
+              "group_id": 0,
+              "repetition_indices": [0, 1],
+              "raw_position_first": 0,
+              "raw_position_last": 4095,
+              "raw_challenge_count": 4096
+            },
+            {
+              "group_id": 1,
+              "repetition_index_first": 2,
+              "repetition_index_last": 17,
+              "raw_position_first": 0,
+              "raw_position_last": 2047,
+              "raw_challenge_count": 2048
+            }
+          ]
+        },
+        "accepted_finite_domains": [
+          {
+            "group_id": 0,
+            "accepted_position_first": 0,
+            "accepted_position_last": 4094,
+            "forbidden_infinity_position": 4095,
+            "effective_challenge_count": 4095
+          },
+          {
+            "group_id": 1,
+            "accepted_position_first": 0,
+            "accepted_position_last": 2046,
+            "forbidden_infinity_position": 2047,
+            "effective_challenge_count": 2047
+          }
+        ],
+        "admissibility_predicate": "all 18 raw hidden positions are canonical and finite in their repetition group",
+        "infinity_leaf_policy": "the infinity leaf remains in the one-tree party domain and must always be in the opened set",
+        "producer_policy": {
+          "nonce_start": 0,
+          "selection": "first nonce satisfying all three predicates",
+          "predicates": [
+            "explicit 13-bit PoW passes",
+            "all 18 raw hidden positions are finite",
+            "canonical frontier_count<=174"
+          ],
+          "exhaustion_rule": "restart with fresh commitment randomness if no admissible nonce exists in the u64 range"
+        },
+        "verifier_single_nonce_rule": {
+          "parse_received_nonce_only": true,
+          "enumerate_earlier_nonces": false,
+          "require_global_minimality": false,
+          "work_depends_on_nonce_numeric_value": false,
+          "explicit_pow_evaluations": 1,
+          "raw_hidden_position_derivations": 1,
+          "finite_admissibility_checks": 1,
+          "canonical_frontier_derivations": 1,
+          "steps": [
+            "decode exactly 8 canonical u64be bytes",
+            "evaluate the explicit PoW predicate once for the received nonce",
+            "derive the 18 raw hidden positions once from the received nonce",
+            "reject if any raw hidden position is the group infinity position",
+            "recompute and validate the canonical frontier once and require frontier_count<=174",
+            "continue normal proof verification"
+          ]
+        }
+      },
+      "one_tree": {
+        "total_active_leaves": 40960,
+        "total_nodes": 81919,
+        "root_node_index": 0,
+        "left_child": "2*i+1",
+        "right_child": "2*i+2",
+        "leaf_node_index": "40959+unified_leaf_index",
+        "node_index_range_inclusive": [0, 81918],
+        "logical_leaf_mapping": "position-major over repetitions whose leaves_per_tree is greater than position",
+        "logical_leaf_mapping_formula": "if position<2048: 18*position+repetition; otherwise repetition must be 0 or 1 and index=36864+2*(position-2048)+repetition",
+        "frontier_definition": "unique minimal set of maximal disclosed subtrees covering every active leaf except the 18 hidden leaves",
+        "frontier_order": "strictly increasing heap node index",
+        "frontier_node_indices_serialized": false,
+        "frontier_indices_recomputed_from_hidden_positions": true,
+        "frontier_count_minimum": 13,
+        "frontier_count_maximum": 174,
+        "frontier_seed_bytes": 24,
+        "inactive_or_padding_leaves": 0
+      }
+    },
+    "fields": {
+      "GF_2_11": {
+        "role": "TCitH group with 2048 leaves",
+        "irreducible_polynomial": "x^11+x^2+1",
+        "irreducible_polynomial_integer": 2053,
+        "encoded_bytes": 2
+      },
+      "GF_2_12": {
+        "role": "TCitH group with 4096 leaves",
+        "irreducible_polynomial": "x^12+x^3+1",
+        "irreducible_polynomial_integer": 4105,
+        "encoded_bytes": 2
+      },
+      "GF_2_64": {
+        "role": "consistency polynomial evaluation",
+        "irreducible_polynomial": "x^64+x^4+x^3+x+1",
+        "irreducible_polynomial_integer_hex": "0x1000000000000001B",
+        "encoded_bytes": 8
+      }
+    },
+    "consistency": {
+      "kappa_extension_degree": 64,
+      "evaluation_count_t": 4,
+      "digest_elements_eta_over_F2": 256,
+      "eta_derivation": "kappa*t",
+      "witness_elements_over_F2": 2048,
+      "polynomial_degree_upper_bound_D": 31,
+      "polynomial_degree_derivation": "ceil(2048/64)-1",
+      "matrix_derivation_domain": "PQSAT-BUOV-CAP-0.1/CONSISTENCY-MATRIX",
+      "evaluation_point_derivation": "four consecutive 64-bit little-endian polynomial-basis elements from the domain-separated SHAKE256 stream; every 64-bit string is valid, so no rejection is used",
+      "xi_polynomial": {
+        "degree": 1,
+        "constant_coefficient_field": "F_2",
+        "constant_elements": 256,
+        "constant_encoding": "exact 32 bytes; logical bit i is bit (i mod 8) of byte floor(i/8)",
+        "linear_coefficient_field_rule": "the 256 X coefficients are elements of the TCitH group extension field GF(2^mu_g), not F_2 bits",
+        "field_binding_by_repetition": [
+          {
+            "repetition_first": 0,
+            "repetition_last": 1,
+            "field": "GF(2^12)",
+            "mu": 12,
+            "linear_elements": 256,
+            "linear_bits": 3072,
+            "linear_bytes": 384,
+            "bytes_per_polynomial": 416
+          },
+          {
+            "repetition_first": 2,
+            "repetition_last": 17,
+            "field": "GF(2^11)",
+            "mu": 11,
+            "linear_elements": 256,
+            "linear_bits": 2816,
+            "linear_bytes": 352,
+            "bytes_per_polynomial": 384
+          }
+        ],
+        "encoding_order": "repetition index 0..17; within each repetition constant[32] then packed linear[256]",
+        "linear_element_order": "element index 0..255; within each element coefficient bit 0..mu-1",
+        "linear_bit_and_byte_order": "least-significant-bit first, with no per-element byte alignment",
+        "group_0_bytes": 832,
+        "group_1_bytes": 6144,
+        "encoded_bytes": 6976,
+        "historical_base_field_only_bytes": 1152,
+        "historical_base_field_only_encoding_accepted": false,
+        "repetition_field_selector_serialized": false,
+        "rejection_rules": [
+          "reject any outer shape other than exactly 18 repetitions",
+          "reject any constant other than exact bytes[32]",
+          "reject any linear shape other than exact tuple[256]",
+          "reject bool, integer subclasses, floats, mutable containers, and noncanonical dataclass values",
+          "reject a repetition 0..1 element outside [0,4095]",
+          "reject a repetition 2..17 element outside [0,2047]",
+          "reject the historical 1152-byte base-field-only encoding",
+          "reject truncation, trailing bytes, bytearray, bytes subclasses, alternate repetition order, padding, masking, truncation, modulo reduction, and nonzero-to-one mapping"
+        ]
+      }
+    },
+    "symmetric": {
+      "primitive": "SHAKE256",
+      "seed_bits": 192,
+      "seed_bytes": 24,
+      "digest_bits": 384,
+      "digest_bytes": 48,
+      "profile_fingerprint_bits": 256,
+      "profile_fingerprint_bytes": 32,
+      "paper_standard_setting_bit_compatible": false,
+      "compatibility_disclosure": "This PQ-SAT-owned SHAKE256 profile is not bit-compatible with the paper's illustrative AES/SHA3 standard setting.",
+      "tuple_encoding": {
+        "grammar": "u16be(domain_len) || domain_ascii || u16be(field_count) || concat(u32be(field_len) || field)",
+        "domain_length_max": 65535,
+        "field_count_max": 65535,
+        "field_length_max": 4294967295,
+        "empty_fields_allowed": true,
+        "trailing_bytes": "forbidden",
+        "oversize_rule": "reject before hashing"
+      },
+      "domains": [
+        {"purpose": "profile_fingerprint", "label": "PQSAT-BUOV-CAP-0.1/PROFILE-FP"},
+        {"purpose": "seed_derivation", "label": "PQSAT-BUOV-CAP-0.1/SEED-DERIVE"},
+        {"purpose": "tape_expansion", "label": "PQSAT-BUOV-CAP-0.1/TAPE-EXPAND"},
+        {"purpose": "leaf_commitment", "label": "PQSAT-BUOV-CAP-0.1/LEAF-COMMIT"},
+        {"purpose": "fiat_shamir_h1", "label": "PQSAT-BUOV-CAP-0.1/FS-H1"},
+        {"purpose": "consistency_matrix", "label": "PQSAT-BUOV-CAP-0.1/CONSISTENCY-MATRIX"},
+        {"purpose": "fiat_shamir_h2_prime", "label": "PQSAT-BUOV-CAP-0.1/FS-H2-PRIME"},
+        {"purpose": "fiat_shamir_h2", "label": "PQSAT-BUOV-CAP-0.1/FS-H2"},
+        {"purpose": "gamma_derivation", "label": "PQSAT-BUOV-CAP-0.1/GAMMA"},
+        {"purpose": "fiat_shamir_h3", "label": "PQSAT-BUOV-CAP-0.1/FS-H3"},
+        {"purpose": "proof_of_work", "label": "PQSAT-BUOV-CAP-0.1/POW"},
+        {"purpose": "hidden_opening_indices", "label": "PQSAT-BUOV-CAP-0.1/OPEN-INDEX"}
+      ],
+      "pow": {
+        "nonce_encoding": "u64be",
+        "nonce_bytes": 8,
+        "prover_nonce_start": 0,
+        "deterministic_producer_policy": "emit the first nonce satisfying the explicit predicate, finite admissibility for all 18 raw hidden positions, and frontier_count<=174",
+        "explicit_predicate": "the first 13 bits, read MSB-first, of SHAKE256(tuple(POW,[profile_fingerprint,h3,u64be(nonce)])) are zero",
+        "finite_admissibility_predicate": "OPEN-INDEX applied with this nonce yields no group infinity position",
+        "frontier_predicate": "OPEN-INDEX applied with this nonce yields a canonical frontier_count no greater than 174",
+        "prover_exhaustion_rule": "restart with fresh commitment randomness if no nonce in [0,2^64-1] satisfies all three predicates",
+        "verifier_policy": {
+          "enumerate_earlier_nonces": false,
+          "require_global_minimality": false,
+          "work_depends_on_nonce_numeric_value": false,
+          "steps": [
+            "decode exactly 8 canonical u64be bytes",
+            "evaluate the explicit PoW predicate once for the received nonce",
+            "derive the 18 raw hidden positions once from the received nonce",
+            "reject if any raw hidden position is the group infinity position",
+            "recompute and validate the canonical frontier once and require frontier_count<=174",
+            "continue normal proof verification"
+          ],
+          "alternate_admissible_nonce_semantics": "another admissible nonce defines another transcript-bound proof, not an alternate byte encoding of the received proof"
+        }
+      },
+      "hidden_index_derivation": {
+        "input_fields": ["profile_fingerprint", "h3", "u64be(pow_nonce)", "u16be(repetition_index)"],
+        "output_rule": "read the first two XOF bytes as u16be and mask the low mu bits",
+        "rejection_sampling": false,
+        "reason": "both raw leaf counts are exact powers of two",
+        "semantic_classification": "raw derivation only; finite admissibility is a separate fail-closed predicate"
+      },
+      "tree_seed_and_tape_derivation": {
+        "root_seed": "uniform 24-byte prover randomness",
+        "child_seed_input_fields": ["profile_fingerprint", "salt", "u32be(parent_node_index)", "parent_seed"],
+        "child_seed_output": "48 SHAKE256 bytes split into left_seed[24] then right_seed[24]",
+        "tape_input_fields": ["profile_fingerprint", "salt", "u16be(repetition_index)", "u16be(position)", "leaf_seed"],
+        "tape_output_bits": "2048 + rho_for_repetition + 256; 2320 bits for repetitions 0..1 and 2322 bits for repetitions 2..17",
+        "tape_partition": "P_plain[2048], then M_plain[rho], then Mhat_plain[256]",
+        "leaf_commitment_input_fields": ["profile_fingerprint", "salt", "u16be(repetition_index)", "u16be(position)", "leaf_seed"],
+        "leaf_commitment_output_bytes": 48
+      },
+      "transcript_schedule": {
+        "public_statement_core": {
+          "fields": ["ctx", "u"],
+          "ctx_bytes": 32,
+          "u_elements_GF_2_8": 72,
+          "u_bytes": 72,
+          "encoded_bytes": 104,
+          "issuer_uov_map_binding": "ctx identifies the authorized issuer public map Q_I and all fixed parameters"
+        },
+        "h1": {
+          "domain": "PQSAT-BUOV-CAP-0.1/FS-H1",
+          "input_fields": ["profile_fingerprint", "ctx", "salt", "all_leaf_commitments", "correction_deltas"],
+          "all_leaf_commitments_order": "repetition index ascending, then logical position ascending; one 48-byte commitment per leaf",
+          "correction_deltas_order": "for repetition e=1..17: delta_P_e then delta_Mhat_e",
+          "correction_deltas_bytes": 4896,
+          "output_bytes": 48,
+          "serialized": false
+        },
+        "consistency_hash_H": {
+          "domain": "PQSAT-BUOV-CAP-0.1/CONSISTENCY-MATRIX",
+          "input_fields": ["profile_fingerprint", "h1"],
+          "xof_output_bytes": 32,
+          "point_order": "chi_0 through chi_3, each an 8-byte little-endian polynomial-basis GF(2^64) element",
+          "vector_to_polynomial": "parse a 2048-bit vector into v_0..v_31 as consecutive 64-bit little-endian polynomial-basis elements",
+          "hash_formula": "H(v)=(sum_{ell=0}^{31} v_ell*chi_j^ell) for j=0..3",
+          "output_order": "four GF(2^64) elements in j ascending order, 8 bytes each",
+          "output_bits": 256
+        },
+        "xi_polynomial_encoding": {
+          "degree": 1,
+          "order": "repetition 0..17; within each repetition constant[32] then packed linear[256]",
+          "constant_field": "F_2",
+          "constant_elements": 256,
+          "constant_bytes": 32,
+          "constant_bit_order": "logical bit i is bit (i mod 8) of byte floor(i/8)",
+          "linear_field_binding": "repetitions 0..1 use GF(2^12); repetitions 2..17 use GF(2^11)",
+          "linear_elements_each": 256,
+          "linear_packing": "element index ascending; each element bit 0..mu-1; stream and bytes LSB-first; no per-element alignment or padding",
+          "group_0_bytes_per_polynomial": 416,
+          "group_0_repetitions": 2,
+          "group_0_bytes": 832,
+          "group_1_bytes_per_polynomial": 384,
+          "group_1_repetitions": 16,
+          "group_1_bytes": 6144,
+          "total_bytes": 6976,
+          "historical_1152_byte_encoding_accepted": false,
+          "alternate_field_selector_serialized": false
+        },
+        "h2_prime": {
+          "domain": "PQSAT-BUOV-CAP-0.1/FS-H2-PRIME",
+          "input_fields": ["profile_fingerprint", "h1", "all_xi_polynomials"],
+          "output_bytes": 48,
+          "serialized_in": "c_r"
+        },
+        "delta_w": {
+          "formula": "zero_r[576] || delta_z[1472]",
+          "bits": 2048,
+          "bytes": 256
+        },
+        "h2": {
+          "domain": "PQSAT-BUOV-CAP-0.1/FS-H2",
+          "input_fields": ["profile_fingerprint", "ctx", "u", "h2_prime", "delta_w"],
+          "output_bytes": 48,
+          "serialized": false
+        },
+        "gamma": {
+          "domain": "PQSAT-BUOV-CAP-0.1/GAMMA",
+          "input_fields": ["profile_fingerprint", "h2", "u16be(group_id)"],
+          "constraints_m_over_F2": 576,
+          "order": "group id ascending; within a group k=0..rho-1 then F_2 constraint j=0..575",
+          "element_rule": "read two little-endian bytes and mask to mu bits; every mu-bit string is valid",
+          "sharing_rule": "all repetitions in the same group use the same gamma[k,j] values"
+        },
+        "h3_preimage_polynomials": {
+          "order": "group id ascending, repetition index ascending, k=0..rho-1; q field element then Qbar field-element coefficients by degree ascending",
+          "coefficient_field_rule": "for tree group g, q and Qbar coefficients are elements of GF(2^mu_g)",
+          "element_encoding": "concatenate each canonical mu-bit polynomial-basis element least-significant coefficient first; no per-element byte padding",
+          "q_elements_each_entry": 1,
+          "qbar_degree": 0,
+          "qbar_elements_each_entry": 1,
+          "entry_count": 320,
+          "groups": [
+            {
+              "group_id": 0,
+              "field": "GF(2^12)",
+              "mu": 12,
+              "repetitions": 2,
+              "rho": 16,
+              "entry_count": 32,
+              "q_and_qbar_bits": 768,
+              "q_and_qbar_bytes": 96
+            },
+            {
+              "group_id": 1,
+              "field": "GF(2^11)",
+              "mu": 11,
+              "repetitions": 16,
+              "rho": 18,
+              "entry_count": 288,
+              "q_and_qbar_bits": 6336,
+              "q_and_qbar_bytes": 792
+            }
+          ],
+          "encoded_bits": 7104,
+          "encoded_bytes": 888,
+          "paper_size_formula_disclosure": "Blind-UOV printed page 21 uses tau*rho*(d-1)*log2(q) without mu; this is dimensionally inconsistent with the Appendix A extension-field algebra",
+          "interoperability": "PQ-SAT selects the algebraically type-correct extension-field representation and does not claim Blind-UOV author-paper bit-exact interoperability"
+        },
+        "h3": {
+          "domain": "PQSAT-BUOV-CAP-0.1/FS-H3",
+          "input_fields": ["profile_fingerprint", "ctx", "u", "h2", "q_and_qbar"],
+          "output_bytes": 48,
+          "serialized_in": "pi_2"
+        }
+      }
+    },
+    "serialization": {
+      "object_order_in_sigma_I": ["c_r", "c_z", "pi_2"],
+      "integer_encoding": "unsigned big-endian",
+      "alignment": "none",
+      "padding": "none",
+      "trailing_bytes": "forbidden",
+      "unknown_version_type_or_suite": "reject",
+      "object_header": {
+        "bytes": 50,
+        "fields": [
+          {"name": "magic", "bytes": 8, "value_ascii": "PQSCAP01"},
+          {"name": "wire_version", "bytes": 2, "value": 1},
+          {"name": "object_type", "bytes": 2, "values": {"c_r": 1, "c_z": 2, "pi_2": 3}},
+          {"name": "suite_id", "bytes": 2, "value": 65330},
+          {"name": "profile_fingerprint", "bytes": 32},
+          {"name": "payload_length", "bytes": 4}
+        ]
+      },
+      "bit_vector_encoding": {
+        "rule": "coefficient or logical bit i is bit (i mod 8) of byte floor(i/8)",
+        "intra_byte_order": "least-significant-bit first",
+        "unused_high_bits": "must be zero",
+        "non_minimal_or_wrong_length": "reject"
+      },
+      "field_element_encoding": {
+        "basis": "polynomial basis",
+        "coefficient_rule": "coefficient of x^i is bit i of the fixed-width little-endian byte string",
+        "GF_2_8": "one byte; bit 7 is the x^7 coefficient",
+        "GF_2_11": "two bytes; bits 11 through 15 must be zero",
+        "GF_2_12": "two bytes; bits 12 through 15 must be zero",
+        "GF_2_64": "eight bytes",
+        "non_canonical_rule": "reject"
+      },
+      "public_statement_core": {
+        "order": ["ctx", "u"],
+        "ctx_bytes": 32,
+        "u_bytes": 72,
+        "encoded_bytes": 104,
+        "included_as_length_delimited_hash_fields": true
+      },
+      "c_r": {
+        "object_type": 1,
+        "delta_r_present": false,
+        "delta_r_omission_basis": "r is derived from CAP randomness as permitted by Blind-UOV Remark 5",
+        "payload_fields": [
+          {"name": "salt", "bytes": 48},
+          {"name": "h2_prime", "bytes": 48},
+          {"name": "correction_data", "bytes": 4928}
+        ],
+        "correction_data": {
+          "order": "alpha_prime, then for repetition e=1..17 in ascending order: delta_P_e, delta_Mhat_e",
+          "alpha_prime_bits": 256,
+          "delta_P_bits_each": 2048,
+          "delta_Mhat_bits_each": 256,
+          "nonbase_repetitions": 17,
+          "total_bits": 39424
+        },
+        "payload_bytes": 5024,
+        "encoded_bytes": 5074,
+        "h1_serialized": false,
+        "h1_rule": "recompute from the exact public statement and committed first message",
+        "h2_rule": "recompute from profile_fingerprint, ctx, u, h2_prime, and delta_w=zero_r||delta_z"
+      },
+      "c_z": {
+        "object_type": 2,
+        "semantic_name": "delta_z",
+        "historical_c_x_alias_accepted": false,
+        "payload_fields": [
+          {"name": "delta_z", "bits": 1472, "bytes": 184}
+        ],
+        "payload_bytes": 184,
+        "encoded_bytes": 234
+      },
+      "pi_2": {
+        "object_type": 3,
+        "payload_order": [
+          "h3",
+          "pow_nonce",
+          "frontier_count",
+          "frontier_seeds",
+          "hidden_leaf_commitments",
+          "tcith_responses"
+        ],
+        "h3_bytes": 48,
+        "pow_nonce_bytes": 8,
+        "frontier_count_bytes": 2,
+        "frontier_seed_bytes_each": 24,
+        "frontier_seed_count": "frontier_count",
+        "frontier_node_indices_serialized": false,
+        "hidden_leaf_commitments_count": 18,
+        "hidden_leaf_commitment_bytes_each": 48,
+        "hidden_leaf_commitment_order": "repetition index 0 through 17",
+        "tcith_response_order": "group id ascending, repetition index ascending, then rho index ascending; one canonical GF(2^mu_g) degree-0 Qbar coefficient per entry",
+        "tcith_response_element_encoding": "concatenated fixed-mu polynomial-basis bits, least-significant coefficient first, without per-element padding",
+        "tcith_response_groups": [
+          {"group_id": 0, "field": "GF(2^12)", "entries": 32, "bits": 384, "bytes": 48},
+          {"group_id": 1, "field": "GF(2^11)", "entries": 288, "bits": 3168, "bytes": 396}
+        ],
+        "tcith_response_bits": 3552,
+        "tcith_response_bytes": 444,
+        "payload_fixed_bytes_excluding_frontier_seeds": 1366,
+        "encoded_bytes_formula": "1416 + 24*frontier_count",
+        "frontier_count_minimum": 13,
+        "frontier_count_maximum": 174,
+        "encoded_bytes_minimum": 1728,
+        "encoded_bytes_maximum": 5592,
+        "variable_length": true,
+        "padding_to_topen": false,
+        "rejection_rules": [
+          "reject a PoW nonce whose encoding is not exactly 8-byte canonical u64be",
+          "reject if the received nonce fails the 13-bit explicit PoW predicate",
+          "reject if any raw hidden position is the group infinity position",
+          "reject frontier_count outside [13,174]",
+          "reject if payload_length is not 1366+24*frontier_count",
+          "reject if the derived hidden positions do not reproduce the unique canonical frontier",
+          "reject non-minimal, duplicate, reordered, overlapping, or incomplete frontier coverage",
+          "reject wrong commitment or TCitH response count",
+          "reject any trailing bytes"
+        ]
+      }
+    }
+  },
+  "profile_fingerprint": {
+    "covered_value": "profile_parameter_document",
+    "canonicalization": "UTF-8 JSON with object keys sorted lexicographically, ensure_ascii=true, integer decimal form, separators ',' and ':', array order preserved, and no trailing newline; floats are forbidden",
+    "hash_input": "canonical tuple under domain PQSAT-BUOV-CAP-0.1/PROFILE-FP with the canonical JSON as its sole field",
+    "algorithm": "SHAKE256",
+    "output_bytes": 32,
+    "hex": "fc6706429f10d3bcc5600d4b427ca604a19f22c31ec35b171f40513b1a4bcb25"
+  },
+  "security_analysis": {
+    "tcith_rho_checks": [
+      {
+        "mu": 12,
+        "rho": 16,
+        "product_bits": 192,
+        "minimal": true
+      },
+      {
+        "mu": 11,
+        "rho": 18,
+        "product_bits": 198,
+        "previous_rho_product_bits": 187,
+        "minimal": true
+      }
+    ],
+    "degree_term": {
+      "exact_expression": "(2/4095)^2 * (2/2047)^16",
+      "exact_numerator": 262144,
+      "exact_denominator": 1593651275963119696770724229126806175931099344933963886977025,
+      "log2_approx": "-181.98802166543132"
+    },
+    "internal_tcith_union_term": {
+      "conservative_expression": "2*2^-192 + 16*2^-198",
+      "reason": "union one internal-field failure allowance per repetition"
+    },
+    "pow_accounting": {
+      "selected_explicit_bits": 13,
+      "accounted_frontier_security_bits": 0,
+      "accounted_total_bits": 13,
+      "historical_paper_explicit_bits": 9,
+      "historical_paper_reported_decimal_text": "13.9",
+      "historical_values_used_as_selected_security_input": false
+    },
+    "cap_soundness_bound": {
+      "expression": "2^-13 * ((2/4095)^2 * (2/2047)^16 + 2*2^-192 + 16*2^-198)",
+      "exact_numerator": 6596361090768492245890813248291543275514323356638725128377229321,
+      "exact_denominator": 327795054672258555487501894313489933682845438490633009406143938456282317614848290396954297768611539492993059842235249459200,
+      "log2_approx": "-194.98488131215987",
+      "strict_upper_bound": "2^-194"
+    },
+    "consistency_bound": {
+      "expression": "tau^2 * (D/2^kappa)^t = 18^2 * (31/2^64)^4",
+      "union_factor": "tau^2",
+      "exact_numerator": 299220804,
+      "exact_denominator_power_of_two": 256,
+      "strict_upper_bound": "2^-227"
+    },
+    "digest_collision_allowance": {
+      "covered_domains": [
+        "LEAF-COMMIT",
+        "FS-H1",
+        "FS-H2-PRIME",
+        "FS-H2",
+        "FS-H3"
+      ],
+      "domain_count": 5,
+      "query_bound_per_domain": "2^64",
+      "digest_bits": 384,
+      "expression": "5*2^64*(2^64-1)/2^385",
+      "strict_upper_bound": "2^-254",
+      "scope_note": "This term covers collisions in 384-bit digest outputs only; XOF pseudorandomness assumptions are inherited from SHAKE256 and are not recast as digest collision events."
+    },
+    "full_union_bound": {
+      "expression": "epsilon_CAP + epsilon_consistency + epsilon_digest_collision",
+      "strict_upper_bound": "2^-193",
+      "meets_192_bit_target": true,
+      "classification": "design-level recomputable bound; not a formal proof closure"
+    }
+  },
+  "size_ledger": {
+    "components": {
+      "c_r_bytes": 5074,
+      "c_z_bytes": 234,
+      "pi_2_bytes_minimum": 1728,
+      "pi_2_bytes_maximum": 5592,
+      "sigma_I_bytes_minimum": 7036,
+      "sigma_I_bytes_maximum": 10900
+    },
+    "paper_table_4": {
+      "blind_uov_iii_shorter_aggregate_bytes": 11644,
+      "aggregate_components": ["c_r", "c_x", "pi_2"],
+      "backend_attribution_available": false,
+      "assigned_to_pi_2": false,
+      "comparison_only": true
+    },
+    "p3_conditional_formulas": {
+      "ticket": "242 + |s| + |c_r| + |c_z| + |pi_2|",
+      "m1": "6930 + |s| + |c_r| + |c_z| + |pi_2|",
+      "logical_total": "11725 + |s| + |c_r| + |c_z| + |pi_2|"
+    },
+    "projected_bounds_before_real_prover": {
+      "ticket_minimum_formula": "7278 + |s|",
+      "ticket_maximum_formula": "11142 + |s|",
+      "m1_minimum_formula": "13966 + |s|",
+      "m1_maximum_formula": "17830 + |s|",
+      "logical_total_minimum_formula": "18761 + |s|",
+      "logical_total_maximum_formula": "22625 + |s|",
+      "largest_s_bytes_for_50000_byte_logical_total_at_pi2_max": 27375,
+      "fifty_kilobyte_claim_closed": false
+    },
+    "production_measurements": {
+      "s_bytes": null,
+      "pi_2_actual_bytes": null,
+      "pi_2_min_observed_bytes": null,
+      "pi_2_median_observed_bytes": null,
+      "pi_2_p95_observed_bytes": null,
+      "pi_2_max_observed_bytes": null,
+      "m1_actual_bytes": null,
+      "logical_total_actual_bytes": null,
+      "final_within_50000_bytes": null
+    },
+    "benchmark_mandate": {
+      "required_statistics": ["actual", "minimum", "median", "p95", "maximum"],
+      "measure_canonical_variable_opening_without_padding": true,
+      "record_frontier_count_with_each_pi2_length": true,
+      "reject_sample_if_frontier_count_exceeds_topen": true,
+      "fail_closed_conditions": [
+        "full analysis no longer establishes at least 192-bit security",
+        "canonical logical total exceeds 50000 bytes",
+        "real prover or verifier is unavailable or fails",
+        "source identity or profile fingerprint differs"
+      ]
+    }
+  },
+  "implementation_handoff": {
+    "lane_status": "consistency_packing_component_implemented_and_tested_complete_cap_incomplete",
+    "required_files_and_apis": [
+      {
+        "path": "src/pq_rbbc/blind_uov_pqsat_v0_1/parameters.py",
+        "owns": ["frozen profile constants", "evaluation-domain parameter ABI", "profile fingerprint verification", "closed parameter validation"],
+        "required_apis": [
+          "load_profile_manifest(path: Path | None = None) -> ConcreteProfile",
+          "validate_profile(profile: ConcreteProfile) -> None",
+          "profile_fingerprint(profile: ConcreteProfile) -> bytes"
+        ]
+      },
+      {
+        "path": "src/pq_rbbc/blind_uov_pqsat_v0_1/consistency.py",
+        "owns": ["canonical xi polynomial representation", "F_2 constant coefficient", "group-bound extension-field linear coefficient", "6976-byte production encoding"],
+        "required_apis": [
+          "XiPolynomial(constant: bytes, linear: tuple[int, ...])",
+          "encode_xi_polynomials(polynomials: XiPolynomials) -> bytes",
+          "decode_xi_polynomials(encoded: bytes) -> XiPolynomials"
+        ]
+      },
+      {
+        "path": "src/pq_rbbc/blind_uov_pqsat_v0_1/field.py",
+        "owns": ["GF(2^8)", "GF(2^11)", "GF(2^12)", "GF(2^64)", "ordinary nonzero field inversion", "canonical field codecs"],
+        "required_apis": [
+          "gf_mul(field_id: FieldId, left: int, right: int) -> int",
+          "gf_inv(field_id: FieldId, value: int) -> int",
+          "encode_element(field_id: FieldId, value: int) -> bytes",
+          "decode_element(field_id: FieldId, encoded: bytes) -> int",
+          "consistency_hash(vector_2048: bytes, points: tuple[int, int, int, int]) -> bytes"
+        ]
+      },
+      {
+        "path": "src/pq_rbbc/blind_uov_pqsat_v0_1/evaluation.py",
+        "owns": ["canonical finite/nonzero/infinity party domain", "reciprocal-coordinate convention", "degree-one commit and opened-tape evaluation formulas"],
+        "required_apis": [
+          "evaluation_point(group_id: int, position: int) -> EvaluationPoint",
+          "canonical_party_domain(group_id: int) -> tuple[EvaluationPoint, ...]",
+          "validate_party_domain(group_id: int, points: tuple[EvaluationPoint, ...]) -> None",
+          "reciprocal_coordinate(point: EvaluationPoint) -> int",
+          "commit_tapes(group_id: int, tapes: tuple[int, ...]) -> LinearPolynomial",
+          "evaluate_linear_polynomial(polynomial: LinearPolynomial, point: EvaluationPoint) -> int",
+          "reconstruct_opening_evaluation(group_id: int, hidden_position: int, opened_tapes: tuple[tuple[int, int], ...]) -> int"
+        ]
+      },
+      {
+        "path": "src/pq_rbbc/blind_uov_pqsat_v0_1/transcript.py",
+        "owns": ["tuple encoder", "SHAKE256 domains", "h1", "h2_prime", "h2", "h3", "PoW and challenge derivation"],
+        "required_apis": [
+          "encode_tuple(domain: bytes, fields: Sequence[bytes]) -> bytes",
+          "shake(domain: bytes, fields: Sequence[bytes], output_bytes: int) -> bytes",
+          "derive_h1(ctx: bytes, salt: bytes, commitments: Sequence[bytes], correction_deltas: bytes) -> bytes",
+          "derive_consistency_points(h1: bytes) -> tuple[int, int, int, int]",
+          "derive_h2_prime(h1: bytes, xi_polynomials: bytes) -> bytes",
+          "derive_h2(ctx: bytes, u: bytes, h2_prime: bytes, delta_z: bytes) -> bytes",
+          "derive_gammas(h2: bytes, group_id: int) -> tuple[tuple[int, ...], ...]",
+          "derive_h3(ctx: bytes, u: bytes, h2: bytes, q_and_qbar: bytes) -> bytes",
+          "explicit_pow_passes(h3: bytes, nonce: int) -> bool",
+          "derive_hidden_positions(h3: bytes, nonce: int) -> HiddenPositions",
+          "hidden_positions_are_admissible(positions: HiddenPositions) -> bool",
+          "derive_admissible_hidden_positions(h3: bytes, nonce: int) -> HiddenPositions"
+        ]
+      },
+      {
+        "path": "src/pq_rbbc/blind_uov_pqsat_v0_1/tree.py",
+        "owns": ["position-major one-tree mapping", "minimal frontier", "Topen enforcement", "seed expansion and leaf commitments"],
+        "required_apis": [
+          "logical_to_unified(repetition: int, position: int) -> int",
+          "unified_to_logical(unified_index: int) -> tuple[int, int]",
+          "expand_one_tree(root_seed: bytes, salt: bytes) -> TreeState",
+          "canonical_frontier_indices(hidden_positions: Sequence[int]) -> tuple[int, ...]",
+          "open_frontier(state: TreeState, hidden_positions: Sequence[int]) -> Opening",
+          "verify_opening(salt: bytes, hidden_positions: Sequence[int], opening: Opening) -> VerifiedLeaves"
+        ]
+      },
+      {
+        "path": "src/pq_rbbc/blind_uov_pqsat_v0_1/relation.py",
+        "owns": ["Blind-UOV CAP relation", "r-from-randomness rule", "consistency polynomial"],
+        "required_apis": [
+          "encode_statement_core(ctx: bytes, u: bytes) -> bytes",
+          "uov_relation_holds(ctx: bytes, u: bytes, r: bytes, z: bytes) -> bool",
+          "build_consistency_polynomials(state: ProverPolynomials, points: tuple[int, ...]) -> XiPolynomials",
+          "build_q_and_qbar(statement: Statement, witness_polynomials: ProverPolynomials, gammas: object) -> QPolynomials",
+          "verify_opened_relation(statement: Statement, opened: VerifiedLeaves, responses: bytes, gammas: object) -> bytes"
+        ]
+      },
+      {
+        "path": "src/pq_rbbc/blind_uov_pqsat_v0_1/codec.py",
+        "owns": ["c_r codec", "c_z codec", "pi_2 codec", "closed parser and mutation rejection"],
+        "required_apis": [
+          "encode_c_r(value: CR) -> bytes",
+          "decode_c_r(encoded: bytes) -> CR",
+          "encode_c_z(value: CZ) -> bytes",
+          "decode_c_z(encoded: bytes) -> CZ",
+          "encode_pi_2(value: Pi2) -> bytes",
+          "decode_pi_2(encoded: bytes) -> Pi2",
+          "encode_sigma_i(c_r: CR, c_z: CZ, pi_2: Pi2) -> tuple[bytes, bytes, bytes]"
+        ]
+      },
+      {
+        "path": "src/pq_rbbc/blind_uov_pqsat_v0_1/prover.py",
+        "owns": ["real prover", "restart on Topen overflow", "first admissible PoW nonce for deterministic production"],
+        "required_apis": [
+          "cap_init(ctx: bytes, randomness: RandomSource) -> tuple[bytes, CR, ProverState]",
+          "cap_append(state: ProverState, z: bytes) -> CZ",
+          "find_first_admissible_nonce(h3: bytes) -> tuple[int, tuple[int, ...], tuple[int, ...]]",
+          "prove(ctx: bytes, u: bytes, c_r: CR, c_z: CZ, state: ProverState) -> Pi2"
+        ]
+      },
+      {
+        "path": "src/pq_rbbc/blind_uov_pqsat_v0_1/verifier.py",
+        "owns": ["fail-closed production verifier", "relation replay", "all transcript and opening checks"],
+        "required_apis": [
+          "verify(ctx: bytes, u: bytes, c_r: bytes, c_z: bytes, pi_2: bytes) -> bool",
+          "verify_parsed(statement: Statement, c_r: CR, c_z: CZ, pi_2: Pi2) -> bool"
+        ]
+      },
+      {
+        "path": "src/pq_sat_auth/v3/final_ticket/pqsat_blind_uov_v0_1.py",
+        "owns": ["ticket suite adapter", "actual Opaque32 lengths", "suite registry handoff after separate approval"],
+        "required_apis": [
+          "encode_ticket_signature(c_r: bytes, c_z: bytes, pi_2: bytes) -> bytes",
+          "decode_ticket_signature(encoded: bytes) -> tuple[bytes, bytes, bytes]",
+          "verify_ticket_cap(ctx: bytes, u: bytes, encoded_signature: bytes) -> bool"
+        ]
+      }
+    ],
+    "dependency_order": [
+      ["parameters.py", "consistency.py"],
+      ["field.py", "evaluation.py", "transcript.py"],
+      ["tree.py", "relation.py"],
+      ["codec.py"],
+      ["prover.py", "verifier.py"],
+      ["final_ticket/pqsat_blind_uov_v0_1.py"]
+    ],
+    "reuse_boundary": {
+      "allowed_unchanged_helpers": ["require_bytes", "require_fixed", "nearest_rank"],
+      "forbidden_as_final_profile": ["custom Anemoi transcript", "historical 18-root tree", "unified candidate field profile", "Category A proof bytes", "historical c_x semantic alias"],
+      "production_verifier_available_now": false
+    }
+  }
+}

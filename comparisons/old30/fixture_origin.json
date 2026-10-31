@@ -1,0 +1,15 @@
+{
+  "sourceCommit": "9bc14fc4c73bcec714acaa01950b34411ba2b18d",
+  "sourcePath": "benchmarks/access_v3/issuance_fresh30_v0_1/issuer.py",
+  "sourcePin": {
+    "bytes": 7772,
+    "sha256": "58c55ced8713f1b72cdf1f5b2d10971ca9ca67dc61a0adaee3ef6a40cf156115"
+  },
+  "sourceLines89to90": [
+    "# Fixed research RID is not a holder identity or a request-specific record.",
+    "research_RID=os.urandom(32)"
+  ],
+  "allSamplesMarkedResearchFixture": true,
+  "realRegistrationOrRIDUsed": false,
+  "privateKeyExported": false
+}

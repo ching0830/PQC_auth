@@ -1,0 +1,1079 @@
+{
+  "schema": "BUOVHplusThesisMetricsV1",
+  "crossVersionSpeedupClaim": false,
+  "HplusFullAccessMeasured": false,
+  "metrics": [
+    {
+      "label": "hplus_piiss",
+      "source": "/tmp/PQC_auth_buov_cap_hplus_research_v0_1/manifests/buov_cap_hplus_research_v0_1/lifecycle.json",
+      "sourcePin": {
+        "bytes": 62930,
+        "sha256": "672139df5160aa30c941a9e3f74a46d9d954c4106a90b73fc21488a498e52924"
+      },
+      "fieldPath": [
+        "measurements",
+        "proof",
+        "bytes"
+      ],
+      "scale": 1,
+      "value": 995632,
+      "unit": "B"
+    },
+    {
+      "label": "hplus_statement",
+      "source": "/tmp/PQC_auth_buov_cap_hplus_research_v0_1/manifests/buov_cap_hplus_research_v0_1/lifecycle.json",
+      "sourcePin": {
+        "bytes": 62930,
+        "sha256": "672139df5160aa30c941a9e3f74a46d9d954c4106a90b73fc21488a498e52924"
+      },
+      "fieldPath": [
+        "measurements",
+        "statement",
+        "bytes"
+      ],
+      "scale": 1,
+      "value": 1037,
+      "unit": "B"
+    },
+    {
+      "label": "hplus_pi2",
+      "source": "/tmp/PQC_auth_buov_cap_hplus_research_v0_1/manifests/buov_cap_hplus_research_v0_1/lifecycle.json",
+      "sourcePin": {
+        "bytes": 62930,
+        "sha256": "672139df5160aa30c941a9e3f74a46d9d954c4106a90b73fc21488a498e52924"
+      },
+      "fieldPath": [
+        "measurements",
+        "continuation",
+        "wire_lengths",
+        "pi_2"
+      ],
+      "scale": 1,
+      "value": 5592,
+      "unit": "B"
+    },
+    {
+      "label": "hplus_consumer_frame",
+      "source": "/tmp/PQC_auth_buov_cap_hplus_research_v0_1/manifests/buov_cap_hplus_research_v0_1/lifecycle.json",
+      "sourcePin": {
+        "bytes": 62930,
+        "sha256": "672139df5160aa30c941a9e3f74a46d9d954c4106a90b73fc21488a498e52924"
+      },
+      "fieldPath": [
+        "measurements",
+        "ticket_consumer",
+        "ticket_frame_bytes"
+      ],
+      "scale": 1,
+      "value": 11318,
+      "unit": "B"
+    },
+    {
+      "label": "hplus_flow",
+      "source": "/tmp/PQC_auth_buov_cap_hplus_research_v0_1/manifests/buov_cap_hplus_research_v0_1/lifecycle.json",
+      "sourcePin": {
+        "bytes": 62930,
+        "sha256": "672139df5160aa30c941a9e3f74a46d9d954c4106a90b73fc21488a498e52924"
+      },
+      "fieldPath": [
+        "measurements",
+        "flow_seconds"
+      ],
+      "scale": 1,
+      "value": 105.73354430031031,
+      "unit": "s"
+    },
+    {
+      "label": "hplus_prove",
+      "source": "/tmp/PQC_auth_buov_cap_hplus_research_v0_1/manifests/buov_cap_hplus_research_v0_1/lifecycle.json",
+      "sourcePin": {
+        "bytes": 62930,
+        "sha256": "672139df5160aa30c941a9e3f74a46d9d954c4106a90b73fc21488a498e52924"
+      },
+      "fieldPath": [
+        "measurements",
+        "prove",
+        "prove_seconds"
+      ],
+      "scale": 1,
+      "value": 58.328783299,
+      "unit": "s"
+    },
+    {
+      "label": "hplus_consumer_core",
+      "source": "/tmp/PQC_auth_buov_cap_hplus_research_v0_1/manifests/buov_cap_hplus_research_v0_1/lifecycle.json",
+      "sourcePin": {
+        "bytes": 62930,
+        "sha256": "672139df5160aa30c941a9e3f74a46d9d954c4106a90b73fc21488a498e52924"
+      },
+      "fieldPath": [
+        "measurements",
+        "ticket_consumer",
+        "verify_seconds"
+      ],
+      "scale": 1,
+      "value": 0.15094733703881502,
+      "unit": "s"
+    },
+    {
+      "label": "old30_including_per_ticket_prep_median",
+      "source": "/tmp/PQC_auth_buov_cap_performance_v0_1/docs/thesis/nycu_v0_1/fresh_issuance30_v0_1/recomputed_summary.json",
+      "sourcePin": {
+        "bytes": 19542,
+        "sha256": "c638fe487bb8f7a577c6d018d1e34a5f49ad7b7a21bb86c3e59317a244b64bd7"
+      },
+      "fieldPath": [
+        "times",
+        "including_per_ticket_prep",
+        "median"
+      ],
+      "scale": 1e-09,
+      "value": 21.565592679,
+      "unit": "s"
+    },
+    {
+      "label": "old30_including_per_ticket_prep_mean",
+      "source": "/tmp/PQC_auth_buov_cap_performance_v0_1/docs/thesis/nycu_v0_1/fresh_issuance30_v0_1/recomputed_summary.json",
+      "sourcePin": {
+        "bytes": 19542,
+        "sha256": "c638fe487bb8f7a577c6d018d1e34a5f49ad7b7a21bb86c3e59317a244b64bd7"
+      },
+      "fieldPath": [
+        "times",
+        "including_per_ticket_prep",
+        "mean"
+      ],
+      "scale": 1e-09,
+      "value": 21.723589828466668,
+      "unit": "s"
+    },
+    {
+      "label": "old30_including_per_ticket_prep_min",
+      "source": "/tmp/PQC_auth_buov_cap_performance_v0_1/docs/thesis/nycu_v0_1/fresh_issuance30_v0_1/recomputed_summary.json",
+      "sourcePin": {
+        "bytes": 19542,
+        "sha256": "c638fe487bb8f7a577c6d018d1e34a5f49ad7b7a21bb86c3e59317a244b64bd7"
+      },
+      "fieldPath": [
+        "times",
+        "including_per_ticket_prep",
+        "min"
+      ],
+      "scale": 1e-09,
+      "value": 21.286817555000002,
+      "unit": "s"
+    },
+    {
+      "label": "old30_including_per_ticket_prep_max",
+      "source": "/tmp/PQC_auth_buov_cap_performance_v0_1/docs/thesis/nycu_v0_1/fresh_issuance30_v0_1/recomputed_summary.json",
+      "sourcePin": {
+        "bytes": 19542,
+        "sha256": "c638fe487bb8f7a577c6d018d1e34a5f49ad7b7a21bb86c3e59317a244b64bd7"
+      },
+      "fieldPath": [
+        "times",
+        "including_per_ticket_prep",
+        "max"
+      ],
+      "scale": 1e-09,
+      "value": 23.132461854000002,
+      "unit": "s"
+    },
+    {
+      "label": "old30_CAP_to_ticket_release_median",
+      "source": "/tmp/PQC_auth_buov_cap_performance_v0_1/docs/thesis/nycu_v0_1/fresh_issuance30_v0_1/recomputed_summary.json",
+      "sourcePin": {
+        "bytes": 19542,
+        "sha256": "c638fe487bb8f7a577c6d018d1e34a5f49ad7b7a21bb86c3e59317a244b64bd7"
+      },
+      "fieldPath": [
+        "times",
+        "CAP_to_ticket_release",
+        "median"
+      ],
+      "scale": 1e-09,
+      "value": 21.564570347500002,
+      "unit": "s"
+    },
+    {
+      "label": "old30_CAP_to_ticket_release_mean",
+      "source": "/tmp/PQC_auth_buov_cap_performance_v0_1/docs/thesis/nycu_v0_1/fresh_issuance30_v0_1/recomputed_summary.json",
+      "sourcePin": {
+        "bytes": 19542,
+        "sha256": "c638fe487bb8f7a577c6d018d1e34a5f49ad7b7a21bb86c3e59317a244b64bd7"
+      },
+      "fieldPath": [
+        "times",
+        "CAP_to_ticket_release",
+        "mean"
+      ],
+      "scale": 1e-09,
+      "value": 21.722500698133338,
+      "unit": "s"
+    },
+    {
+      "label": "old30_CAP_to_ticket_release_min",
+      "source": "/tmp/PQC_auth_buov_cap_performance_v0_1/docs/thesis/nycu_v0_1/fresh_issuance30_v0_1/recomputed_summary.json",
+      "sourcePin": {
+        "bytes": 19542,
+        "sha256": "c638fe487bb8f7a577c6d018d1e34a5f49ad7b7a21bb86c3e59317a244b64bd7"
+      },
+      "fieldPath": [
+        "times",
+        "CAP_to_ticket_release",
+        "min"
+      ],
+      "scale": 1e-09,
+      "value": 21.285811915,
+      "unit": "s"
+    },
+    {
+      "label": "old30_CAP_to_ticket_release_max",
+      "source": "/tmp/PQC_auth_buov_cap_performance_v0_1/docs/thesis/nycu_v0_1/fresh_issuance30_v0_1/recomputed_summary.json",
+      "sourcePin": {
+        "bytes": 19542,
+        "sha256": "c638fe487bb8f7a577c6d018d1e34a5f49ad7b7a21bb86c3e59317a244b64bd7"
+      },
+      "fieldPath": [
+        "times",
+        "CAP_to_ticket_release",
+        "max"
+      ],
+      "scale": 1e-09,
+      "value": 23.131196042000003,
+      "unit": "s"
+    },
+    {
+      "label": "old30_M1_M2_median",
+      "source": "/tmp/PQC_auth_buov_cap_performance_v0_1/docs/thesis/nycu_v0_1/fresh_issuance30_v0_1/recomputed_summary.json",
+      "sourcePin": {
+        "bytes": 19542,
+        "sha256": "c638fe487bb8f7a577c6d018d1e34a5f49ad7b7a21bb86c3e59317a244b64bd7"
+      },
+      "fieldPath": [
+        "times",
+        "M1_M2",
+        "median"
+      ],
+      "scale": 1e-06,
+      "value": 211.38698549999998,
+      "unit": "ms"
+    },
+    {
+      "label": "old30_M1_M2_mean",
+      "source": "/tmp/PQC_auth_buov_cap_performance_v0_1/docs/thesis/nycu_v0_1/fresh_issuance30_v0_1/recomputed_summary.json",
+      "sourcePin": {
+        "bytes": 19542,
+        "sha256": "c638fe487bb8f7a577c6d018d1e34a5f49ad7b7a21bb86c3e59317a244b64bd7"
+      },
+      "fieldPath": [
+        "times",
+        "M1_M2",
+        "mean"
+      ],
+      "scale": 1e-06,
+      "value": 212.06587656666665,
+      "unit": "ms"
+    },
+    {
+      "label": "old30_M1_M2_min",
+      "source": "/tmp/PQC_auth_buov_cap_performance_v0_1/docs/thesis/nycu_v0_1/fresh_issuance30_v0_1/recomputed_summary.json",
+      "sourcePin": {
+        "bytes": 19542,
+        "sha256": "c638fe487bb8f7a577c6d018d1e34a5f49ad7b7a21bb86c3e59317a244b64bd7"
+      },
+      "fieldPath": [
+        "times",
+        "M1_M2",
+        "min"
+      ],
+      "scale": 1e-06,
+      "value": 208.25509699999998,
+      "unit": "ms"
+    },
+    {
+      "label": "old30_M1_M2_max",
+      "source": "/tmp/PQC_auth_buov_cap_performance_v0_1/docs/thesis/nycu_v0_1/fresh_issuance30_v0_1/recomputed_summary.json",
+      "sourcePin": {
+        "bytes": 19542,
+        "sha256": "c638fe487bb8f7a577c6d018d1e34a5f49ad7b7a21bb86c3e59317a244b64bd7"
+      },
+      "fieldPath": [
+        "times",
+        "M1_M2",
+        "max"
+      ],
+      "scale": 1e-06,
+      "value": 223.628896,
+      "unit": "ms"
+    },
+    {
+      "label": "old30_M3_extra_median",
+      "source": "/tmp/PQC_auth_buov_cap_performance_v0_1/docs/thesis/nycu_v0_1/fresh_issuance30_v0_1/recomputed_summary.json",
+      "sourcePin": {
+        "bytes": 19542,
+        "sha256": "c638fe487bb8f7a577c6d018d1e34a5f49ad7b7a21bb86c3e59317a244b64bd7"
+      },
+      "fieldPath": [
+        "times",
+        "M3_extra",
+        "median"
+      ],
+      "scale": 1e-06,
+      "value": 11.8633665,
+      "unit": "ms"
+    },
+    {
+      "label": "old30_M3_extra_mean",
+      "source": "/tmp/PQC_auth_buov_cap_performance_v0_1/docs/thesis/nycu_v0_1/fresh_issuance30_v0_1/recomputed_summary.json",
+      "sourcePin": {
+        "bytes": 19542,
+        "sha256": "c638fe487bb8f7a577c6d018d1e34a5f49ad7b7a21bb86c3e59317a244b64bd7"
+      },
+      "fieldPath": [
+        "times",
+        "M3_extra",
+        "mean"
+      ],
+      "scale": 1e-06,
+      "value": 11.891265833333334,
+      "unit": "ms"
+    },
+    {
+      "label": "old30_M3_extra_min",
+      "source": "/tmp/PQC_auth_buov_cap_performance_v0_1/docs/thesis/nycu_v0_1/fresh_issuance30_v0_1/recomputed_summary.json",
+      "sourcePin": {
+        "bytes": 19542,
+        "sha256": "c638fe487bb8f7a577c6d018d1e34a5f49ad7b7a21bb86c3e59317a244b64bd7"
+      },
+      "fieldPath": [
+        "times",
+        "M3_extra",
+        "min"
+      ],
+      "scale": 1e-06,
+      "value": 11.130576,
+      "unit": "ms"
+    },
+    {
+      "label": "old30_M3_extra_max",
+      "source": "/tmp/PQC_auth_buov_cap_performance_v0_1/docs/thesis/nycu_v0_1/fresh_issuance30_v0_1/recomputed_summary.json",
+      "sourcePin": {
+        "bytes": 19542,
+        "sha256": "c638fe487bb8f7a577c6d018d1e34a5f49ad7b7a21bb86c3e59317a244b64bd7"
+      },
+      "fieldPath": [
+        "times",
+        "M3_extra",
+        "max"
+      ],
+      "scale": 1e-06,
+      "value": 14.487437,
+      "unit": "ms"
+    },
+    {
+      "label": "old30_access_to_ACTIVE_median",
+      "source": "/tmp/PQC_auth_buov_cap_performance_v0_1/docs/thesis/nycu_v0_1/fresh_issuance30_v0_1/recomputed_summary.json",
+      "sourcePin": {
+        "bytes": 19542,
+        "sha256": "c638fe487bb8f7a577c6d018d1e34a5f49ad7b7a21bb86c3e59317a244b64bd7"
+      },
+      "fieldPath": [
+        "times",
+        "access_to_ACTIVE",
+        "median"
+      ],
+      "scale": 1e-06,
+      "value": 223.17589949999999,
+      "unit": "ms"
+    },
+    {
+      "label": "old30_access_to_ACTIVE_mean",
+      "source": "/tmp/PQC_auth_buov_cap_performance_v0_1/docs/thesis/nycu_v0_1/fresh_issuance30_v0_1/recomputed_summary.json",
+      "sourcePin": {
+        "bytes": 19542,
+        "sha256": "c638fe487bb8f7a577c6d018d1e34a5f49ad7b7a21bb86c3e59317a244b64bd7"
+      },
+      "fieldPath": [
+        "times",
+        "access_to_ACTIVE",
+        "mean"
+      ],
+      "scale": 1e-06,
+      "value": 223.9571424,
+      "unit": "ms"
+    },
+    {
+      "label": "old30_access_to_ACTIVE_min",
+      "source": "/tmp/PQC_auth_buov_cap_performance_v0_1/docs/thesis/nycu_v0_1/fresh_issuance30_v0_1/recomputed_summary.json",
+      "sourcePin": {
+        "bytes": 19542,
+        "sha256": "c638fe487bb8f7a577c6d018d1e34a5f49ad7b7a21bb86c3e59317a244b64bd7"
+      },
+      "fieldPath": [
+        "times",
+        "access_to_ACTIVE",
+        "min"
+      ],
+      "scale": 1e-06,
+      "value": 220.010699,
+      "unit": "ms"
+    },
+    {
+      "label": "old30_access_to_ACTIVE_max",
+      "source": "/tmp/PQC_auth_buov_cap_performance_v0_1/docs/thesis/nycu_v0_1/fresh_issuance30_v0_1/recomputed_summary.json",
+      "sourcePin": {
+        "bytes": 19542,
+        "sha256": "c638fe487bb8f7a577c6d018d1e34a5f49ad7b7a21bb86c3e59317a244b64bd7"
+      },
+      "fieldPath": [
+        "times",
+        "access_to_ACTIVE",
+        "max"
+      ],
+      "scale": 1e-06,
+      "value": 234.86460799999998,
+      "unit": "ms"
+    },
+    {
+      "label": "old30_pi2_B_mean",
+      "source": "/tmp/PQC_auth_buov_cap_performance_v0_1/docs/thesis/nycu_v0_1/fresh_issuance30_v0_1/recomputed_summary.json",
+      "sourcePin": {
+        "bytes": 19542,
+        "sha256": "c638fe487bb8f7a577c6d018d1e34a5f49ad7b7a21bb86c3e59317a244b64bd7"
+      },
+      "fieldPath": [
+        "sizes",
+        "pi2_B",
+        "mean"
+      ],
+      "scale": 1,
+      "value": 5524.8,
+      "unit": "B"
+    },
+    {
+      "label": "old30_pi2_B_median",
+      "source": "/tmp/PQC_auth_buov_cap_performance_v0_1/docs/thesis/nycu_v0_1/fresh_issuance30_v0_1/recomputed_summary.json",
+      "sourcePin": {
+        "bytes": 19542,
+        "sha256": "c638fe487bb8f7a577c6d018d1e34a5f49ad7b7a21bb86c3e59317a244b64bd7"
+      },
+      "fieldPath": [
+        "sizes",
+        "pi2_B",
+        "median"
+      ],
+      "scale": 1,
+      "value": 5544.0,
+      "unit": "B"
+    },
+    {
+      "label": "old30_pi2_B_min",
+      "source": "/tmp/PQC_auth_buov_cap_performance_v0_1/docs/thesis/nycu_v0_1/fresh_issuance30_v0_1/recomputed_summary.json",
+      "sourcePin": {
+        "bytes": 19542,
+        "sha256": "c638fe487bb8f7a577c6d018d1e34a5f49ad7b7a21bb86c3e59317a244b64bd7"
+      },
+      "fieldPath": [
+        "sizes",
+        "pi2_B",
+        "min"
+      ],
+      "scale": 1,
+      "value": 5352,
+      "unit": "B"
+    },
+    {
+      "label": "old30_pi2_B_max",
+      "source": "/tmp/PQC_auth_buov_cap_performance_v0_1/docs/thesis/nycu_v0_1/fresh_issuance30_v0_1/recomputed_summary.json",
+      "sourcePin": {
+        "bytes": 19542,
+        "sha256": "c638fe487bb8f7a577c6d018d1e34a5f49ad7b7a21bb86c3e59317a244b64bd7"
+      },
+      "fieldPath": [
+        "sizes",
+        "pi2_B",
+        "max"
+      ],
+      "scale": 1,
+      "value": 5592,
+      "unit": "B"
+    },
+    {
+      "label": "old30_FinalTicket_B_mean",
+      "source": "/tmp/PQC_auth_buov_cap_performance_v0_1/docs/thesis/nycu_v0_1/fresh_issuance30_v0_1/recomputed_summary.json",
+      "sourcePin": {
+        "bytes": 19542,
+        "sha256": "c638fe487bb8f7a577c6d018d1e34a5f49ad7b7a21bb86c3e59317a244b64bd7"
+      },
+      "fieldPath": [
+        "sizes",
+        "FinalTicket_B",
+        "mean"
+      ],
+      "scale": 1,
+      "value": 11282.8,
+      "unit": "B"
+    },
+    {
+      "label": "old30_FinalTicket_B_median",
+      "source": "/tmp/PQC_auth_buov_cap_performance_v0_1/docs/thesis/nycu_v0_1/fresh_issuance30_v0_1/recomputed_summary.json",
+      "sourcePin": {
+        "bytes": 19542,
+        "sha256": "c638fe487bb8f7a577c6d018d1e34a5f49ad7b7a21bb86c3e59317a244b64bd7"
+      },
+      "fieldPath": [
+        "sizes",
+        "FinalTicket_B",
+        "median"
+      ],
+      "scale": 1,
+      "value": 11302.0,
+      "unit": "B"
+    },
+    {
+      "label": "old30_FinalTicket_B_min",
+      "source": "/tmp/PQC_auth_buov_cap_performance_v0_1/docs/thesis/nycu_v0_1/fresh_issuance30_v0_1/recomputed_summary.json",
+      "sourcePin": {
+        "bytes": 19542,
+        "sha256": "c638fe487bb8f7a577c6d018d1e34a5f49ad7b7a21bb86c3e59317a244b64bd7"
+      },
+      "fieldPath": [
+        "sizes",
+        "FinalTicket_B",
+        "min"
+      ],
+      "scale": 1,
+      "value": 11110,
+      "unit": "B"
+    },
+    {
+      "label": "old30_FinalTicket_B_max",
+      "source": "/tmp/PQC_auth_buov_cap_performance_v0_1/docs/thesis/nycu_v0_1/fresh_issuance30_v0_1/recomputed_summary.json",
+      "sourcePin": {
+        "bytes": 19542,
+        "sha256": "c638fe487bb8f7a577c6d018d1e34a5f49ad7b7a21bb86c3e59317a244b64bd7"
+      },
+      "fieldPath": [
+        "sizes",
+        "FinalTicket_B",
+        "max"
+      ],
+      "scale": 1,
+      "value": 11350,
+      "unit": "B"
+    },
+    {
+      "label": "old30_M1_B_mean",
+      "source": "/tmp/PQC_auth_buov_cap_performance_v0_1/docs/thesis/nycu_v0_1/fresh_issuance30_v0_1/recomputed_summary.json",
+      "sourcePin": {
+        "bytes": 19542,
+        "sha256": "c638fe487bb8f7a577c6d018d1e34a5f49ad7b7a21bb86c3e59317a244b64bd7"
+      },
+      "fieldPath": [
+        "sizes",
+        "M1_B",
+        "mean"
+      ],
+      "scale": 1,
+      "value": 17970.8,
+      "unit": "B"
+    },
+    {
+      "label": "old30_M1_B_median",
+      "source": "/tmp/PQC_auth_buov_cap_performance_v0_1/docs/thesis/nycu_v0_1/fresh_issuance30_v0_1/recomputed_summary.json",
+      "sourcePin": {
+        "bytes": 19542,
+        "sha256": "c638fe487bb8f7a577c6d018d1e34a5f49ad7b7a21bb86c3e59317a244b64bd7"
+      },
+      "fieldPath": [
+        "sizes",
+        "M1_B",
+        "median"
+      ],
+      "scale": 1,
+      "value": 17990.0,
+      "unit": "B"
+    },
+    {
+      "label": "old30_M1_B_min",
+      "source": "/tmp/PQC_auth_buov_cap_performance_v0_1/docs/thesis/nycu_v0_1/fresh_issuance30_v0_1/recomputed_summary.json",
+      "sourcePin": {
+        "bytes": 19542,
+        "sha256": "c638fe487bb8f7a577c6d018d1e34a5f49ad7b7a21bb86c3e59317a244b64bd7"
+      },
+      "fieldPath": [
+        "sizes",
+        "M1_B",
+        "min"
+      ],
+      "scale": 1,
+      "value": 17798,
+      "unit": "B"
+    },
+    {
+      "label": "old30_M1_B_max",
+      "source": "/tmp/PQC_auth_buov_cap_performance_v0_1/docs/thesis/nycu_v0_1/fresh_issuance30_v0_1/recomputed_summary.json",
+      "sourcePin": {
+        "bytes": 19542,
+        "sha256": "c638fe487bb8f7a577c6d018d1e34a5f49ad7b7a21bb86c3e59317a244b64bd7"
+      },
+      "fieldPath": [
+        "sizes",
+        "M1_B",
+        "max"
+      ],
+      "scale": 1,
+      "value": 18038,
+      "unit": "B"
+    },
+    {
+      "label": "old30_M2_B_mean",
+      "source": "/tmp/PQC_auth_buov_cap_performance_v0_1/docs/thesis/nycu_v0_1/fresh_issuance30_v0_1/recomputed_summary.json",
+      "sourcePin": {
+        "bytes": 19542,
+        "sha256": "c638fe487bb8f7a577c6d018d1e34a5f49ad7b7a21bb86c3e59317a244b64bd7"
+      },
+      "fieldPath": [
+        "sizes",
+        "M2_B",
+        "mean"
+      ],
+      "scale": 1,
+      "value": 4667.0,
+      "unit": "B"
+    },
+    {
+      "label": "old30_M2_B_median",
+      "source": "/tmp/PQC_auth_buov_cap_performance_v0_1/docs/thesis/nycu_v0_1/fresh_issuance30_v0_1/recomputed_summary.json",
+      "sourcePin": {
+        "bytes": 19542,
+        "sha256": "c638fe487bb8f7a577c6d018d1e34a5f49ad7b7a21bb86c3e59317a244b64bd7"
+      },
+      "fieldPath": [
+        "sizes",
+        "M2_B",
+        "median"
+      ],
+      "scale": 1,
+      "value": 4667.0,
+      "unit": "B"
+    },
+    {
+      "label": "old30_M2_B_min",
+      "source": "/tmp/PQC_auth_buov_cap_performance_v0_1/docs/thesis/nycu_v0_1/fresh_issuance30_v0_1/recomputed_summary.json",
+      "sourcePin": {
+        "bytes": 19542,
+        "sha256": "c638fe487bb8f7a577c6d018d1e34a5f49ad7b7a21bb86c3e59317a244b64bd7"
+      },
+      "fieldPath": [
+        "sizes",
+        "M2_B",
+        "min"
+      ],
+      "scale": 1,
+      "value": 4667,
+      "unit": "B"
+    },
+    {
+      "label": "old30_M2_B_max",
+      "source": "/tmp/PQC_auth_buov_cap_performance_v0_1/docs/thesis/nycu_v0_1/fresh_issuance30_v0_1/recomputed_summary.json",
+      "sourcePin": {
+        "bytes": 19542,
+        "sha256": "c638fe487bb8f7a577c6d018d1e34a5f49ad7b7a21bb86c3e59317a244b64bd7"
+      },
+      "fieldPath": [
+        "sizes",
+        "M2_B",
+        "max"
+      ],
+      "scale": 1,
+      "value": 4667,
+      "unit": "B"
+    },
+    {
+      "label": "old30_M3_B_mean",
+      "source": "/tmp/PQC_auth_buov_cap_performance_v0_1/docs/thesis/nycu_v0_1/fresh_issuance30_v0_1/recomputed_summary.json",
+      "sourcePin": {
+        "bytes": 19542,
+        "sha256": "c638fe487bb8f7a577c6d018d1e34a5f49ad7b7a21bb86c3e59317a244b64bd7"
+      },
+      "fieldPath": [
+        "sizes",
+        "M3_B",
+        "mean"
+      ],
+      "scale": 1,
+      "value": 128.0,
+      "unit": "B"
+    },
+    {
+      "label": "old30_M3_B_median",
+      "source": "/tmp/PQC_auth_buov_cap_performance_v0_1/docs/thesis/nycu_v0_1/fresh_issuance30_v0_1/recomputed_summary.json",
+      "sourcePin": {
+        "bytes": 19542,
+        "sha256": "c638fe487bb8f7a577c6d018d1e34a5f49ad7b7a21bb86c3e59317a244b64bd7"
+      },
+      "fieldPath": [
+        "sizes",
+        "M3_B",
+        "median"
+      ],
+      "scale": 1,
+      "value": 128.0,
+      "unit": "B"
+    },
+    {
+      "label": "old30_M3_B_min",
+      "source": "/tmp/PQC_auth_buov_cap_performance_v0_1/docs/thesis/nycu_v0_1/fresh_issuance30_v0_1/recomputed_summary.json",
+      "sourcePin": {
+        "bytes": 19542,
+        "sha256": "c638fe487bb8f7a577c6d018d1e34a5f49ad7b7a21bb86c3e59317a244b64bd7"
+      },
+      "fieldPath": [
+        "sizes",
+        "M3_B",
+        "min"
+      ],
+      "scale": 1,
+      "value": 128,
+      "unit": "B"
+    },
+    {
+      "label": "old30_M3_B_max",
+      "source": "/tmp/PQC_auth_buov_cap_performance_v0_1/docs/thesis/nycu_v0_1/fresh_issuance30_v0_1/recomputed_summary.json",
+      "sourcePin": {
+        "bytes": 19542,
+        "sha256": "c638fe487bb8f7a577c6d018d1e34a5f49ad7b7a21bb86c3e59317a244b64bd7"
+      },
+      "fieldPath": [
+        "sizes",
+        "M3_B",
+        "max"
+      ],
+      "scale": 1,
+      "value": 128,
+      "unit": "B"
+    },
+    {
+      "label": "old30_M1_M2_B_mean",
+      "source": "/tmp/PQC_auth_buov_cap_performance_v0_1/docs/thesis/nycu_v0_1/fresh_issuance30_v0_1/recomputed_summary.json",
+      "sourcePin": {
+        "bytes": 19542,
+        "sha256": "c638fe487bb8f7a577c6d018d1e34a5f49ad7b7a21bb86c3e59317a244b64bd7"
+      },
+      "fieldPath": [
+        "sizes",
+        "M1_M2_B",
+        "mean"
+      ],
+      "scale": 1,
+      "value": 22637.8,
+      "unit": "B"
+    },
+    {
+      "label": "old30_M1_M2_B_median",
+      "source": "/tmp/PQC_auth_buov_cap_performance_v0_1/docs/thesis/nycu_v0_1/fresh_issuance30_v0_1/recomputed_summary.json",
+      "sourcePin": {
+        "bytes": 19542,
+        "sha256": "c638fe487bb8f7a577c6d018d1e34a5f49ad7b7a21bb86c3e59317a244b64bd7"
+      },
+      "fieldPath": [
+        "sizes",
+        "M1_M2_B",
+        "median"
+      ],
+      "scale": 1,
+      "value": 22657.0,
+      "unit": "B"
+    },
+    {
+      "label": "old30_M1_M2_B_min",
+      "source": "/tmp/PQC_auth_buov_cap_performance_v0_1/docs/thesis/nycu_v0_1/fresh_issuance30_v0_1/recomputed_summary.json",
+      "sourcePin": {
+        "bytes": 19542,
+        "sha256": "c638fe487bb8f7a577c6d018d1e34a5f49ad7b7a21bb86c3e59317a244b64bd7"
+      },
+      "fieldPath": [
+        "sizes",
+        "M1_M2_B",
+        "min"
+      ],
+      "scale": 1,
+      "value": 22465,
+      "unit": "B"
+    },
+    {
+      "label": "old30_M1_M2_B_max",
+      "source": "/tmp/PQC_auth_buov_cap_performance_v0_1/docs/thesis/nycu_v0_1/fresh_issuance30_v0_1/recomputed_summary.json",
+      "sourcePin": {
+        "bytes": 19542,
+        "sha256": "c638fe487bb8f7a577c6d018d1e34a5f49ad7b7a21bb86c3e59317a244b64bd7"
+      },
+      "fieldPath": [
+        "sizes",
+        "M1_M2_B",
+        "max"
+      ],
+      "scale": 1,
+      "value": 22705,
+      "unit": "B"
+    },
+    {
+      "label": "old30_M1_M2_M3_B_mean",
+      "source": "/tmp/PQC_auth_buov_cap_performance_v0_1/docs/thesis/nycu_v0_1/fresh_issuance30_v0_1/recomputed_summary.json",
+      "sourcePin": {
+        "bytes": 19542,
+        "sha256": "c638fe487bb8f7a577c6d018d1e34a5f49ad7b7a21bb86c3e59317a244b64bd7"
+      },
+      "fieldPath": [
+        "sizes",
+        "M1_M2_M3_B",
+        "mean"
+      ],
+      "scale": 1,
+      "value": 22765.8,
+      "unit": "B"
+    },
+    {
+      "label": "old30_M1_M2_M3_B_median",
+      "source": "/tmp/PQC_auth_buov_cap_performance_v0_1/docs/thesis/nycu_v0_1/fresh_issuance30_v0_1/recomputed_summary.json",
+      "sourcePin": {
+        "bytes": 19542,
+        "sha256": "c638fe487bb8f7a577c6d018d1e34a5f49ad7b7a21bb86c3e59317a244b64bd7"
+      },
+      "fieldPath": [
+        "sizes",
+        "M1_M2_M3_B",
+        "median"
+      ],
+      "scale": 1,
+      "value": 22785.0,
+      "unit": "B"
+    },
+    {
+      "label": "old30_M1_M2_M3_B_min",
+      "source": "/tmp/PQC_auth_buov_cap_performance_v0_1/docs/thesis/nycu_v0_1/fresh_issuance30_v0_1/recomputed_summary.json",
+      "sourcePin": {
+        "bytes": 19542,
+        "sha256": "c638fe487bb8f7a577c6d018d1e34a5f49ad7b7a21bb86c3e59317a244b64bd7"
+      },
+      "fieldPath": [
+        "sizes",
+        "M1_M2_M3_B",
+        "min"
+      ],
+      "scale": 1,
+      "value": 22593,
+      "unit": "B"
+    },
+    {
+      "label": "old30_M1_M2_M3_B_max",
+      "source": "/tmp/PQC_auth_buov_cap_performance_v0_1/docs/thesis/nycu_v0_1/fresh_issuance30_v0_1/recomputed_summary.json",
+      "sourcePin": {
+        "bytes": 19542,
+        "sha256": "c638fe487bb8f7a577c6d018d1e34a5f49ad7b7a21bb86c3e59317a244b64bd7"
+      },
+      "fieldPath": [
+        "sizes",
+        "M1_M2_M3_B",
+        "max"
+      ],
+      "scale": 1,
+      "value": 22833,
+      "unit": "B"
+    },
+    {
+      "label": "old30_pi_iss_B_mean",
+      "source": "/tmp/PQC_auth_buov_cap_performance_v0_1/docs/thesis/nycu_v0_1/fresh_issuance30_v0_1/recomputed_summary.json",
+      "sourcePin": {
+        "bytes": 19542,
+        "sha256": "c638fe487bb8f7a577c6d018d1e34a5f49ad7b7a21bb86c3e59317a244b64bd7"
+      },
+      "fieldPath": [
+        "sizes",
+        "pi_iss_B",
+        "mean"
+      ],
+      "scale": 1,
+      "value": 995632.0,
+      "unit": "B"
+    },
+    {
+      "label": "old30_pi_iss_B_median",
+      "source": "/tmp/PQC_auth_buov_cap_performance_v0_1/docs/thesis/nycu_v0_1/fresh_issuance30_v0_1/recomputed_summary.json",
+      "sourcePin": {
+        "bytes": 19542,
+        "sha256": "c638fe487bb8f7a577c6d018d1e34a5f49ad7b7a21bb86c3e59317a244b64bd7"
+      },
+      "fieldPath": [
+        "sizes",
+        "pi_iss_B",
+        "median"
+      ],
+      "scale": 1,
+      "value": 995632.0,
+      "unit": "B"
+    },
+    {
+      "label": "old30_pi_iss_B_min",
+      "source": "/tmp/PQC_auth_buov_cap_performance_v0_1/docs/thesis/nycu_v0_1/fresh_issuance30_v0_1/recomputed_summary.json",
+      "sourcePin": {
+        "bytes": 19542,
+        "sha256": "c638fe487bb8f7a577c6d018d1e34a5f49ad7b7a21bb86c3e59317a244b64bd7"
+      },
+      "fieldPath": [
+        "sizes",
+        "pi_iss_B",
+        "min"
+      ],
+      "scale": 1,
+      "value": 995632,
+      "unit": "B"
+    },
+    {
+      "label": "old30_pi_iss_B_max",
+      "source": "/tmp/PQC_auth_buov_cap_performance_v0_1/docs/thesis/nycu_v0_1/fresh_issuance30_v0_1/recomputed_summary.json",
+      "sourcePin": {
+        "bytes": 19542,
+        "sha256": "c638fe487bb8f7a577c6d018d1e34a5f49ad7b7a21bb86c3e59317a244b64bd7"
+      },
+      "fieldPath": [
+        "sizes",
+        "pi_iss_B",
+        "max"
+      ],
+      "scale": 1,
+      "value": 995632,
+      "unit": "B"
+    },
+    {
+      "label": "old30_statement_B_mean",
+      "source": "/tmp/PQC_auth_buov_cap_performance_v0_1/docs/thesis/nycu_v0_1/fresh_issuance30_v0_1/recomputed_summary.json",
+      "sourcePin": {
+        "bytes": 19542,
+        "sha256": "c638fe487bb8f7a577c6d018d1e34a5f49ad7b7a21bb86c3e59317a244b64bd7"
+      },
+      "fieldPath": [
+        "sizes",
+        "statement_B",
+        "mean"
+      ],
+      "scale": 1,
+      "value": 1032.0,
+      "unit": "B"
+    },
+    {
+      "label": "old30_statement_B_median",
+      "source": "/tmp/PQC_auth_buov_cap_performance_v0_1/docs/thesis/nycu_v0_1/fresh_issuance30_v0_1/recomputed_summary.json",
+      "sourcePin": {
+        "bytes": 19542,
+        "sha256": "c638fe487bb8f7a577c6d018d1e34a5f49ad7b7a21bb86c3e59317a244b64bd7"
+      },
+      "fieldPath": [
+        "sizes",
+        "statement_B",
+        "median"
+      ],
+      "scale": 1,
+      "value": 1032.0,
+      "unit": "B"
+    },
+    {
+      "label": "old30_statement_B_min",
+      "source": "/tmp/PQC_auth_buov_cap_performance_v0_1/docs/thesis/nycu_v0_1/fresh_issuance30_v0_1/recomputed_summary.json",
+      "sourcePin": {
+        "bytes": 19542,
+        "sha256": "c638fe487bb8f7a577c6d018d1e34a5f49ad7b7a21bb86c3e59317a244b64bd7"
+      },
+      "fieldPath": [
+        "sizes",
+        "statement_B",
+        "min"
+      ],
+      "scale": 1,
+      "value": 1032,
+      "unit": "B"
+    },
+    {
+      "label": "old30_statement_B_max",
+      "source": "/tmp/PQC_auth_buov_cap_performance_v0_1/docs/thesis/nycu_v0_1/fresh_issuance30_v0_1/recomputed_summary.json",
+      "sourcePin": {
+        "bytes": 19542,
+        "sha256": "c638fe487bb8f7a577c6d018d1e34a5f49ad7b7a21bb86c3e59317a244b64bd7"
+      },
+      "fieldPath": [
+        "sizes",
+        "statement_B",
+        "max"
+      ],
+      "scale": 1,
+      "value": 1032,
+      "unit": "B"
+    },
+    {
+      "label": "old30_consumer_CAP_Verify_core_mean",
+      "source": "/tmp/PQC_auth_buov_cap_performance_v0_1/docs/thesis/nycu_v0_1/fresh_issuance30_v0_1/recomputed_summary.json",
+      "sourcePin": {
+        "bytes": 19542,
+        "sha256": "c638fe487bb8f7a577c6d018d1e34a5f49ad7b7a21bb86c3e59317a244b64bd7"
+      },
+      "fieldPath": [
+        "nested",
+        "consumer_CAP_Verify_core",
+        "mean"
+      ],
+      "scale": 1e-06,
+      "value": 135.9478588,
+      "unit": "ms"
+    },
+    {
+      "label": "old30_online_fgs_native_cap_verify_mean",
+      "source": "/tmp/PQC_auth_buov_cap_performance_v0_1/docs/thesis/nycu_v0_1/fresh_issuance30_v0_1/recomputed_summary.json",
+      "sourcePin": {
+        "bytes": 19542,
+        "sha256": "c638fe487bb8f7a577c6d018d1e34a5f49ad7b7a21bb86c3e59317a244b64bd7"
+      },
+      "fieldPath": [
+        "nested",
+        "online_fgs_native_cap_verify",
+        "mean"
+      ],
+      "scale": 1e-06,
+      "value": 134.5674084,
+      "unit": "ms"
+    },
+    {
+      "label": "old30_pi_iss_Prove_core_mean",
+      "source": "/tmp/PQC_auth_buov_cap_performance_v0_1/docs/thesis/nycu_v0_1/fresh_issuance30_v0_1/recomputed_summary.json",
+      "sourcePin": {
+        "bytes": 19542,
+        "sha256": "c638fe487bb8f7a577c6d018d1e34a5f49ad7b7a21bb86c3e59317a244b64bd7"
+      },
+      "fieldPath": [
+        "nested",
+        "pi_iss_Prove_core",
+        "mean"
+      ],
+      "scale": 1e-09,
+      "value": 5.017485446166667,
+      "unit": "s"
+    },
+    {
+      "label": "old30_pi_iss_Verify_core_mean",
+      "source": "/tmp/PQC_auth_buov_cap_performance_v0_1/docs/thesis/nycu_v0_1/fresh_issuance30_v0_1/recomputed_summary.json",
+      "sourcePin": {
+        "bytes": 19542,
+        "sha256": "c638fe487bb8f7a577c6d018d1e34a5f49ad7b7a21bb86c3e59317a244b64bd7"
+      },
+      "fieldPath": [
+        "nested",
+        "pi_iss_Verify_core",
+        "mean"
+      ],
+      "scale": 1e-09,
+      "value": 1.6432248142666668,
+      "unit": "s"
+    }
+  ]
+}

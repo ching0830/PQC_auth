@@ -1,0 +1,39 @@
+[package]
+name = "pqsat-binius-f7-research"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[[bin]]
+name = "pqsat-binius-target128-research"
+path = "src/target128_main.rs"
+
+[dependencies]
+binius-iop = { path = "@BINIUS@/crates/iop" }
+anyhow = "1.0.98"
+bytes = "=1.12.1"
+binius-core = { path = "@BINIUS@/crates/core" }
+binius-frontend = { path = "@BINIUS@/crates/frontend" }
+binius-circuits = { path = "@BINIUS@/crates/circuits" }
+binius-hash = { path = "@BINIUS@/crates/hash" }
+binius-prover = { path = "@BINIUS@/crates/prover", default-features = false }
+binius-transcript = { path = "@BINIUS@/crates/transcript" }
+binius-utils = { path = "@BINIUS@/crates/utils" }
+binius-verifier = { path = "@BINIUS@/crates/verifier" }
+rand = { version = "=0.10.1", features = ["std", "std_rng", "thread_rng"] }
+serde_json = "1.0.140"
+sha3 = "0.12.0"
+
+[dev-dependencies]
+binius-iop-prover = { path = "@BINIUS@/crates/iop-prover" }
+binius-field = { path = "@BINIUS@/crates/field" }
+binius-math = { path = "@BINIUS@/crates/math" }
+binius-compute = { path = "@BINIUS@/crates/compute" }
+
+[profile.release]
+opt-level = 3
+debug = false
+lto = false
+codegen-units = 1
+incremental = false
+strip = true

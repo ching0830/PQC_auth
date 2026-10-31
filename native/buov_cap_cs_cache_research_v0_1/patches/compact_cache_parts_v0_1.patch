@@ -1,0 +1,100 @@
+--- a/crates/core/src/constraint_system/stored_operand.rs
++++ b/crates/core/src/constraint_system/stored_operand.rs
+@@ -67,6 +67,43 @@
+     fn from_iter<T:IntoIterator<Item=ShiftedValueIndex>>(terms:T)->Self {terms.into_iter().collect::<Operand>().into()}
+ }
+ impl StoredOperand {
++    /// Read-only PUBLIC normalized wire structure. Never contains witness values.
++    pub fn public_compact_parts(&self)->(&Arc<Vec<ShiftedValueIndex>>,[u32;2]) {
++        (&self.template,self.private_bases)
++    }
++    /// Import an already shared template, without cloning/reinterning its Vec.
++    /// Checks BEFORE StoredTerms can assert: no invalid private decode or alias,
++    /// and exactly the existing first/far/nearest-base normalization spelling.
++    pub fn try_from_public_compact_parts(template:Arc<Vec<ShiftedValueIndex>>,private_bases:[u32;2])
++        ->Result<Self,CompactOperandError> {
++        if private_bases.iter().any(|&base|base>=PRIVATE_CAP) {return Err(CompactOperandError);}
++        let mut first=None;let mut far=None;
++        for term in template.iter() {
++            if term.value_index.segment()==ValueSegment::Scratch {return Err(CompactOperandError);}
++            for shift in term.shift_seq {
++                if !shift.is_canonical() || usize::from(shift.amount)>=shift.variant.max_amount() {
++                    return Err(CompactOperandError);
++                }
++            }
++            if term.is_unshifted() && term.is_doubly_shifted() {return Err(CompactOperandError);}
++            if term.is_doubly_shifted()
++                && super::Shift::compose(term.inner(),term.outer())!=super::Composition::Pair {
++                return Err(CompactOperandError);
++            }
++            if term.value_index.segment()!=ValueSegment::Private {continue;}
++            let encoded=term.value_index.index();let cluster=(encoded>>DELTA_BITS) as usize;
++            let delta=encoded&DELTA_MASK;
++            let index=delta.wrapping_add(private_bases[cluster])&DELTA_MASK;
++            if index>=PRIVATE_CAP {return Err(CompactOperandError);}
++            if first.is_none() {first=Some(index);}
++            if far.is_none() && index.abs_diff(private_bases[0])>SECOND_CLUSTER_DISTANCE {far=Some(index);}
++            let nearest=usize::from(index.abs_diff(private_bases[1])<index.abs_diff(private_bases[0]));
++            if nearest!=cluster {return Err(CompactOperandError);}
++        }
++        if private_bases[0]!=first.unwrap_or(0)
++            || private_bases[1]!=far.unwrap_or(private_bases[0]) {return Err(CompactOperandError);}
++        Ok(Self{template,private_bases})
++    }
+     pub fn len(&self)->usize {self.template.len()}
+     pub fn is_empty(&self)->bool {self.template.is_empty()}
+     pub fn iter(&self)->StoredTerms<'_> {StoredTerms{terms:self.template.iter(),private_bases:self.private_bases}}
+@@ -95,6 +132,14 @@
+         Ok(Self{private_bases,template:Arc::new(terms)})
+     }
+ }
++
++/// Invalid public compact operand spelling; no secret diagnostics.
++#[derive(Clone,Copy,Debug,PartialEq,Eq)]
++pub struct CompactOperandError;
++impl fmt::Display for CompactOperandError {
++    fn fmt(&self,f:&mut fmt::Formatter<'_>)->fmt::Result {f.write_str("invalid public compact operand")}
++}
++impl std::error::Error for CompactOperandError {}
+
+ #[derive(Clone,Debug,Default)]
+ pub struct TemplateMetrics {
+@@ -143,6 +188,38 @@
+     use super::*;
+     use super::super::{Shift,ValueVec};
+     use crate::Word;
++    #[test]
++    fn public_compact_parts_preserve_sharing_and_original_v10_bytes() {
++        let mut interner=TemplateInterner::new(16,4096);
++        for raw in [vec![],vec![ShiftedValueIndex::plain(ValueIndex::constant(0))],
++            vec![ShiftedValueIndex::rotr(ValueIndex::private(500),7),
++                 ShiftedValueIndex::plain(ValueIndex::private(1_000_000)),
++                 ShiftedValueIndex::plain(ValueIndex::private(499))]] {
++            let stored=interner.intern(raw.clone()).unwrap();
++            let (template,bases)=stored.public_compact_parts();
++            let restored=StoredOperand::try_from_public_compact_parts(Arc::clone(template),bases).unwrap();
++            assert!(restored.shares_template_with(&stored));
++            assert_eq!(restored.iter().collect::<Operand>(),raw);
++            let mut a=Vec::new();stored.serialize(&mut a).unwrap();
++            let mut b=Vec::new();restored.serialize(&mut b).unwrap();assert_eq!(a,b);
++        }
++    }
++    #[test]
++    fn public_compact_parts_reject_invalid_bases_decodes_shifts_and_scratch() {
++        let original:StoredOperand=vec![ShiftedValueIndex::plain(ValueIndex::private(50))].into();
++        let (template,_)=original.public_compact_parts();
++        for bases in [[PRIVATE_CAP,0],[0,1],[0,5000],[PRIVATE_CAP-1,PRIVATE_CAP]] {
++            assert!(StoredOperand::try_from_public_compact_parts(Arc::clone(template),bases).is_err());
++        }
++        let bad=vec![ShiftedValueIndex::plain(ValueIndex::private(DELTA_MASK))];
++        assert!(StoredOperand::try_from_public_compact_parts(Arc::new(bad),[0,0]).is_err());
++        let bad=vec![ShiftedValueIndex::plain(ValueIndex::scratch(0))];
++        assert!(StoredOperand::try_from_public_compact_parts(Arc::new(bad),[0,0]).is_err());
++        let bad=vec![ShiftedValueIndex::new(ValueIndex::constant(0),[super::super::Shift::IDENTITY,super::super::Shift::rotr(3)])];
++        assert!(StoredOperand::try_from_public_compact_parts(Arc::new(bad),[0,0]).is_err());
++        let none=Arc::new(vec![]);
++        assert!(StoredOperand::try_from_public_compact_parts(none,[1,1]).is_err());
++    }
+     #[test]
+     fn shifted_private_templates_reuse_without_moving_constants_or_inout() {
+         let terms=|base|vec![ShiftedValueIndex::plain(ValueIndex::constant(3)),

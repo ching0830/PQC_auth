@@ -1,0 +1,348 @@
+--- /dev/null
++++ b/crates/prover/src/protocols/shift/key_collection/streaming.rs
+@@ -0,0 +1,111 @@
++// Copyright 2026 The Binius Developers
++// Local research storage implementation: the protocol polynomial is unchanged.
++
++use binius_compute::Allocator;
++use binius_core::{constraint_system::{ConstraintSystem, InoutSegment, Operand}, word::Word};
++use binius_field::{BinaryField, Field, PackedField};
++use binius_math::{FieldBuffer, FieldVec, multilinear::eq::eq_ind_partial_eval};
++use super::{dense_shift_encoding::DenseShiftEncoding, key_segment::KeySegment};
++use crate::protocols::shift::{PreparedOperandClaims, SegmentWords, ShiftChallenge, monster::OuterSlotWeights, phase_1::row_len};
++
++/// Traverses source operands with exactly the ZERO/AND/IMUL/BMUL column layout.
++fn operands(cs: &ConstraintSystem) -> impl Iterator<Item = (usize, usize, &Operand)> {
++    fn walk<C: AsRef<[Operand; N]>, const N: usize>(first: usize, cs: &[C])
++        -> impl Iterator<Item = (usize, usize, &Operand)> {
++        cs.iter().enumerate().flat_map(move |(row, c)| {
++            c.as_ref().iter().enumerate().map(move |(col, op)| (first + col, row, op))
++        })
++    }
++    walk(0, &cs.zero_constraints).chain(walk(1, &cs.and_constraints))
++        .chain(walk(4, &cs.imul_constraints)).chain(walk(8, &cs.bmul_constraints))
++}
++
++/// Only the bounded set of distinct shift sequences is materialized, never term references.
++pub(super) fn encodings(cs: &ConstraintSystem, inout: InoutSegment) -> (KeySegment, KeySegment) {
++    let public_words = cs.n_public_words(inout);
++    let sequences = |hidden: bool| {
++        operands(cs).flat_map(move |(_, _, terms)| terms.iter().filter_map(move |term| {
++            let word = cs.word_offset(term.value_index);
++            ((word >= public_words) == hidden).then_some([term.inner(), term.outer()])
++        }))
++    };
++    let segment = |hidden| KeySegment {
++        keys: Vec::new(), key_ranges: Vec::new(), constraint_indices: Vec::new(),
++        dense_shift_enc: DenseShiftEncoding::new(sequences(hidden)),
++    };
++    (segment(false), segment(true))
++}
++
++/// Evaluates the same witness-and-batching rows as indexed keys, directly from source terms.
++/// Distribution over every occurrence preserves repeated-term cancellation without storing keys.
++pub(super) fn build_g<F: Field, P: PackedField<Scalar = F>>(
++    cs: &ConstraintSystem,
++    inout: InoutSegment,
++    encodings: [&DenseShiftEncoding; 2],
++    words: SegmentWords<'_>,
++    prepared: &PreparedOperandClaims<F>,
++) -> (Box<[P]>, Box<[P]>) {
++    let n_public = cs.n_public_words(inout);
++    assert_eq!(words.public.len(), n_public);
++    assert_eq!(words.hidden.len(), cs.n_hidden_words(inout));
++    let row_len = row_len::<P>();
++    let mut rows = encodings.map(|enc| vec![P::default(); enc.len() * row_len].into_boxed_slice());
++    for (column, constraint, terms) in operands(cs) {
++        let weight = prepared.r_x_tensor[constraint] * prepared.operand_weights[column];
++        for term in terms {
++            let absolute = cs.word_offset(term.value_index);
++            let (segment, word) = if absolute < n_public {
++                (0, words.public[absolute])
++            } else { (1, words.hidden[absolute - n_public]) };
++            let shift = encodings[segment].dense_idx([term.inner(), term.outer()]) as usize;
++            let start = shift * row_len;
++            let mut set_bits = word.0;
++            while set_bits != 0 {
++                let bit = set_bits.trailing_zeros() as usize;
++                let slot = &mut rows[segment][start + bit / P::WIDTH];
++                let lane = bit % P::WIDTH;
++                slot.set(lane, slot.get(lane) + weight);
++                set_bits &= set_bits - 1;
++            }
++        }
++    }
++    let [public, hidden] = rows;
++    (public, hidden)
++}
++
++/// Builds the exact two monster polynomials without PackedRef/ConstraintIndex/key arrays.
++pub(super) fn build_monster<F, P: PackedField<Scalar = F>, A: Allocator>(
++    cs: &ConstraintSystem,
++    inout: InoutSegment,
++    encodings: [&DenseShiftEncoding; 2],
++    alloc: &A,
++    prepared: &PreparedOperandClaims<F>,
++    h_eval: F,
++    inner: &ShiftChallenge<F>,
++    outer: &ShiftChallenge<F>,
++) -> (FieldVec<P, A>, FieldVec<P, A>)
++where F: BinaryField {
++    let mut public = FieldBuffer::zeros_in(alloc, cs.log_public_words(inout));
++    let mut hidden = FieldBuffer::zeros_in(alloc, cs.log_witness_words(inout));
++    let n_public = cs.n_public_words(inout);
++    let r_v = eq_ind_partial_eval::<F>(&inner.variant);
++    let r_s = eq_ind_partial_eval::<F>(&inner.amount);
++    let outer_weights = OuterSlotWeights::<F>::new(outer);
++    let scalars = encodings.map(|encoding| encoding.iter().map(|[inner, outer]| {
++        h_eval * r_v.as_ref()[inner.variant as usize]
++            * r_s.as_ref()[inner.amount as usize] * outer_weights.weight(outer)
++    }).collect::<Vec<_>>());
++    for (column, constraint, terms) in operands(cs) {
++        let weight = prepared.r_x_tensor[constraint] * prepared.operand_weights[column];
++        for term in terms {
++            let absolute = cs.word_offset(term.value_index);
++            let (segment, index) = if absolute < n_public { (0, absolute) }
++                else { (1, absolute - n_public) };
++            let shift = encodings[segment].dense_idx([term.inner(), term.outer()]) as usize;
++            let contribution = weight * scalars[segment][shift];
++            if segment == 0 { public.set(index, public.get(index) + contribution); }
++            else { hidden.set(index, hidden.get(index) + contribution); }
++        }
++    }
++    (public, hidden)
++}
+--- a/crates/prover/src/protocols/shift/key_collection/mod.rs
++++ b/crates/prover/src/protocols/shift/key_collection/mod.rs
+@@ -8,6 +8,7 @@
+ mod dense_shift_encoding;
+ mod key;
+ mod key_segment;
++mod streaming;
+ 
+ pub use collection::KeyCollection;
+ pub use dense_shift_encoding::DenseShiftEncoding;
+--- a/crates/prover/src/protocols/shift/key_collection/collection.rs
++++ b/crates/prover/src/protocols/shift/key_collection/collection.rs
+@@ -1,5 +1,7 @@
+ // Copyright 2025 Irreducible Inc.
+ // Copyright 2026 The Binius Developers
++
++use std::sync::Arc;
+ 
+ use binius_compute::{Allocator, VecLike};
+ use binius_core::constraint_system::{ConstraintSystem, InoutSegment};
+@@ -16,9 +18,9 @@
+ use bytes::{Buf, BufMut};
+ use tracing::instrument;
+ 
+-use super::{builder, dense_shift_encoding::DenseShiftEncoding, key_segment::KeySegment};
++use super::{builder, streaming, dense_shift_encoding::DenseShiftEncoding, key_segment::KeySegment};
+ use crate::protocols::shift::{
+-	claims::PreparedOperandClaims, monster::OuterSlotWeights, shift_ind::ShiftChallenge,
++	claims::PreparedOperandClaims, monster::OuterSlotWeights, shift_ind::ShiftChallenge, SegmentWords,
+ };
+ 
+ /// The prover's complete view of a constraint system's shift keys, split by value-vector segment.
+@@ -33,6 +35,9 @@
+ 	pub public: KeySegment,
+ 	/// The keys of the hidden segment: private words.
+ 	pub hidden: KeySegment,
++    /// Present only in the local research streaming implementation. Indexed segment arrays are
++    /// empty in this mode; their dense shift encodings remain available to phase one.
++    pub(super) source: Option<(Arc<ConstraintSystem>, InoutSegment)>,
+ }
+ 
+ impl KeyCollection {
+@@ -50,6 +55,34 @@
+ 		builder::build_key_collection(cs, inout)
+ 	}
+ 
++    /// Streams immutable shared source terms instead of expanding indexed key arrays.
++    /// The original indexed builder is retained as a compatibility and differential control.
++    pub fn from_shared(cs: Arc<ConstraintSystem>, inout: InoutSegment) -> Self {
++        let (public, hidden) = streaming::encodings(&cs, inout);
++        Self { public, hidden, source: Some((cs, inout)) }
++    }
++
++    pub fn is_streaming(&self) -> bool { self.source.is_some() }
++
++    pub fn n_public_words(&self) -> usize {
++        self.source.as_ref().map_or_else(|| self.public.n_words(), |(cs, inout)| cs.n_public_words(*inout))
++    }
++
++    pub fn n_hidden_words(&self) -> usize {
++        self.source.as_ref().map_or_else(|| self.hidden.n_words(), |(cs, inout)| cs.n_hidden_words(*inout))
++    }
++
++    /// Accumulates both segments, selecting the indexed or streamed representation explicitly.
++    pub fn build_g<F: binius_field::Field, P: PackedField<Scalar = F>>(
++        &self, words: SegmentWords<'_>, prepared: &PreparedOperandClaims<F>,
++    ) -> (Box<[P]>, Box<[P]>) {
++        if let Some((cs, inout)) = &self.source {
++            streaming::build_g(cs, *inout, [&self.public.dense_shift_enc, &self.hidden.dense_shift_enc], words, prepared)
++        } else {
++            (self.public.build_g(words.public, prepared), self.hidden.build_g(words.hidden, prepared))
++        }
++    }
++
+ 	/// The base-2 logarithm of the hidden segment length in words, rounded up to a power of two.
+ 	///
+ 	/// Matches the corresponding quantity for the constraint system the collection was built from.
+@@ -58,8 +91,8 @@
+ 	/// ```text
+ 	/// log_witness_words = ceil_log2( hidden segment length in words )
+ 	/// ```
+-	pub const fn log_witness_words(&self) -> usize {
+-		log2_ceil_usize(self.hidden.n_words())
++	pub fn log_witness_words(&self) -> usize {
++		log2_ceil_usize(self.n_hidden_words())
+ 	}
+ 
+ 	/// Builds the constraint-matrix multilinear's two segments.
+@@ -87,6 +120,9 @@
+ 	where
+ 		F: BinaryField,
+ 	{
++        if let Some((cs, inout)) = &self.source {
++            return streaming::build_monster(cs, *inout, [&self.public.dense_shift_enc, &self.hidden.dense_shift_enc], alloc, prepared, h_eval, inner, outer);
++        }
+ 		let r_v_tensor = eq_ind_partial_eval::<F>(&inner.variant);
+ 		let r_s_tensor = eq_ind_partial_eval::<F>(&inner.amount);
+ 
+@@ -191,6 +227,12 @@
+ 
+ impl SerializeBytes for KeyCollection {
+ 	fn serialize(&self, mut write_buf: impl BufMut) -> Result<(), SerializationError> {
++        if self.source.is_some() {
++            return Err(SerializationError::InvalidConstruction {
++                name: "KeyCollection::streaming_serialization_disabled",
++            });
++        }
++
+ 		// Version for forward compatibility; version 3 introduced the dense shift encoding, and
+ 		// version 4 dropped the operation from keys, which now span every operand column.
+ 		const VERSION: u32 = 4;
+@@ -214,7 +256,7 @@
+ 		let public = KeySegment::deserialize(&mut read_buf)?;
+ 		let hidden = KeySegment::deserialize(read_buf)?;
+ 
+-		Ok(KeyCollection { public, hidden })
++		Ok(KeyCollection { public, hidden, source: None })
+ 	}
+ }
+ 
+@@ -400,4 +442,54 @@
+ 			);
+ 		}
+ 	}
++    #[test]
++    fn streaming_keys_match_indexed_rows_and_monsters() {
++        use binius_compute::GlobalAllocator;
++        use binius_field::{Field, Ghash128b as F, PackedGhash2x128b as P};
++        use binius_math::test_utils::random_scalars;
++        use rand::{SeedableRng, rngs::StdRng};
++        let mut rng = StdRng::seed_from_u64(99);
++        for inout in [InoutSegment::Public, InoutSegment::Hidden] {
++            let mut cs = shifted_constraint_system();
++            cs.n_inout = 3;
++            let dup = ShiftedValueIndex::new(ValueIndex::private(2), [Shift::sar(9), Shift::rotr(11)]);
++            cs.zero_constraints.push(binius_core::constraint_system::ZeroConstraint([vec![dup, dup]]));
++            cs.and_constraints[0].0[1].push(ShiftedValueIndex::sll(ValueIndex::inout(2), 3));
++            let cs = Arc::new(cs);
++            let old = KeyCollection::build(&cs, inout);
++            let new = KeyCollection::from_shared(Arc::clone(&cs), inout);
++            assert!(new.is_streaming());
++            assert_eq!(new.public.keys.len() + new.hidden.keys.len(), 0);
++            assert_eq!(new.public.constraint_indices.len() + new.hidden.constraint_indices.len(), 0);
++            assert_eq!(new.public.key_ranges.len() + new.hidden.key_ranges.len(), 0);
++            assert!(Arc::ptr_eq(&cs, &new.source.as_ref().unwrap().0));
++            assert_eq!(new.n_public_words(), old.n_public_words());
++            assert_eq!(new.n_hidden_words(), old.n_hidden_words());
++            let prepared = PreparedOperandClaims {
++                batched_eval: F::ONE, r_zhat_prime: F::ONE,
++                r_x_tensor: random_scalars(&mut rng, 1 << binius_verifier::reduction::log_constraint_point(&cs)),
++                operand_weights: random_scalars(&mut rng, 16),
++            };
++            let public_words = vec![Word(0x7a33a5a5ffff0013); cs.n_public_words(inout)];
++            let hidden_words = vec![Word(0x1288aa5500011010); cs.n_hidden_words(inout)];
++            let old_g = old.build_g::<_, P>(SegmentWords { public: &public_words, hidden: &hidden_words }, &prepared);
++            let new_g = new.build_g::<_, P>(SegmentWords { public: &public_words, hidden: &hidden_words }, &prepared);
++            assert_eq!(old_g, new_g);
++            let challenge = |rng: &mut StdRng| ShiftChallenge {
++                variant: random_scalars(rng, 3), amount: random_scalars(rng, 6),
++            };
++            let inner = challenge(&mut rng);
++            let outer = challenge(&mut rng);
++            let old_m = old.build_monster_segments::<_, P, _>(&GlobalAllocator, &prepared, F::ONE, &inner, &outer);
++            let new_m = new.build_monster_segments::<_, P, _>(&GlobalAllocator, &prepared, F::ONE, &inner, &outer);
++            assert_eq!(old_m.0.as_ref(), new_m.0.as_ref());
++            assert_eq!(old_m.1.as_ref(), new_m.1.as_ref());
++            let mut output = Vec::new();
++            assert!(matches!(new.serialize(&mut output), Err(SerializationError::InvalidConstruction {
++                name: "KeyCollection::streaming_serialization_disabled"
++            })));
++            assert!(output.is_empty());
++        }
++    }
++
+ }
+--- a/crates/prover/src/protocols/shift/key_collection/builder.rs
++++ b/crates/prover/src/protocols/shift/key_collection/builder.rs
+@@ -625,6 +625,7 @@
+ 	let refs = scatter_references(cs, &offsets);
+ 
+ 	KeyCollection {
++        source: None,
+ 		public: build_segment(&offsets[..=n_public_words], &refs, &public_codes),
+ 		hidden: build_segment(&offsets[n_public_words..], &refs, &hidden_codes),
+ 	}
+@@ -781,6 +782,7 @@
+ 
+ 			let hidden = lists.0.split_off(cs.n_public_words(inout));
+ 			KeyCollection {
++                source: None,
+ 				public: build_segment(lists.0),
+ 				hidden: build_segment(hidden),
+ 			}
+--- a/crates/prover/src/protocols/shift/phase_1.rs
++++ b/crates/prover/src/protocols/shift/phase_1.rs
+@@ -64,12 +64,7 @@
+ 	// Accumulate the witness-and-batching rows of the public and hidden segments separately.
+ 	// The public words are the prefix of the value vector.
+ 	// Each segment's key ranges are relative to its own segment.
+-	let public = key_collection
+-		.public
+-		.build_g::<_, P>(words.public, prepared);
+-	let hidden = key_collection
+-		.hidden
+-		.build_g::<_, P>(words.hidden, prepared);
++	let (public, hidden) = key_collection.build_g::<_, P>(words, prepared);
+ 	let g = SparseShiftRows::from_segments([
+ 		(&public, &key_collection.public.dense_shift_enc),
+ 		(&hidden, &key_collection.hidden.dense_shift_enc),
+--- a/crates/prover/src/zk_config.rs
++++ b/crates/prover/src/zk_config.rs
+@@ -68,8 +68,8 @@
+ 	pub fn setup(zk_verifier: &ZKVerifier<H>) -> Result<Self, Error> {
+ 		let key_collection = {
+ 			let _guard = tracing::debug_span!("Build key collection").entered();
+-			KeyCollection::build(
+-				zk_verifier.inner_iop_verifier().constraint_system(),
++			KeyCollection::from_shared(
++				zk_verifier.inner_iop_verifier().constraint_system_arc(),
+ 				InoutSegment::Public,
+ 			)
+ 		};
+@@ -230,6 +230,11 @@
+ 	Output<H::LeafHash>: SerializeBytes + DeserializeBytes,
+ {
+ 	fn serialize(&self, mut write_buf: impl BufMut) -> Result<(), SerializationError> {
++        if self.inner_iop_prover.key_collection().is_streaming() {
++            return Err(SerializationError::InvalidConstruction {
++                name: "ZKProver::streaming_serialization_disabled",
++            });
++        }
+ 		const VERSION: u32 = 1;
+ 		VERSION.serialize(&mut write_buf)?;
+ 		self.inner_iop_verifier

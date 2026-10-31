@@ -1,0 +1,388 @@
+--- a/crates/hash-prover/src/binary_merkle_tree.rs
++++ b/crates/hash-prover/src/binary_merkle_tree.rs
+@@ -48,6 +48,10 @@
+ 		/// The depth of the tree, which is its deepest valid layer.
+ 		log_len: usize,
+ 	},
++    /// A borrowed codeword no longer matches a committed checkpoint.
++    #[error("codeword data does not match committed checkpoint {checkpoint_index}")]
++    CheckpointDataMismatch { checkpoint_index: usize },
++
+ 	/// A branch is asked for at a leaf the tree does not have.
+ 	#[error("leaf index {index} is outside the 2^{log_len} leaves")]
+ 	IndexOutOfRange {
+@@ -306,6 +310,40 @@
+ 	}
+ }
+ 
++/// Builds only the retained tree above already-hashed subtree roots.
++///
++/// One final allocation holds the prehashed base layer and every layer above it. The roots are
++/// written directly into that allocation; no leaf-hash or second checkpoint array is retained.
++impl<D: Clone + Send + Sync, A: Allocator> BinaryMerkleTree<D, A> {
++    pub fn from_prehashed_leaves<C, I>(leaves: I, compression: &C, alloc: &A) -> Self
++    where
++        C: CompressionFunction<D, 2>,
++        I: IndexedParallelIterator<Item = D>,
++    {
++        let n_leaves = leaves.len();
++        let log_len = checked_log_2(n_leaves);
++        let total = n_leaves.checked_mul(2).and_then(|n| n.checked_sub(1))
++            .expect("precondition: retained Merkle tree length fits usize");
++        let mut nodes = alloc.alloc::<D>(total);
++        leaves.zip(&mut nodes.spare_capacity_mut()[..n_leaves]).for_each(|(digest, slot)| {
++            slot.write(digest);
++        });
++        // SAFETY: the indexed zip above writes every one of these n_leaves slots exactly once.
++        unsafe { nodes.set_len(n_leaves); }
++        let (mut start, mut width) = (0, n_leaves);
++        while width > 1 {
++            for i in 0..width / 2 {
++                let digest = compression.compress([nodes[start + 2 * i].clone(), nodes[start + 2 * i + 1].clone()]);
++                nodes.push(digest);
++            }
++            start += width;
++            width /= 2;
++        }
++        assert_eq!(nodes.len(), total);
++        Self { log_len, inner_nodes: nodes }
++    }
++}
++
+ impl<D: Clone + Send, A: Allocator> BinaryMerkleTree<D, A> {
+ 	/// Clones the root digest, which sits last in the flattened layers.
+ 	pub fn root(&self) -> D {
+--- a/crates/iop-prover/src/merkle_tree/prover.rs
++++ b/crates/iop-prover/src/merkle_tree/prover.rs
+@@ -1,16 +1,90 @@
+ // Copyright 2024-2025 Irreducible Inc.
+ // Copyright 2026 The Binius Developers
+ 
+-use binius_compute::{Allocator, GlobalAllocator};
+-use binius_field::Field;
+-use binius_hash_prover::{BinaryMerkleTree, ParallelHashSuite};
++use std::{borrow::Cow, mem::MaybeUninit};
++
++use binius_compute::{Allocator, GlobalAllocator, VecLike};
++use binius_field::{Field, PackedField};
++use binius_hash::CompressionFunction;
++use binius_hash_prover::{BinaryMerkleTree, ParallelHashSuite, binary_merkle_tree::Error, parallel_digest::ParallelDigest};
+ use binius_iop::merkle_tree::{BinaryMerkleTreeScheme, Commitment};
+ use binius_transcript::{BufMut, TranscriptWriter};
+-use binius_utils::rayon::iter::IndexedParallelIterator;
++use binius_utils::rayon::prelude::*;
++use binius_math::FieldSlice;
+ use digest::Output;
+ use getset::Getters;
+ 
+ use super::{MerkleTreeProver, ProverDigest};
++
++/// Bottom subtree height rebuilt from the caller's live borrowed codeword at opening time.
++pub const CHECKPOINT_LOG_DEPTH: usize = 4;
++
++/// Data-aware channel storage. The ordinary MerkleTreeProver trait keeps its full-tree type.
++pub enum DataMerkleTree<D: Send, A: Allocator = GlobalAllocator> {
++    Full(BinaryMerkleTree<D, A>),
++    Checkpointed { top: BinaryMerkleTree<D, A>, log_leaf_size: usize },
++}
++
++impl<D: Send, A: Allocator> From<BinaryMerkleTree<D, A>> for DataMerkleTree<D, A> {
++    fn from(tree: BinaryMerkleTree<D, A>) -> Self { Self::Full(tree) }
++}
++
++impl<D: Clone + Send, A: Allocator> DataMerkleTree<D, A> {
++    fn top(&self) -> &BinaryMerkleTree<D, A> {
++        match self { Self::Full(tree) => tree, Self::Checkpointed { top, .. } => top }
++    }
++    pub fn root(&self) -> D { self.top().root() }
++    pub fn log_len(&self) -> usize {
++        self.top().log_len + if self.is_checkpointed() { CHECKPOINT_LOG_DEPTH } else { 0 }
++    }
++    pub fn is_checkpointed(&self) -> bool { matches!(self, Self::Checkpointed { .. }) }
++    pub fn stored_nodes(&self) -> usize { self.top().inner_nodes.len() }
++    pub fn stored_capacity(&self) -> usize { self.top().inner_nodes.capacity() }
++}
++
++/// Fixed-size local workspace; it never stores or borrows a codeword after the call returns.
++struct SmallSubtree<D> { log_len: usize, nodes: [D; 31] }
++
++impl<D: Clone> SmallSubtree<D> {
++    fn layer(&self, depth: usize) -> &[D] {
++        assert!(depth <= self.log_len);
++        let start = (1usize << (self.log_len + 1)) - (1usize << (depth + 1));
++        &self.nodes[start..start + (1usize << depth)]
++    }
++    fn root(&self) -> D { self.layer(0)[0].clone() }
++    fn branch(&self, index: usize, layer_depth: usize) -> Vec<D> {
++        (0..self.log_len - layer_depth).map(|height| {
++            self.layer(self.log_len - height)[(index >> height) ^ 1].clone()
++        }).collect()
++    }
++}
++
++fn small_subtree<F, P, H>(data: FieldSlice<'_, P>, log_leaf_size: usize) -> SmallSubtree<Output<H::LeafHash>>
++where F: Field, P: PackedField<Scalar = F>, H: ParallelHashSuite {
++    let log_len = data.log_len().checked_sub(log_leaf_size)
++        .expect("precondition: leaf fits the codeword");
++    assert!(log_len <= CHECKPOINT_LOG_DEPTH);
++    let n_leaves = 1usize << log_len;
++    let mut leaves: [MaybeUninit<Output<H::LeafHash>>; 16] = std::array::from_fn(|_| MaybeUninit::uninit());
++    H::ParLeafHash::default().digest_with_const_len(1usize << log_leaf_size,
++        data.par_chunk_scalars(log_leaf_size), &mut leaves[..n_leaves]);
++    let mut nodes = std::array::from_fn(|_| Output::<H::LeafHash>::default());
++    for i in 0..n_leaves {
++        // SAFETY: digest_with_const_len initialized exactly the n_leaves output slots above.
++        nodes[i] = unsafe { leaves[i].assume_init_read() };
++    }
++    let compression = H::Compression::default();
++    let (mut start, mut width, mut written) = (0, n_leaves, n_leaves);
++    while width > 1 {
++        for i in 0..width / 2 {
++            nodes[written + i] = compression.compress([nodes[start + 2 * i].clone(), nodes[start + 2 * i + 1].clone()]);
++        }
++        start += width;
++        width /= 2;
++        written += width;
++    }
++    SmallSubtree { log_len, nodes }
++}
+ 
+ /// Builds Merkle trees over an allocator, which every tree it commits draws its nodes from.
+ ///
+@@ -98,3 +172,102 @@
+ 		(commitment, tree)
+ 	}
+ }
++
++
++impl<F: Field, H: ParallelHashSuite, A: Allocator> BinaryMerkleTreeProver<F, H, A> {
++    /// Commits directly to sixteen-leaf subtree roots and the layers above them. Small trees
++    /// retain the existing full representation. No codeword, callback, or pointer is retained.
++    pub fn commit_field_buffer_checkpointed<P: PackedField<Scalar = F>>(
++        &self, data: FieldSlice<'_, P>, log_leaf_size: usize,
++    ) -> (Commitment<Output<H::LeafHash>>, DataMerkleTree<Output<H::LeafHash>, A>) {
++        let depth = data.log_len().checked_sub(log_leaf_size)
++            .expect("precondition: leaf fits the codeword");
++        assert!(depth < usize::BITS as usize, "precondition: Merkle addresses fit usize");
++        if depth < CHECKPOINT_LOG_DEPTH {
++            let (commitment, tree) = self.commit_field_buffer(data, log_leaf_size);
++            return (commitment, DataMerkleTree::Full(tree));
++        }
++        let top_depth = depth - CHECKPOINT_LOG_DEPTH;
++        let roots = (0..1usize << top_depth).into_par_iter().map(|index| {
++            small_subtree::<F, P, H>(data.chunk(log_leaf_size + CHECKPOINT_LOG_DEPTH, index), log_leaf_size).root()
++        });
++        let top = BinaryMerkleTree::from_prehashed_leaves(roots, &H::Compression::default(), &self.alloc);
++        let commitment = Commitment { root: top.root(), depth };
++        (commitment, DataMerkleTree::Checkpointed { top, log_leaf_size })
++    }
++
++    fn check_codeword<P: PackedField<Scalar = F>>(
++        &self, tree: &DataMerkleTree<Output<H::LeafHash>, A>, data: FieldSlice<'_, P>, log_leaf_size: usize,
++    ) {
++        assert_eq!(data.log_len().checked_sub(log_leaf_size), Some(tree.log_len()),
++            "precondition: opening codeword shape must match the commitment");
++        if let DataMerkleTree::Checkpointed { log_leaf_size: committed, .. } = tree {
++            assert_eq!(*committed, log_leaf_size, "precondition: opening leaf shape must match the commitment");
++        }
++    }
++
++    fn checked_subtree<P: PackedField<Scalar = F>>(
++        &self, top: &BinaryMerkleTree<Output<H::LeafHash>, A>, data: FieldSlice<'_, P>,
++        log_leaf_size: usize, checkpoint_index: usize,
++    ) -> Result<SmallSubtree<Output<H::LeafHash>>, Error> {
++        let small = small_subtree::<F, P, H>(data.chunk(log_leaf_size + CHECKPOINT_LOG_DEPTH, checkpoint_index), log_leaf_size);
++        if small.root() != top.layer(top.log_len)?[checkpoint_index] {
++            return Err(Error::CheckpointDataMismatch { checkpoint_index });
++        }
++        Ok(small)
++    }
++
++    /// Serves every valid layer. Retained top layers are borrowed; omitted layers are rebuilt
++    /// into a temporary owned layer, with every contributing subtree checked against its root.
++    pub fn layer_from_data<'a, P: PackedField<Scalar = F>>(
++        &self, tree: &'a DataMerkleTree<Output<H::LeafHash>, A>, data: FieldSlice<'_, P>,
++        log_leaf_size: usize, layer_depth: usize,
++    ) -> Result<Cow<'a, [Output<H::LeafHash>]>, Error> {
++        self.check_codeword(tree, data, log_leaf_size);
++        if layer_depth > tree.log_len() {
++            return Err(Error::IncorrectLayerDepth { layer_depth, log_len: tree.log_len() });
++        }
++        match tree {
++            DataMerkleTree::Full(full) => Ok(Cow::Borrowed(full.layer(layer_depth)?)),
++            DataMerkleTree::Checkpointed { top, .. } if layer_depth <= top.log_len =>
++                Ok(Cow::Borrowed(top.layer(layer_depth)?)),
++            DataMerkleTree::Checkpointed { top, .. } => {
++                let local_depth = layer_depth - top.log_len;
++                let mut layer = Vec::with_capacity(1usize << layer_depth);
++                for checkpoint_index in 0..1usize << top.log_len {
++                    let small = self.checked_subtree(top, data, log_leaf_size, checkpoint_index)?;
++                    layer.extend_from_slice(small.layer(local_depth));
++                }
++                Ok(Cow::Owned(layer))
++            }
++        }
++    }
++
++    /// Recomputes at most sixteen leaves and their local branch, checks their checkpoint, then
++    /// appends the retained upper path. Digest order is exactly the ordinary leaf-to-cap order.
++    pub fn branch_from_data<P: PackedField<Scalar = F>>(
++        &self, tree: &DataMerkleTree<Output<H::LeafHash>, A>, data: FieldSlice<'_, P>,
++        log_leaf_size: usize, layer_depth: usize, index: usize,
++    ) -> Result<Vec<Output<H::LeafHash>>, Error> {
++        self.check_codeword(tree, data, log_leaf_size);
++        if index >= 1usize << tree.log_len() {
++            return Err(Error::IndexOutOfRange { index, log_len: tree.log_len() });
++        }
++        if layer_depth > tree.log_len() {
++            return Err(Error::IncorrectLayerDepth { layer_depth, log_len: tree.log_len() });
++        }
++        match tree {
++            DataMerkleTree::Full(full) => full.branch(index, layer_depth),
++            DataMerkleTree::Checkpointed { top, .. } => {
++                let checkpoint_index = index >> CHECKPOINT_LOG_DEPTH;
++                let small = self.checked_subtree(top, data, log_leaf_size, checkpoint_index)?;
++                let local_cap = layer_depth.saturating_sub(top.log_len);
++                let mut branch = small.branch(index & ((1usize << CHECKPOINT_LOG_DEPTH) - 1), local_cap);
++                if layer_depth < top.log_len {
++                    branch.extend(top.branch(checkpoint_index, layer_depth)?);
++                }
++                Ok(branch)
++            }
++        }
++    }
++}
+--- a/crates/iop-prover/src/merkle_channel.rs
++++ b/crates/iop-prover/src/merkle_channel.rs
+@@ -16,7 +16,7 @@
+ use binius_compute::{Allocator, GlobalAllocator};
+ use binius_core::word::Word;
+ use binius_field::{Field, PackedField};
+-use binius_hash_prover::{BinaryMerkleTree, ParallelHashSuite};
++use binius_hash_prover::ParallelHashSuite;
+ use binius_iop::merkle_tree::MerkleTreeScheme;
+ use binius_ip_prover::channel::{IPProverChannel, WordIPProverChannel};
+ use binius_math::FieldSlice;
+@@ -26,7 +26,7 @@
+ 
+ use crate::{
+ 	channel::grinding::GrindingProverChannel,
+-	merkle_tree::{MerkleTreeProver, prover::BinaryMerkleTreeProver},
++	merkle_tree::{MerkleTreeProver, prover::{BinaryMerkleTreeProver, DataMerkleTree}},
+ };
+ 
+ /// An extension of [`WordIPProverChannel`] that can send and open Merkle commitments.
+@@ -93,6 +93,7 @@
+ > {
+ 	transcript: T,
+ 	merkle_prover: BinaryMerkleTreeProver<F, H, A>,
++    checkpointed: bool,
+ 	_challenger_marker: PhantomData<Challenger_>,
+ }
+ 
+@@ -116,9 +117,17 @@
+ 		Self {
+ 			transcript,
+ 			merkle_prover,
++            checkpointed: true,
+ 			_challenger_marker: PhantomData,
+ 		}
+ 	}
++
++    /// Explicit full-tree storage control; transcript and proof formats are unchanged.
++    pub fn with_full_merkle_prover(transcript: T, merkle_prover: BinaryMerkleTreeProver<F, H, A>) -> Self {
++        let mut channel = Self::with_merkle_prover(transcript, merkle_prover);
++        channel.checkpointed = false;
++        channel
++    }
+ 
+ 	/// Returns the wrapped transcript.
+ 	pub fn into_transcript(self) -> T {
+@@ -142,9 +151,9 @@
+ 	/// leaf size the tree was committed at. A prover that has to drop a committed tree between
+ 	/// sending its root and opening it commits the same data again with the same
+ 	/// [`MerkleTreeProver`] and wraps the result here; the root it gets back is the one it sent.
+-	pub const fn new(committed: Committed, depth: usize, log_leaf_size: usize) -> Self {
++	pub fn new<C: Into<Committed>>(committed: C, depth: usize, log_leaf_size: usize) -> Self {
+ 		Self {
+-			committed,
++			committed: committed.into(),
+ 			depth,
+ 			log_leaf_size,
+ 		}
+@@ -226,7 +235,7 @@
+ 	A: Allocator,
+ 	Output<H::LeafHash>: SerializeBytes,
+ {
+-	type Commitment = ProverMerkleCommitment<BinaryMerkleTree<Output<H::LeafHash>, A>>;
++	type Commitment = ProverMerkleCommitment<DataMerkleTree<Output<H::LeafHash>, A>>;
+ 
+ 	fn send_merkle_commitment<P: PackedField<Scalar = F>>(
+ 		&mut self,
+@@ -235,7 +244,12 @@
+ 	) -> Self::Commitment {
+ 		assert!(leaf_size.is_power_of_two(), "precondition: leaf_size must be a power of two");
+ 		let log_leaf_size = checked_log_2(leaf_size);
+-		let (commitment, committed) = self.merkle_prover.commit_field_buffer(data, log_leaf_size);
++        let (commitment, committed) = if self.checkpointed {
++            self.merkle_prover.commit_field_buffer_checkpointed(data, log_leaf_size)
++        } else {
++            let (commitment, full) = self.merkle_prover.commit_field_buffer(data, log_leaf_size);
++            (commitment, DataMerkleTree::Full(full))
++        };
+ 		self.transcript
+ 			.borrow_mut()
+ 			.message()
+@@ -250,7 +264,7 @@
+ 		indices: &[Word],
+ 	) {
+ 		let tree_depth = commitment.depth;
+-		debug_assert_eq!(tree_depth, data.log_len() - commitment.log_leaf_size);
++		assert_eq!(Some(tree_depth), data.log_len().checked_sub(commitment.log_leaf_size), "precondition: opening codeword shape matches commitment");
+ 		let indices = indices
+ 			.iter()
+ 			.map(|index| index.as_u64() as usize)
+@@ -261,18 +275,17 @@
+ 		// queried index, mirroring the verifier's `recv_openings`.
+ 		let scheme = self.merkle_prover.scheme();
+ 		let layer_depth = scheme.optimal_verify_layer(indices.len(), tree_depth);
+-		let layer = self.merkle_prover.layer(&commitment.committed, layer_depth);
++        let layer = self.merkle_prover.layer_from_data(&commitment.committed, data, commitment.log_leaf_size, layer_depth)
++            .expect("precondition: layer and codeword match commitment");
+ 		let mut advice = self.transcript.borrow_mut().decommitment();
+-		advice.write_slice(layer);
++		advice.write_slice(layer.as_ref());
+ 		for &index in &indices {
+ 			let leaf = data.chunk(commitment.log_leaf_size, index);
+ 			advice.write_scalar_iter(leaf.iter_scalars());
+-			self.merkle_prover.prove_opening(
+-				&commitment.committed,
+-				layer_depth,
+-				index,
+-				&mut advice,
+-			);
++            let branch = self.merkle_prover.branch_from_data(&commitment.committed, data,
++                commitment.log_leaf_size, layer_depth, index)
++                .expect("precondition: opening codeword matches committed checkpoints");
++            advice.write_slice(&branch);
+ 		}
+ 	}
+ 
+@@ -281,7 +294,7 @@
+ 		commitment: &Self::Commitment,
+ 		data: FieldSlice<'_, P>,
+ 	) {
+-		debug_assert_eq!(commitment.depth, data.log_len() - commitment.log_leaf_size);
++		assert_eq!(Some(commitment.depth), data.log_len().checked_sub(commitment.log_leaf_size), "precondition: committed vector shape matches commitment");
+ 
+ 		// The data itself is the whole opening.
+ 		// The verifier recomputes the root from it, so no further advice follows.
+@@ -310,7 +323,7 @@
+ 		GrindingProverChannel, IPProverChannel, MerkleIPProverChannel, ProverMerkleCommitment,
+ 		ProverMerkleTranscriptChannel,
+ 	};
+-	use crate::merkle_tree::{MerkleTreeProver, prover::BinaryMerkleTreeProver};
++	use crate::merkle_tree::{MerkleTreeProver, prover::{BinaryMerkleTreeProver, DataMerkleTree}};
+ 
+ 	type StdChallenger = HasherChallenger<StdDigest>;
+ 	type P = PackedGhash2x128b;

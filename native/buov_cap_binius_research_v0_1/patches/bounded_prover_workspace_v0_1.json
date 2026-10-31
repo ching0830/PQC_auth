@@ -1,0 +1,50 @@
+{
+  "schema": "pqsat.binius-research-patch.v0.1",
+  "upstream_commit": "4428e759dd27956bd5b9ae5025d67eb8ccc1accf",
+  "base_patches": [
+    "shared_cs_streaming_wiring_v0_1",
+    "streaming_keys_v0_1",
+    "masked_encode_workspace_v0_1",
+    "compact_operands_v0_1",
+    "research_oracle_schedule_v0_1"
+  ],
+  "patch_sha256": "bd861d8820458ca131edac0f756a132463abe9b4d07a6d01f2a236e06f50672f",
+  "files": [
+    {
+      "path": "crates/compute/src/buffer_pool.rs",
+      "base_sha256": "74ed8cac54d8f23ff3956856d1201ce0f506609563e1d8ceeb19853159416b6a",
+      "patched_sha256": "9652d130265f249eb14f1f3440c6511dbb37d13e0056369923ed1d1f17ce226e"
+    },
+    {
+      "path": "crates/prover/src/lib.rs",
+      "base_sha256": "8530d60656654f0d3b2c5435603108c3cdeef86b1b8853635c1ba01e629b884e",
+      "patched_sha256": "59b3051d47c853c5409aca53126dbe6820985b3d7c1a11c38061a5541c08df0e"
+    },
+    {
+      "path": "crates/prover/src/protocols/shift/phase_2.rs",
+      "base_sha256": "ef8f53873c6ca2f5f4283e8382a149c75cf9ebf57053bac66f1cecf30cd33521",
+      "patched_sha256": "e82eb5e8125378bdaae88f45db57be80a1c026ea9c872b286067085a4e14790a"
+    },
+    {
+      "path": "crates/prover/src/protocols/shift/prove.rs",
+      "base_sha256": "0bd4488c1f35699deead74c50878a8e27b83c90ffd61a2bcce713c1c0889e475",
+      "patched_sha256": "cd2b44f4e91f843282f39e53953f703725ff65ead6ec4afb68291d6f42d9b1c8"
+    },
+    {
+      "path": "crates/prover/src/research_domain.rs",
+      "base_sha256": null,
+      "patched_sha256": "c7e60c73f643a5330fa512af24884c301b24beb1ad06ce15f4e6a0656f5150ca"
+    },
+    {
+      "path": "crates/prover/src/zk_config.rs",
+      "base_sha256": "29ebcd6ce5f5db1b8dcbcedea113194f883ad2c3c802d4417fcf6e3a5d1c5566",
+      "patched_sha256": "80da97f5afa5fa1f423428281dca520a46c759e0655e246639e2da6187b9cc90"
+    }
+  ],
+  "security_parameters_changed": false,
+  "constraint_polynomial_changed": false,
+  "domain_changed": false,
+  "phase2_changes": "owned prepared tensor released between matrix and witness folding; identical computations and no channel operation crossed",
+  "profile_storage": "same Gao-Mateer basis on-the-fly; pool dropped blocks returned to allocator; no RSS guarantee",
+  "default_NTT_and_pool_unchanged": true
+}

@@ -1,0 +1,649 @@
+{
+  "actual_symbolic_setup": {
+    "FRI_component_exact_format_bytes": 984832,
+    "fold_arities": [
+      4,
+      4,
+      3,
+      3
+    ],
+    "full_proof_body_bytes": null,
+    "full_proof_size_includes_unaccounted_IP_messages": true,
+    "log_inv_rate": 1,
+    "max_log_domain_size": 25,
+    "merged": [
+      {
+        "is_zk": true,
+        "len": 863,
+        "log_msg_len": 10
+      },
+      {
+        "is_zk": true,
+        "len": 9933087,
+        "log_msg_len": 24
+      },
+      {
+        "is_zk": true,
+        "len": 98715,
+        "log_msg_len": 17
+      },
+      {
+        "is_zk": true,
+        "len": 512,
+        "log_msg_len": 9
+      }
+    ],
+    "n_test_queries": 309,
+    "outer": {
+      "dummy_constraints_per_segment": 2,
+      "dummy_wires": 310,
+      "log_precommit": 10,
+      "log_private": 17,
+      "mask_dims": [
+        7,
+        2
+      ],
+      "n_precommit": 547,
+      "n_private": 98399,
+      "n_public": 1048576,
+      "padded_mul_constraints": 1048576,
+      "precommit_len": 863,
+      "private_len": 98715
+    },
+    "prover_memory_profile": "checkpoint4/on_the_fly/no_pool_retention/regenerated_private_masks/v0.1",
+    "rounds": [
+      [
+        {
+          "is_zk": true,
+          "len": 863,
+          "log_msg_len": 10
+        }
+      ],
+      [
+        {
+          "is_zk": true,
+          "len": 9933087,
+          "log_msg_len": 24
+        }
+      ],
+      [
+        {
+          "is_zk": true,
+          "len": 98715,
+          "log_msg_len": 17
+        }
+      ],
+      [
+        {
+          "is_zk": true,
+          "len": 512,
+          "log_msg_len": 9
+        }
+      ]
+    ],
+    "security_bits": 128
+  },
+  "base_commit": "97d72914",
+  "boundary": {
+    "Evidence_sealed": false,
+    "Production_closed": false,
+    "Proof_closed": false,
+    "Prove": 0,
+    "backend_qualification": false,
+    "full_new_relation_satisfiability": false,
+    "new_same_state_lifecycle": false,
+    "private_values_received": false,
+    "proof_Verify": 0
+  },
+  "cache_header_hex": "42435348504c3031000100000000000a000000002910d19092216254586814f128d68c91cc5842b8d5bc61d13bcdc76a51405afabfa74c5fff1f376fe3cb39f93dd13736aaba509df64b0faba2a986d53f8b69cfca7933a84ce48825d1e78c704b89a160be8d47932ae9bc7948d282d0c7c12c8ccc63c986000021270000006a012f223d0031cc2d00f9a7aa000000000000000000003a8800421f6600000a47",
+  "cache_source_sha256": "ff1f376fe3cb39f93dd13736aaba509df64b0faba2a986d53f8b69cfca7933a8",
+  "classification": "Actual public H+ CS/setup and reusable cache; no new full P/V or satisfiability result",
+  "compiler_id": "0b375652a1823a9fafd3bbf88495a95d3b6d9f07aca4188137f8688266798e2b",
+  "counts": {
+    "AND": 16361386,
+    "ZERO": 3263533,
+    "allocator_and_Vec_spare_included": false,
+    "constants": 8487,
+    "max_operand_support": 2631,
+    "native_len_bytes": 872897760,
+    "operand_terms": 179246977,
+    "private_words": 19866173,
+    "public_words": 106,
+    "serialized_bytes": 2718916370,
+    "templates": {
+      "payload_bytes": 35266672,
+      "terms": 4333414,
+      "unique": 14984
+    }
+  },
+  "date": "2026-10-21",
+  "guards": {
+    "actual-setup-v1": {
+      "MemAvailable_min": 27791605760,
+      "MemAvailable_start": 28870516736,
+      "directory_bytes": 723608010,
+      "exit": 0,
+      "no_residual_group": true,
+      "policy": {
+        "directory_bytes": 10737418240,
+        "file_bytes": 1073741824,
+        "output_bytes": 16777216,
+        "process_as": 8589934592,
+        "start_available": 17179869184,
+        "stop_available": 8589934592,
+        "threads": 1,
+        "tree_rss": 4294967296,
+        "wall_seconds": 1800
+      },
+      "sampled_process_as_bytes": 1330860032,
+      "sampled_process_rss_bytes": 1287241728,
+      "sampled_process_threads": 1,
+      "sampled_rss_is_hard_bound": false,
+      "sampled_tree_rss_bytes": 1308266496,
+      "stop": null,
+      "wall_seconds": 18.83668808080256
+    },
+    "actual-setup-v1-build": {
+      "MemAvailable_min": 28660613120,
+      "MemAvailable_start": 28884336640,
+      "directory_bytes": 34632126,
+      "exit": 0,
+      "no_residual_group": true,
+      "policy": {
+        "directory_bytes": 10737418240,
+        "file_bytes": 1073741824,
+        "output_bytes": 16777216,
+        "process_as": 8589934592,
+        "start_available": 17179869184,
+        "stop_available": 8589934592,
+        "threads": 8,
+        "tree_rss": 4294967296,
+        "wall_seconds": 1800
+      },
+      "sampled_process_as_bytes": 837869568,
+      "sampled_process_rss_bytes": 420904960,
+      "sampled_process_threads": 5,
+      "sampled_rss_is_hard_bound": false,
+      "sampled_tree_rss_bytes": 441470976,
+      "stop": null,
+      "wall_seconds": 8.463684290647507
+    },
+    "actual-setup-v1-reload": {
+      "MemAvailable_min": 27755511808,
+      "MemAvailable_start": 28788199424,
+      "directory_bytes": 723616278,
+      "exit": 0,
+      "no_residual_group": true,
+      "policy": {
+        "directory_bytes": 10737418240,
+        "file_bytes": 1073741824,
+        "output_bytes": 16777216,
+        "process_as": 8589934592,
+        "start_available": 17179869184,
+        "stop_available": 8589934592,
+        "threads": 1,
+        "tree_rss": 4294967296,
+        "wall_seconds": 1800
+      },
+      "sampled_process_as_bytes": 1283485696,
+      "sampled_process_rss_bytes": 1187102720,
+      "sampled_process_threads": 1,
+      "sampled_rss_is_hard_bound": false,
+      "sampled_tree_rss_bytes": 1208111104,
+      "stop": null,
+      "wall_seconds": 9.279448966495693
+    }
+  },
+  "integration_runtime_sources": {
+    "src/pq_sat_auth/prototypes/buov_cap_hplus_research_v0_1/__init__.py": {
+      "bytes": 72,
+      "sha256": "60bf7b63ddf51a1668195da876857224fce8a60cd28e46043ee56ddaa03812e8"
+    },
+    "src/pq_sat_auth/prototypes/buov_cap_hplus_research_v0_1/public_setup.py": {
+      "bytes": 6433,
+      "sha256": "a991d3512d04897ec7f292309bba47a54a4ce4dda90cb2ddbc1be3941fbd807e"
+    },
+    "tests/test_buov_cap_hplus_setup_v0_1.py": {
+      "bytes": 5583,
+      "sha256": "8d1bd9751bc3cf4a50d612b051576ebc9ede40882acd84ae8a76f102ec08840e"
+    }
+  },
+  "local_build_inputs": {
+    "bytes": 20416,
+    "sha256": "f270d85bd13797c198d777e048729f9935eb9b7a17b052db49f13fa789e4cd9d"
+  },
+  "measurements": {
+    "cold": {
+      "CS_hash_seconds": 5.155701294,
+      "Prove": 0,
+      "Verify": 0,
+      "actual_symbolic_setup": {
+        "FRI_component_exact_format_bytes": 984832,
+        "fold_arities": [
+          4,
+          4,
+          3,
+          3
+        ],
+        "full_proof_body_bytes": null,
+        "full_proof_size_includes_unaccounted_IP_messages": true,
+        "log_inv_rate": 1,
+        "max_log_domain_size": 25,
+        "merged": [
+          {
+            "is_zk": true,
+            "len": 863,
+            "log_msg_len": 10
+          },
+          {
+            "is_zk": true,
+            "len": 9933087,
+            "log_msg_len": 24
+          },
+          {
+            "is_zk": true,
+            "len": 98715,
+            "log_msg_len": 17
+          },
+          {
+            "is_zk": true,
+            "len": 512,
+            "log_msg_len": 9
+          }
+        ],
+        "n_test_queries": 309,
+        "outer": {
+          "dummy_constraints_per_segment": 2,
+          "dummy_wires": 310,
+          "log_precommit": 10,
+          "log_private": 17,
+          "mask_dims": [
+            7,
+            2
+          ],
+          "n_precommit": 547,
+          "n_private": 98399,
+          "n_public": 1048576,
+          "padded_mul_constraints": 1048576,
+          "precommit_len": 863,
+          "private_len": 98715
+        },
+        "prover_memory_profile": "checkpoint4/on_the_fly/no_pool_retention/regenerated_private_masks/v0.1",
+        "rounds": [
+          [
+            {
+              "is_zk": true,
+              "len": 863,
+              "log_msg_len": 10
+            }
+          ],
+          [
+            {
+              "is_zk": true,
+              "len": 9933087,
+              "log_msg_len": 24
+            }
+          ],
+          [
+            {
+              "is_zk": true,
+              "len": 98715,
+              "log_msg_len": 17
+            }
+          ],
+          [
+            {
+              "is_zk": true,
+              "len": 512,
+              "log_msg_len": 9
+            }
+          ]
+        ],
+        "security_bits": 128
+      },
+      "after_build": {
+        "AS_bytes": 927592448,
+        "RSS_HWM_bytes": 900804608,
+        "RSS_bytes": 891363328
+      },
+      "after_setup": {
+        "AS_bytes": 1179860992,
+        "RSS_HWM_bytes": 1293533184,
+        "RSS_bytes": 1142652928
+      },
+      "build_seconds": 10.275955754,
+      "cache": {
+        "cache_bytes": 688968080,
+        "cache_sha256": "25ccf947e09c3e894aea78b58b79b298b7958f6694f4a903bd405e87defe6864",
+        "cache_write_seconds": 1.785587503,
+        "contains_private_values": false,
+        "source_sha256": "ff1f376fe3cb39f93dd13736aaba509df64b0faba2a986d53f8b69cfca7933a8",
+        "stream_buffer_bytes": 65536
+      },
+      "compiler_id": "0b375652a1823a9fafd3bbf88495a95d3b6d9f07aca4188137f8688266798e2b",
+      "compute_cores": 1,
+      "counts": {
+        "AND": 16361386,
+        "ZERO": 3263533,
+        "allocator_and_Vec_spare_included": false,
+        "constants": 8487,
+        "max_operand_support": 2631,
+        "native_len_bytes": 872897760,
+        "operand_terms": 179246977,
+        "private_words": 19866173,
+        "public_words": 106,
+        "serialized_bytes": 2718916370,
+        "templates": {
+          "payload_bytes": 35266672,
+          "terms": 4333414,
+          "unique": 14984
+        }
+      },
+      "mode": "build",
+      "private_ValueVec_allocated": false,
+      "private_values_received": false,
+      "profile_fingerprint": "8579638797c2fa6f9ef09aef518e81213e566115e042744e5b782d8c49c5f07d",
+      "proof_body_bytes": null,
+      "public_CS_identity": {
+        "encoding_persisted": false,
+        "serialized_bytes_streamed_to_hash": 2718916370,
+        "sha256": "92216254586814f128d68c91cc5842b8d5bc61d13bcdc76a51405afabfa74c5f"
+      },
+      "relation_id": "2640c97a96cb34febf8c2f4844f43ec16d0c6664b051342e8f2b5e80c3f37c9c",
+      "satisfiability_checked": false,
+      "schema": "BUOVCAPHPlusActualSetupV1",
+      "setup_id": "6a4b28686792da14efd04dc59f4f3123e43bb5a1df2d850570b5f6ac0e2cdb6a",
+      "setup_seconds": 1.390886581,
+      "trace_sha256": "4ce48825d1e78c704b89a160be8d47932ae9bc7948d282d0c7c12c8ccc63c986",
+      "whole_seconds": 18.610378645,
+      "worker_whole_seconds": 18.785202119499445
+    },
+    "reload": {
+      "Prove": 0,
+      "Verify": 0,
+      "actual_symbolic_setup": {
+        "FRI_component_exact_format_bytes": 984832,
+        "fold_arities": [
+          4,
+          4,
+          3,
+          3
+        ],
+        "full_proof_body_bytes": null,
+        "full_proof_size_includes_unaccounted_IP_messages": true,
+        "log_inv_rate": 1,
+        "max_log_domain_size": 25,
+        "merged": [
+          {
+            "is_zk": true,
+            "len": 863,
+            "log_msg_len": 10
+          },
+          {
+            "is_zk": true,
+            "len": 9933087,
+            "log_msg_len": 24
+          },
+          {
+            "is_zk": true,
+            "len": 98715,
+            "log_msg_len": 17
+          },
+          {
+            "is_zk": true,
+            "len": 512,
+            "log_msg_len": 9
+          }
+        ],
+        "n_test_queries": 309,
+        "outer": {
+          "dummy_constraints_per_segment": 2,
+          "dummy_wires": 310,
+          "log_precommit": 10,
+          "log_private": 17,
+          "mask_dims": [
+            7,
+            2
+          ],
+          "n_precommit": 547,
+          "n_private": 98399,
+          "n_public": 1048576,
+          "padded_mul_constraints": 1048576,
+          "precommit_len": 863,
+          "private_len": 98715
+        },
+        "prover_memory_profile": "checkpoint4/on_the_fly/no_pool_retention/regenerated_private_masks/v0.1",
+        "rounds": [
+          [
+            {
+              "is_zk": true,
+              "len": 863,
+              "log_msg_len": 10
+            }
+          ],
+          [
+            {
+              "is_zk": true,
+              "len": 9933087,
+              "log_msg_len": 24
+            }
+          ],
+          [
+            {
+              "is_zk": true,
+              "len": 98715,
+              "log_msg_len": 17
+            }
+          ],
+          [
+            {
+              "is_zk": true,
+              "len": 512,
+              "log_msg_len": 9
+            }
+          ]
+        ],
+        "security_bits": 128
+      },
+      "after_setup": {
+        "AS_bytes": 1132486656,
+        "RSS_HWM_bytes": 1281081344,
+        "RSS_bytes": 1130205184
+      },
+      "cache": {
+        "CS_hash_seconds": 5.31265512,
+        "cache_bytes": 688968080,
+        "cache_sha256": "25ccf947e09c3e894aea78b58b79b298b7958f6694f4a903bd405e87defe6864",
+        "cold_graph_constructed": false,
+        "load_seconds": 2.214179,
+        "private_ValueVec_allocated": false,
+        "private_values_received": false,
+        "public_CS_identity": {
+          "encoding_persisted": false,
+          "serialized_bytes_streamed_to_hash": 2718916370,
+          "sha256": "92216254586814f128d68c91cc5842b8d5bc61d13bcdc76a51405afabfa74c5f"
+        },
+        "source_sha256": "ff1f376fe3cb39f93dd13736aaba509df64b0faba2a986d53f8b69cfca7933a8",
+        "stream_buffer_bytes": 65536
+      },
+      "compiler_id": "0b375652a1823a9fafd3bbf88495a95d3b6d9f07aca4188137f8688266798e2b",
+      "compute_cores": 1,
+      "counts": {
+        "AND": 16361386,
+        "ZERO": 3263533,
+        "allocator_and_Vec_spare_included": false,
+        "constants": 8487,
+        "max_operand_support": 2631,
+        "native_len_bytes": 872897760,
+        "operand_terms": 179246977,
+        "private_words": 19866173,
+        "public_words": 106,
+        "serialized_bytes": 2718916370,
+        "templates": {
+          "payload_bytes": 35266672,
+          "terms": 4333414,
+          "unique": 14984
+        }
+      },
+      "mode": "load",
+      "private_ValueVec_allocated": false,
+      "private_values_received": false,
+      "profile_fingerprint": "8579638797c2fa6f9ef09aef518e81213e566115e042744e5b782d8c49c5f07d",
+      "proof_body_bytes": null,
+      "public_CS_identity": {
+        "encoding_persisted": false,
+        "serialized_bytes_streamed_to_hash": 2718916370,
+        "sha256": "92216254586814f128d68c91cc5842b8d5bc61d13bcdc76a51405afabfa74c5f"
+      },
+      "relation_id": "2640c97a96cb34febf8c2f4844f43ec16d0c6664b051342e8f2b5e80c3f37c9c",
+      "satisfiability_checked": false,
+      "schema": "BUOVCAPHPlusActualSetupV1",
+      "setup_id": "6a4b28686792da14efd04dc59f4f3123e43bb5a1df2d850570b5f6ac0e2cdb6a",
+      "setup_seconds": 1.46076046,
+      "trace_sha256": "4ce48825d1e78c704b89a160be8d47932ae9bc7948d282d0c7c12c8ccc63c986",
+      "whole_seconds": 8.989553518,
+      "worker_whole_seconds": 9.160371983423829
+    }
+  },
+  "native_binary": {
+    "bytes": 5677360,
+    "sha256": "05d4199c3fe611866d153d3ebb49bdb30a273be9ae0e02ae5ae50e38ba6aa43b"
+  },
+  "native_build": {
+    "bytes": 7083,
+    "sha256": "b37394d216014f075580056c45373f4f5a4d0dc44b992cdc7d0ae7e0d5459a1d"
+  },
+  "profile": {
+    "binding_id": "6f74ae31aefd848081ff766c0e43bedc1cb790240d5019d3276f4a23dcf26d82",
+    "native_opening_abi": 2,
+    "old_proof_setup_cache_compatible": false,
+    "profile_fingerprint": "8579638797c2fa6f9ef09aef518e81213e566115e042744e5b782d8c49c5f07d",
+    "relation_id": "2640c97a96cb34febf8c2f4844f43ec16d0c6664b051342e8f2b5e80c3f37c9c"
+  },
+  "public_CS_identity": {
+    "encoding_persisted": false,
+    "serialized_bytes_streamed_to_hash": 2718916370,
+    "sha256": "92216254586814f128d68c91cc5842b8d5bc61d13bcdc76a51405afabfa74c5f"
+  },
+  "public_cache": {
+    "bytes": 688968080,
+    "sha256": "25ccf947e09c3e894aea78b58b79b298b7958f6694f4a903bd405e87defe6864"
+  },
+  "public_external_evidence": {
+    "actual-setup-python-v1/result.json": {
+      "bytes": 113,
+      "sha256": "2947d2c313e0b8c8ab5c6b845f41d6d3f4e998725096260c90b89e779d486b77"
+    },
+    "actual-setup-python-v2/result.json": {
+      "bytes": 112,
+      "sha256": "a0ce1dafe18deb35607dbd5f01e29a58cc5a0319abcd1a92fd4efd7259944e94"
+    },
+    "actual-setup-v1-build.json": {
+      "bytes": 1151,
+      "sha256": "d45d0726ad86b87ae9c672727eec8633643ad80254ad6c8d9bc7b04fb3775cc5"
+    },
+    "actual-setup-v1-build/build-inputs.json": {
+      "bytes": 2212,
+      "sha256": "a3f36905e59f33c2f81bbec675e14e2a16e851e693d6edf0d94ff0a7e212bfc3"
+    },
+    "actual-setup-v1-build/build.json": {
+      "bytes": 7083,
+      "sha256": "b37394d216014f075580056c45373f4f5a4d0dc44b992cdc7d0ae7e0d5459a1d"
+    },
+    "actual-setup-v1-plan.json": {
+      "bytes": 631,
+      "sha256": "ee20b551149163aaef094fc1bf4c76d7dd7a768cd70cb9cfa30c99ad9ae7835b"
+    },
+    "actual-setup-v1-reload.json": {
+      "bytes": 1658,
+      "sha256": "3b662150b1fa4f2e13120e66413be6f76c102c22715012399d1281fe23899663"
+    },
+    "actual-setup-v1-reload/result.json": {
+      "bytes": 3842,
+      "sha256": "b56d61681d788b06415aa574c2e90c435b09127832d778881491d5e7016e9bfd"
+    },
+    "actual-setup-v1-summary.json": {
+      "bytes": 8494,
+      "sha256": "853ee385565d11a87739e7adaf89cf62a3291b3fb7305fb0e35b243c7499eadb"
+    },
+    "actual-setup-v1.json": {
+      "bytes": 1373,
+      "sha256": "dd03bd9d38e29702144ecf5b03389b47511b1683b8204c1b8bafc23dca37a9d1"
+    },
+    "actual-setup-v1/result.json": {
+      "bytes": 3712,
+      "sha256": "376f3bae7ba35e310fded885a03974ca294d04ea78e165bb3c9d466f2acc5dc0"
+    }
+  },
+  "resource_guard_note": "Build guard reused only for resource supervision; its legacy proof_profile_unchanged field is not a semantic identity claim",
+  "schema": "BUOVCAPHPlusActualSetupCheckpointV1",
+  "setup_id": "6a4b28686792da14efd04dc59f4f3123e43bb5a1df2d850570b5f6ac0e2cdb6a",
+  "source_pins": {
+    "benchmarks/buov_cap_hplus_research_v0_1/regression.py": {
+      "bytes": 11031,
+      "sha256": "bfe20bd89e006b9b87fd3a5f4833e56e64f7f511e3787946140a76b955731fdf"
+    },
+    "benchmarks/buov_cap_hplus_research_v0_1/setup_run.py": {
+      "bytes": 9116,
+      "sha256": "2e230f9518d86eae8b5f7a5d9544f9fc24b09a6dbe0b08c13adad8dd44cf8649"
+    },
+    "native/buov_cap_hplus_research_v0_1/src/cache_tests.rs": {
+      "bytes": 6888,
+      "sha256": "8e0eaea1e5746b5f041f00e0351591a2e94de6956f0eb58d7f22a01e8b702303"
+    },
+    "native/buov_cap_hplus_research_v0_1/src/census_main.rs": {
+      "bytes": 2699,
+      "sha256": "1ec1c82c8b7d2abe8a6ecf05a528ce0b49f4fd6a5cacb5560bfd2c74a2bf7e86"
+    },
+    "native/buov_cap_hplus_research_v0_1/src/direct_relation.rs": {
+      "bytes": 12688,
+      "sha256": "ac68f7aabda73970ee1c91c8a7d0c37488757d0e5b83592cad8265685f675710"
+    },
+    "native/buov_cap_hplus_research_v0_1/src/direct_relation_profile.rs": {
+      "bytes": 2975,
+      "sha256": "26a7109e5b450a03042b375e682c7aefa0305042bcbee5208c82dcc130a8839d"
+    },
+    "native/buov_cap_hplus_research_v0_1/src/hplus_tests.rs": {
+      "bytes": 3395,
+      "sha256": "6e622c36b6fc2017738cecb43798a46f7d4f1970321fdb41bb016e285890fb11"
+    },
+    "native/buov_cap_hplus_research_v0_1/src/lib.rs": {
+      "bytes": 407,
+      "sha256": "2204cc2b998ec299ab1b3714e690c89972e23155e6fae8356cbe7d4eef287ef7"
+    },
+    "native/buov_cap_hplus_research_v0_1/src/public_cache.rs": {
+      "bytes": 14852,
+      "sha256": "123385d972053276faca8aff326846b458c9393935786390fc3873df6f13cd12"
+    },
+    "native/buov_cap_hplus_research_v0_1/src/setup_main.rs": {
+      "bytes": 7343,
+      "sha256": "580ef20ea4b6b8c95a6c12e681c062e511a73b121a3d2ba93da1db416a4e660d"
+    },
+    "native/buov_cap_hplus_research_v0_1/src/setup_support.rs": {
+      "bytes": 2839,
+      "sha256": "91c37a1845e6f473a26ff6c55aba1450065f8ba70e3591be2c8574cbe166381a"
+    }
+  },
+  "tests": {
+    "full_repository_suite": false,
+    "native_failed": 0,
+    "native_ignored": 0,
+    "native_passed": 38,
+    "python_metadata_final": {
+      "errors": 0,
+      "failed": 0,
+      "passed": 9,
+      "seconds": 0.34666159469634295,
+      "skipped": 0,
+      "tests": 9
+    },
+    "python_targeted": {
+      "errors": 0,
+      "failed": 0,
+      "passed": 27,
+      "seconds": 1.3873190665617585,
+      "skipped": 0,
+      "tests": 27
+    }
+  }
+}

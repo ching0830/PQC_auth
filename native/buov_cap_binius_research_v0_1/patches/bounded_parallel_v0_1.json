@@ -1,0 +1,63 @@
+{
+  "schema": "pqsat.binius-research-patch.v0.1",
+  "upstream_commit": "4428e759dd27956bd5b9ae5025d67eb8ccc1accf",
+  "base_patches": [
+    "shared_cs_streaming_wiring_v0_1",
+    "streaming_keys_v0_1",
+    "masked_encode_workspace_v0_1",
+    "compact_operands_v0_1",
+    "research_oracle_schedule_v0_1",
+    "bounded_prover_workspace_v0_1",
+    "checkpoint_merkle_v0_1",
+    "regenerated_masks_v0_1"
+  ],
+  "patch_sha256": "25cc90e49ac2aa72197c9e4775cb96fa77bef8c160be9dcb605387fdf0a3d79f",
+  "files": [
+    {
+      "path": "crates/iop-prover/src/basefold/channel.rs",
+      "base_sha256": "b1e75e4292135fafd15fabc5410edf72a24ceb78bd8550470dcee0d4f2100101",
+      "patched_sha256": "0e14f6fa70b552e3b8d0933dd2266950a2d2a836952f659b178658eb55a0ee17"
+    },
+    {
+      "path": "crates/prover/src/zk_config.rs",
+      "base_sha256": "e8ca5d648ce45c66ab48d9d75d287141c0878b186b11a20213e17dafb5f95139",
+      "patched_sha256": "d94a6f2a756996aab510fdc6133c2e9925108ef1a392bfee629f00461cc680e2"
+    },
+    {
+      "path": "crates/utils/src/rayon/config.rs",
+      "base_sha256": "f164906e2a0b086afda7684740dbbdf22059882a813e7b10543ae5e60a8dbcf7",
+      "patched_sha256": "980107e9a57c26891e6508df8ac615301b2f1c6423d88ef333a8c830d5d693cf"
+    }
+  ],
+  "research_profile": "explicit_unmerged_oracles_v0_1",
+  "allowed_rayon_workers": [
+    1,
+    2,
+    4
+  ],
+  "ntt_log_num_shares": [
+    0,
+    1,
+    2
+  ],
+  "rayon_feature_change_needed": false,
+  "requested_stack_bytes_per_new_worker": 2097152,
+  "new_worker_stack_components_bytes": {
+    "1": 0,
+    "2": 4194304,
+    "4": 8388608
+  },
+  "expected_cli_os_threads_including_caller": {
+    "1": 1,
+    "2": 3,
+    "4": 5
+  },
+  "new_full_size_buffers_from_patch": 0,
+  "mask_sampler_independent_of_scheduling": "same base_seed and per-index StdRng(base_seed XOR index); exact packed bytes tested across width",
+  "security_parameters_or_relation_or_oracle_specs_or_coins_changed": false,
+  "default_profile_behavior_changed": false,
+  "resource_component_classification": "source-derived requested components; not measured RSS or a complete formal memory bound",
+  "admission_conclusion": "small differential controls first; full-scale admission remains conditional on runner total budget/margin and monitoring, including cumulative multi-thread CPU limit",
+  "test_runner_note": "scoped local pools join before next pool; sequential Rust harness may require7 OS threads including idle global1+harness2+local4, while CPU affinity remains<=4",
+  "production_profile": false
+}

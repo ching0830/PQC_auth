@@ -1,0 +1,601 @@
+--- a/crates/math/src/multilinear/sparse.rs
++++ b/crates/math/src/multilinear/sparse.rs
+@@ -120,6 +120,52 @@
+ 		})
+ 		.sum();
+ 	F::reduce(wide)
++}
++
++/// Evaluates a streamed multiset of addresses without storing or sorting expanded wiring.
++///
++/// Addresses use at most 127 coordinates. Repeated addresses cancel in pairs because the
++/// coefficient field has characteristic two. No address bits are dropped or converted to usize
++/// before their bounded (at most 16-coordinate) chunk is selected.
++pub fn evaluate_sparse_b1_multilinear_streaming<E: FieldOps>(
++    point: &[E],
++    n_terms: usize,
++    indices: impl IntoIterator<Item = u128>,
++) -> E {
++    let chunks = expand_streaming_chunks(point, n_terms);
++    indices.into_iter().map(|index| {
++        assert!(index >> point.len() == 0, "streamed address is out of range");
++        chunks.iter().map(|(range, tensor)| lookup_wide(index, range, tensor))
++            .reduce(|acc, value| acc * value).expect("there is at least one chunk")
++    }).sum()
++}
++
++/// Native-field version of [`evaluate_sparse_b1_multilinear_streaming`], with one reduction.
++pub fn evaluate_sparse_b1_multilinear_streaming_native<F: Field>(
++    point: &[F],
++    n_terms: usize,
++    indices: impl IntoIterator<Item = u128>,
++) -> F {
++    let chunks = expand_streaming_chunks(point, n_terms);
++    let (last, init) = chunks.split_last().expect("there is at least one chunk");
++    let wide = indices.into_iter().map(|index| {
++        assert!(index >> point.len() == 0, "streamed address is out of range");
++        let prefix = init.iter().map(|(range, tensor)| lookup_wide(index, range, tensor)).product();
++        F::wide_mul(prefix, lookup_wide(index, &last.0, &last.1))
++    }).sum();
++    F::reduce(wide)
++}
++
++fn expand_streaming_chunks<E: FieldOps>(point: &[E], n_terms: usize) -> Vec<(Range<usize>, Vec<E>)> {
++    assert!(point.len() < u128::BITS as usize, "streaming log_len must be less than 128");
++    chunk_ranges(n_terms, point.len()).into_iter().map(|range| {
++        let tensor = eq_ind_partial_eval_scalars(&point[range.clone()]);
++        (range, tensor)
++    }).collect()
++}
++
++fn lookup_wide<E: FieldOps>(index: u128, range: &Range<usize>, tensor: &[E]) -> E {
++    tensor[((index >> range.start) & ((1u128 << range.len()) - 1)) as usize].clone()
+ }
+ 
+ /// Splits the point into chunks and expands each into its equality-indicator tensor.
+@@ -298,4 +344,59 @@
+ 	fn new_rejects_out_of_range_index() {
+ 		SparseBitVector::new(4, vec![16]);
+ 	}
+-}
++    #[test]
++    fn streamed_wide_addresses_match_bitwise_definition_and_native() {
++        let mut rng = StdRng::seed_from_u64(17);
++        for log_len in [0, 1, 40, 63, 64, 65, 71, 127] {
++            let mask = (1u128 << log_len) - 1;
++            let indices = [0, 1 & mask, (1u128 << log_len.saturating_sub(1)) & mask,
++                0x6ad5_0123_ffff_0055_0a11_c090_8844_1234u128 & mask];
++            let point = random_scalars::<B128>(&mut rng, log_len);
++            let expected = indices.iter().map(|&index| {
++                let vertex = (0..log_len).map(|i| if (index >> i) & 1 == 1 {
++                    B128::ONE
++                } else { B128::ZERO }).collect::<Vec<_>>();
++                eq_ind(&point, &vertex)
++            }).sum::<B128>();
++            assert_eq!(evaluate_sparse_b1_multilinear_streaming(&point, indices.len(), indices), expected);
++            assert_eq!(evaluate_sparse_b1_multilinear_streaming_native(&point, indices.len(), indices), expected);
++        }
++    }
++
++    #[test]
++    fn streamed_low_addresses_match_sorted_cancelled_legacy() {
++        let mut rng = StdRng::seed_from_u64(18);
++        for log_len in [0, 1, 16, 40, 63] {
++            let bits = random_bits(&mut rng, 37, log_len);
++            let point = random_scalars::<B128>(&mut rng, log_len);
++            let mut terms = bits.indices().iter().copied().map(u128::from).collect::<Vec<_>>();
++            terms.extend([0, 0, 0, 0]);
++            terms.reverse();
++            let expected = evaluate_sparse_b1_multilinear_native(&bits, &point);
++            assert_eq!(evaluate_sparse_b1_multilinear_streaming(&point, terms.len(), terms.clone()), expected);
++            assert_eq!(evaluate_sparse_b1_multilinear_streaming_native(&point, terms.len(), terms), expected);
++        }
++    }
++
++    #[test]
++    fn streamed_high_coordinate_cannot_alias_low_coordinate() {
++        let mut point = vec![B128::ZERO; 71];
++        point[64] = B128::ONE;
++        assert_eq!(evaluate_sparse_b1_multilinear_streaming_native(&point, 1, [1u128 << 64]), B128::ONE);
++        assert_eq!(evaluate_sparse_b1_multilinear_streaming_native(&point, 1, [0]), B128::ZERO);
++        assert_eq!(evaluate_sparse_b1_multilinear_streaming_native(&point, 2, [1u128 << 64; 2]), B128::ZERO);
++    }
++
++    #[test]
++    #[should_panic(expected = "streamed address is out of range")]
++    fn streamed_rejects_high_address_outside_point() {
++        evaluate_sparse_b1_multilinear_streaming_native(&vec![B128::ZERO; 64], 1, [1u128 << 64]);
++    }
++
++    #[test]
++    #[should_panic(expected = "streaming log_len must be less than 128")]
++    fn streamed_rejects_128_coordinates() {
++        evaluate_sparse_b1_multilinear_streaming_native(&vec![B128::ZERO; 128], 0, []);
++    }
++
++}
+--- a/crates/verifier/src/verify.rs
++++ b/crates/verifier/src/verify.rs
+@@ -1,7 +1,7 @@
+ // Copyright 2025 Irreducible Inc.
+ // Copyright 2026 The Binius Developers
+ 
+-use std::marker::PhantomData;
++use std::{marker::PhantomData, sync::Arc};
+ 
+ use binius_core::{
+ 	constraint_system::{ConstraintSystem, InoutSegment},
+@@ -43,7 +43,7 @@
+ /// instead, which wraps this with a BaseFold compiler.
+ #[derive(Debug, Clone)]
+ pub struct IOPVerifier {
+-	constraint_system: ConstraintSystem,
++	constraint_system: Arc<ConstraintSystem>,
+ 	log_public_words: usize,
+ 	/// The constraint system's wiring matrix.
+ 	wiring: WiringInfo,
+@@ -58,7 +58,8 @@
+ 	///
+ 	/// Panics if the wiring matrix's addresses do not fit; see [`WiringInfo::new`].
+ 	pub fn new(constraint_system: ConstraintSystem, log_public_words: usize) -> Self {
+-		let wiring = WiringInfo::new(&constraint_system, InoutSegment::Public);
++		let constraint_system = Arc::new(constraint_system);
++		let wiring = WiringInfo::from_shared(Arc::clone(&constraint_system), InoutSegment::Public);
+ 		Self {
+ 			constraint_system,
+ 			log_public_words,
+@@ -67,14 +68,26 @@
+ 	}
+ 
+ 	/// Returns the constraint system.
+-	pub const fn constraint_system(&self) -> &ConstraintSystem {
++	pub fn constraint_system(&self) -> &ConstraintSystem {
+ 		&self.constraint_system
+ 	}
+ 
+ 	/// Consumes the IOP verifier and returns the inner constraint system.
+ 	pub fn into_constraint_system(self) -> ConstraintSystem {
+-		self.constraint_system
+-	}
++        let Self { constraint_system, wiring, .. } = self;
++        drop(wiring);
++        Arc::unwrap_or_clone(constraint_system)
++    }
++
++    /// Shares immutable constraints without copying operand storage.
++    pub fn constraint_system_arc(&self) -> Arc<ConstraintSystem> {
++        Arc::clone(&self.constraint_system)
++    }
++
++    /// Consumes this handle and returns the shared immutable constraints.
++    pub fn into_constraint_system_arc(self) -> Arc<ConstraintSystem> {
++        self.constraint_system
++    }
+ 
+ 	/// Returns the wiring matrix, which a wiring claim is settled against.
+ 	pub const fn wiring(&self) -> &WiringInfo {
+@@ -98,7 +111,7 @@
+ 	/// ## Preconditions
+ 	/// * the wider segment spans at least one field element's worth of words, which every system
+ 	///   with more than one public or private value satisfies
+-	pub const fn log_witness_elems(&self) -> usize {
++	pub fn log_witness_elems(&self) -> usize {
+ 		let log_segment_words = self
+ 			.constraint_system
+ 			.log_segment_words(InoutSegment::Public);
+@@ -111,14 +124,14 @@
+ 	}
+ 
+ 	/// Returns the number of field elements the committed trace words fill.
+-	pub const fn n_witness_elems(&self) -> usize {
++	pub fn n_witness_elems(&self) -> usize {
+ 		self.constraint_system
+ 			.n_hidden_words(InoutSegment::Public)
+ 			.div_ceil(1 << LOG_WORDS_PER_ELEM)
+ 	}
+ 
+ 	/// Returns log2 of the number of words in the committed trace.
+-	pub const fn log_witness_words(&self) -> usize {
++	pub fn log_witness_words(&self) -> usize {
+ 		self.log_witness_elems() + LOG_WORDS_PER_ELEM
+ 	}
+ 
+@@ -377,17 +390,17 @@
+ 	}
+ 
+ 	/// Returns log2 of the number of words in the witness.
+-	pub const fn log_witness_words(&self) -> usize {
++	pub fn log_witness_words(&self) -> usize {
+ 		self.iop_verifier.log_witness_words()
+ 	}
+ 
+ 	/// Returns log2 of the number of field elements in the packed trace.
+-	pub const fn log_witness_elems(&self) -> usize {
++	pub fn log_witness_elems(&self) -> usize {
+ 		self.iop_verifier.log_witness_elems()
+ 	}
+ 
+ 	/// Returns the constraint system.
+-	pub const fn constraint_system(&self) -> &ConstraintSystem {
++	pub fn constraint_system(&self) -> &ConstraintSystem {
+ 		self.iop_verifier.constraint_system()
+ 	}
+ 
+--- a/crates/prover/src/prove.rs
++++ b/crates/prover/src/prove.rs
+@@ -1,7 +1,7 @@
+ // Copyright 2025 Irreducible Inc.
+ // Copyright 2026 The Binius Developers
+ 
+-use std::{marker::PhantomData, mem::MaybeUninit};
++use std::{marker::PhantomData, mem::MaybeUninit, sync::Arc};
+ 
+ use binius_compute::{Allocator, BufferPool, VecLike};
+ use binius_core::{
+@@ -49,7 +49,7 @@
+ /// Most users should use [`Prover`] instead, which wraps this with a BaseFold compiler.
+ #[derive(Debug)]
+ pub struct IOPProver {
+-	constraint_system: ConstraintSystem,
++	constraint_system: Arc<ConstraintSystem>,
+ 	log_witness_elems: usize,
+ 	key_collection: KeyCollection,
+ }
+@@ -58,7 +58,7 @@
+ 	/// Constructs an IOP prover from an IOP verifier and pre-computed keys.
+ 	pub fn new(iop_verifier: IOPVerifier, key_collection: KeyCollection) -> Self {
+ 		let log_witness_elems = iop_verifier.log_witness_elems();
+-		let constraint_system = iop_verifier.into_constraint_system();
++		let constraint_system = iop_verifier.into_constraint_system_arc();
+ 		Self {
+ 			constraint_system,
+ 			log_witness_elems,
+@@ -67,9 +67,14 @@
+ 	}
+ 
+ 	/// Returns the constraint system.
+-	pub const fn constraint_system(&self) -> &ConstraintSystem {
++	pub fn constraint_system(&self) -> &ConstraintSystem {
+ 		&self.constraint_system
+ 	}
++
++    /// Shares immutable constraints without copying operand storage.
++    pub fn constraint_system_arc(&self) -> Arc<ConstraintSystem> {
++        Arc::clone(&self.constraint_system)
++    }
+ 
+ 	/// Returns a reference to the KeyCollection.
+ 	///
+--- a/crates/verifier/src/zk_config.rs
++++ b/crates/verifier/src/zk_config.rs
+@@ -194,7 +194,7 @@
+ 	}
+ 
+ 	/// Returns the constraint system.
+-	pub const fn constraint_system(&self) -> &ConstraintSystem {
++	pub fn constraint_system(&self) -> &ConstraintSystem {
+ 		self.inner_iop_verifier.constraint_system()
+ 	}
+ 
+--- a/crates/verifier/src/protocols/shift/wiring.rs
++++ b/crates/verifier/src/protocols/shift/wiring.rs
+@@ -1,4 +1,6 @@
+ // Copyright 2026 The Binius Developers
++
++use std::sync::Arc;
+ 
+ use binius_core::constraint_system::{ConstraintSystem, InoutSegment, Operand};
+ use binius_field::{BinaryField, FieldOps, util::FieldFn};
+@@ -7,11 +9,11 @@
+ 	multilinear::{
+ 		eq::eq_ind_zero,
+ 		sparse::{
+-			SparseBitVector, evaluate_sparse_b1_multilinear, evaluate_sparse_b1_multilinear_native,
++			evaluate_sparse_b1_multilinear_streaming, evaluate_sparse_b1_multilinear_streaming_native,
+ 		},
+ 	},
+ };
+-use getset::{CopyGetters, Getters};
++use getset::CopyGetters;
+ 
+ use super::LOG_SHIFT_COUNT;
+ use crate::reduction::{LOG_OPERANDS, log_constraint_point};
+@@ -53,119 +55,121 @@
+ ///
+ /// The bit-index factors every shift scalar is scaled by are left out: they depend on prover
+ /// messages, so [`check_eval`](super::check_eval) multiplies them in outside.
+-#[derive(Debug, Clone, Getters, CopyGetters)]
++#[derive(Debug, Clone, CopyGetters)]
+ pub struct WiringInfo {
+-	/// The terms whose word lies in the public segment.
+-	#[getset(get = "pub")]
+-	public_segment: SparseBitVector,
+-	/// The terms whose word lies in the hidden segment.
+-	#[getset(get = "pub")]
+-	hidden_segment: SparseBitVector,
+-	/// The word-index variables the public segment spans.
+-	#[getset(get_copy = "pub")]
+-	log_public_words: usize,
+-	/// The word-index variables the shift reduction runs over, the wider of the two segments'
+-	/// spans: the length of `r_y`.
+-	#[getset(get_copy = "pub")]
+-	log_segment_words: usize,
+-	/// The constraint-index variables: the length of `r_x`.
+-	#[getset(get_copy = "pub")]
+-	log_constraint_point: usize,
++    /// Shared source; no expanded array of wiring addresses is retained.
++    constraint_system: Arc<ConstraintSystem>,
++    n_public_words: usize,
++    n_terms: [usize; 2],
++    #[getset(get_copy = "pub")]
++    log_public_words: usize,
++    #[getset(get_copy = "pub")]
++    log_segment_words: usize,
++    #[getset(get_copy = "pub")]
++    log_constraint_point: usize,
+ }
+ 
+ impl WiringInfo {
+-	/// Lays out the wiring matrix of `cs`, with its inout values in `inout`.
+-	///
+-	/// # Panics
+-	///
+-	/// Panics if the hidden address does not fit a `u64` index below `2^63`: that is,
+-	/// `LOG_OPERANDS + 18 + log_constraint_point + log_segment_words < 64`, or
+-	/// `log_constraint_point + log_segment_words ≤ 41`.
+-	pub fn new(cs: &ConstraintSystem, inout: InoutSegment) -> Self {
+-		let log_public_words = cs.log_public_words(inout);
+-		let log_segment_words = cs.log_segment_words(inout);
+-		let log_constraint_point = log_constraint_point(cs);
+-		let log_words = [log_public_words, log_segment_words];
+-		let log_lens = log_words.map(|log_words| LOG_TERM_BITS + log_words + log_constraint_point);
+-		assert!(
+-			log_lens[1] < u64::BITS as usize,
+-			"the wiring address needs {} bits; at most 63 fit",
+-			log_lens[1]
+-		);
+-
+-		// Each operand term's segment and address, in the column order the reduction batches.
+-		let n_public_words = cs.n_public_words(inout);
+-		let mut indices = [Vec::new(), Vec::new()];
+-		let mut push = |column: usize, constraint_index: usize, terms: &Operand| {
+-			for term in terms {
+-				let word = cs.word_offset(term.value_index);
+-				let (segment, word) = if word < n_public_words {
+-					(0, word)
+-				} else {
+-					(1, word - n_public_words)
+-				};
+-				let index = column as u64
+-					| (term.inner().index() as u64) << LOG_OPERANDS
+-					| (term.outer().index() as u64) << (LOG_OPERANDS + LOG_SHIFT_COUNT)
+-					| (word as u64) << LOG_TERM_BITS
+-					| (constraint_index as u64) << (LOG_TERM_BITS + log_words[segment]);
+-				indices[segment].push(index);
+-			}
+-		};
+-
+-		/// Walks one operation, its operands at the columns from `first_column` on, and returns the
+-		/// column after its last.
+-		fn walk<C: AsRef<[Operand; ARITY]>, const ARITY: usize>(
+-			first_column: usize,
+-			constraints: &[C],
+-			push: &mut impl FnMut(usize, usize, &Operand),
+-		) -> usize {
+-			for (constraint_index, constraint) in constraints.iter().enumerate() {
+-				for (operand_index, terms) in constraint.as_ref().iter().enumerate() {
+-					push(first_column + operand_index, constraint_index, terms);
+-				}
+-			}
+-			first_column + ARITY
+-		}
+-
+-		let column = walk(0, &cs.zero_constraints, &mut push);
+-		let column = walk(column, &cs.and_constraints, &mut push);
+-		let column = walk(column, &cs.imul_constraints, &mut push);
+-		walk(column, &cs.bmul_constraints, &mut push);
+-
+-		let [public, hidden] = indices;
+-		let [public_log_len, hidden_log_len] = log_lens;
+-		Self {
+-			public_segment: SparseBitVector::new(public_log_len, public),
+-			hidden_segment: SparseBitVector::new(hidden_log_len, hidden),
+-			log_public_words,
+-			log_segment_words,
+-			log_constraint_point,
+-		}
+-	}
+-
+-	/// Joins the two segments' evaluations at `r_segment`, each vector read by `eval`.
+-	fn eval<E: FieldOps>(&self, vals: &[E], eval: impl Fn(&SparseBitVector, &[E]) -> E) -> E {
+-		let (r_segment, point_hid) = vals.split_first().expect("the input leads with r_segment");
+-		assert_eq!(point_hid.len(), self.hidden_segment.log_len());
+-
+-		let public_end = LOG_TERM_BITS + self.log_public_words;
+-		let r_y_end = LOG_TERM_BITS + self.log_segment_words;
+-		let point_pub = [&point_hid[..public_end], &point_hid[r_y_end..]].concat();
+-		let public_eval =
+-			eq_ind_zero(&point_hid[public_end..r_y_end]) * eval(&self.public_segment, &point_pub);
+-		let hidden_eval = eval(&self.hidden_segment, point_hid);
+-		extrapolate_line(public_eval, hidden_eval, r_segment.clone())
+-	}
++    /// Compatibility constructor for borrowed constraints. Production setup uses
++    /// [`Self::from_shared`] so the circuit is never copied here.
++    pub fn new(cs: &ConstraintSystem, inout: InoutSegment) -> Self {
++        Self::from_shared(Arc::new(cs.clone()), inout)
++    }
++
++    /// Streams the wiring matrix from immutable shared constraints. Addresses retain every
++    /// coordinate through 127 bits. Duplicate terms cancel algebraically in characteristic two;
++    /// no expanded indices, sorting buffer, or second array is allocated.
++    pub fn from_shared(cs: Arc<ConstraintSystem>, inout: InoutSegment) -> Self {
++        let log_public_words = cs.log_public_words(inout);
++        let log_segment_words = cs.log_segment_words(inout);
++        let log_constraint_point = log_constraint_point(&cs);
++        let log_len = LOG_TERM_BITS + log_segment_words + log_constraint_point;
++        assert!(log_len < u128::BITS as usize,
++            "the wiring address needs {log_len} bits; at most 127 fit");
++        let mut result = Self {
++            n_public_words: cs.n_public_words(inout),
++            constraint_system: cs,
++            n_terms: [0; 2],
++            log_public_words,
++            log_segment_words,
++            log_constraint_point,
++        };
++        let mut counts = [0; 2];
++        for (_, _, operand) in result.operands() {
++            for term in operand {
++                counts[usize::from(result.constraint_system.word_offset(term.value_index) >= result.n_public_words)] += 1;
++            }
++        }
++        result.n_terms = counts;
++        result
++    }
++
++    /// The number of coordinates in the hidden wiring polynomial, without materializing it.
++    pub const fn hidden_log_len(&self) -> usize {
++        LOG_TERM_BITS + self.log_segment_words + self.log_constraint_point
++    }
++
++    /// Tests and setup diagnostics can check sharing without exposing mutable constraints.
++    pub fn constraint_system_arc(&self) -> Arc<ConstraintSystem> {
++        Arc::clone(&self.constraint_system)
++    }
++
++    fn operands(&self) -> impl Iterator<Item = (usize, usize, &Operand)> {
++        fn walk<C: AsRef<[Operand; N]>, const N: usize>(
++            first_column: usize, constraints: &[C],
++        ) -> impl Iterator<Item = (usize, usize, &Operand)> {
++            constraints.iter().enumerate().flat_map(move |(row, constraint)| {
++                constraint.as_ref().iter().enumerate().map(move |(column, operand)| {
++                    (first_column + column, row, operand)
++                })
++            })
++        }
++        let cs = &self.constraint_system;
++        walk(0, &cs.zero_constraints)
++            .chain(walk(1, &cs.and_constraints))
++            .chain(walk(4, &cs.imul_constraints))
++            .chain(walk(8, &cs.bmul_constraints))
++    }
++
++    fn indices(&self, segment: usize) -> impl Iterator<Item = u128> {
++        let log_words = if segment == 0 { self.log_public_words } else { self.log_segment_words };
++        self.operands().flat_map(move |(column, constraint_index, terms)| {
++            terms.iter().filter_map(move |term| {
++                let word = self.constraint_system.word_offset(term.value_index);
++                let hidden = usize::from(word >= self.n_public_words);
++                if hidden != segment { return None; }
++                let word = if hidden == 0 { word } else { word - self.n_public_words };
++                Some(column as u128
++                    | (term.inner().index() as u128) << LOG_OPERANDS
++                    | (term.outer().index() as u128) << (LOG_OPERANDS + LOG_SHIFT_COUNT)
++                    | (word as u128) << LOG_TERM_BITS
++                    | (constraint_index as u128) << (LOG_TERM_BITS + log_words))
++            })
++        })
++    }
++
++    fn eval<E: FieldOps>(&self, vals: &[E],
++        eval: impl Fn(&[E], usize, &mut dyn Iterator<Item = u128>) -> E,
++    ) -> E {
++        let (r_segment, point_hid) = vals.split_first().expect("the input leads with r_segment");
++        assert_eq!(point_hid.len(), LOG_TERM_BITS + self.log_segment_words + self.log_constraint_point);
++        let public_end = LOG_TERM_BITS + self.log_public_words;
++        let r_y_end = LOG_TERM_BITS + self.log_segment_words;
++        let point_pub = [&point_hid[..public_end], &point_hid[r_y_end..]].concat();
++        let public_eval = eq_ind_zero(&point_hid[public_end..r_y_end])
++            * eval(&point_pub, self.n_terms[0], &mut self.indices(0));
++        let hidden_eval = eval(point_hid, self.n_terms[1], &mut self.indices(1));
++        extrapolate_line(public_eval, hidden_eval, r_segment.clone())
++    }
+ }
+ 
+ impl<F: BinaryField> FieldFn<F> for WiringInfo {
+ 	fn call<E: FieldOps<Scalar = F> + From<F>>(&self, vals: &[E]) -> E {
+-		self.eval(vals, evaluate_sparse_b1_multilinear)
++		self.eval(vals, |point, n, indices| evaluate_sparse_b1_multilinear_streaming(point, n, indices))
+ 	}
+ 
+ 	fn call_native(&self, vals: &[F]) -> F {
+-		self.eval(vals, evaluate_sparse_b1_multilinear_native)
++		self.eval(vals, |point, n, indices| evaluate_sparse_b1_multilinear_streaming_native(point, n, indices))
+ 	}
+ }
+ 
+@@ -294,7 +298,7 @@
+ 			let cs = random_system(&mut rng, with_imul);
+ 			for inout in [InoutSegment::Public, InoutSegment::Hidden] {
+ 				let wiring = WiringInfo::new(&cs, inout);
+-				let vals = random_scalars::<B128>(&mut rng, 1 + wiring.hidden_segment().log_len());
++				let vals = random_scalars::<B128>(&mut rng, 1 + LOG_TERM_BITS + wiring.log_segment_words() + wiring.log_constraint_point());
+ 
+ 				let got = FieldFn::<B128>::call::<B128>(&wiring, &vals);
+ 				// A vacuous claim would let a broken layout pass unnoticed.
+@@ -312,8 +316,12 @@
+ 		let mut cs = empty_system(0, 2);
+ 		cs.and_constraints = vec![AndConstraint([vec![term, term], vec![term], vec![]])];
+ 		let wiring = WiringInfo::new(&cs, InoutSegment::Public);
+-		assert!(wiring.public_segment().indices().is_empty());
+-		assert_eq!(wiring.hidden_segment().indices().len(), 1);
++		assert_eq!(wiring.indices(0).count(), 0);
++        let terms = wiring.indices(1).collect::<Vec<_>>();
++        assert_eq!(terms.len(), 3);
++        assert_eq!(terms[0], terms[1]);
++        let vals = vec![B128::ONE; 1 + LOG_TERM_BITS + wiring.log_segment_words() + wiring.log_constraint_point()];
++        assert_eq!(FieldFn::<B128>::call_native(&wiring, &vals), contract(&cs, InoutSegment::Public, &vals));
+ 	}
+ 
+ 	/// A system of `2^log_constraints` empty ZERO constraints over `2^log_words` private words.
+@@ -330,14 +338,30 @@
+ 	}
+ 
+ 	#[test]
+-	fn the_widest_address_that_fits_is_63_bits() {
++	fn legacy_63_bit_address_still_fits() {
+ 		let wiring = WiringInfo::new(&empty_system(15, 26), InoutSegment::Public);
+-		assert_eq!(wiring.hidden_segment().log_len(), 63);
+-	}
+-
+-	#[test]
+-	#[should_panic(expected = "the wiring address needs 64 bits")]
+-	fn a_system_whose_address_does_not_fit_is_rejected() {
+-		let _ = WiringInfo::new(&empty_system(16, 26), InoutSegment::Public);
+-	}
++		assert_eq!(LOG_TERM_BITS + wiring.log_segment_words() + wiring.log_constraint_point(), 63);
++	}
++
++    #[test]
++    fn address_wider_than_63_bits_is_streamed_and_shared() {
++        let mut cs = empty_system(16, 26);
++        let term = ShiftedValueIndex::new(ValueIndex::private((1 << 26) - 1), [Shift::srl(7), Shift::srl(3)]);
++        cs.zero_constraints[(1 << 16) - 1] = ZeroConstraint([vec![term]]);
++        let cs = Arc::new(cs);
++        let wiring = WiringInfo::from_shared(Arc::clone(&cs), InoutSegment::Public);
++        assert!(Arc::ptr_eq(&cs, &wiring.constraint_system_arc()));
++        assert_eq!(LOG_TERM_BITS + wiring.log_segment_words() + wiring.log_constraint_point(), 64);
++        let index = wiring.indices(1).next().unwrap();
++        assert_ne!(index >> 63, 0);
++        let mut vals = vec![B128::ZERO; 65];
++        vals[0] = B128::ONE;
++        for coordinate in 0..64 {
++            if (index >> coordinate) & 1 != 0 { vals[1 + coordinate] = B128::ONE; }
++        }
++        assert_eq!(FieldFn::<B128>::call::<B128>(&wiring, &vals), B128::ONE);
++        assert_eq!(FieldFn::<B128>::call_native(&wiring, &vals), B128::ONE);
++        vals[64] = B128::ZERO;
++        assert_eq!(FieldFn::<B128>::call_native(&wiring, &vals), B128::ZERO);
++    }
+ }
+--- a/crates/verifier/src/protocols/shift/verify.rs
++++ b/crates/verifier/src/protocols/shift/verify.rs
+@@ -329,7 +329,7 @@
+ 	)
+ 	.cloned()
+ 	.collect();
+-	assert_eq!(inputs.len(), 1 + wiring.hidden_segment().log_len());
++	assert_eq!(inputs.len(), 1 + wiring.hidden_log_len());
+ 	let claim = WiringEvalClaim {
+ 		eval_fn: wiring,
+ 		inputs,

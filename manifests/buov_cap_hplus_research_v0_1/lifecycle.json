@@ -1,0 +1,1764 @@
+{
+  "actual_setup_checkpoint": {
+    "bytes": 20338,
+    "sha256": "8bc0996ceceb48297d2e907f036150b75219179e00de828a703f8aaa81c17a12"
+  },
+  "claim_boundary": {
+    "Evidence_sealed": false,
+    "Production_closed": false,
+    "Proof_closed": false,
+    "backend_qualified": false,
+    "common_root_image_proved": false,
+    "external_independent_security_review": false,
+    "fixed_Hplus_research_relation_functional": true,
+    "full_Init_proved": false,
+    "holder_KeyGen_image_proved": false,
+    "other_17_origins_proved": false,
+    "planes": 12,
+    "positions": 2322,
+    "production_entry_changed": false,
+    "same_state_lifecycle": true,
+    "security_binding_theorem_closed": false,
+    "selected_parties": 2048,
+    "selected_repetition_index": 2
+  },
+  "compiler_id": "0b375652a1823a9fafd3bbf88495a95d3b6d9f07aca4188137f8688266798e2b",
+  "date": "2026-10-21",
+  "guard": {
+    "MemAvailable_min": 25110622208,
+    "MemAvailable_start": 29007065088,
+    "argv": [
+      "/home/ucheng0830/miniconda3/bin/python",
+      "-B",
+      "-m",
+      "benchmarks.buov_cap_hplus_research_v0_1.run",
+      "--worker",
+      "/tmp/pqsat-buov-cap-hplus-exploration-v0-1/lifecycle-v3"
+    ],
+    "children_cpu_seconds": 161.083043,
+    "children_rusage_hwm_bytes": 3859927040,
+    "children_rusage_hwm_scope": "cumulative supervisor children; not phase-specific",
+    "cpu_affinity": [
+      0
+    ],
+    "directory_bytes": 778008744,
+    "exit": 0,
+    "log": "/tmp/pqsat-buov-cap-hplus-exploration-v0-1/lifecycle-v3.log",
+    "no_residual_group": true,
+    "policy": {
+      "directory_bytes": 10737418240,
+      "file_bytes": 1073741824,
+      "output_bytes": 16777216,
+      "process_as": 8589934592,
+      "start_available": 17179869184,
+      "stop_available": 8589934592,
+      "threads": 1,
+      "tree_rss": 4294967296,
+      "wall_seconds": 1800
+    },
+    "sampled_process_as_bytes": 3897135104,
+    "sampled_process_rss_bytes": 3859927040,
+    "sampled_process_threads": 1,
+    "sampled_rss_is_hard_bound": false,
+    "sampled_tree_rss_bytes": 3971100672,
+    "schema": "BUOVCAPExplorationRunV1",
+    "stop": null,
+    "supervisor_rusage_hwm_bytes": 45535232,
+    "wall_seconds": 163.82200847752392
+  },
+  "local_result_identities": {
+    "lifecycle-v3.json": {
+      "bytes": 1247,
+      "sha256": "f355cb5fe0efcf949b996c201ce8d4926b96111ba83b7082d2f6db8c8c77f680"
+    },
+    "lifecycle-v3/summary.json": {
+      "bytes": 50217,
+      "sha256": "cf1e8c12ad76459f0fabec1605c81876a67908a214c096d3cff98ea91a435d83"
+    },
+    "lifecycle-v4-build/build.json": {
+      "bytes": 26437,
+      "sha256": "f6ab0dbcd3c8e7e559292fbdf4958e6e4be29673598809276e2c58be5191a5e3"
+    }
+  },
+  "measurements": {
+    "CAP_Init_calls": 1,
+    "CAP_preparation_seconds": 1.8512824261561036,
+    "Evidence_sealed": false,
+    "NCC": {
+      "UE_witness_received": false,
+      "accepted": true,
+      "inversion_calls": 1,
+      "inversion_seconds": 1.3792351195588708,
+      "keygen_seconds": 1.0784463584423065,
+      "memory_HWM_bytes": 51384320,
+      "private_key_exported": false,
+      "proof_Verify": 1,
+      "request_wire_bytes": 996688,
+      "response_wire_bytes": 227,
+      "schema": "BUOVCAPHPlusNCCV1",
+      "secret_response_persisted": false,
+      "setup_wire_bytes": 190602,
+      "verifier": {
+        "Prove": 0,
+        "accepted": true,
+        "actual_symbolic_setup": {
+          "FRI_component_exact_format_bytes": 984832,
+          "fold_arities": [
+            4,
+            4,
+            3,
+            3
+          ],
+          "full_proof_body_bytes": null,
+          "full_proof_size_includes_unaccounted_IP_messages": true,
+          "log_inv_rate": 1,
+          "max_log_domain_size": 25,
+          "merged": [
+            {
+              "is_zk": true,
+              "len": 863,
+              "log_msg_len": 10
+            },
+            {
+              "is_zk": true,
+              "len": 9933087,
+              "log_msg_len": 24
+            },
+            {
+              "is_zk": true,
+              "len": 98715,
+              "log_msg_len": 17
+            },
+            {
+              "is_zk": true,
+              "len": 512,
+              "log_msg_len": 9
+            }
+          ],
+          "n_test_queries": 309,
+          "outer": {
+            "dummy_constraints_per_segment": 2,
+            "dummy_wires": 310,
+            "log_precommit": 10,
+            "log_private": 17,
+            "mask_dims": [
+              7,
+              2
+            ],
+            "n_precommit": 547,
+            "n_private": 98399,
+            "n_public": 1048576,
+            "padded_mul_constraints": 1048576,
+            "precommit_len": 863,
+            "private_len": 98715
+          },
+          "prover_memory_profile": "checkpoint4/on_the_fly/no_pool_retention/regenerated_private_masks/v0.1",
+          "rounds": [
+            [
+              {
+                "is_zk": true,
+                "len": 863,
+                "log_msg_len": 10
+              }
+            ],
+            [
+              {
+                "is_zk": true,
+                "len": 9933087,
+                "log_msg_len": 24
+              }
+            ],
+            [
+              {
+                "is_zk": true,
+                "len": 98715,
+                "log_msg_len": 17
+              }
+            ],
+            [
+              {
+                "is_zk": true,
+                "len": 512,
+                "log_msg_len": 9
+              }
+            ]
+          ],
+          "security_bits": 128
+        },
+        "after_verifier_setup": {
+          "AS_bytes": 1134960640,
+          "RSS_HWM_bytes": 1282535424,
+          "RSS_bytes": 1131577344
+        },
+        "cache": {
+          "CS_hash_seconds": 5.316324272,
+          "cache_bytes": 688968080,
+          "cache_sha256": "25ccf947e09c3e894aea78b58b79b298b7958f6694f4a903bd405e87defe6864",
+          "cold_graph_constructed": false,
+          "load_seconds": 2.215105641,
+          "private_ValueVec_allocated": false,
+          "private_values_received": false,
+          "public_CS_identity": {
+            "encoding_persisted": false,
+            "serialized_bytes_streamed_to_hash": 2718916370,
+            "sha256": "92216254586814f128d68c91cc5842b8d5bc61d13bcdc76a51405afabfa74c5f"
+          },
+          "source_sha256": "ff1f376fe3cb39f93dd13736aaba509df64b0faba2a986d53f8b69cfca7933a8",
+          "stream_buffer_bytes": 65536
+        },
+        "compiler_id": "0b375652a1823a9fafd3bbf88495a95d3b6d9f07aca4188137f8688266798e2b",
+        "compute_cores": 1,
+        "counts": {
+          "AND": 16361386,
+          "ZERO": 3263533,
+          "allocator_and_Vec_spare_included": false,
+          "constants": 8487,
+          "max_operand_support": 2631,
+          "native_len_bytes": 872897760,
+          "operand_terms": 179246977,
+          "private_words": 19866173,
+          "public_words": 106,
+          "serialized_bytes": 2718916370,
+          "templates": {
+            "payload_bytes": 35266672,
+            "terms": 4333414,
+            "unique": 14984
+          }
+        },
+        "final_memory": {
+          "AS_bytes": 1134960640,
+          "RSS_HWM_bytes": 1329926144,
+          "RSS_bytes": 1131773952
+        },
+        "mode": "full-verify",
+        "private_values_received": false,
+        "process_seconds": 17.634393858723342,
+        "proof_Verify": 1,
+        "proof_body_bytes": 995632,
+        "public_CS_identity": {
+          "encoding_persisted": false,
+          "serialized_bytes_streamed_to_hash": 2718916370,
+          "sha256": "92216254586814f128d68c91cc5842b8d5bc61d13bcdc76a51405afabfa74c5f"
+        },
+        "schema": "BUOVCAPHPlusProofExecutionV1",
+        "security_bits": 128,
+        "security_classification": "FRI query-target only; overall security unqualified",
+        "setup_id": "6a4b28686792da14efd04dc59f4f3123e43bb5a1df2d850570b5f6ac0e2cdb6a",
+        "setup_seconds": 1.41869461,
+        "statement_bytes": 1037,
+        "verify_seconds": 8.501734113,
+        "whole_seconds": 17.453196503
+      },
+      "whole_seconds_including_UE_wait": 104.4434624016285
+    },
+    "Production_closed": false,
+    "Proof_closed": false,
+    "UE_Append_calls": 1,
+    "allocation_plan": {
+      "AND_transient_components_bytes": 1073741824,
+      "FRI_component_exact_format_bytes": 984832,
+      "ValueVec_component_bytes": 158998136,
+      "all_oracle_persistent_components_bytes": 1488064640,
+      "assumptions": [
+        "same explicit unmerged actual setup",
+        "height4 top-only Merkle checkpoints",
+        "same-basis OnTheFly NTT",
+        "no retained pool free blocks",
+        "phase2 releases prepared tensor before folded witness allocation",
+        "fresh private seed per oracle, exact mask regenerated transiently"
+      ],
+      "classification": "source components plus sampled setup RSS and explicit heuristic margin; not a formal RSS bound",
+      "full_Prove_admitted": true,
+      "full_Prove_seconds": null,
+      "full_Verify_seconds": null,
+      "full_proof_body_bytes": null,
+      "heuristic_margin_bytes": 201326592,
+      "measured_public_setup_RSS_bytes": 1130160128,
+      "monitoring_stop_bytes": 4294967296,
+      "oracles": [
+        {
+          "checkpoint_pool_capacity_bytes": 8192,
+          "checkpoint_tree_logical_bytes": 8160,
+          "codeword_bytes": 65536,
+          "mask_bytes": 16384,
+          "mask_persistent_bytes": 32,
+          "message_bytes": 16384
+        },
+        {
+          "checkpoint_pool_capacity_bytes": 134217728,
+          "checkpoint_tree_logical_bytes": 134217696,
+          "codeword_bytes": 1073741824,
+          "mask_bytes": 268435456,
+          "mask_persistent_bytes": 32,
+          "message_bytes": 268435456
+        },
+        {
+          "checkpoint_pool_capacity_bytes": 1048576,
+          "checkpoint_tree_logical_bytes": 1048544,
+          "codeword_bytes": 8388608,
+          "mask_bytes": 2097152,
+          "mask_persistent_bytes": 32,
+          "message_bytes": 2097152
+        },
+        {
+          "checkpoint_pool_capacity_bytes": 4096,
+          "checkpoint_tree_logical_bytes": 4064,
+          "codeword_bytes": 32768,
+          "mask_bytes": 8192,
+          "mask_persistent_bytes": 32,
+          "message_bytes": 8192
+        }
+      ],
+      "phase2_transient_components_bytes": 1074266112,
+      "profile": "research_unmerged_checkpoint_v0_1",
+      "projected_with_margin_bytes": 4052815608,
+      "query_target_bits": 128,
+      "regenerated_masks": true,
+      "schema": "BUOVCAPBiniusCheckpointPlanV1",
+      "temporary_regenerated_mask_max_bytes": 268435456,
+      "unknown": [
+        "outer prover transpose exact allocation",
+        "global allocator release behaviour",
+        "complete measured proof RSS/time",
+        "full proof IP messages",
+        "changed query openings/FRI terminal and cap transient allocations"
+      ]
+    },
+    "completed": true,
+    "compute_cores": {
+      "CAP": 1,
+      "NCC": 1,
+      "UE": 1
+    },
+    "configuration_pin": {
+      "bytes": 379217,
+      "sha256": "f0dd38bde5d9bfa6b5039d3ac372b396482b39edd027db1f1bcd588fc6c0e701"
+    },
+    "continuation": {
+      "append_seconds": 0.025440220721065998,
+      "native_prove_seconds": 0.4875273834913969,
+      "preflight_seconds": 0.08491253852844238,
+      "verify_seconds": 2.0135504072532058,
+      "whole_seconds": 2.663448244333267,
+      "wire_lengths": {
+        "c_r": 5074,
+        "c_z": 234,
+        "pi_2": 5592,
+        "response_z": 184,
+        "u": 72
+      }
+    },
+    "controller_HWM_bytes": 70275072,
+    "flow_seconds": 105.73354430031031,
+    "formal_RSS_bound": false,
+    "full_production_issuance_communication_bytes": null,
+    "issuance_bad_proof_control": {
+      "Prove": 0,
+      "accepted": false,
+      "actual_symbolic_setup": {
+        "FRI_component_exact_format_bytes": 984832,
+        "fold_arities": [
+          4,
+          4,
+          3,
+          3
+        ],
+        "full_proof_body_bytes": null,
+        "full_proof_size_includes_unaccounted_IP_messages": true,
+        "log_inv_rate": 1,
+        "max_log_domain_size": 25,
+        "merged": [
+          {
+            "is_zk": true,
+            "len": 863,
+            "log_msg_len": 10
+          },
+          {
+            "is_zk": true,
+            "len": 9933087,
+            "log_msg_len": 24
+          },
+          {
+            "is_zk": true,
+            "len": 98715,
+            "log_msg_len": 17
+          },
+          {
+            "is_zk": true,
+            "len": 512,
+            "log_msg_len": 9
+          }
+        ],
+        "n_test_queries": 309,
+        "outer": {
+          "dummy_constraints_per_segment": 2,
+          "dummy_wires": 310,
+          "log_precommit": 10,
+          "log_private": 17,
+          "mask_dims": [
+            7,
+            2
+          ],
+          "n_precommit": 547,
+          "n_private": 98399,
+          "n_public": 1048576,
+          "padded_mul_constraints": 1048576,
+          "precommit_len": 863,
+          "private_len": 98715
+        },
+        "prover_memory_profile": "checkpoint4/on_the_fly/no_pool_retention/regenerated_private_masks/v0.1",
+        "rounds": [
+          [
+            {
+              "is_zk": true,
+              "len": 863,
+              "log_msg_len": 10
+            }
+          ],
+          [
+            {
+              "is_zk": true,
+              "len": 9933087,
+              "log_msg_len": 24
+            }
+          ],
+          [
+            {
+              "is_zk": true,
+              "len": 98715,
+              "log_msg_len": 17
+            }
+          ],
+          [
+            {
+              "is_zk": true,
+              "len": 512,
+              "log_msg_len": 9
+            }
+          ]
+        ],
+        "security_bits": 128
+      },
+      "after_verifier_setup": {
+        "AS_bytes": 1134956544,
+        "RSS_HWM_bytes": 1282797568,
+        "RSS_bytes": 1131925504
+      },
+      "cache": {
+        "CS_hash_seconds": 5.278547732,
+        "cache_bytes": 688968080,
+        "cache_sha256": "25ccf947e09c3e894aea78b58b79b298b7958f6694f4a903bd405e87defe6864",
+        "cold_graph_constructed": false,
+        "load_seconds": 2.206912842,
+        "private_ValueVec_allocated": false,
+        "private_values_received": false,
+        "public_CS_identity": {
+          "encoding_persisted": false,
+          "serialized_bytes_streamed_to_hash": 2718916370,
+          "sha256": "92216254586814f128d68c91cc5842b8d5bc61d13bcdc76a51405afabfa74c5f"
+        },
+        "source_sha256": "ff1f376fe3cb39f93dd13736aaba509df64b0faba2a986d53f8b69cfca7933a8",
+        "stream_buffer_bytes": 65536
+      },
+      "compiler_id": "0b375652a1823a9fafd3bbf88495a95d3b6d9f07aca4188137f8688266798e2b",
+      "compute_cores": 1,
+      "counts": {
+        "AND": 16361386,
+        "ZERO": 3263533,
+        "allocator_and_Vec_spare_included": false,
+        "constants": 8487,
+        "max_operand_support": 2631,
+        "native_len_bytes": 872897760,
+        "operand_terms": 179246977,
+        "private_words": 19866173,
+        "public_words": 106,
+        "serialized_bytes": 2718916370,
+        "templates": {
+          "payload_bytes": 35266672,
+          "terms": 4333414,
+          "unique": 14984
+        }
+      },
+      "final_memory": {
+        "AS_bytes": 1134956544,
+        "RSS_HWM_bytes": 1330188288,
+        "RSS_bytes": 1131995136
+      },
+      "mode": "full-verify",
+      "private_values_received": false,
+      "process_seconds": 17.920496619306505,
+      "proof_Verify": 1,
+      "proof_body_bytes": 995632,
+      "public_CS_identity": {
+        "encoding_persisted": false,
+        "serialized_bytes_streamed_to_hash": 2718916370,
+        "sha256": "92216254586814f128d68c91cc5842b8d5bc61d13bcdc76a51405afabfa74c5f"
+      },
+      "schema": "BUOVCAPHPlusProofExecutionV1",
+      "security_bits": 128,
+      "security_classification": "FRI query-target only; overall security unqualified",
+      "setup_id": "6a4b28686792da14efd04dc59f4f3123e43bb5a1df2d850570b5f6ac0e2cdb6a",
+      "setup_seconds": 1.5162670889999998,
+      "statement_bytes": 1037,
+      "verify_seconds": 8.728345343,
+      "whole_seconds": 17.731406142
+    },
+    "issuer_inversion_calls": 1,
+    "native_build": {
+      "bytes": 26437,
+      "sha256": "f6ab0dbcd3c8e7e559292fbdf4958e6e4be29673598809276e2c58be5191a5e3"
+    },
+    "own_records_mutation_rejected_before_native": true,
+    "parent_commit": "be00fadadfee7e0b353d9e179ead642557304b1a",
+    "phase": "completed",
+    "pi2_Prove": 1,
+    "pi2_Verify": 1,
+    "pi_iss_Prove": 1,
+    "pi_iss_Verify": 1,
+    "private_payload_persisted": false,
+    "production_entry_changed": false,
+    "projected_with_margin_bytes": 4195438328,
+    "proof": {
+      "bytes": 995632,
+      "sha256": "a3d9459adbd9a038d042e8d38914b353b510fd49da4a0dc69be095eceb8e2dad"
+    },
+    "prove": {
+      "CS_hash_seconds": 5.224900086,
+      "Prove": 1,
+      "actual_symbolic_setup": {
+        "FRI_component_exact_format_bytes": 984832,
+        "fold_arities": [
+          4,
+          4,
+          3,
+          3
+        ],
+        "full_proof_body_bytes": null,
+        "full_proof_size_includes_unaccounted_IP_messages": true,
+        "log_inv_rate": 1,
+        "max_log_domain_size": 25,
+        "merged": [
+          {
+            "is_zk": true,
+            "len": 863,
+            "log_msg_len": 10
+          },
+          {
+            "is_zk": true,
+            "len": 9933087,
+            "log_msg_len": 24
+          },
+          {
+            "is_zk": true,
+            "len": 98715,
+            "log_msg_len": 17
+          },
+          {
+            "is_zk": true,
+            "len": 512,
+            "log_msg_len": 9
+          }
+        ],
+        "n_test_queries": 309,
+        "outer": {
+          "dummy_constraints_per_segment": 2,
+          "dummy_wires": 310,
+          "log_precommit": 10,
+          "log_private": 17,
+          "mask_dims": [
+            7,
+            2
+          ],
+          "n_precommit": 547,
+          "n_private": 98399,
+          "n_public": 1048576,
+          "padded_mul_constraints": 1048576,
+          "precommit_len": 863,
+          "private_len": 98715
+        },
+        "prover_memory_profile": "checkpoint4/on_the_fly/no_pool_retention/regenerated_private_masks/v0.1",
+        "rounds": [
+          [
+            {
+              "is_zk": true,
+              "len": 863,
+              "log_msg_len": 10
+            }
+          ],
+          [
+            {
+              "is_zk": true,
+              "len": 9933087,
+              "log_msg_len": 24
+            }
+          ],
+          [
+            {
+              "is_zk": true,
+              "len": 98715,
+              "log_msg_len": 17
+            }
+          ],
+          [
+            {
+              "is_zk": true,
+              "len": 512,
+              "log_msg_len": 9
+            }
+          ]
+        ],
+        "security_bits": 128
+      },
+      "after_prover_setup": {
+        "AS_bytes": 1346818048,
+        "RSS_HWM_bytes": 2282303488,
+        "RSS_bytes": 1309175808
+      },
+      "after_verifier_setup": {
+        "AS_bytes": 1347878912,
+        "RSS_HWM_bytes": 1454387200,
+        "RSS_bytes": 1303478272
+      },
+      "build_seconds": 10.9406946,
+      "compiler_id": "0b375652a1823a9fafd3bbf88495a95d3b6d9f07aca4188137f8688266798e2b",
+      "compute_cores": 1,
+      "constraint_replay_seconds": 0.74311245,
+      "counts": {
+        "AND": 16361386,
+        "ZERO": 3263533,
+        "allocator_and_Vec_spare_included": false,
+        "constants": 8487,
+        "max_operand_support": 2631,
+        "native_len_bytes": 872897760,
+        "operand_terms": 179246977,
+        "private_words": 19866173,
+        "public_words": 106,
+        "serialized_bytes": 2718916370,
+        "templates": {
+          "payload_bytes": 35266672,
+          "terms": 4333414,
+          "unique": 14984
+        }
+      },
+      "final_memory": {
+        "AS_bytes": 71221248,
+        "RSS_HWM_bytes": 3859927040,
+        "RSS_bytes": 69681152
+      },
+      "mode": "full-prove",
+      "private_values_received": true,
+      "process_seconds": 80.86536259762943,
+      "proof_Verify": 0,
+      "proof_body_bytes": 995632,
+      "prove_seconds": 58.328783299,
+      "public_CS_identity": {
+        "encoding_persisted": false,
+        "serialized_bytes_streamed_to_hash": 2718916370,
+        "sha256": "92216254586814f128d68c91cc5842b8d5bc61d13bcdc76a51405afabfa74c5f"
+      },
+      "schema": "BUOVCAPHPlusProofExecutionV1",
+      "security_bits": 128,
+      "security_classification": "FRI query-target only; overall security unqualified",
+      "setup_id": "6a4b28686792da14efd04dc59f4f3123e43bb5a1df2d850570b5f6ac0e2cdb6a",
+      "setup_seconds": 5.450156629,
+      "statement_bytes": 1037,
+      "whole_seconds": 80.860037353
+    },
+    "public_admission_seconds": 8.988449046388268,
+    "public_setup": {
+      "Prove": 0,
+      "Verify": 0,
+      "actual_symbolic_setup": {
+        "FRI_component_exact_format_bytes": 984832,
+        "fold_arities": [
+          4,
+          4,
+          3,
+          3
+        ],
+        "full_proof_body_bytes": null,
+        "full_proof_size_includes_unaccounted_IP_messages": true,
+        "log_inv_rate": 1,
+        "max_log_domain_size": 25,
+        "merged": [
+          {
+            "is_zk": true,
+            "len": 863,
+            "log_msg_len": 10
+          },
+          {
+            "is_zk": true,
+            "len": 9933087,
+            "log_msg_len": 24
+          },
+          {
+            "is_zk": true,
+            "len": 98715,
+            "log_msg_len": 17
+          },
+          {
+            "is_zk": true,
+            "len": 512,
+            "log_msg_len": 9
+          }
+        ],
+        "n_test_queries": 309,
+        "outer": {
+          "dummy_constraints_per_segment": 2,
+          "dummy_wires": 310,
+          "log_precommit": 10,
+          "log_private": 17,
+          "mask_dims": [
+            7,
+            2
+          ],
+          "n_precommit": 547,
+          "n_private": 98399,
+          "n_public": 1048576,
+          "padded_mul_constraints": 1048576,
+          "precommit_len": 863,
+          "private_len": 98715
+        },
+        "prover_memory_profile": "checkpoint4/on_the_fly/no_pool_retention/regenerated_private_masks/v0.1",
+        "rounds": [
+          [
+            {
+              "is_zk": true,
+              "len": 863,
+              "log_msg_len": 10
+            }
+          ],
+          [
+            {
+              "is_zk": true,
+              "len": 9933087,
+              "log_msg_len": 24
+            }
+          ],
+          [
+            {
+              "is_zk": true,
+              "len": 98715,
+              "log_msg_len": 17
+            }
+          ],
+          [
+            {
+              "is_zk": true,
+              "len": 512,
+              "log_msg_len": 9
+            }
+          ]
+        ],
+        "security_bits": 128
+      },
+      "after_setup": {
+        "AS_bytes": 1132490752,
+        "RSS_HWM_bytes": 1281081344,
+        "RSS_bytes": 1130160128
+      },
+      "cache": {
+        "CS_hash_seconds": 5.294520727,
+        "cache_bytes": 688968080,
+        "cache_sha256": "25ccf947e09c3e894aea78b58b79b298b7958f6694f4a903bd405e87defe6864",
+        "cold_graph_constructed": false,
+        "load_seconds": 2.168510006,
+        "private_ValueVec_allocated": false,
+        "private_values_received": false,
+        "public_CS_identity": {
+          "encoding_persisted": false,
+          "serialized_bytes_streamed_to_hash": 2718916370,
+          "sha256": "92216254586814f128d68c91cc5842b8d5bc61d13bcdc76a51405afabfa74c5f"
+        },
+        "source_sha256": "ff1f376fe3cb39f93dd13736aaba509df64b0faba2a986d53f8b69cfca7933a8",
+        "stream_buffer_bytes": 65536
+      },
+      "compiler_id": "0b375652a1823a9fafd3bbf88495a95d3b6d9f07aca4188137f8688266798e2b",
+      "compute_cores": 1,
+      "counts": {
+        "AND": 16361386,
+        "ZERO": 3263533,
+        "allocator_and_Vec_spare_included": false,
+        "constants": 8487,
+        "max_operand_support": 2631,
+        "native_len_bytes": 872897760,
+        "operand_terms": 179246977,
+        "private_words": 19866173,
+        "public_words": 106,
+        "serialized_bytes": 2718916370,
+        "templates": {
+          "payload_bytes": 35266672,
+          "terms": 4333414,
+          "unique": 14984
+        }
+      },
+      "mode": "load",
+      "private_ValueVec_allocated": false,
+      "private_values_received": false,
+      "profile_fingerprint": "8579638797c2fa6f9ef09aef518e81213e566115e042744e5b782d8c49c5f07d",
+      "proof_body_bytes": null,
+      "public_CS_identity": {
+        "encoding_persisted": false,
+        "serialized_bytes_streamed_to_hash": 2718916370,
+        "sha256": "92216254586814f128d68c91cc5842b8d5bc61d13bcdc76a51405afabfa74c5f"
+      },
+      "relation_id": "2640c97a96cb34febf8c2f4844f43ec16d0c6664b051342e8f2b5e80c3f37c9c",
+      "satisfiability_checked": false,
+      "schema": "BUOVCAPHPlusActualSetupV1",
+      "setup_id": "6a4b28686792da14efd04dc59f4f3123e43bb5a1df2d850570b5f6ac0e2cdb6a",
+      "setup_seconds": 1.369777289,
+      "trace_sha256": "4ce48825d1e78c704b89a160be8d47932ae9bc7948d282d0c7c12c8ccc63c986",
+      "whole_seconds": 8.834906314
+    },
+    "request_response_seconds": 19.38655273243785,
+    "resident_NCC_allowance_bytes": 142622720,
+    "same_CAP_state_retained": true,
+    "schema": "BUOVCAPHPlusSameStateLifecycleV1",
+    "security_binding_theorem_closed": false,
+    "security_qualification": false,
+    "single_sample": true,
+    "source_pins": {
+      "benchmarks/buov_cap_hplus_research_v0_1/__init__.py": {
+        "bytes": 75,
+        "sha256": "46bc5dfe90ee13236236ffe272bd9ee2057c530650a59f4c2fc958d9b7dbeec2"
+      },
+      "benchmarks/buov_cap_hplus_research_v0_1/cap_adapter.py": {
+        "bytes": 766,
+        "sha256": "e28165cca59d3fd63d7262a92f9af2b17768b656d957e6e4e6164e0e73f4532a"
+      },
+      "benchmarks/buov_cap_hplus_research_v0_1/channel.py": {
+        "bytes": 7616,
+        "sha256": "e128c2cba007fb2704a3a0fdeb3746d6665000197c4c0ef00c3f7e111024a659"
+      },
+      "benchmarks/buov_cap_hplus_research_v0_1/issuer.py": {
+        "bytes": 3218,
+        "sha256": "14726d72ac5df1902d67f7f13adefcd97b3d50d909a1ba64b9f515edda9bdac6"
+      },
+      "benchmarks/buov_cap_hplus_research_v0_1/native_build.py": {
+        "bytes": 5108,
+        "sha256": "ed4f4ff7126eb7dd90fab1bc90fddd356e362d220e85d312b354b1ceea55ea92"
+      },
+      "benchmarks/buov_cap_hplus_research_v0_1/proof_runtime.py": {
+        "bytes": 3947,
+        "sha256": "ec32aa3b49b83ed5098453916c5af1d3c6c7f2a0f14bfa3a9dcfb69452e67803"
+      },
+      "benchmarks/buov_cap_hplus_research_v0_1/regression.py": {
+        "bytes": 11031,
+        "sha256": "bfe20bd89e006b9b87fd3a5f4833e56e64f7f511e3787946140a76b955731fdf"
+      },
+      "benchmarks/buov_cap_hplus_research_v0_1/run.py": {
+        "bytes": 13419,
+        "sha256": "7629fe3653ce3b0f92301cb15ff3c4ef48f6b201f6647cd4986af12ef4409f86"
+      },
+      "benchmarks/buov_cap_hplus_research_v0_1/setup_run.py": {
+        "bytes": 9116,
+        "sha256": "2e230f9518d86eae8b5f7a5d9544f9fc24b09a6dbe0b08c13adad8dd44cf8649"
+      },
+      "benchmarks/buov_cap_hplus_research_v0_1/ticket_consumer_run.py": {
+        "bytes": 8642,
+        "sha256": "dba75fe1658d97d778c88f23317bd8d1eacf02924c680179f5b8bb862a19dc4b"
+      },
+      "benchmarks/buov_cap_hplus_research_v0_1/ticket_consumer_verify.py": {
+        "bytes": 7106,
+        "sha256": "808ec0d00700b7fb25d02130a886a7c3d4b7d8a5b58a65144a2bd6b9ae5ce386"
+      },
+      "benchmarks/buov_cap_research_v0_1/binius_build.py": {
+        "bytes": 19578,
+        "sha256": "8cd1cc59146b12ed38cfe81b0d058ce6044f78b2e6a82af7102f5c30785c2733"
+      },
+      "benchmarks/buov_cap_research_v0_1/binius_ncc_verify.py": {
+        "bytes": 6082,
+        "sha256": "8c049ee87acd9dc9bfabbd08dde2ae084703a9d4baf6672a30495dd3a3d82438"
+      },
+      "benchmarks/buov_cap_research_v0_1/full_compile.py": {
+        "bytes": 10415,
+        "sha256": "53f8a7853942743db5bd03af23ac7a098c5cbf97cddc0f5b5a683eb3347550cd"
+      },
+      "benchmarks/buov_cap_research_v0_1/lifecycle_channel.py": {
+        "bytes": 1545,
+        "sha256": "14685041d104eecc7f590dcb52a984a505357e2448700189932234e455953f16"
+      },
+      "benchmarks/buov_cap_research_v0_1/runner.py": {
+        "bytes": 10761,
+        "sha256": "31b892ecbaa2170589e91056abf137db26f35cc86827ba42cbdd560ca593c089"
+      },
+      "benchmarks/buov_cap_research_v0_1/single_issuance_channel.py": {
+        "bytes": 7616,
+        "sha256": "abc3a52c59eb8429ede46f7db5199de0f501c6ab9bda2461ed926d5349718781"
+      },
+      "benchmarks/buov_cap_research_v0_1/single_issuance_run.py": {
+        "bytes": 19957,
+        "sha256": "e7bfbbca25e05f77bc7c6a03a3902d4603cd67df0051b1bd936c8369356d4d6b"
+      },
+      "src/pq_rbbc/blind_uov_hplus_native_prover_v0_1/__init__.py": {
+        "bytes": 339,
+        "sha256": "8b16a79930e2030f80f8170d458cb3d83cfe7041d3c2bd79fbea6fa94d78c10d"
+      },
+      "src/pq_rbbc/blind_uov_hplus_native_prover_v0_1/api.py": {
+        "bytes": 4468,
+        "sha256": "d7f7f764a344f8f31fa10584a6704d7499de5f4af27bd87567545659df72f26d"
+      },
+      "src/pq_rbbc/blind_uov_hplus_native_prover_v0_1/kernel.py": {
+        "bytes": 6047,
+        "sha256": "d2e396d13f82e98f922218f77423973eca11f4555b1d30f327c83a47609a73f2"
+      },
+      "src/pq_rbbc/blind_uov_hplus_research_v0_1/__init__.py": {
+        "bytes": 541,
+        "sha256": "1ee644822cb6238ba23b4f0b5eae50d14f8c1f5a70b6ea667bc4595168edfa56"
+      },
+      "src/pq_rbbc/blind_uov_hplus_research_v0_1/_pins.py": {
+        "bytes": 256,
+        "sha256": "1172534596a854bf6e56aded434ffbd2e27e60579f1c5a2b583c6dea4630bb23"
+      },
+      "src/pq_rbbc/blind_uov_hplus_research_v0_1/field.py": {
+        "bytes": 905,
+        "sha256": "f9bc1f76a567d04e22cf6727bb5fdd84264b722a00dabd96622c221ac738ee92"
+      },
+      "src/pq_rbbc/blind_uov_hplus_research_v0_1/native_opening.py": {
+        "bytes": 13991,
+        "sha256": "e30f6872f608a33ae84425ce2100dc7c1d56f726c45d2bae9510415144cdb7d1"
+      },
+      "src/pq_rbbc/blind_uov_hplus_research_v0_1/parameters.py": {
+        "bytes": 5276,
+        "sha256": "4bc7a0731ee207d701c1881844337b20f0241786d199842f1ff1dd125ccf9148"
+      },
+      "src/pq_rbbc/blind_uov_hplus_research_v0_1/source_boundary.py": {
+        "bytes": 986,
+        "sha256": "1e0b7d71b55fb560549f3aae4a97cc343d5afa7ae27314fb65de8c0e9f7c6259"
+      },
+      "src/pq_sat_auth/prototypes/buov_cap_hplus_research_v0_1/__init__.py": {
+        "bytes": 72,
+        "sha256": "60bf7b63ddf51a1668195da876857224fce8a60cd28e46043ee56ddaa03812e8"
+      },
+      "src/pq_sat_auth/prototypes/buov_cap_hplus_research_v0_1/binius_checkpoint_plan.py": {
+        "bytes": 4955,
+        "sha256": "bbf0875600593ef47bffeb7cec9d40a3e9489e3661dae221c2ea671b8d516aed"
+      },
+      "src/pq_sat_auth/prototypes/buov_cap_hplus_research_v0_1/continuation.py": {
+        "bytes": 10802,
+        "sha256": "20d6e7e8598e4f89efdb014eebad5bd29dbe5d08ace7e2fbb3e7e85290c68bab"
+      },
+      "src/pq_sat_auth/prototypes/buov_cap_hplus_research_v0_1/contract.py": {
+        "bytes": 4759,
+        "sha256": "1bfafa2f329f36374c69fa15244c044c69db2bd040beb80a81c7dcbd01233310"
+      },
+      "src/pq_sat_auth/prototypes/buov_cap_hplus_research_v0_1/full_assignment_input.py": {
+        "bytes": 7466,
+        "sha256": "117495b42c565be644e778ffd21899af7e19c15ea5e07ca8c8e3afe400be9f0c"
+      },
+      "src/pq_sat_auth/prototypes/buov_cap_hplus_research_v0_1/full_statement.py": {
+        "bytes": 7477,
+        "sha256": "30b67466cd13cd0a1e67c3dee9b70ab4e73fa6ba96fd4b5ca25fc48cd2fb0c54"
+      },
+      "src/pq_sat_auth/prototypes/buov_cap_hplus_research_v0_1/full_witness.py": {
+        "bytes": 9276,
+        "sha256": "83e595c4156a55d64aea06be8d9cfd9a55bf09f0535d0d2f7379de12ccd6b9d7"
+      },
+      "src/pq_sat_auth/prototypes/buov_cap_hplus_research_v0_1/nonhash_census.py": {
+        "bytes": 1203,
+        "sha256": "2a955ba95690e0fd77235f553e12197f851910f3fcdb9162397611b6a6f9f62b"
+      },
+      "src/pq_sat_auth/prototypes/buov_cap_hplus_research_v0_1/public_setup.py": {
+        "bytes": 6433,
+        "sha256": "a991d3512d04897ec7f292309bba47a54a4ce4dda90cb2ddbc1be3941fbd807e"
+      },
+      "src/pq_sat_auth/prototypes/buov_cap_hplus_research_v0_1/relation_profile.py": {
+        "bytes": 295,
+        "sha256": "085a1d371f2fe1264cba9e251b4be10867ad28e527e1318bbf8eef3ef82154a0"
+      },
+      "src/pq_sat_auth/prototypes/buov_cap_hplus_research_v0_1/ticket_consumer.py": {
+        "bytes": 10249,
+        "sha256": "5b87fe81086684c17bff21911c48c6f19555fadf073dbb1d8183247290ff351f"
+      },
+      "src/pq_sat_auth/prototypes/buov_cap_research_v0_1/binius_workspace_plan.py": {
+        "bytes": 3550,
+        "sha256": "aa403bc8d1ed28b1f29b0b78db78e506e200c17914b882bb961265e0725fe079"
+      },
+      "src/pq_sat_auth/prototypes/buov_cap_research_v0_1/ue_witness.py": {
+        "bytes": 9459,
+        "sha256": "d45e012c80d01309575a02b8c1b49dd47e20a1efaeb8acb9b01cc42c06886083"
+      }
+    },
+    "statement": {
+      "bytes": 1037,
+      "sha256": "afa234cf1a323457b6b30a7b1d93f5a0dd93ddd1870290654c8f55bb915385ec"
+    },
+    "ticket_consumer": {
+      "CAP_state_received": false,
+      "CR_bytes": 5074,
+      "CZ_bytes": 234,
+      "M_bytes": 388,
+      "Prove": 0,
+      "UE_witness_received": false,
+      "accepted": true,
+      "caller_u_accepted": false,
+      "configuration_bytes": 379217,
+      "controller_seconds": 2.0128720067441463,
+      "final_payload_persisted": false,
+      "full_formal_issuance": false,
+      "issuer_key_received": false,
+      "memory_HWM_bytes": 62492672,
+      "opening_threads": 1,
+      "pi2_bytes": 5592,
+      "production_entry_changed": false,
+      "proof_Verify": 1,
+      "public_configuration_FD_bytes": 379217,
+      "public_telemetry_reply_bytes": 746,
+      "public_ticket_input_bytes": 11318,
+      "reconstruction_and_codec_seconds": 0.0005570519715547562,
+      "relation_threads": 1,
+      "schema": "BUOVCAPHPlusResearchTicketVerificationV1",
+      "setup_seconds": 0.007436168380081654,
+      "stage": "verified",
+      "ticket_frame_bytes": 11318,
+      "u_reconstructed": true,
+      "verify_seconds": 0.15094733703881502,
+      "whole_seconds": 1.4748669741675258
+    },
+    "ticket_controls": {
+      "CAP_Init_calls": 0,
+      "Prove": 0,
+      "actual_proof_Verify": 9,
+      "cases": [
+        {
+          "expected_outcome_satisfied": true,
+          "name": "good-before",
+          "verifier": {
+            "CAP_state_received": false,
+            "CR_bytes": 5074,
+            "CZ_bytes": 234,
+            "M_bytes": 388,
+            "Prove": 0,
+            "UE_witness_received": false,
+            "accepted": true,
+            "caller_u_accepted": false,
+            "configuration_bytes": 379217,
+            "controller_seconds": 1.9056600173935294,
+            "final_payload_persisted": false,
+            "full_formal_issuance": false,
+            "issuer_key_received": false,
+            "memory_HWM_bytes": 62500864,
+            "opening_threads": 1,
+            "pi2_bytes": 5592,
+            "production_entry_changed": false,
+            "proof_Verify": 1,
+            "public_configuration_FD_bytes": 379217,
+            "public_telemetry_reply_bytes": 745,
+            "public_ticket_input_bytes": 11318,
+            "reconstruction_and_codec_seconds": 0.0005499180406332016,
+            "relation_threads": 1,
+            "schema": "BUOVCAPHPlusResearchTicketVerificationV1",
+            "setup_seconds": 0.007174464873969555,
+            "stage": "verified",
+            "ticket_frame_bytes": 11318,
+            "u_reconstructed": true,
+            "verify_seconds": 0.15001043863594532,
+            "whole_seconds": 1.372345800511539
+          }
+        },
+        {
+          "expected_outcome_satisfied": true,
+          "name": "changed-M-SN",
+          "verifier": {
+            "CAP_state_received": false,
+            "CR_bytes": 5074,
+            "CZ_bytes": 234,
+            "M_bytes": 388,
+            "Prove": 0,
+            "UE_witness_received": false,
+            "accepted": false,
+            "caller_u_accepted": false,
+            "configuration_bytes": 379217,
+            "controller_seconds": 1.9086935818195343,
+            "final_payload_persisted": false,
+            "full_formal_issuance": false,
+            "issuer_key_received": false,
+            "memory_HWM_bytes": 62599168,
+            "opening_threads": 1,
+            "pi2_bytes": 5592,
+            "production_entry_changed": false,
+            "proof_Verify": 1,
+            "public_configuration_FD_bytes": 379217,
+            "public_telemetry_reply_bytes": 747,
+            "public_ticket_input_bytes": 11318,
+            "reconstruction_and_codec_seconds": 0.0005474332720041275,
+            "relation_threads": 1,
+            "schema": "BUOVCAPHPlusResearchTicketVerificationV1",
+            "setup_seconds": 0.0072297388687729836,
+            "stage": "verified",
+            "ticket_frame_bytes": 11318,
+            "u_reconstructed": true,
+            "verify_seconds": 0.15044966712594032,
+            "whole_seconds": 1.378060519695282
+          }
+        },
+        {
+          "expected_outcome_satisfied": true,
+          "name": "changed-M-q",
+          "verifier": {
+            "CAP_state_received": false,
+            "CR_bytes": 5074,
+            "CZ_bytes": 234,
+            "M_bytes": 388,
+            "Prove": 0,
+            "UE_witness_received": false,
+            "accepted": false,
+            "caller_u_accepted": false,
+            "configuration_bytes": 379217,
+            "controller_seconds": 1.9318971382454038,
+            "final_payload_persisted": false,
+            "full_formal_issuance": false,
+            "issuer_key_received": false,
+            "memory_HWM_bytes": 62455808,
+            "opening_threads": 1,
+            "pi2_bytes": 5592,
+            "production_entry_changed": false,
+            "proof_Verify": 1,
+            "public_configuration_FD_bytes": 379217,
+            "public_telemetry_reply_bytes": 747,
+            "public_ticket_input_bytes": 11318,
+            "reconstruction_and_codec_seconds": 0.0005483953282237053,
+            "relation_threads": 1,
+            "schema": "BUOVCAPHPlusResearchTicketVerificationV1",
+            "setup_seconds": 0.007126703858375549,
+            "stage": "verified",
+            "ticket_frame_bytes": 11318,
+            "u_reconstructed": true,
+            "verify_seconds": 0.15152983739972115,
+            "whole_seconds": 1.4036294911056757
+          }
+        },
+        {
+          "expected_outcome_satisfied": true,
+          "name": "changed-CR-salt",
+          "verifier": {
+            "CAP_state_received": false,
+            "CR_bytes": 5074,
+            "CZ_bytes": 234,
+            "M_bytes": 388,
+            "Prove": 0,
+            "UE_witness_received": false,
+            "accepted": false,
+            "caller_u_accepted": false,
+            "configuration_bytes": 379217,
+            "controller_seconds": 1.892285413108766,
+            "final_payload_persisted": false,
+            "full_formal_issuance": false,
+            "issuer_key_received": false,
+            "memory_HWM_bytes": 62631936,
+            "opening_threads": 1,
+            "pi2_bytes": 5592,
+            "production_entry_changed": false,
+            "proof_Verify": 1,
+            "public_configuration_FD_bytes": 379217,
+            "public_telemetry_reply_bytes": 746,
+            "public_ticket_input_bytes": 11318,
+            "reconstruction_and_codec_seconds": 0.0005460716784000397,
+            "relation_threads": 1,
+            "schema": "BUOVCAPHPlusResearchTicketVerificationV1",
+            "setup_seconds": 0.00712567288428545,
+            "stage": "verified",
+            "ticket_frame_bytes": 11318,
+            "u_reconstructed": true,
+            "verify_seconds": 0.10914211254566908,
+            "whole_seconds": 1.3634494133293629
+          }
+        },
+        {
+          "expected_outcome_satisfied": true,
+          "name": "changed-CZ-delta",
+          "verifier": {
+            "CAP_state_received": false,
+            "CR_bytes": 5074,
+            "CZ_bytes": 234,
+            "M_bytes": 388,
+            "Prove": 0,
+            "UE_witness_received": false,
+            "accepted": false,
+            "caller_u_accepted": false,
+            "configuration_bytes": 379217,
+            "controller_seconds": 1.9057257063686848,
+            "final_payload_persisted": false,
+            "full_formal_issuance": false,
+            "issuer_key_received": false,
+            "memory_HWM_bytes": 62504960,
+            "opening_threads": 1,
+            "pi2_bytes": 5592,
+            "production_entry_changed": false,
+            "proof_Verify": 1,
+            "public_configuration_FD_bytes": 379217,
+            "public_telemetry_reply_bytes": 746,
+            "public_ticket_input_bytes": 11318,
+            "reconstruction_and_codec_seconds": 0.0005558403208851814,
+            "relation_threads": 1,
+            "schema": "BUOVCAPHPlusResearchTicketVerificationV1",
+            "setup_seconds": 0.007219358347356319,
+            "stage": "verified",
+            "ticket_frame_bytes": 11318,
+            "u_reconstructed": true,
+            "verify_seconds": 0.1504250606521964,
+            "whole_seconds": 1.3772732205688953
+          }
+        },
+        {
+          "expected_outcome_satisfied": true,
+          "name": "changed-pi2-hidden-commitment",
+          "verifier": {
+            "CAP_state_received": false,
+            "CR_bytes": 5074,
+            "CZ_bytes": 234,
+            "M_bytes": 388,
+            "Prove": 0,
+            "UE_witness_received": false,
+            "accepted": false,
+            "caller_u_accepted": false,
+            "configuration_bytes": 379217,
+            "controller_seconds": 1.8806827273219824,
+            "final_payload_persisted": false,
+            "full_formal_issuance": false,
+            "issuer_key_received": false,
+            "memory_HWM_bytes": 62423040,
+            "opening_threads": 1,
+            "pi2_bytes": 5592,
+            "production_entry_changed": false,
+            "proof_Verify": 1,
+            "public_configuration_FD_bytes": 379217,
+            "public_telemetry_reply_bytes": 745,
+            "public_ticket_input_bytes": 11318,
+            "reconstruction_and_codec_seconds": 0.0005361922085285187,
+            "relation_threads": 1,
+            "schema": "BUOVCAPHPlusResearchTicketVerificationV1",
+            "setup_seconds": 0.00712950062006712,
+            "stage": "verified",
+            "ticket_frame_bytes": 11318,
+            "u_reconstructed": true,
+            "verify_seconds": 0.10786271560937166,
+            "whole_seconds": 1.350052078254521
+          }
+        },
+        {
+          "expected_outcome_satisfied": true,
+          "name": "changed-own-configuration-generation",
+          "verifier": {
+            "CAP_state_received": false,
+            "CR_bytes": 5074,
+            "CZ_bytes": 234,
+            "M_bytes": 388,
+            "Prove": 0,
+            "UE_witness_received": false,
+            "accepted": false,
+            "caller_u_accepted": false,
+            "configuration_bytes": 379217,
+            "controller_seconds": 1.953594395890832,
+            "final_payload_persisted": false,
+            "full_formal_issuance": false,
+            "issuer_key_received": false,
+            "memory_HWM_bytes": 62554112,
+            "opening_threads": 1,
+            "pi2_bytes": 5592,
+            "production_entry_changed": false,
+            "proof_Verify": 1,
+            "public_configuration_FD_bytes": 379217,
+            "public_telemetry_reply_bytes": 747,
+            "public_ticket_input_bytes": 11318,
+            "reconstruction_and_codec_seconds": 0.0005441382527351379,
+            "relation_threads": 1,
+            "schema": "BUOVCAPHPlusResearchTicketVerificationV1",
+            "setup_seconds": 0.007179403677582741,
+            "stage": "verified",
+            "ticket_frame_bytes": 11318,
+            "u_reconstructed": true,
+            "verify_seconds": 0.14887378085404634,
+            "whole_seconds": 1.4218187164515257
+          }
+        },
+        {
+          "expected_outcome_satisfied": true,
+          "name": "foreign-own-issuer-map",
+          "verifier": {
+            "CAP_state_received": false,
+            "CR_bytes": 5074,
+            "CZ_bytes": 234,
+            "M_bytes": 388,
+            "Prove": 0,
+            "UE_witness_received": false,
+            "accepted": false,
+            "caller_u_accepted": false,
+            "configuration_bytes": 379217,
+            "controller_seconds": 1.8728967253118753,
+            "final_payload_persisted": false,
+            "full_formal_issuance": false,
+            "issuer_key_received": false,
+            "memory_HWM_bytes": 61628416,
+            "opening_threads": 1,
+            "pi2_bytes": 5592,
+            "production_entry_changed": false,
+            "proof_Verify": 1,
+            "public_configuration_FD_bytes": 379217,
+            "public_telemetry_reply_bytes": 745,
+            "public_ticket_input_bytes": 11318,
+            "reconstruction_and_codec_seconds": 0.0005441680550575256,
+            "relation_threads": 1,
+            "schema": "BUOVCAPHPlusResearchTicketVerificationV1",
+            "setup_seconds": 0.007099001668393612,
+            "stage": "verified",
+            "ticket_frame_bytes": 11318,
+            "u_reconstructed": true,
+            "verify_seconds": 0.150112921372056,
+            "whole_seconds": 1.3453462133184075
+          }
+        },
+        {
+          "expected_outcome_satisfied": true,
+          "name": "wrong-M-ctx",
+          "verifier": {
+            "CAP_state_received": false,
+            "CR_bytes": null,
+            "CZ_bytes": null,
+            "M_bytes": null,
+            "Prove": 0,
+            "UE_witness_received": false,
+            "accepted": false,
+            "caller_u_accepted": false,
+            "configuration_bytes": 379217,
+            "controller_seconds": 1.73570217192173,
+            "final_payload_persisted": false,
+            "full_formal_issuance": false,
+            "issuer_key_received": false,
+            "memory_HWM_bytes": 61620224,
+            "opening_threads": 1,
+            "pi2_bytes": null,
+            "production_entry_changed": false,
+            "proof_Verify": 0,
+            "public_configuration_FD_bytes": 379217,
+            "public_telemetry_reply_bytes": 667,
+            "public_ticket_input_bytes": 11318,
+            "relation_threads": 1,
+            "schema": "BUOVCAPHPlusResearchTicketVerificationV1",
+            "setup_seconds": null,
+            "stage": "ticket_rejected",
+            "ticket_frame_bytes": 11318,
+            "u_reconstructed": false,
+            "verify_seconds": null,
+            "whole_seconds": 1.2074873065575957
+          }
+        },
+        {
+          "expected_outcome_satisfied": true,
+          "name": "unknown-ticket-version",
+          "verifier": {
+            "CAP_state_received": false,
+            "CR_bytes": null,
+            "CZ_bytes": null,
+            "M_bytes": null,
+            "Prove": 0,
+            "UE_witness_received": false,
+            "accepted": false,
+            "caller_u_accepted": false,
+            "configuration_bytes": 379217,
+            "controller_seconds": 1.7348150769248605,
+            "final_payload_persisted": false,
+            "full_formal_issuance": false,
+            "issuer_key_received": false,
+            "memory_HWM_bytes": 61620224,
+            "opening_threads": 1,
+            "pi2_bytes": null,
+            "production_entry_changed": false,
+            "proof_Verify": 0,
+            "public_configuration_FD_bytes": 379217,
+            "public_telemetry_reply_bytes": 667,
+            "public_ticket_input_bytes": 11318,
+            "relation_threads": 1,
+            "schema": "BUOVCAPHPlusResearchTicketVerificationV1",
+            "setup_seconds": null,
+            "stage": "ticket_rejected",
+            "ticket_frame_bytes": 11318,
+            "u_reconstructed": false,
+            "verify_seconds": null,
+            "whole_seconds": 1.2072060145437717
+          }
+        },
+        {
+          "expected_outcome_satisfied": true,
+          "name": "trailing-caller-u",
+          "verifier": {
+            "CAP_state_received": false,
+            "CR_bytes": null,
+            "CZ_bytes": null,
+            "M_bytes": null,
+            "Prove": 0,
+            "UE_witness_received": false,
+            "accepted": false,
+            "caller_u_accepted": false,
+            "configuration_bytes": 379217,
+            "controller_seconds": 1.7443318031728268,
+            "final_payload_persisted": false,
+            "full_formal_issuance": false,
+            "issuer_key_received": false,
+            "memory_HWM_bytes": 61620224,
+            "opening_threads": 1,
+            "pi2_bytes": null,
+            "production_entry_changed": false,
+            "proof_Verify": 0,
+            "public_configuration_FD_bytes": 379217,
+            "public_telemetry_reply_bytes": 667,
+            "public_ticket_input_bytes": 11390,
+            "relation_threads": 1,
+            "schema": "BUOVCAPHPlusResearchTicketVerificationV1",
+            "setup_seconds": null,
+            "stage": "ticket_rejected",
+            "ticket_frame_bytes": 11390,
+            "u_reconstructed": false,
+            "verify_seconds": null,
+            "whole_seconds": 1.2173606036230922
+          }
+        },
+        {
+          "expected_outcome_satisfied": true,
+          "name": "wrong-own-CAP-profile",
+          "verifier": {
+            "CAP_state_received": false,
+            "CR_bytes": null,
+            "CZ_bytes": null,
+            "M_bytes": null,
+            "Prove": 0,
+            "UE_witness_received": false,
+            "accepted": false,
+            "caller_u_accepted": false,
+            "configuration_bytes": 379217,
+            "controller_seconds": 1.1331626251339912,
+            "final_payload_persisted": false,
+            "full_formal_issuance": false,
+            "issuer_key_received": false,
+            "memory_HWM_bytes": 61620224,
+            "opening_threads": 1,
+            "pi2_bytes": null,
+            "production_entry_changed": false,
+            "proof_Verify": 0,
+            "public_configuration_FD_bytes": 379217,
+            "public_telemetry_reply_bytes": 674,
+            "public_ticket_input_bytes": 11318,
+            "relation_threads": 1,
+            "schema": "BUOVCAPHPlusResearchTicketVerificationV1",
+            "setup_seconds": null,
+            "stage": "configuration_rejected",
+            "ticket_frame_bytes": 11318,
+            "u_reconstructed": false,
+            "verify_seconds": null,
+            "whole_seconds": 0.6076477877795696
+          }
+        },
+        {
+          "expected_outcome_satisfied": true,
+          "name": "configuration-RID-injection",
+          "verifier": {
+            "CAP_state_received": false,
+            "CR_bytes": null,
+            "CZ_bytes": null,
+            "M_bytes": null,
+            "Prove": 0,
+            "UE_witness_received": false,
+            "accepted": false,
+            "caller_u_accepted": false,
+            "configuration_bytes": 379290,
+            "controller_seconds": 1.136377434246242,
+            "final_payload_persisted": false,
+            "full_formal_issuance": false,
+            "issuer_key_received": false,
+            "memory_HWM_bytes": 61620224,
+            "opening_threads": 1,
+            "pi2_bytes": null,
+            "production_entry_changed": false,
+            "proof_Verify": 0,
+            "public_configuration_FD_bytes": 379290,
+            "public_telemetry_reply_bytes": 674,
+            "public_ticket_input_bytes": 11318,
+            "relation_threads": 1,
+            "schema": "BUOVCAPHPlusResearchTicketVerificationV1",
+            "setup_seconds": null,
+            "stage": "configuration_rejected",
+            "ticket_frame_bytes": 11318,
+            "u_reconstructed": false,
+            "verify_seconds": null,
+            "whole_seconds": 0.6076811607927084
+          }
+        },
+        {
+          "expected_outcome_satisfied": true,
+          "name": "wrong-configuration-SHA",
+          "verifier": {
+            "CAP_state_received": false,
+            "CR_bytes": null,
+            "CZ_bytes": null,
+            "M_bytes": null,
+            "Prove": 0,
+            "UE_witness_received": false,
+            "accepted": false,
+            "caller_u_accepted": false,
+            "configuration_bytes": 379217,
+            "controller_seconds": 0.533070020377636,
+            "final_payload_persisted": false,
+            "full_formal_issuance": false,
+            "issuer_key_received": false,
+            "memory_HWM_bytes": 61620224,
+            "opening_threads": 1,
+            "pi2_bytes": null,
+            "production_entry_changed": false,
+            "proof_Verify": 0,
+            "public_configuration_FD_bytes": 379217,
+            "public_telemetry_reply_bytes": 678,
+            "public_ticket_input_bytes": 11318,
+            "relation_threads": 1,
+            "schema": "BUOVCAPHPlusResearchTicketVerificationV1",
+            "setup_seconds": null,
+            "stage": "configuration_rejected",
+            "ticket_frame_bytes": 11318,
+            "u_reconstructed": false,
+            "verify_seconds": null,
+            "whole_seconds": 0.00021899398416280746
+          }
+        },
+        {
+          "expected_outcome_satisfied": true,
+          "name": "good-after",
+          "verifier": {
+            "CAP_state_received": false,
+            "CR_bytes": 5074,
+            "CZ_bytes": 234,
+            "M_bytes": 388,
+            "Prove": 0,
+            "UE_witness_received": false,
+            "accepted": true,
+            "caller_u_accepted": false,
+            "configuration_bytes": 379217,
+            "controller_seconds": 1.9106266712769866,
+            "final_payload_persisted": false,
+            "full_formal_issuance": false,
+            "issuer_key_received": false,
+            "memory_HWM_bytes": 62488576,
+            "opening_threads": 1,
+            "pi2_bytes": 5592,
+            "production_entry_changed": false,
+            "proof_Verify": 1,
+            "public_configuration_FD_bytes": 379217,
+            "public_telemetry_reply_bytes": 745,
+            "public_ticket_input_bytes": 11318,
+            "reconstruction_and_codec_seconds": 0.0005513811483979225,
+            "relation_threads": 1,
+            "schema": "BUOVCAPHPlusResearchTicketVerificationV1",
+            "setup_seconds": 0.007134930230677128,
+            "stage": "verified",
+            "ticket_frame_bytes": 11318,
+            "u_reconstructed": true,
+            "verify_seconds": 0.15212883614003658,
+            "whole_seconds": 1.382724947296083
+          }
+        }
+      ],
+      "completed": true,
+      "controls_in_successful_flow_window": false,
+      "entry_rejections": 6,
+      "final_payload_persisted": false,
+      "inversion_calls": 0,
+      "issuer_private_key_loaded_by_controls": false,
+      "mutated_payload_persisted": false,
+      "schema": "BUOVCAPHPlusResearchTicketControlsV1",
+      "whole_seconds": 26.980482620187104
+    },
+    "whole_seconds": 163.15814098715782,
+    "wire": {
+      "codec": "NIH1/v1 binary RAM pipe",
+      "complete_production_issuance_bytes": null,
+      "final_CAP_verifier_IPC_in_issuance_codec": false,
+      "issuance_both_directions_including_setup_bytes": 1187517,
+      "issuance_both_directions_without_setup_bytes": 996915,
+      "issuer_telemetry_in_codec": false,
+      "network_overhead_bytes": null,
+      "request_UE_to_NCC_bytes": 996688,
+      "response_NCC_to_UE_bytes": 227,
+      "setup_NCC_to_UE_bytes": 190602
+    }
+  },
+  "native_binary": {
+    "bytes": 9528680,
+    "sha256": "a1ec5a0c7a87aea44a682178ef4dfc83c352badf3a86f5b4086032b0266f46e1"
+  },
+  "native_build_receipt": {
+    "bytes": 26437,
+    "sha256": "f6ab0dbcd3c8e7e559292fbdf4958e6e4be29673598809276e2c58be5191a5e3"
+  },
+  "native_build_source_pins": {
+    "benchmarks/buov_cap_hplus_research_v0_1/native_build.py": {
+      "bytes": 5108,
+      "sha256": "ed4f4ff7126eb7dd90fab1bc90fddd356e362d220e85d312b354b1ceea55ea92"
+    },
+    "manifests/buov_cap_hplus_research_v0_1/actual_setup.json": {
+      "bytes": 20338,
+      "sha256": "8bc0996ceceb48297d2e907f036150b75219179e00de828a703f8aaa81c17a12"
+    },
+    "native/blind_uov_cap_hplus_research_v0_1/input_controls.c": {
+      "bytes": 659,
+      "sha256": "de3d5f6e35909dddd0b9faf5260d667cbf3e3596cd66d850edbb198d6db425c1"
+    },
+    "native/blind_uov_cap_hplus_research_v0_1/opening.c": {
+      "bytes": 11157,
+      "sha256": "352581a0dad65c8adcb1aadfb5bfb72e29fb39aee51dd2996022d6224f1512e1"
+    },
+    "native/blind_uov_cap_hplus_research_v0_1/opening.h": {
+      "bytes": 2203,
+      "sha256": "ad9e81277dc544a8de6394b1d122e59794b00453ce153cba13fdd03addd8aa11"
+    },
+    "native/blind_uov_cap_hplus_research_v0_1/prover.c": {
+      "bytes": 370,
+      "sha256": "6ac511d6c2e59cc7223c60346c11101d53006381b7024b87ee84289dcb1ff9b4"
+    },
+    "native/blind_uov_cap_v0_1/relation.c": {
+      "bytes": 13300,
+      "sha256": "bd93da1bfb6c1e7d89df21f613bd9235b621101b6ff3fa597d221796e31233bf"
+    },
+    "native/blind_uov_cap_v0_1/relation.h": {
+      "bytes": 2382,
+      "sha256": "3e0b153af0d2f67c866bbf3bf987c3a3db105a02f8778228808b5cc13ea6f032"
+    },
+    "native/buov_cap_hplus_research_v0_1/src/cache_tests.rs": {
+      "bytes": 6888,
+      "sha256": "8e0eaea1e5746b5f041f00e0351591a2e94de6956f0eb58d7f22a01e8b702303"
+    },
+    "native/buov_cap_hplus_research_v0_1/src/census_main.rs": {
+      "bytes": 2699,
+      "sha256": "1ec1c82c8b7d2abe8a6ecf05a528ce0b49f4fd6a5cacb5560bfd2c74a2bf7e86"
+    },
+    "native/buov_cap_hplus_research_v0_1/src/direct_relation.rs": {
+      "bytes": 12688,
+      "sha256": "ac68f7aabda73970ee1c91c8a7d0c37488757d0e5b83592cad8265685f675710"
+    },
+    "native/buov_cap_hplus_research_v0_1/src/direct_relation_profile.rs": {
+      "bytes": 2975,
+      "sha256": "26a7109e5b450a03042b375e682c7aefa0305042bcbee5208c82dcc130a8839d"
+    },
+    "native/buov_cap_hplus_research_v0_1/src/hplus_tests.rs": {
+      "bytes": 3395,
+      "sha256": "6e622c36b6fc2017738cecb43798a46f7d4f1970321fdb41bb016e285890fb11"
+    },
+    "native/buov_cap_hplus_research_v0_1/src/lib.rs": {
+      "bytes": 407,
+      "sha256": "2204cc2b998ec299ab1b3714e690c89972e23155e6fae8356cbe7d4eef287ef7"
+    },
+    "native/buov_cap_hplus_research_v0_1/src/proof_main.rs": {
+      "bytes": 11567,
+      "sha256": "5c6338ef8151c907e7a09bf5dd946b9ae14c363baa8cca864f0f6686d404bd14"
+    },
+    "native/buov_cap_hplus_research_v0_1/src/public_cache.rs": {
+      "bytes": 14852,
+      "sha256": "123385d972053276faca8aff326846b458c9393935786390fc3873df6f13cd12"
+    },
+    "native/buov_cap_hplus_research_v0_1/src/setup_main.rs": {
+      "bytes": 7343,
+      "sha256": "580ef20ea4b6b8c95a6c12e681c062e511a73b121a3d2ba93da1db416a4e660d"
+    },
+    "native/buov_cap_hplus_research_v0_1/src/setup_support.rs": {
+      "bytes": 2839,
+      "sha256": "91c37a1845e6f473a26ff6c55aba1450065f8ba70e3591be2c8574cbe166381a"
+    },
+    "src/pq_rbbc/blind_uov_hplus_native_prover_v0_1/__init__.py": {
+      "bytes": 339,
+      "sha256": "8b16a79930e2030f80f8170d458cb3d83cfe7041d3c2bd79fbea6fa94d78c10d"
+    },
+    "src/pq_rbbc/blind_uov_hplus_native_prover_v0_1/api.py": {
+      "bytes": 4468,
+      "sha256": "d7f7f764a344f8f31fa10584a6704d7499de5f4af27bd87567545659df72f26d"
+    },
+    "src/pq_rbbc/blind_uov_hplus_native_prover_v0_1/kernel.py": {
+      "bytes": 6047,
+      "sha256": "d2e396d13f82e98f922218f77423973eca11f4555b1d30f327c83a47609a73f2"
+    },
+    "src/pq_rbbc/blind_uov_native_prover_v0_1/prover.c": {
+      "bytes": 4635,
+      "sha256": "06dac71c1d9861daba46f5c1feb2940a7c1521a79db56f74bb51d151b49c9aa8"
+    },
+    "src/pq_rbbc/blind_uov_native_prover_v0_1/prover.h": {
+      "bytes": 838,
+      "sha256": "b1635d7944bdfd4e60197a3c5cb8797e793ee75394f73c1575ea234631d06344"
+    }
+  },
+  "parent_commit": "be00fada",
+  "post_measurement_formatting": {
+    "Python_AST_equal": true,
+    "after": {
+      "bytes": 1202,
+      "sha256": "f6c466526f2beeec27ee4aa2fbd3be4a8b7f70e55ae80356c1bb356d830377aa"
+    },
+    "before": {
+      "bytes": 1203,
+      "sha256": "2a955ba95690e0fd77235f553e12197f851910f3fcdb9162397611b6a6f9f62b"
+    },
+    "change": "remove one extra newline at EOF only",
+    "file": "src/pq_sat_auth/prototypes/buov_cap_hplus_research_v0_1/nonhash_census.py",
+    "heavy_flow_rerun": false,
+    "measured_source_snapshot_preserved": true
+  },
+  "prior_attempts": [
+    {
+      "id": "lifecycle-v1-build",
+      "reason": "incompatible error types when joining verify_sig and transcript.finalize; replaced by explicit boolean gates",
+      "result": "compile_failed"
+    },
+    {
+      "id": "lifecycle-v2-build",
+      "native_tests_passed": 38,
+      "result": "passed"
+    },
+    {
+      "id": "lifecycle-v1",
+      "reason": "generic runner omitted advisory role marker required by check_limits; additionally fixed strict new statement transport before next attempt",
+      "result": "rejected_before_Init_and_Prove"
+    },
+    {
+      "id": "lifecycle-v2",
+      "reason": "same missing advisory role marker; generic lock/limits were active; no completed proof",
+      "result": "rejected_before_Init_and_Prove"
+    },
+    {
+      "id": "lifecycle-v3-build",
+      "native_tests_passed": 38,
+      "result": "passed"
+    },
+    {
+      "id": "initial_python_control",
+      "reason": "test assumed NativeCAPProver context manager; fixed to explicit close; final 40 tests passed",
+      "result": "11 passed, 1 error"
+    }
+  ],
+  "profile": {
+    "binding_id": "6f74ae31aefd848081ff766c0e43bedc1cb790240d5019d3276f4a23dcf26d82",
+    "native_opening_abi": 2,
+    "old_proof_setup_cache_compatible": false,
+    "profile_fingerprint": "8579638797c2fa6f9ef09aef518e81213e566115e042744e5b782d8c49c5f07d",
+    "relation_id": "2640c97a96cb34febf8c2f4844f43ec16d0c6664b051342e8f2b5e80c3f37c9c"
+  },
+  "public_CS_identity": {
+    "encoding_persisted": false,
+    "serialized_bytes_streamed_to_hash": 2718916370,
+    "sha256": "92216254586814f128d68c91cc5842b8d5bc61d13bcdc76a51405afabfa74c5f"
+  },
+  "public_cache": {
+    "bytes": 688968080,
+    "sha256": "25ccf947e09c3e894aea78b58b79b298b7958f6694f4a903bd405e87defe6864"
+  },
+  "schema": "BUOVCAPHPlusLifecycleCheckpointV1",
+  "setup_id": "6a4b28686792da14efd04dc59f4f3123e43bb5a1df2d850570b5f6ac0e2cdb6a",
+  "tests": {
+    "Python": {
+      "errors": 0,
+      "failed": 0,
+      "passed": 40,
+      "skipped": 0
+    },
+    "full_repository_suite_run": false,
+    "native": {
+      "failed": 0,
+      "ignored": 0,
+      "passed": 38
+    }
+  }
+}

@@ -1,0 +1,9 @@
+--- a/crates/verifier/src/verify.rs
++++ b/crates/verifier/src/verify.rs
+@@ -35,5 +35,5 @@
+ };
+
+-pub const SECURITY_BITS: usize = 96;
++pub const SECURITY_BITS: usize = 128;
+
+ /// IOP verifier for a particular constraint system.

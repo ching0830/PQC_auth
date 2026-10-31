@@ -1,0 +1,22 @@
+{
+  "schema": "pqsat.binius-research-patch.v0.1",
+  "upstream_commit": "4428e759dd27956bd5b9ae5025d67eb8ccc1accf",
+  "patch_sha256": "ec2220119283d2cabff7a84afd3d224575be2bbad3d26e627369a2652bda4758",
+  "files": [
+    {
+      "path": "crates/hash-prover/src/binary_merkle_tree.rs",
+      "base_sha256": "faacebdd6ea9a0442c325442fcededd7fc931e87340884ce6ded77e94b54c551",
+      "patched_sha256": "04e16c561b6d4fbc1d1b0139547aca4519e3451ba4fff54a8e5d343ce3ac9a79"
+    },
+    {
+      "path": "crates/iop-prover/src/merkle_tree/prover.rs",
+      "base_sha256": "eaae30c0cba2103343ecf18888e1bc57ed3816cb19674bfcd5f0ea0f0ab56058",
+      "patched_sha256": "5123f9e5b0eaf1939b76ac3bf1dfda2de79405177c54aa47a46ff0fbaa7fb422"
+    },
+    {
+      "path": "crates/iop-prover/src/merkle_channel.rs",
+      "base_sha256": "35e62bbf54d841f9c4d2c954af93cfbe79b2830c43207d7bca714cacd43f7193",
+      "patched_sha256": "1dd26cf685eae6936704a3f08f59815d3d8d75560f0508c28c5664af01d78f9f"
+    }
+  ]
+}

@@ -1,0 +1,72 @@
+{
+  "publication/shared.py:sealed_public": {
+    "sourcePath": "benchmarks/buov_cap_research_v0_1/binius_ncc_verify.py",
+    "sourcePin": {
+      "bytes": 6082,
+      "sha256": "8c049ee87acd9dc9bfabbd08dde2ae084703a9d4baf6672a30495dd3a3d82438"
+    },
+    "AST_SHA256": "d9a70f2e7508a99bb5dc1f9189846bba8c8f1ae6a36a477819e2f9c6e1e5cd33",
+    "bodyASTUnchanged": true,
+    "behavioralTests": "tests/test_publication.py and tests/test_buov_cap_runner_v0_1.py"
+  },
+  "publication/shared.py:bounded": {
+    "sourcePath": "benchmarks/buov_cap_research_v0_1/binius_ncc_verify.py",
+    "sourcePin": {
+      "bytes": 6082,
+      "sha256": "8c049ee87acd9dc9bfabbd08dde2ae084703a9d4baf6672a30495dd3a3d82438"
+    },
+    "AST_SHA256": "9f38139b0fc44b8ee386b59a3d731605964e9e696e79e539e2a3ca33e9c181d8",
+    "bodyASTUnchanged": true,
+    "behavioralTests": "tests/test_publication.py and tests/test_buov_cap_runner_v0_1.py"
+  },
+  "publication/shared.py:wire_measurement": {
+    "sourcePath": "benchmarks/buov_cap_research_v0_1/single_issuance_run.py",
+    "sourcePin": {
+      "bytes": 19957,
+      "sha256": "e7bfbbca25e05f77bc7c6a03a3902d4603cd67df0051b1bd936c8369356d4d6b"
+    },
+    "AST_SHA256": "54094017cc7409fd671e410e86492aeaa46e050a51bef26191e48f64291f0e4e",
+    "bodyASTUnchanged": true,
+    "behavioralTests": "tests/test_publication.py and tests/test_buov_cap_runner_v0_1.py"
+  },
+  "publication/shared.py:validate_transfer": {
+    "sourcePath": "benchmarks/buov_cap_research_v0_1/single_issuance_run.py",
+    "sourcePin": {
+      "bytes": 19957,
+      "sha256": "e7bfbbca25e05f77bc7c6a03a3902d4603cd67df0051b1bd936c8369356d4d6b"
+    },
+    "AST_SHA256": "287834bfb99fc9a1b7ffd5c2e03921d04f1425bbf44e1f552f517efac8df9d74",
+    "bodyASTUnchanged": true,
+    "behavioralTests": "tests/test_publication.py and tests/test_buov_cap_runner_v0_1.py"
+  },
+  "publication/shared.py:check_limits": {
+    "sourcePath": "benchmarks/buov_cap_research_v0_1/full_compile.py",
+    "sourcePin": {
+      "bytes": 10415,
+      "sha256": "53f8a7853942743db5bd03af23ac7a098c5cbf97cddc0f5b5a683eb3347550cd"
+    },
+    "AST_SHA256": "e6309f81baf0ce60dac0df08c4631edfb3b73a6adb1e618b6bf8b49ce6832216",
+    "bodyASTUnchanged": true,
+    "behavioralTests": "tests/test_publication.py and tests/test_buov_cap_runner_v0_1.py"
+  },
+  "benchmarks/buov_cap_research_v0_1/binius_build.py:identity": {
+    "sourcePath": "benchmarks/buov_cap_research_v0_1/binius_build.py",
+    "sourcePin": {
+      "bytes": 19578,
+      "sha256": "8cd1cc59146b12ed38cfe81b0d058ce6044f78b2e6a82af7102f5c30785c2733"
+    },
+    "AST_SHA256": "1eecfb597c39c12b45cd2da6900c897e983779c04910ed60e925c382c0138020",
+    "bodyASTUnchanged": true,
+    "behavioralTests": "tests/test_publication.py and tests/test_buov_cap_runner_v0_1.py"
+  },
+  "benchmarks/buov_cap_research_v0_1/binius_build.py:guarded_build": {
+    "sourcePath": "benchmarks/buov_cap_research_v0_1/binius_build.py",
+    "sourcePin": {
+      "bytes": 19578,
+      "sha256": "8cd1cc59146b12ed38cfe81b0d058ce6044f78b2e6a82af7102f5c30785c2733"
+    },
+    "AST_SHA256": "c8b9967a1f75e82243829cd881f82dabcfc3193fe30444c8ec4f00b8f19e295b",
+    "bodyASTUnchanged": true,
+    "behavioralTests": "tests/test_publication.py and tests/test_buov_cap_runner_v0_1.py"
+  }
+}

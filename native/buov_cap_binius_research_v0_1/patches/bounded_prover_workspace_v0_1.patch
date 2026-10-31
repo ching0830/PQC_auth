@@ -1,0 +1,158 @@
+--- a/crates/compute/src/buffer_pool.rs
++++ b/crates/compute/src/buffer_pool.rs
+@@ -47,6 +47,7 @@
+ #[derive(Default)]
+ pub struct BufferPool {
+ 	free_list: Mutex<HashMap<usize, Vec<Vec<AlignedChunk>>>>,
++    discard_reclaimed: bool,
+ }
+ 
+ impl BufferPool {
+@@ -54,6 +55,20 @@
+ 	pub fn new() -> Self {
+ 		Self::default()
+ 	}
++
++    /// Research single-proof storage: return dropped blocks to the allocator.
++    /// Does not promise that the global allocator or OS immediately releases RSS.
++    pub fn non_recycling() -> Self {
++        Self { discard_reclaimed: true, ..Self::default() }
++    }
++
++    pub fn is_recycling(&self) -> bool { !self.discard_reclaimed }
++
++    /// Bytes currently held on the pool free list, excluding live allocations.
++    pub fn retained_bytes(&self) -> usize {
++        self.free_list.lock().expect("free list mutex poisoned").values()
++            .flatten().map(|block| block.capacity() * BUFFER_ALIGN).sum()
++    }
+ 
+ 	/// Allocates a [`PoolVec`] with room for at least `capacity` elements.
+ 	///
+@@ -117,6 +132,7 @@
+ 	}
+ 
+ 	fn reclaim(&self, n_chunks: usize, block: Vec<AlignedChunk>) {
++        if self.discard_reclaimed { drop(block); return; }
+ 		self.free_list
+ 			.lock()
+ 			.expect("free list mutex poisoned")
+--- a/crates/prover/src/lib.rs
++++ b/crates/prover/src/lib.rs
+@@ -42,3 +42,6 @@
+ pub use error::*;
+ pub use protocols::shift::KeyCollection;
+ pub use prove::*;
++
++/// Explicit research storage profile; identical Gao-Mateer domains.
++pub mod research_domain;
+--- a/crates/prover/src/protocols/shift/phase_2.rs
++++ b/crates/prover/src/protocols/shift/phase_2.rs
+@@ -61,7 +61,7 @@
+ pub fn prove_phase_2<F, P, Channel, A>(
+ 	key_collection: &KeyCollection,
+ 	words: SegmentWords<'_>,
+-	prepared: &PreparedOperandClaims<F>,
++	prepared: PreparedOperandClaims<F>,
+ 	phase_1_output: Phase1Output<F>,
+ 	shift_ind_eval: F,
+ 	epsilon: F,
+@@ -89,12 +89,15 @@
+ 	// The combined witness is never materialized.
+ 	// Each fold is zero-padded to enough variables to cover its own segment's length.
+ 	// Both columns fold against the same round tensor, so the tables are built once.
+-	let folder = BitAxisFolder::new(r_j_tensor.as_ref());
+-	let public_folded = folder.fold::<P, _>(alloc, words.public);
+-	let hidden_folded = folder.fold::<P, _>(alloc, words.hidden);
+-
+-	let (public_monster, hidden_monster) =
+-		key_collection.build_monster_segments(alloc, prepared, shift_ind_eval, &inner, &outer);
++    // No transcript/RNG operations occur between these computations. Build the
++    // matrix first, then release the constraint-point tensor before folding
++    // the witness. This avoids retaining both large folded columns and tensor.
++    let (public_monster, hidden_monster) =
++        key_collection.build_monster_segments(alloc, &prepared, shift_ind_eval, &inner, &outer);
++    drop(prepared);
++    let folder = BitAxisFolder::new(r_j_tensor.as_ref());
++    let public_folded = folder.fold::<P, _>(alloc, words.public);
++    let hidden_folded = folder.fold::<P, _>(alloc, words.hidden);
+ 
+ 	// Both halves of the sumcheck share one word-index space, spanning the wider segment.
+ 	// The hidden segment is normally the wider one.
+--- a/crates/prover/src/protocols/shift/prove.rs
++++ b/crates/prover/src/protocols/shift/prove.rs
+@@ -116,7 +116,7 @@
+ 	prove_phase_2::<_, P, _, _>(
+ 		key_collection,
+ 		words,
+-		&prepared,
++		prepared,
+ 		phase_1_output,
+ 		outer_output.weights_eval * outer_output.ind_eval * inner_output.ind_eval,
+ 		outer_output.eval,
+--- /dev/null
++++ b/crates/prover/src/research_domain.rs
+@@ -0,0 +1,24 @@
++//! Same Gao-Mateer domain with an explicit bounded-memory research implementation.
++use binius_field::BinaryField;
++use binius_math::{BinarySubspace, ntt::{DomainContext, domain_context::{GaoMateerOnTheFly, GaoMateerPreExpanded}}};
++use either::Either;
++
++pub enum ProverDomain<F> {
++    Default(GaoMateerPreExpanded<F>),
++    Research(GaoMateerOnTheFly<F>),
++}
++impl<F: BinaryField> ProverDomain<F> {
++    pub fn generate(log_domain_size: usize, research: bool) -> Self {
++        if research { Self::Research(GaoMateerOnTheFly::generate(log_domain_size)) }
++        else { Self::Default(GaoMateerPreExpanded::generate(log_domain_size)) }
++    }
++}
++impl<F: BinaryField> DomainContext for ProverDomain<F> {
++    type Field=F;
++    fn log_domain_size(&self)->usize { match self {Self::Default(c)=>c.log_domain_size(),Self::Research(c)=>c.log_domain_size()} }
++    fn subspace(&self,i:usize)->BinarySubspace<F> {match self {Self::Default(c)=>c.subspace(i),Self::Research(c)=>c.subspace(i)}}
++    fn twiddle(&self,l:usize,b:usize)->F {match self {Self::Default(c)=>c.twiddle(l,b),Self::Research(c)=>c.twiddle(l,b)}}
++    fn iter_twiddles(&self,l:usize,s:usize)->impl Iterator<Item=F>+'_ {
++        match self {Self::Default(c)=>Either::Left(c.iter_twiddles(l,s)),Self::Research(c)=>Either::Right(c.iter_twiddles(l,s))}
++    }
++}
+--- a/crates/prover/src/zk_config.rs
++++ b/crates/prover/src/zk_config.rs
+@@ -17,7 +17,8 @@
+ 	basefold::compiler::BaseFoldProverCompiler, channel::merge::MergeProverChannel,
+ };
+ use binius_ip::channel::WordIPVerifierChannel;
+-use binius_math::ntt::{NeighborsLastMultiThread, domain_context::GaoMateerPreExpanded};
++use binius_math::ntt::NeighborsLastMultiThread;
++use crate::research_domain::ProverDomain;
+ use binius_spartan_frontend::constraint_system::WitnessLayout;
+ use binius_spartan_prover::wrapper::{ReplayChannel, ZKWrappedProverChannel};
+ use binius_transcript::{ProverTranscript, fiat_shamir::Challenger};
+@@ -29,7 +30,7 @@
+ 
+ use crate::{IOPProver, protocols::shift::KeyCollection};
+ 
+-type ProverNTT<F> = NeighborsLastMultiThread<GaoMateerPreExpanded<F>>;
++type ProverNTT<F> = NeighborsLastMultiThread<ProverDomain<F>>;
+ 
+ /// Zero-knowledge prover for Binius64 constraint systems.
+ ///
+@@ -103,7 +104,7 @@
+ 		let log_domain_size = zk_verifier.basefold_compiler().max_log_domain_size();
+ 		let domain_context = {
+ 			let _guard = tracing::debug_span!("Precompute NTT domain").entered();
+-			GaoMateerPreExpanded::generate(log_domain_size)
++			ProverDomain::generate(log_domain_size, zk_verifier.is_research_unmerged())
+ 		};
+ 		let log_num_shares = binius_utils::rayon::current_num_threads().ilog2() as usize;
+ 		let ntt = NeighborsLastMultiThread::new(domain_context, log_num_shares);
+@@ -117,7 +118,7 @@
+ 			outer_layout,
+ 			oracle_schedule: zk_verifier.oracle_schedule().clone(),
+ 			basefold_compiler,
+-			pool: BufferPool::new(),
++			pool: if zk_verifier.is_research_unmerged() { BufferPool::non_recycling() } else { BufferPool::new() },
+ 			_hash_marker: PhantomData,
+ 		})
+ 	}
